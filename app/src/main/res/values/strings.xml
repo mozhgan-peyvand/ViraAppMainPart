@@ -14,5 +14,8 @@
     <string name="msg_if_click_back_file_will_be_deleted">با بازگشت به صفحه اصلی، فایل صوتی حذف خواهد شد. برای جلوگیری از حذف فایل ابتدا فایل را به متن تبدیل کنید.</string>
     <string name="lbl_convert_to_file">تبدیل به متن</string>
     <string name="lbl_delete_file">حذف فایل</string>
+    <string name="msg_if_start_again_file_will_be_deleted">با شروع مجدد، فایل صوتی حذف خواهد شد. برای جلوگیری از حذف فایل ابتدا فایل را به متن تبدیل کنید.</string>
+    <string name="lbl_cancel">انصراف</string>
+    <string name="lbl_start_again">شروع مجدد</string>
 
 </resources>
