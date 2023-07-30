@@ -4,13 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import ir.part.app.intelligentassistant.ui.screen.AvaNegarArchiveScreen
-import ir.part.app.intelligentassistant.ui.screen.AvaNegarOnBoardingScreen
-import ir.part.app.intelligentassistant.ui.screen.AvaNegarProcessedArchiveDetailScreen
-import ir.part.app.intelligentassistant.ui.screen.AvaNegarSearchScreen
-import ir.part.app.intelligentassistant.ui.screen.AvaNegarVoiceRecordingScreen
-import ir.part.app.intelligentassistant.ui.screen.ForceUpdateScreen
-import ir.part.app.intelligentassistant.ui.screen.HomeScreen
+import ir.part.app.intelligentassistant.ui.screen.archive.AvaNegarArchiveScreen
+import ir.part.app.intelligentassistant.ui.screen.archive.AvaNegarProcessedArchiveDetailScreen
+import ir.part.app.intelligentassistant.ui.screen.home.HomeScreen
+import ir.part.app.intelligentassistant.ui.screen.onBoarding.AvaNegarOnBoardingScreen
+import ir.part.app.intelligentassistant.ui.screen.record.AvaNegarVoiceRecordingScreen
+import ir.part.app.intelligentassistant.ui.screen.search.AvaNegarSearchScreen
+import ir.part.app.intelligentassistant.ui.screen.update.ForceUpdateScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
