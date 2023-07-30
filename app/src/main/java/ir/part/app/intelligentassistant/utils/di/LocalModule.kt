@@ -8,6 +8,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import ir.part.app.intelligentassistant.data.DataStoreRepository
 import ir.part.app.intelligentassistant.utils.data.db.IntelligentAssistantDb
 import javax.inject.Singleton
 
@@ -24,8 +25,18 @@ object LocalModule {
     @Provides
     fun provideIntelligentAssistantDb(@ApplicationContext context: Context): IntelligentAssistantDb {
         return Room
-            .databaseBuilder(context, IntelligentAssistantDb::class.java, "assistant.db")
+            .databaseBuilder(
+                context,
+                IntelligentAssistantDb::class.java,
+                "assistant.db"
+            )
             .fallbackToDestructiveMigration()
             .build()
     }
+
+    @Provides
+    @Singleton
+    fun provideDataStoreRepository(
+        @ApplicationContext context: Context
+    ) = DataStoreRepository(context = context)
 }

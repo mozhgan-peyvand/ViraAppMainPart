@@ -9,6 +9,13 @@
     <string name="lbl_assistant_smart_voice"> دستیار صوتی هوشمند</string>
     <string name="lbl_about_us">درباره ما</string>
     <string name="lbl_invite_friends">معرفی به دوستان</string>
+    <string name="lbl_start">شروع</string>
+    <string name="lbl_welcome_on_boarding">به آوانگار خوش امدید!</string>
+    <string name="lbl_on_boarding_first_slide_description">به کمک آوانگار میتونید صداهای ضبط شده را به راحتی به متن فارسی تبدیل کنید.</string>
+    <string name="lbl_support_accent">پشتیبانی از لهجه ها</string>
+    <string name="lbl_on_boarding_second_slide_description">"آوانگار امکان پشتیبانی و تبدیل لهجه های مختلف فارسی به متن را هم دارد."</string>
+    <string name="lbl_different_format">فرمت های مختلف</string>
+    <string name="lbl_on_boarding_third_slide_description">در آوانگار میتونید فایل متن را در فرمت های مختلف مثل pdf و word  خروجی بگیرید.</string>
 
     <string name="lbl_back">بازگشت</string>
     <string name="msg_if_click_back_file_will_be_deleted">با بازگشت به صفحه اصلی، فایل صوتی حذف خواهد شد. برای جلوگیری از حذف فایل ابتدا فایل را به متن تبدیل کنید.</string>

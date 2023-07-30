@@ -19,10 +19,10 @@ fun AppNavigation(navController: NavHostController) {
         startDestination = ScreensRouter.HomeScreen.router
     ) {
         composable(route = ScreensRouter.HomeScreen.router) {
-            HomeScreen()
+            HomeScreen(navController = navController)
         }
         composable(route = ScreensRouter.AvaNegarOnBoardingScreen.router) {
-            AvaNegarOnBoardingScreen()
+            AvaNegarOnBoardingScreen(navController)
         }
         composable(route = ScreensRouter.AvaNegarArchiveScreen.router) {
             AvaNegarArchiveScreen()
