@@ -16,12 +16,17 @@ import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -177,6 +182,65 @@ private fun BottomSheetContentStartAgain(
     }
 }
 
+
+@Composable
+private fun BottomSheetSetFileName(
+    actionAccept: (text: String) -> Unit,
+    actionClose: () -> Unit
+) {
+    var text by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.surface)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, end = 32.dp, start = 32.dp)
+        ) {
+            Text(
+                modifier = Modifier.weight(1f), text = stringResource(id = R.string.lbl_set_name)
+            )
+            TextButton(modifier = Modifier.size(32.dp), onClick = actionClose) {
+                Icon(imageVector = Icons.Default.Close, contentDescription = null)
+            }
+        }
+        Divider(
+            modifier = Modifier
+                .padding(top = 8.dp, end = 32.dp, start = 32.dp)
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MaterialTheme.colors.onSurface)
+        )
+
+        OutlinedTextField(
+            modifier = Modifier
+                .padding(32.dp)
+                .fillMaxWidth(),
+            value = text,
+            onValueChange = {
+                text = it
+            }
+        )
+
+        Button(
+            enabled = text.isNotBlank(),
+            onClick = {actionAccept(text)},
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 32.dp, start = 32.dp, end = 32.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.lbl_accept),
+                modifier = Modifier.padding(vertical = 6.dp)
+            )
+        }
+
+    }
+}
+
 @Preview
 @Composable
 fun BottomSheetContentBackToRecordingScreenPreview() {
@@ -199,6 +263,20 @@ fun BottomSheetContentBottomSheetContentStartAgainPreview() {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             BottomSheetContentStartAgain(
                 {},
+                {},
+                {}
+            )
+        }
+
+    }
+}
+
+@Preview
+@Composable
+fun BottomSheetBottomSheetSetFileNamePreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            BottomSheetSetFileName(
                 {},
                 {}
             )
