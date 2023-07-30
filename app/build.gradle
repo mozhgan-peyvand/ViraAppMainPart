@@ -77,6 +77,14 @@ dependencies {
     implementation "com.google.accompanist:accompanist-navigation-material:0.31.1-alpha"
     implementation "com.google.accompanist:accompanist-permissions:0.31.1-alpha"
 
+
+    // pager and indicators -accompanist
+    implementation "com.google.accompanist:accompanist-pager:0.31.1-alpha"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.31.1-alpha"
+
+    //dataStore Preferences
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+
     // hilt
     implementation "com.google.dagger:hilt-android:2.46.1"
     kapt "com.google.dagger:hilt-android-compiler:2.46.1"
