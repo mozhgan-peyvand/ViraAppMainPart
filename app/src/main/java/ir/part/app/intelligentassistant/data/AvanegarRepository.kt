@@ -1,45 +1,100 @@
 package ir.part.app.intelligentassistant.data
 
+import ir.part.app.intelligentassistant.data.entity.AvanegarProcessedFileEntity
+import ir.part.app.intelligentassistant.data.entity.AvanegarTrackingFileEntity
+import ir.part.app.intelligentassistant.utils.common.file.toMultiPart
 import ir.part.app.intelligentassistant.utils.data.api_result.ApiResult
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
+import ir.part.app.intelligentassistant.utils.data.asPlainTextRequestBody
+import saman.zamani.persiandate.PersianDate
+import java.io.File
 import javax.inject.Inject
 
-
 class AvanegarRepository @Inject constructor(
-    private val avanegarRemoteDataSource: AvanegarRemoteDataSource
+    private val avanegarRemoteDataSource: AvanegarRemoteDataSource,
+    private val avanegarLocalDataSource: AvanegarLocalDataSource
 ) {
 
-    suspend fun audioToTextBelowSixtySecond(
-        language: String,
-        multipartBodyFile: MultipartBody.Part
-    ): ApiResult<String> {
+    fun getArchiveFile(id: Int) = avanegarLocalDataSource.getArchiveFile(id)
 
-        return avanegarRemoteDataSource.audioToTextBelowSixtySecond(
-            multiPartFile = multipartBodyFile,
-            language = makeRequestBody(language)
+    fun getAllArchiveFiles() = avanegarLocalDataSource.getAllArchiveFiles()
+
+    suspend fun audioToTextBelowSixtySecond(
+        title: String,
+        file: File
+    ): Result<Boolean> {
+
+        val result = avanegarRemoteDataSource.audioToTextBelowSixtySecond(
+            multiPartFile = file.toMultiPart("file"),
+            language = "fa".asPlainTextRequestBody
         )
+
+        if (result is ApiResult.Success) {
+            avanegarLocalDataSource.insertProcessedFile(
+                AvanegarProcessedFileEntity(
+                    id = 0,
+                    title = title,
+                    text = result.data,
+                    createdAt = PersianDate().time, // TODO: improve
+                    filePath = file.absolutePath,
+                    isSeen = false
+                )
+            )
+        }
+        // TODO: handle error
+
+        // TODO: return error after parsing!!
+        return Result.success(true)
     }
 
     suspend fun audioToTextAboveSixtySecond(
-        language: String,
-        multipartBodyFile: MultipartBody.Part
-    ): ApiResult<String> {
-        return avanegarRemoteDataSource.audioToTextAboveSixtySecond(
-            multiPartFile = multipartBodyFile,
-            language = makeRequestBody(language)
+        title: String,
+        file: File
+    ): Result<Boolean> {
+        val result = avanegarRemoteDataSource.audioToTextAboveSixtySecond(
+            multiPartFile = file.toMultiPart("file"),
+            language = "fa".asPlainTextRequestBody
         )
+
+        if (result is ApiResult.Success) {
+            avanegarLocalDataSource.insertUnprocessedFile(
+                AvanegarTrackingFileEntity(
+                    token = result.data,
+                    filePath = file.absolutePath,
+                    title = title,
+                    createdAt = PersianDate().time, // TODO: improve
+                )
+            )
+        }
+        // TODO: handle error
+
+        // TODO: return error after parsing!!
+
+        return Result.success(true)
     }
 
-    suspend fun trackLargeFileResult(fileToken: String): ApiResult<String> {
-        return avanegarRemoteDataSource.trackLargeFileResult(
+    suspend fun trackLargeFileResult(fileToken: String) {
+        val result = avanegarRemoteDataSource.trackLargeFileResult(
             fileToken = fileToken
         )
-    }
 
-    private fun makeRequestBody(value: String): RequestBody {
-        return value.toRequestBody("text/plain".toMediaTypeOrNull())
+        if (result is ApiResult.Success) {
+            val tracked = avanegarLocalDataSource.getUnprocessedFile(fileToken)
+            if(tracked != null) {
+                avanegarLocalDataSource.deleteUnprocessedFile(fileToken)
+                avanegarLocalDataSource.insertProcessedFile(
+                    AvanegarProcessedFileEntity(
+                        id = 0,
+                        title = tracked.title,
+                        text = result.data,
+                        createdAt = PersianDate().time, // TODO: improve,
+                        filePath = tracked.filePath,
+                        isSeen = false
+                    )
+                )
+            }
+        }
+        // TODO: handle error
+
+        // TODO: return error after parsing!!
     }
 }
