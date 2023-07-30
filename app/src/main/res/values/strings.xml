@@ -25,4 +25,6 @@
     <string name="lbl_cancel">انصراف</string>
     <string name="lbl_start_again">شروع مجدد</string>
 
+    <string name="lbl_make_your_first_file">اولین فایل خود را ایجاد کنید.</string>
+    <string name="lbl_dont_have_file">هنوز فایلی برای نمایش ندارید.</string>
 </resources>
