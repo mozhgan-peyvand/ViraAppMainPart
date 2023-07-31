@@ -30,4 +30,14 @@
 
     <string name="lbl_make_your_first_file">اولین فایل خود را ایجاد کنید.</string>
     <string name="lbl_dont_have_file">هنوز فایلی برای نمایش ندارید.</string>
+    <string name="lbl_choose_file">انتخاب فایل</string>
+    <string name="lbl_you_can_only_choose_one_file">شما تنها میتوانید یک فایل برای پردازش ارسال کنید</string>
+    <string name="lbl_allowed_format">فرمت های مجاز : mp3,AAC</string>
+    <string name="lbl_button_upload_new_file">بارگذاری فایل جدید</string>
+
+    <string name="lbl_change_name">تغییر نام</string>
+    <string name="lbl_choose_name">اگر چنانچه تمایل دارید میتوانید نام دلخواه برای فایل خود انتخاب کنید</string>
+    <string name="lbl_save">ذخیره</string>
+    <string name="lbl_need_to_access_file_permission">شما نیازمند دسترسی به فایل ها هستید.</string>
+
 </resources>
