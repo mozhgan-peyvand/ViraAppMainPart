@@ -26,6 +26,7 @@
     <string name="lbl_start_again">شروع مجدد</string>
     <string name="lbl_set_name">انتخاب نام</string>
     <string name="lbl_accept">تایید</string>
+    <string name="lbl_converting">در حال تبدیل به متن…</string>
 
     <string name="lbl_make_your_first_file">اولین فایل خود را ایجاد کنید.</string>
     <string name="lbl_dont_have_file">هنوز فایلی برای نمایش ندارید.</string>
