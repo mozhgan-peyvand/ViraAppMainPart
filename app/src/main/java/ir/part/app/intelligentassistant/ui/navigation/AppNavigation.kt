@@ -25,7 +25,7 @@ fun AppNavigation(navController: NavHostController) {
             AvaNegarOnBoardingScreen(navController)
         }
         composable(route = ScreensRouter.AvaNegarArchiveScreen.router) {
-            AvaNegarArchiveScreen(navController)
+            AvaNegarArchiveScreen(navHostController = navController)
         }
         composable(route = ScreensRouter.ForceUpdateScreen.router) {
             ForceUpdateScreen()
