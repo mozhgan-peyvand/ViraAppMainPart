@@ -27,6 +27,10 @@
     <string name="lbl_set_name">انتخاب نام</string>
     <string name="lbl_accept">تایید</string>
     <string name="lbl_converting">در حال تبدیل به متن…</string>
+    <string name="msg_upload_is_successfull">آپلود شما با موفقیت انجام شد</string>
+    <string name="msg_failure_in_upload">خطا در آپلود فایل</string>
+    <string name="msg_try_again">اتصال شما به اینترنت قطع است. \n لطفا دوباره تلاش کنید</string>
+    <string name="lbl_uploading_file">در حال آپلود فایل…</string>
 
     <string name="lbl_make_your_first_file">اولین فایل خود را ایجاد کنید.</string>
     <string name="lbl_dont_have_file">هنوز فایلی برای نمایش ندارید.</string>
