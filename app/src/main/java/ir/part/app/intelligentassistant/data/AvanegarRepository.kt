@@ -2,6 +2,7 @@ package ir.part.app.intelligentassistant.data
 
 import ir.part.app.intelligentassistant.data.entity.AvanegarProcessedFileEntity
 import ir.part.app.intelligentassistant.data.entity.AvanegarTrackingFileEntity
+import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
 import ir.part.app.intelligentassistant.utils.common.file.toMultiPart
 import ir.part.app.intelligentassistant.utils.data.api_result.ApiResult
 import ir.part.app.intelligentassistant.utils.data.asPlainTextRequestBody
@@ -20,11 +21,12 @@ class AvanegarRepository @Inject constructor(
 
     suspend fun audioToTextBelowSixtySecond(
         title: String,
-        file: File
+        file: File,
+        listener: UploadProgressCallback
     ): Result<Boolean> {
 
         val result = avanegarRemoteDataSource.audioToTextBelowSixtySecond(
-            multiPartFile = file.toMultiPart("file"),
+            multiPartFile = file.toMultiPart(listener),
             language = "fa".asPlainTextRequestBody
         )
 
@@ -48,10 +50,11 @@ class AvanegarRepository @Inject constructor(
 
     suspend fun audioToTextAboveSixtySecond(
         title: String,
-        file: File
+        file: File,
+        listener: UploadProgressCallback
     ): Result<Boolean> {
         val result = avanegarRemoteDataSource.audioToTextAboveSixtySecond(
-            multiPartFile = file.toMultiPart("file"),
+            multiPartFile = file.toMultiPart(listener),
             language = "fa".asPlainTextRequestBody
         )
 
@@ -79,7 +82,7 @@ class AvanegarRepository @Inject constructor(
 
         if (result is ApiResult.Success) {
             val tracked = avanegarLocalDataSource.getUnprocessedFile(fileToken)
-            if(tracked != null) {
+            if (tracked != null) {
                 avanegarLocalDataSource.deleteUnprocessedFile(fileToken)
                 avanegarLocalDataSource.insertProcessedFile(
                     AvanegarProcessedFileEntity(

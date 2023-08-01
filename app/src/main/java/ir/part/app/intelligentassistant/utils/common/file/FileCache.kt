@@ -2,13 +2,16 @@ package ir.part.app.intelligentassistant.utils.common.file
 
 import android.content.Context
 import android.net.Uri
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import java.io.File
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class FileCache @Inject constructor(private val context: Context) {
+class FileCache @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     // content resolver
     private val contentResolver = context.contentResolver

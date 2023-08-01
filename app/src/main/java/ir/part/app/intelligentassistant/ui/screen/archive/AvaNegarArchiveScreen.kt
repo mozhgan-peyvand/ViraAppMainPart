@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +35,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
@@ -43,16 +45,19 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -61,6 +66,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -74,6 +80,7 @@ import ir.part.app.intelligentassistant.ui.screen.archive.entity.ArchiveView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarTrackingFileView
 import ir.part.app.intelligentassistant.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
 import ir.part.app.intelligentassistant.utils.common.file.filename
 import kotlinx.coroutines.launch
 import ir.part.app.intelligentassistant.R as AIResource
@@ -87,8 +94,8 @@ fun AvaNegarArchiveScreen(
     AvaNegarArchiveBody(
         archiveViewModel,
         navHostController
-    ) { fileName, fileUrl ->
-
+    ) { fileName, uri, listener ->
+        archiveViewModel.uploadFile(fileName.orEmpty(), uri, listener)
     }
 }
 
@@ -96,11 +103,29 @@ fun AvaNegarArchiveScreen(
 private fun AvaNegarArchiveBody(
     archiveViewModel: AvaNegarArchiveViewModel,
     navHostController: NavHostController,
-    callBack: (String?, Uri?) -> Unit
+    callBack: (String?, Uri?, UploadProgressCallback) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     var isFabExpanded by remember { mutableStateOf(false) }
+
+    var progress by remember { mutableStateOf("") }
+    var isUploadFinished by remember { mutableStateOf(false) }
+    var loading by remember { mutableFloatStateOf(0f) }
+
+    val listener by remember {
+        mutableStateOf<UploadProgressCallback>(
+            object : UploadProgressCallback {
+                override fun onProgress(bytesUploaded: Long, totalBytes: Long, isDone: Boolean) {
+                    if (totalBytes <= 0) archiveViewModel.updateIsSaving(true)
+                    loading = (bytesUploaded / totalBytes).toFloat()
+                    progress = bytesUploaded.toString()
+                    isUploadFinished = isDone
+                }
+            }
+        )
+    }
+
     val fileName = remember {
         mutableStateOf<String?>("")
     }
@@ -187,13 +212,18 @@ private fun AvaNegarArchiveBody(
                 }
 
                 ArchiveBottomSheetType.Rename -> {
+
                     RenameFileBottomSheetContent(
                         fileName.value ?: "",
                         onValueChange = {
                             fileName.value = it
                         },
                         reNameAction = {
-                            callBack(fileName.value, fileUri.value)
+                            callBack(fileName.value, fileUri.value, listener)
+                            isFabExpanded = false
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                            }
                         }
                     )
                 }
@@ -211,6 +241,27 @@ private fun AvaNegarArchiveBody(
                     navHostController.popBackStack()
                 },
                 onSearchClick = { navHostController.navigate(ScreensRouter.AvaNegarSearchScreen.router) })
+
+            if (archiveViewModel.uploadFileState.value != UploadIdle)
+                UploadFileSection(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colors.primary.copy(0.8f))
+                        .weight(0.2f),
+                    uploadFileStatus = archiveViewModel.uploadFileState.value,
+                    fileName = fileName.value.orEmpty(),
+                    percent = progress,
+                    loading = loading,
+                    isSavingFile = archiveViewModel.isSavingFile,
+                    onRetryCLick = {
+                        archiveViewModel.uploadFile(
+                            fileName.value.orEmpty(),
+                            fileUri.value,
+                            listener
+                        )
+                    },
+                    onCancelClick = { archiveViewModel.cancelDownload() }
+                )
 
             Box(modifier = Modifier.weight(1f)) {
 
@@ -543,6 +594,48 @@ private fun ArchiveList(
     }
 }
 
+
+@Composable
+private fun UploadFileSection(
+    modifier: Modifier = Modifier,
+    uploadFileStatus: UploadFileStatus,
+    fileName: String,
+    percent: String,
+    loading: Float,
+    isSavingFile: Boolean,
+    onRetryCLick: () -> Unit,
+    onCancelClick: () -> Unit
+) {
+    Column(
+        modifier = modifier
+    ) {
+        when (uploadFileStatus) {
+            is UploadSuccess -> UploadFileSectionSuccess()
+
+            is UploadFailure -> {
+                UploadFileSectionFailure(
+                    fileName = fileName,
+                    onRetryCLick = { onRetryCLick() },
+                    onCancelClick = { onCancelClick() })
+            }
+
+            is UploadInProgress -> {
+                UploadFileSectionInProgress(
+                    fileName = fileName,
+                    loading = loading,
+                    percent = percent,
+                    isSavingFile = isSavingFile,
+                    onRetryCLick = { onRetryCLick() },
+                    onCancelClick = { onCancelClick() }
+                )
+            }
+
+            is UploadIdle -> {}
+        }
+    }
+
+}
+
 @Composable
 private fun ArchiveProcessedFileElement(
     archiveViewProcessed: AvanegarProcessedFileView,
@@ -564,6 +657,8 @@ private fun ArchiveProcessedFileElement(
         ) {
             Row {
                 Text(
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .weight(1f)
                         .align(CenterVertically),
@@ -585,6 +680,8 @@ private fun ArchiveProcessedFileElement(
 
 
             Text(
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
@@ -641,6 +738,253 @@ private fun ArchiveTrackingFileElements(
                     .fillMaxWidth(),
                 text = stringResource(id = AIResource.string.lbl_converting)
             )
+        }
+    }
+}
+
+
+@Composable
+private fun UploadFileSectionInProgress(
+    fileName: String,
+    loading: Float,
+    percent: String,
+    isSavingFile: Boolean,
+    onRetryCLick: () -> Unit,
+    onCancelClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = CenterVertically,
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.surface.copy(0.8f))
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(0.7f)
+                .padding(end = 16.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = stringResource(id = AIResource.string.lbl_uploading_file))
+
+                Text(
+                    text = fileName,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            LoadingIndicator(
+                modifier = Modifier,
+                loading = loading,
+                percent = percent,
+                isSavingFile = isSavingFile
+            )
+        }
+
+        Column(modifier = Modifier.weight(0.3f)) {
+            Row {
+                IconButton(onClick = { onRetryCLick() }) {
+                    Icon(
+                        painter = painterResource(id = AIResource.drawable.ic_retry),
+                        contentDescription = null
+                    )
+                }
+
+                IconButton(onClick = { onCancelClick() }) {
+                    Icon(
+                        painter = painterResource(id = AIResource.drawable.ic_close),
+                        contentDescription = null
+                    )
+                }
+            }
+        }
+    }
+
+}
+
+@Composable
+private fun UploadFileSectionFailure(
+    fileName: String,
+    onRetryCLick: () -> Unit,
+    onCancelClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = CenterVertically,
+        modifier = modifier
+            .fillMaxSize()
+            .padding(8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(0.7f)
+                .padding(end = 16.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = stringResource(id = AIResource.string.msg_failure_in_upload))
+
+                Text(
+                    text = fileName,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Row(modifier = Modifier.padding(top = 8.dp)) {
+                Icon(
+                    modifier = modifier.padding(end = 8.dp),
+                    painter = painterResource(id = AIResource.drawable.ic_failure_network),
+                    contentDescription = null
+                )
+                Text(
+                    fontSize = 14.sp,
+                    text = stringResource(id = AIResource.string.msg_try_again)
+                )
+            }
+        }
+
+        Column(modifier = Modifier.weight(0.3f)) {
+            Row {
+                IconButton(onClick = { onRetryCLick() }) {
+                    Icon(
+                        painter = painterResource(id = AIResource.drawable.ic_retry),
+                        contentDescription = null
+                    )
+                }
+
+                IconButton(onClick = { onCancelClick() }) {
+                    Icon(
+                        painter = painterResource(id = AIResource.drawable.ic_close),
+                        contentDescription = null
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun UploadFileSectionSuccess() {
+    Row(
+        verticalAlignment = CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Icon(
+            modifier = Modifier.padding(end = 16.dp),
+            painter = painterResource(AIResource.drawable.ic_tick_circle),
+            contentDescription = null
+        )
+        Text(text = stringResource(id = AIResource.string.msg_upload_is_successfull))
+    }
+
+}
+
+@Composable
+fun LoadingIndicator(
+    modifier: Modifier = Modifier,
+    loading: Float,
+    percent: String,
+    isSavingFile: Boolean
+) {
+
+    Box(
+        contentAlignment = BottomCenter,
+        modifier = modifier
+    ) {
+        if (isSavingFile)
+            LinearProgressIndicator(
+                strokeCap = StrokeCap.Round,
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .height(13.dp)
+            )
+        else
+            LinearProgressIndicator(
+                strokeCap = StrokeCap.Round,
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .height(13.dp),
+                progress = loading,
+            )
+
+
+        Text(
+            modifier = Modifier.padding(bottom = 1.dp),
+            fontSize = 8.sp,
+            text = percent
+        )
+    }
+}
+
+@Preview
+@Composable
+fun UploadFileSectionPreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            UploadFileSection(
+                fileName = "FIle Name",
+                uploadFileStatus = UploadIdle,
+                percent = "82%",
+                loading = 0.8f,
+                isSavingFile = false,
+                onRetryCLick = {},
+                onCancelClick = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun UploadFileSectionInProgressPreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            UploadFileSectionInProgress("fileName", 0.8f, "48%", false, {}, {})
+        }
+    }
+}
+
+@Preview
+@Composable
+fun UploadFileSectionFailurePreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            UploadFileSectionFailure("fileName", {}, {})
+        }
+    }
+}
+
+@Preview
+@Composable
+fun LoadingIndicatorPreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            LoadingIndicator(
+                modifier = Modifier,
+                loading = 0.8f,
+                percent = "40%",
+                false
+            )
+        }
+    }
+}
+
+
+@Preview
+@Composable
+fun UploadFileSectionSuccessPreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            UploadFileSectionSuccess()
         }
     }
 }
