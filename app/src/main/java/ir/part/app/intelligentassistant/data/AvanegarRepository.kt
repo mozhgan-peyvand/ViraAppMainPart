@@ -15,9 +15,14 @@ class AvanegarRepository @Inject constructor(
     private val avanegarLocalDataSource: AvanegarLocalDataSource
 ) {
 
-    fun getArchiveFile(id: Int) = avanegarLocalDataSource.getArchiveFile(id)
+    fun getArchiveFile(id: Int) =
+        avanegarLocalDataSource.getArchiveFile(id)
 
-    fun getAllArchiveFiles() = avanegarLocalDataSource.getAllArchiveFiles()
+    fun getAllArchiveFiles() =
+        avanegarLocalDataSource.getAllArchiveFiles()
+
+    fun getSearch(title: String) =
+        avanegarLocalDataSource.getSearchResult(title)
 
     suspend fun audioToTextBelowSixtySecond(
         title: String,

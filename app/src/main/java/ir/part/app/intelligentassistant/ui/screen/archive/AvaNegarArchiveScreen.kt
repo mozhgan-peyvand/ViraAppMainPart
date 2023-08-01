@@ -637,9 +637,9 @@ private fun UploadFileSection(
 }
 
 @Composable
-private fun ArchiveProcessedFileElement(
+fun ArchiveProcessedFileElement(
     archiveViewProcessed: AvanegarProcessedFileView,
-    isLock: Boolean,
+    isLock: Boolean = false,
     onItemClick: (Int) -> Unit,
     onMenuClick: () -> Unit
 ) {
