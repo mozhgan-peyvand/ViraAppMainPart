@@ -34,16 +34,20 @@ class AvanegarLocalDataSource @Inject constructor(
         )
     }
 
-    suspend fun getUnprocessedFile(token: String) = dao.getUnprocessedFileDetail(token)
+    suspend fun getUnprocessedFile(token: String) =
+        dao.getUnprocessedFileDetail(token)
 
     suspend fun getUnprocessedFiles() = dao.getAllUnprocessedFiles()
 
     suspend fun insertUnprocessedFile(file: AvanegarTrackingFileEntity) =
         dao.insertUnprocessedFile(file)
 
-    suspend fun insertProcessedFile(file: AvanegarProcessedFileEntity)=
+    suspend fun insertProcessedFile(file: AvanegarProcessedFileEntity) =
         dao.insertProcessedFile(file)
 
-    suspend fun deleteUnprocessedFile(token: String) = dao.deleteUnprocessedFile(token)
+    suspend fun deleteUnprocessedFile(token: String) =
+        dao.deleteUnprocessedFile(token)
+
+    fun getSearchResult(title: String) = dao.getSearch(title)
 
 }

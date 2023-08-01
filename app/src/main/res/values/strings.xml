@@ -44,4 +44,5 @@
     <string name="lbl_save">ذخیره</string>
     <string name="lbl_need_to_access_file_permission">شما نیازمند دسترسی به فایل ها هستید.</string>
 
+    <string name="lbl_search_in_archive">برای جستجو در آرشیو تایپ نمایید</string>
 </resources>

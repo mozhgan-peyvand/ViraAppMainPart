@@ -48,4 +48,8 @@ interface AvanegarDao {
 
     @Query("UPDATE AvanegarProcessedFileEntity SET isSeen=1 WHERE id=:id")
     suspend fun markFileAsSeen(id: Int)
+
+    @Query("SELECT * FROM AvanegarProcessedFileEntity WHERE title LIKE '%' || :searchText || '%'")
+    fun getSearch(searchText: String): Flow<List<AvanegarProcessedFileEntity>>
+
 }
