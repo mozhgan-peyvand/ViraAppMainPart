@@ -114,4 +114,7 @@ dependencies {
 
     // Date
     implementation 'com.github.samanzamani:PersianDate:1.5.0'
+
+    //iText for pdf
+    implementation 'com.itextpdf:itextpdf:5.5.13.1'
 }
