@@ -50,4 +50,7 @@ class AvanegarLocalDataSource @Inject constructor(
 
     fun getSearchResult(title: String) = dao.getSearch(title)
 
+    suspend fun deleteProcessFile(id: Int?) = dao.deleteProcessedFile(id)
+    suspend fun updateTitle(title: String?, id: Int?) =
+        dao.updateTitle(title = title, id = id)
 }

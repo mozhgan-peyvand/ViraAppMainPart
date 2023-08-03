@@ -132,4 +132,12 @@ class AvaNegarArchiveViewModel @Inject constructor(
     fun updateIsSaving(value: Boolean) {
         isSavingFile = value
     }
+
+    fun removeFile(id: Int?) = viewModelScope.launch {
+        repository.deleteProcessFile(id)
+    }
+
+    fun updateTitle(title: String?, id: Int?) = viewModelScope.launch {
+        repository.updateTitle(title = title, id = id)
+    }
 }
