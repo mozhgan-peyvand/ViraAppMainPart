@@ -58,4 +58,8 @@
     <string name="lbl_btn_cancel">انصراف</string>
     <string name="lbl_btn_delete">حذف</string>
     <string name="lbl_text_save_in_clipboard">متن فایل در کلیپ بورد ذخیره شد</string>
+
+    <string name="lbl_update">به روزرسانی</string>
+    <string name="msg_update">متاسفانه نسخه ای که با ان کار می کنید قدیمی شده و برای استفاده از محصول نیاز به بروز رسانی دارید</string>
+    <string name="lbl_update_app">به روزرسانی نرم افزار</string>
 </resources>

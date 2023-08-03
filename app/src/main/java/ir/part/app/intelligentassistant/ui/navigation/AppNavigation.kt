@@ -10,7 +10,6 @@ import ir.part.app.intelligentassistant.ui.screen.home.HomeScreen
 import ir.part.app.intelligentassistant.ui.screen.onBoarding.AvaNegarOnBoardingScreen
 import ir.part.app.intelligentassistant.ui.screen.record.AvaNegarVoiceRecordingScreen
 import ir.part.app.intelligentassistant.ui.screen.search.AvaNegarSearchScreen
-import ir.part.app.intelligentassistant.ui.screen.update.ForceUpdateScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -26,9 +25,6 @@ fun AppNavigation(navController: NavHostController) {
         }
         composable(route = ScreensRouter.AvaNegarArchiveScreen.router) {
             AvaNegarArchiveScreen(navHostController = navController)
-        }
-        composable(route = ScreensRouter.ForceUpdateScreen.router) {
-            ForceUpdateScreen()
         }
         composable(route = ScreensRouter.AvaNegarProcessedArchiveDetailScreen.router) {
             AvaNegarProcessedArchiveDetailScreen()

@@ -11,6 +11,8 @@ import ir.part.app.intelligentassistant.data.AvanegarRepository
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.ArchiveView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.toAvanegarProcessedFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.toAvanegarTrackingFileView
+import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEvent
+import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEventPublisher
 import ir.part.app.intelligentassistant.utils.common.file.FileCache
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
 import kotlinx.coroutines.Dispatchers
@@ -24,11 +26,15 @@ import javax.inject.Inject
 @HiltViewModel
 class AvaNegarArchiveViewModel @Inject constructor(
     private val repository: AvanegarRepository,
-    private val fileCache: FileCache
+    private val fileCache: FileCache,
+    private val aiEventPublisher: IntelligentAssistantEventPublisher
 ) : ViewModel() {
 
     private val _uploadFileState: MutableState<UploadFileStatus> = mutableStateOf(UploadIdle)
     val uploadFileState: State<UploadFileStatus> = _uploadFileState
+
+    private val _aiEvent: MutableState<IntelligentAssistantEvent?> = mutableStateOf(null)
+    val aiEvent: State<IntelligentAssistantEvent?> = _aiEvent
 
     private val _allArchiveFiles: MutableState<List<ArchiveView>> = mutableStateOf(listOf())
     val allArchiveFiles: State<List<ArchiveView>> = _allArchiveFiles
@@ -48,6 +54,12 @@ class AvaNegarArchiveViewModel @Inject constructor(
                 val trackingList = avanegarArchiveFile.tracking
                 _allArchiveFiles.value =
                     trackingList.map { it.toAvanegarTrackingFileView() } + processedList.map { it.toAvanegarProcessedFileView() }
+            }
+        }
+
+        viewModelScope.launch {
+            aiEventPublisher.events.collect {
+                _aiEvent.value = it
             }
         }
     }
@@ -77,9 +89,10 @@ class AvaNegarArchiveViewModel @Inject constructor(
             if (file != null) {
                 val result = repository.audioToTextBelowSixtySecond(title, file, listener)
 
-                if (result.isSuccess) _uploadFileState.value = UploadSuccess
-                else _uploadFileState.value = UploadFailure
-                changeUploadFileToIdle()
+                if (result.isSuccess) {
+                    _uploadFileState.value = UploadSuccess
+                    changeUploadFileToIdle()
+                } else _uploadFileState.value = UploadFailure
             }
         }
     }
@@ -98,9 +111,10 @@ class AvaNegarArchiveViewModel @Inject constructor(
                     title, file, listener
                 )
 
-                if (result.isSuccess) _uploadFileState.value = UploadSuccess
-                else _uploadFileState.value = UploadFailure
-                changeUploadFileToIdle()
+                if (result.isSuccess) {
+                    _uploadFileState.value = UploadSuccess
+                    changeUploadFileToIdle()
+                } else _uploadFileState.value = UploadFailure
             }
 
         }

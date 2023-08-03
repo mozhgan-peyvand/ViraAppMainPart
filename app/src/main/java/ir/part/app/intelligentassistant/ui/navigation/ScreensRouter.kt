@@ -2,7 +2,6 @@ package ir.part.app.intelligentassistant.ui.navigation
 
 sealed class ScreensRouter(val router: String) {
     object HomeScreen : ScreensRouter("home_screen")
-    object ForceUpdateScreen : ScreensRouter("forceUpdate_screen")
     object AvaNegarVoiceRecordingScreen :
         ScreensRouter("avaNegarVoiceRecording_screen")
 
