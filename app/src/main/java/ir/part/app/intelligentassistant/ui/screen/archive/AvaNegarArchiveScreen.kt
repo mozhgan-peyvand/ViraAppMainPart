@@ -40,6 +40,7 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +75,8 @@ import ir.part.app.intelligentassistant.ui.screen.archive.entity.ChooseFileBotto
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.DeleteFileItemBottomSheet
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFile
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFileBottomSheetContent
+import ir.part.app.intelligentassistant.ui.screen.update.ForceUpdateScreen
+import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEvent
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.filename
@@ -141,16 +144,26 @@ private fun AvaNegarArchiveBody(
         mutableStateOf<Uri?>(null)
     }
 
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
-    )
-
     val (selectedSheet, setSelectedSheet) = remember(calculation = {
         mutableStateOf(
             ArchiveBottomSheetType.ChooseFile
         )
     })
+
+    val isAnyBottomSheetOtherThanUpdate by remember(selectedSheet) {
+        mutableStateOf(selectedSheet != ArchiveBottomSheetType.Update)
+    }
+
+    val modalBottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+
+    val modalBottomSheetStateUpdate = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true,
+        confirmValueChange = { false }
+    )
 
     val intent = Intent()
     intent.action = Intent.ACTION_GET_CONTENT
@@ -194,8 +207,17 @@ private fun AvaNegarArchiveBody(
         }
     }
 
+    LaunchedEffect(archiveViewModel.aiEvent.value) {
+        if (archiveViewModel.aiEvent.value == IntelligentAssistantEvent.TokenExpired) {
+            setSelectedSheet(ArchiveBottomSheetType.Update)
+            modalBottomSheetStateUpdate.show()
+        }
+    }
+
     ModalBottomSheetLayout(
-        sheetState = modalBottomSheetState, sheetContent = {
+        sheetState = if (isAnyBottomSheetOtherThanUpdate) modalBottomSheetState
+            else modalBottomSheetStateUpdate,
+        sheetContent = {
             when (selectedSheet) {
                 ArchiveBottomSheetType.ChooseFile -> {
                     ChooseFileBottomSheetContent(onOpenFile = {
@@ -236,6 +258,15 @@ private fun AvaNegarArchiveBody(
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
                             }
+                        }
+                    )
+                }
+
+                ArchiveBottomSheetType.Update -> {
+                    ForceUpdateScreen(
+                        onUpdateClick = {
+                            //TODO should download update from Bazar or Google play store
+                            Toast.makeText(context, "Will Update", Toast.LENGTH_SHORT).show()
                         }
                     )
                 }
