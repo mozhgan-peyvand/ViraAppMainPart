@@ -30,20 +30,16 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,38 +47,38 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import ir.part.app.intelligentassistant.ui.navigation.ScreensRouter
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.ArchiveView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarTrackingFileView
-import ir.part.app.intelligentassistant.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.ui.screen.archive.entity.BottomSheetDetailItem
+import ir.part.app.intelligentassistant.ui.screen.archive.entity.BottomSheetShareDetailItem
+import ir.part.app.intelligentassistant.ui.screen.archive.entity.ChooseFileBottomSheetContent
+import ir.part.app.intelligentassistant.ui.screen.archive.entity.DeleteFileItemBottomSheet
+import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFile
+import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFileBottomSheetContent
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
+import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.filename
 import kotlinx.coroutines.launch
+import java.io.File
 import ir.part.app.intelligentassistant.R as AIResource
 
 
@@ -109,6 +105,15 @@ private fun AvaNegarArchiveBody(
     val context = LocalContext.current
     var isFabExpanded by remember { mutableStateOf(false) }
 
+    val processItem = remember {
+        mutableStateOf<AvanegarProcessedFileView?>(null)
+    }
+    val localClipBoardManager = LocalClipboardManager.current
+
+    val fileName = remember {
+        mutableStateOf<String?>("")
+    }
+
     var progress by remember { mutableStateOf("") }
     var isUploadFinished by remember { mutableStateOf(false) }
     var loading by remember { mutableFloatStateOf(0f) }
@@ -116,8 +121,14 @@ private fun AvaNegarArchiveBody(
     val listener by remember {
         mutableStateOf<UploadProgressCallback>(
             object : UploadProgressCallback {
-                override fun onProgress(bytesUploaded: Long, totalBytes: Long, isDone: Boolean) {
-                    if (totalBytes <= 0) archiveViewModel.updateIsSaving(true)
+                override fun onProgress(
+                    bytesUploaded: Long,
+                    totalBytes: Long,
+                    isDone: Boolean
+                ) {
+                    if (totalBytes <= 0) archiveViewModel.updateIsSaving(
+                        true
+                    )
                     loading = (bytesUploaded / totalBytes).toFloat()
                     progress = bytesUploaded.toString()
                     isUploadFinished = isDone
@@ -126,9 +137,6 @@ private fun AvaNegarArchiveBody(
         )
     }
 
-    val fileName = remember {
-        mutableStateOf<String?>("")
-    }
     val fileUri = remember {
         mutableStateOf<Uri?>(null)
     }
@@ -153,7 +161,7 @@ private fun AvaNegarArchiveBody(
     val launchOpenFile = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        setSelectedSheet(ArchiveBottomSheetType.Rename)
+        setSelectedSheet(ArchiveBottomSheetType.RenameUploading)
         coroutineScope.launch {
             if (!modalBottomSheetState.isVisible) {
                 modalBottomSheetState.show()
@@ -163,7 +171,8 @@ private fun AvaNegarArchiveBody(
         }
         if (it.resultCode == ComponentActivity.RESULT_OK) {
             try {
-                fileName.value = it.data?.data?.filename(context)
+                fileName.value =
+                    it.data?.data?.filename(context) ?: ""
                 fileUri.value = it.data?.data
             } catch (_: Exception) {
 
@@ -211,15 +220,18 @@ private fun AvaNegarArchiveBody(
                     })
                 }
 
-                ArchiveBottomSheetType.Rename -> {
-
+                ArchiveBottomSheetType.RenameUploading -> {
                     RenameFileBottomSheetContent(
                         fileName.value ?: "",
                         onValueChange = {
                             fileName.value = it
                         },
                         reNameAction = {
-                            callBack(fileName.value, fileUri.value, listener)
+                            callBack(
+                                fileName.value,
+                                fileUri.value,
+                                listener
+                            )
                             isFabExpanded = false
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
@@ -227,11 +239,123 @@ private fun AvaNegarArchiveBody(
                         }
                     )
                 }
+
+                ArchiveBottomSheetType.Rename -> {
+                    RenameFile(
+                        fileName = fileName.value ?: "",
+                        onValueChange = { fileName.value = it },
+                        reNameAction = {
+                            archiveViewModel.updateTitle(
+                                title = fileName.value ?: "",
+                                id = processItem.value?.id
+                            )
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                            }
+                        }
+                    )
+                }
+
+                ArchiveBottomSheetType.Detail -> {
+                    BottomSheetDetailItem(
+                        text = processItem.value?.title ?: "",
+                        copyItemAction = {
+                            localClipBoardManager.setText(
+                                AnnotatedString(
+                                    processItem.value?.text ?: ""
+                                )
+                            )
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                            }
+                            Toast.makeText(
+                                context,
+                                AIResource.string.lbl_text_save_in_clipboard,
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        },
+                        shareItemAction = {
+                            setSelectedSheet(ArchiveBottomSheetType.Share)
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
+                                } else {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        },
+                        renameItemAction = {
+                            setSelectedSheet(ArchiveBottomSheetType.Rename)
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
+                                } else {
+                                    modalBottomSheetState.hide()
+                                }
+
+                            }
+                        },
+                        deleteItemAction = {
+                            setSelectedSheet(ArchiveBottomSheetType.Delete)
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
+                                } else {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        },
+                    )
+                }
+
+                ArchiveBottomSheetType.Share -> {
+                    BottomSheetShareDetailItem(
+                        onPdfClick = {
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                                convertTextToPdf(
+                                    fileName.value ?: "",
+                                    text = processItem.value?.text ?: "",
+                                    context
+                                )
+                            }
+                        },
+                        onWordClick = {},
+                        onOnlyTextClick = {}
+                    )
+                }
+
+                ArchiveBottomSheetType.Delete -> {
+                    DeleteFileItemBottomSheet(
+                        deleteAction = {
+                            archiveViewModel.removeFile(processItem.value?.id)
+                            File(
+                                processItem.value?.filePath ?: ""
+                            ).delete()
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                            }
+                        },
+                        cancelAction = {
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                            }
+                        },
+                        fileName = processItem.value?.title ?: ""
+                    )
+                }
+
             }
         }
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+
         ) {
             ArchiveAppBar(modifier = Modifier
                 .padding(top = 8.dp)
@@ -240,22 +364,30 @@ private fun AvaNegarArchiveBody(
                 onBackClick = {
                     navHostController.popBackStack()
                 },
-                onSearchClick = { navHostController.navigate(ScreensRouter.AvaNegarSearchScreen.router) })
+                onSearchClick = {
+                    navHostController.navigate(
+                        ScreensRouter.AvaNegarSearchScreen.router
+                    )
+                })
 
             if (archiveViewModel.uploadFileState.value != UploadIdle)
                 UploadFileSection(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colors.primary.copy(0.8f))
+                        .background(
+                            MaterialTheme.colors.primary.copy(
+                                0.8f
+                            )
+                        )
                         .weight(0.2f),
                     uploadFileStatus = archiveViewModel.uploadFileState.value,
-                    fileName = fileName.value.orEmpty(),
+                    fileName = processItem.value?.title.orEmpty(),
                     percent = progress,
                     loading = loading,
                     isSavingFile = archiveViewModel.isSavingFile,
                     onRetryCLick = {
                         archiveViewModel.uploadFile(
-                            fileName.value.orEmpty(),
+                            processItem.value?.title.orEmpty(),
                             fileUri.value,
                             listener
                         )
@@ -280,12 +412,25 @@ private fun AvaNegarArchiveBody(
                             .padding(top = 16.dp)
                             .alpha(if (isFabExpanded) 0.3f else 0.9f)
                             .pointerInput(Unit) {}
-                    )
+                    ) { item ->
+                        setSelectedSheet(ArchiveBottomSheetType.Detail)
+                        coroutineScope.launch {
+                            if (!modalBottomSheetState.isVisible) {
+                                modalBottomSheetState.show()
+                            } else {
+                                modalBottomSheetState.hide()
+                            }
+                        }
+                        processItem.value = item
+                        fileName.value = item.title
+                    }
                 }
 
                 Fabs(isFabExpanded = isFabExpanded,
                     modifier = Modifier.align(Alignment.BottomStart),
-                    onMainFabClick = { isFabExpanded = !isFabExpanded },
+                    onMainFabClick = {
+                        isFabExpanded = !isFabExpanded
+                    },
                     openBottomSheet = {
                         setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
                         coroutineScope.launch {
@@ -299,6 +444,7 @@ private fun AvaNegarArchiveBody(
 
             }
         }
+
     }
 }
 
@@ -445,111 +591,13 @@ private fun Fabs(
     }
 }
 
-@Composable
-private fun ChooseFileBottomSheetContent(
-    onOpenFile: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 15.dp, vertical = 10.dp)
-    ) {
-        Text(
-            text = stringResource(id = AIResource.string.lbl_choose_file),
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
-        )
-        Text(
-            text = stringResource(id = AIResource.string.lbl_you_can_only_choose_one_file),
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
-        )
-        Text(
-            text = stringResource(id = AIResource.string.lbl_allowed_format),
-            fontWeight = FontWeight.Bold,
-            fontSize = 13.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
-        )
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = 30.dp,
-                    vertical = 10.dp
-                ),
-            onClick = {
-                onOpenFile()
-            },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Black,
-                contentColor = Color.White
-            ),
-            shape = RoundedCornerShape(10.dp)
-        ) {
-            Text(text = stringResource(id = AIResource.string.lbl_button_upload_new_file))
-        }
-
-    }
-
-}
-
-@Composable
-private fun RenameFileBottomSheetContent(
-    fileName: String,
-    onValueChange: (String) -> Unit,
-    reNameAction: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 15.dp, vertical = 10.dp)
-    ) {
-        Text(
-            text = stringResource(id = AIResource.string.lbl_change_name),
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
-        )
-        Text(
-            text = stringResource(id = AIResource.string.lbl_choose_name),
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
-        )
-        TextField(value = fileName, onValueChange = {
-            onValueChange(it)
-        })
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp, vertical = 10.dp),
-            onClick = {
-                reNameAction()
-            },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Black, contentColor = Color.White
-            ),
-            shape = RoundedCornerShape(10.dp)
-        ) {
-            Text(text = stringResource(id = AIResource.string.lbl_save))
-        }
-    }
-}
 
 @Composable
 private fun ArchiveList(
     list: List<ArchiveView>,
     isLock: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onMenuClick: (AvanegarProcessedFileView) -> Unit
 ) {
     LazyVerticalGrid(
         modifier = modifier,
@@ -559,7 +607,8 @@ private fun ArchiveList(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(items = list,
+        items(
+            items = list,
             key = { item ->
                 when (item) {
                     is AvanegarProcessedFileView -> item.id
@@ -575,7 +624,9 @@ private fun ArchiveList(
                         archiveViewProcessed = it,
                         isLock = isLock,
                         onItemClick = {},
-                        onMenuClick = {}
+                        onMenuClick = { item ->
+                            onMenuClick(item)
+                        }
                     )
 
                 }
@@ -596,52 +647,11 @@ private fun ArchiveList(
 
 
 @Composable
-private fun UploadFileSection(
-    modifier: Modifier = Modifier,
-    uploadFileStatus: UploadFileStatus,
-    fileName: String,
-    percent: String,
-    loading: Float,
-    isSavingFile: Boolean,
-    onRetryCLick: () -> Unit,
-    onCancelClick: () -> Unit
-) {
-    Column(
-        modifier = modifier
-    ) {
-        when (uploadFileStatus) {
-            is UploadSuccess -> UploadFileSectionSuccess()
-
-            is UploadFailure -> {
-                UploadFileSectionFailure(
-                    fileName = fileName,
-                    onRetryCLick = { onRetryCLick() },
-                    onCancelClick = { onCancelClick() })
-            }
-
-            is UploadInProgress -> {
-                UploadFileSectionInProgress(
-                    fileName = fileName,
-                    loading = loading,
-                    percent = percent,
-                    isSavingFile = isSavingFile,
-                    onRetryCLick = { onRetryCLick() },
-                    onCancelClick = { onCancelClick() }
-                )
-            }
-
-            is UploadIdle -> {}
-        }
-    }
-
-}
-
-@Composable
 fun ArchiveProcessedFileElement(
     archiveViewProcessed: AvanegarProcessedFileView,
     isLock: Boolean = false,
     onItemClick: (Int) -> Unit,
-    onMenuClick: () -> Unit
+    onMenuClick: (AvanegarProcessedFileView) -> Unit
 ) {
     Card(
         backgroundColor = if (archiveViewProcessed.isSeen) MaterialTheme.colors.primaryVariant else MaterialTheme.colors.surface,
@@ -667,7 +677,9 @@ fun ArchiveProcessedFileElement(
 
                 IconButton(
                     modifier = Modifier.clickable { !isLock },
-                    onClick = onMenuClick,
+                    onClick = {
+                        onMenuClick(archiveViewProcessed)
+                    },
                     enabled = !isLock
                 ) {
                     Icon(
@@ -738,316 +750,6 @@ private fun ArchiveTrackingFileElements(
                     .fillMaxWidth(),
                 text = stringResource(id = AIResource.string.lbl_converting)
             )
-        }
-    }
-}
-
-
-@Composable
-private fun UploadFileSectionInProgress(
-    fileName: String,
-    loading: Float,
-    percent: String,
-    isSavingFile: Boolean,
-    onRetryCLick: () -> Unit,
-    onCancelClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        verticalAlignment = CenterVertically,
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.surface.copy(0.8f))
-            .padding(16.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(0.7f)
-                .padding(end = 16.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = stringResource(id = AIResource.string.lbl_uploading_file))
-
-                Text(
-                    text = fileName,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            LoadingIndicator(
-                modifier = Modifier,
-                loading = loading,
-                percent = percent,
-                isSavingFile = isSavingFile
-            )
-        }
-
-        Column(modifier = Modifier.weight(0.3f)) {
-            Row {
-                IconButton(onClick = { onRetryCLick() }) {
-                    Icon(
-                        painter = painterResource(id = AIResource.drawable.ic_retry),
-                        contentDescription = null
-                    )
-                }
-
-                IconButton(onClick = { onCancelClick() }) {
-                    Icon(
-                        painter = painterResource(id = AIResource.drawable.ic_close),
-                        contentDescription = null
-                    )
-                }
-            }
-        }
-    }
-
-}
-
-@Composable
-private fun UploadFileSectionFailure(
-    fileName: String,
-    onRetryCLick: () -> Unit,
-    onCancelClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        verticalAlignment = CenterVertically,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(0.7f)
-                .padding(end = 16.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = stringResource(id = AIResource.string.msg_failure_in_upload))
-
-                Text(
-                    text = fileName,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Row(modifier = Modifier.padding(top = 8.dp)) {
-                Icon(
-                    modifier = modifier.padding(end = 8.dp),
-                    painter = painterResource(id = AIResource.drawable.ic_failure_network),
-                    contentDescription = null
-                )
-                Text(
-                    fontSize = 14.sp,
-                    text = stringResource(id = AIResource.string.msg_try_again)
-                )
-            }
-        }
-
-        Column(modifier = Modifier.weight(0.3f)) {
-            Row {
-                IconButton(onClick = { onRetryCLick() }) {
-                    Icon(
-                        painter = painterResource(id = AIResource.drawable.ic_retry),
-                        contentDescription = null
-                    )
-                }
-
-                IconButton(onClick = { onCancelClick() }) {
-                    Icon(
-                        painter = painterResource(id = AIResource.drawable.ic_close),
-                        contentDescription = null
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun UploadFileSectionSuccess() {
-    Row(
-        verticalAlignment = CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Icon(
-            modifier = Modifier.padding(end = 16.dp),
-            painter = painterResource(AIResource.drawable.ic_tick_circle),
-            contentDescription = null
-        )
-        Text(text = stringResource(id = AIResource.string.msg_upload_is_successfull))
-    }
-
-}
-
-@Composable
-fun LoadingIndicator(
-    modifier: Modifier = Modifier,
-    loading: Float,
-    percent: String,
-    isSavingFile: Boolean
-) {
-
-    Box(
-        contentAlignment = BottomCenter,
-        modifier = modifier
-    ) {
-        if (isSavingFile)
-            LinearProgressIndicator(
-                strokeCap = StrokeCap.Round,
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .height(13.dp)
-            )
-        else
-            LinearProgressIndicator(
-                strokeCap = StrokeCap.Round,
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .height(13.dp),
-                progress = loading,
-            )
-
-
-        Text(
-            modifier = Modifier.padding(bottom = 1.dp),
-            fontSize = 8.sp,
-            text = percent
-        )
-    }
-}
-
-@Preview
-@Composable
-fun UploadFileSectionPreview() {
-    IntelligentAssistantTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            UploadFileSection(
-                fileName = "FIle Name",
-                uploadFileStatus = UploadIdle,
-                percent = "82%",
-                loading = 0.8f,
-                isSavingFile = false,
-                onRetryCLick = {},
-                onCancelClick = {}
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-fun UploadFileSectionInProgressPreview() {
-    IntelligentAssistantTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            UploadFileSectionInProgress("fileName", 0.8f, "48%", false, {}, {})
-        }
-    }
-}
-
-@Preview
-@Composable
-fun UploadFileSectionFailurePreview() {
-    IntelligentAssistantTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            UploadFileSectionFailure("fileName", {}, {})
-        }
-    }
-}
-
-@Preview
-@Composable
-fun LoadingIndicatorPreview() {
-    IntelligentAssistantTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            LoadingIndicator(
-                modifier = Modifier,
-                loading = 0.8f,
-                percent = "40%",
-                false
-            )
-        }
-    }
-}
-
-
-@Preview
-@Composable
-fun UploadFileSectionSuccessPreview() {
-    IntelligentAssistantTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            UploadFileSectionSuccess()
-        }
-    }
-}
-
-@Preview
-@Composable
-fun ArchiveListPreview() {
-    IntelligentAssistantTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            ArchiveList(listOf(), false)
-        }
-    }
-}
-
-@Preview
-@Composable
-fun ArchiveElementProcessedFilePreview() {
-    IntelligentAssistantTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            ArchiveProcessedFileElement(
-                archiveViewProcessed = AvanegarProcessedFileView(
-                    0,
-                    "title",
-                    "text",
-                    "0",
-                    "",
-                    false
-                ),
-                isLock = false,
-                onItemClick = {},
-                onMenuClick = {}
-            )
-        }
-    }
-}
-
-
-@Preview
-@Composable
-fun ArchiveElementTrackingFilePreview() {
-    IntelligentAssistantTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            ArchiveTrackingFileElements(
-                archiveTrackingView = AvanegarTrackingFileView(
-                    "",
-                    "",
-                    "title",
-                    "0"
-                ),
-                isLock = false,
-                onItemClick = {},
-                onTryAgainButtonClick = {}
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-fun AvaNegarArchiveScreenPreview() {
-    IntelligentAssistantTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            AvaNegarArchiveScreen(navHostController = rememberNavController())
         }
     }
 }

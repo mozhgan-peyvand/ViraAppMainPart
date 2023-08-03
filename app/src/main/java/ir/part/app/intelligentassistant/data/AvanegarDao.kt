@@ -29,6 +29,12 @@ interface AvanegarDao {
     @Query("DELETE FROM AvanegarTrackingFileEntity WHERE token = :token")
     suspend fun deleteUnprocessedFile(token: String)
 
+    @Query("DELETE FROM AvanegarProcessedFileEntity WHERE id = :id")
+    suspend fun deleteProcessedFile(id: Int?)
+
+    @Query("UPDATE AvanegarProcessedFileEntity SET title=:title WHERE id=:id")
+    suspend fun updateTitle(title: String?, id: Int?)
+
     @Query(
         """
         SELECT * FROM (

@@ -105,4 +105,10 @@ class AvanegarRepository @Inject constructor(
 
         // TODO: return error after parsing!!
     }
+
+    suspend fun deleteProcessFile(id: Int?) =
+        avanegarLocalDataSource.deleteProcessFile(id)
+
+    suspend fun updateTitle(title: String?, id: Int?) =
+        avanegarLocalDataSource.updateTitle(title = title, id = id)
 }
