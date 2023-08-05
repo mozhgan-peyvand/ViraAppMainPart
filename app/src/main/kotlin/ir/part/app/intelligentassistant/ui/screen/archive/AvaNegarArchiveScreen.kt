@@ -117,9 +117,8 @@ private fun AvaNegarArchiveBody(
         mutableStateOf<String?>("")
     }
 
-    var progress by remember { mutableStateOf("") }
     var isUploadFinished by remember { mutableStateOf(false) }
-    var loading by remember { mutableFloatStateOf(0f) }
+    var uploadedPercent by remember { mutableFloatStateOf(0f) }
 
     val listener by remember {
         mutableStateOf<UploadProgressCallback>(
@@ -132,8 +131,7 @@ private fun AvaNegarArchiveBody(
                     if (totalBytes <= 0) archiveViewModel.updateIsSaving(
                         true
                     )
-                    loading = (bytesUploaded / totalBytes).toFloat()
-                    progress = bytesUploaded.toString()
+                    uploadedPercent = (bytesUploaded.toDouble() / totalBytes).toFloat()
                     isUploadFinished = isDone
                 }
             }
@@ -216,7 +214,7 @@ private fun AvaNegarArchiveBody(
 
     ModalBottomSheetLayout(
         sheetState = if (isAnyBottomSheetOtherThanUpdate) modalBottomSheetState
-            else modalBottomSheetStateUpdate,
+        else modalBottomSheetStateUpdate,
         sheetContent = {
             when (selectedSheet) {
                 ArchiveBottomSheetType.ChooseFile -> {
@@ -413,8 +411,7 @@ private fun AvaNegarArchiveBody(
                         .weight(0.2f),
                     uploadFileStatus = archiveViewModel.uploadFileState.value,
                     fileName = processItem.value?.title.orEmpty(),
-                    percent = progress,
-                    loading = loading,
+                    uploadedPercent = uploadedPercent,
                     isSavingFile = archiveViewModel.isSavingFile,
                     onRetryCLick = {
                         archiveViewModel.uploadFile(
