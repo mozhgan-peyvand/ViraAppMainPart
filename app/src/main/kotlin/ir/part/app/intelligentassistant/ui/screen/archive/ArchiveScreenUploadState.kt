@@ -29,8 +29,7 @@ import ir.part.app.intelligentassistant.R
 @Composable
 fun UploadFileSectionInProgress(
     fileName: String,
-    loading: Float,
-    percent: String,
+    uploadedPercent: Float,
     isSavingFile: Boolean,
     onRetryCLick: () -> Unit,
     onCancelClick: () -> Unit,
@@ -63,8 +62,7 @@ fun UploadFileSectionInProgress(
 
             LoadingIndicator(
                 modifier = Modifier,
-                loading = loading,
-                percent = percent,
+                uploadedPercent = uploadedPercent,
                 isSavingFile = isSavingFile
             )
         }
@@ -174,8 +172,7 @@ fun UploadFileSectionSuccess() {
 @Composable
 fun LoadingIndicator(
     modifier: Modifier = Modifier,
-    loading: Float,
-    percent: String,
+    uploadedPercent: Float,
     isSavingFile: Boolean
 ) {
 
@@ -190,21 +187,23 @@ fun LoadingIndicator(
                     .padding(top = 8.dp)
                     .height(13.dp)
             )
-        else
+        else {
             LinearProgressIndicator(
                 strokeCap = StrokeCap.Round,
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .height(13.dp),
-                progress = loading,
+                progress = uploadedPercent,
             )
 
 
-        Text(
-            modifier = Modifier.padding(bottom = 1.dp),
-            fontSize = 8.sp,
-            text = percent
-        )
+            Text(
+                modifier = Modifier.padding(bottom = 1.dp),
+                fontSize = 8.sp,
+                text = "${(uploadedPercent * 100).toInt()}%"
+            )
+        }
+
     }
 }
 
@@ -213,8 +212,7 @@ fun UploadFileSection(
     modifier: Modifier = Modifier,
     uploadFileStatus: UploadFileStatus,
     fileName: String,
-    percent: String,
-    loading: Float,
+    uploadedPercent: Float,
     isSavingFile: Boolean,
     onRetryCLick: () -> Unit,
     onCancelClick: () -> Unit
@@ -235,8 +233,7 @@ fun UploadFileSection(
             is UploadInProgress -> {
                 UploadFileSectionInProgress(
                     fileName = fileName,
-                    loading = loading,
-                    percent = percent,
+                    uploadedPercent = uploadedPercent,
                     isSavingFile = isSavingFile,
                     onRetryCLick = { onRetryCLick() },
                     onCancelClick = { onCancelClick() }
