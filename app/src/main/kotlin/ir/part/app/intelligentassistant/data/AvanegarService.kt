@@ -31,5 +31,5 @@ interface AvanegarService {
     @GET("speechRecognition/v1/trackingText/{token}")
     suspend fun trackLargeFileResult(
         @Path("token") fileToken: String,
-    ): ApiResult<Resource<AvanegarResponseNetwork>>
+    ): ApiResult<AvanegarResponseNetwork>
 }

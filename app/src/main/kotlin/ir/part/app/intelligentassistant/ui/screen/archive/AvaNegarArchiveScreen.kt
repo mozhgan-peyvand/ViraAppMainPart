@@ -439,7 +439,10 @@ private fun AvaNegarArchiveBody(
                             .fillMaxWidth()
                             .padding(top = 16.dp)
                             .alpha(if (isFabExpanded) 0.3f else 0.9f)
-                            .pointerInput(Unit) {}
+                            .pointerInput(Unit) {},
+                        onTryAgainCLick = {
+                            archiveViewModel.trackLargeFileResult(it)
+                        }
                     ) { item ->
                         setSelectedSheet(ArchiveBottomSheetType.Detail)
                         coroutineScope.launch {
@@ -625,6 +628,7 @@ private fun ArchiveList(
     list: List<ArchiveView>,
     isLock: Boolean,
     modifier: Modifier = Modifier,
+    onTryAgainCLick: (String) -> Unit,
     onMenuClick: (AvanegarProcessedFileView) -> Unit
 ) {
     LazyVerticalGrid(
@@ -664,7 +668,9 @@ private fun ArchiveList(
                         archiveTrackingView = it,
                         isLock = isLock,
                         onItemClick = {},
-                        onTryAgainButtonClick = {}
+                        onTryAgainButtonClick = { token ->
+                            onTryAgainCLick(token)
+                        }
                     )
 
                 }
