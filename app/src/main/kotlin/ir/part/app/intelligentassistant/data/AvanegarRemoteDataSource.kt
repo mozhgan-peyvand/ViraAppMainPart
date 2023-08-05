@@ -49,7 +49,7 @@ class AvanegarRemoteDataSource @Inject constructor(
         )
 
         return when (result) {
-            is Success -> Success(result.data.data.data.result)
+            is Success -> Success(result.data.data.result)
             is Error -> Error(result.error)
         }
     }

@@ -16,6 +16,7 @@ import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantE
 import ir.part.app.intelligentassistant.utils.common.file.FileCache
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -75,6 +76,11 @@ class AvaNegarArchiveViewModel @Inject constructor(
         audioToTextAboveSixtySecond(title, uri, listener)
     }
 
+    fun trackLargeFileResult(token: String) {
+        viewModelScope.launch(IO) {
+            repository.trackLargeFileResult(token)
+        }
+    }
 
     private fun audioToTextBelowSixtySecond(
         title: String,
@@ -83,7 +89,7 @@ class AvaNegarArchiveViewModel @Inject constructor(
     ) {
         job?.cancel()
 
-        job = viewModelScope.launch(Dispatchers.IO) {
+        job = viewModelScope.launch(IO) {
             val file = createFileFromUri(uri!!) // todo show error if uri is null
             // todo: show error when file is null
             if (file != null) {
@@ -103,7 +109,7 @@ class AvaNegarArchiveViewModel @Inject constructor(
         listener: UploadProgressCallback
     ) {
         job?.cancel()
-        job = viewModelScope.launch(Dispatchers.IO) {
+        job = viewModelScope.launch(IO) {
             val file = createFileFromUri(uri!!) // todo show error if uri is null
             // todo: show error when file is null
             if (file != null) {
