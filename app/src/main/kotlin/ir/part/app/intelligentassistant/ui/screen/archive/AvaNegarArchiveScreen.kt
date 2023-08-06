@@ -176,15 +176,15 @@ private fun AvaNegarArchiveBody(
     val launchOpenFile = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        setSelectedSheet(ArchiveBottomSheetType.RenameUploading)
-        coroutineScope.launch {
-            if (!modalBottomSheetState.isVisible) {
-                modalBottomSheetState.show()
-            } else {
-                modalBottomSheetState.hide()
-            }
-        }
         if (it.resultCode == ComponentActivity.RESULT_OK) {
+            setSelectedSheet(ArchiveBottomSheetType.RenameUploading)
+            coroutineScope.launch {
+                if (!modalBottomSheetState.isVisible) {
+                    modalBottomSheetState.show()
+                } else {
+                    modalBottomSheetState.hide()
+                }
+            }
             try {
                 fileName.value =
                     it.data?.data?.filename(context) ?: ""
@@ -457,19 +457,26 @@ private fun AvaNegarArchiveBody(
                             .pointerInput(Unit) {},
                         onTryAgainCLick = {
                             archiveViewModel.trackLargeFileResult(it)
-                        }
-                    ) { item ->
-                        setSelectedSheet(ArchiveBottomSheetType.Detail)
-                        coroutineScope.launch {
-                            if (!modalBottomSheetState.isVisible) {
-                                modalBottomSheetState.show()
-                            } else {
-                                modalBottomSheetState.hide()
+                        },
+                        onMenuClick = { item ->
+                            setSelectedSheet(ArchiveBottomSheetType.Detail)
+                            coroutineScope.launch {
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
+                                } else {
+                                    modalBottomSheetState.hide()
+                                }
                             }
-                        }
-                        processItem.value = item
-                        fileName.value = item.title
-                    }
+                            processItem.value = item
+                            fileName.value = item.title
+                        },
+                        onItemClick = {
+                            navHostController.navigate(
+                                ScreensRouter.AvaNegarProcessedArchiveDetailScreen.router.plus(
+                                    "/$it"
+                                )
+                            )
+                        })
                 }
 
                 Fabs(isFabExpanded = isFabExpanded,
@@ -644,7 +651,8 @@ private fun ArchiveList(
     isLock: Boolean,
     modifier: Modifier = Modifier,
     onTryAgainCLick: (String) -> Unit,
-    onMenuClick: (AvanegarProcessedFileView) -> Unit
+    onMenuClick: (AvanegarProcessedFileView) -> Unit,
+    onItemClick: (Int) -> Unit
 ) {
     LazyVerticalGrid(
         modifier = modifier,
@@ -670,7 +678,9 @@ private fun ArchiveList(
                     ArchiveProcessedFileElement(
                         archiveViewProcessed = it,
                         isLock = isLock,
-                        onItemClick = {},
+                        onItemClick = { id ->
+                            onItemClick(id)
+                        },
                         onMenuClick = { item ->
                             onMenuClick(item)
                         }
