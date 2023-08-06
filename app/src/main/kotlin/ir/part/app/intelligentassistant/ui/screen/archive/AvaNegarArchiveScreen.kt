@@ -1,6 +1,7 @@
 package ir.part.app.intelligentassistant.ui.screen.archive
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -80,6 +81,8 @@ import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantE
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.filename
+import ir.part.app.intelligentassistant.utils.ui.isPermissionDeniedPermanently
+import ir.part.app.intelligentassistant.utils.ui.navigateToAppSettings
 import kotlinx.coroutines.launch
 import java.io.File
 import ir.part.app.intelligentassistant.R as AIResource
@@ -106,6 +109,7 @@ private fun AvaNegarArchiveBody(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+
     var isFabExpanded by remember { mutableStateOf(false) }
 
     val processItem = remember {
@@ -196,6 +200,12 @@ private fun AvaNegarArchiveBody(
         if (isGranted) {
             launchOpenFile.launch(intent)
         } else {
+            archiveViewModel.putDeniedPermissionToSharedPref(
+                isPermissionDeniedPermanently(
+                    activity = context as Activity,
+                    permission = Manifest.permission.READ_EXTERNAL_STORAGE
+                )
+            )
             Toast.makeText(
                 context,
                 AIResource.string.lbl_need_to_access_file_permission,
@@ -224,18 +234,22 @@ private fun AvaNegarArchiveBody(
                                 modalBottomSheetState.show()
                             } else modalBottomSheetState.hide()
                         }
-                        when (PackageManager.PERMISSION_GRANTED) {
-                            ContextCompat.checkSelfPermission(
+
+                        if (ContextCompat.checkSelfPermission(
                                 context,
                                 Manifest.permission.READ_EXTERNAL_STORAGE
-                            ) -> {
-                                launchOpenFile.launch(intent)
-                            }
-
-                            else -> {
-                                // Asking for permission
-                                launcher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-                            }
+                            ) == PackageManager.PERMISSION_GRANTED) {
+                            launchOpenFile.launch(intent)
+                        } else if(archiveViewModel.hasDeniedPermissionPermanently()){
+                            navigateToAppSettings(activity = context as Activity)
+                            Toast.makeText(
+                                context,
+                                AIResource.string.msg_access_file_permission_manually,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            // Asking for permission
+                            launcher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
                         }
                     })
                 }
@@ -264,7 +278,8 @@ private fun AvaNegarArchiveBody(
                     ForceUpdateScreen(
                         onUpdateClick = {
                             //TODO should download update from Bazar or Google play store
-                            Toast.makeText(context, "Will Update", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Will Update", Toast.LENGTH_SHORT)
+                                .show()
                         }
                     )
                 }
