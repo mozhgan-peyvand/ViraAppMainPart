@@ -1,9 +1,11 @@
 package ir.part.app.intelligentassistant.ui.screen.archive
 
+import android.content.SharedPreferences
 import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,7 +17,6 @@ import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantE
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEventPublisher
 import ir.part.app.intelligentassistant.utils.common.file.FileCache
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -24,11 +25,14 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
+private const val DENIED_PERMISSION_KEY = "deniedPermissionKey"
+
 @HiltViewModel
 class AvaNegarArchiveViewModel @Inject constructor(
     private val repository: AvanegarRepository,
     private val fileCache: FileCache,
-    private val aiEventPublisher: IntelligentAssistantEventPublisher
+    private val aiEventPublisher: IntelligentAssistantEventPublisher,
+    private val sharedPref: SharedPreferences
 ) : ViewModel() {
 
     private val _uploadFileState: MutableState<UploadFileStatus> = mutableStateOf(UploadIdle)
@@ -159,5 +163,17 @@ class AvaNegarArchiveViewModel @Inject constructor(
 
     fun updateTitle(title: String?, id: Int?) = viewModelScope.launch {
         repository.updateTitle(title = title, id = id)
+    }
+
+    fun putDeniedPermissionToSharedPref(value: Boolean) {
+        viewModelScope.launch {
+            sharedPref.edit {
+                this.putBoolean(DENIED_PERMISSION_KEY, value)
+            }
+        }
+    }
+
+    fun hasDeniedPermissionPermanently(): Boolean {
+        return sharedPref.getBoolean(DENIED_PERMISSION_KEY, false)
     }
 }
