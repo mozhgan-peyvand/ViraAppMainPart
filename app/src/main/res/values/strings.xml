@@ -63,4 +63,8 @@
     <string name="lbl_update">به روزرسانی</string>
     <string name="msg_update">متاسفانه نسخه ای که با ان کار می کنید قدیمی شده و برای استفاده از محصول نیاز به بروز رسانی دارید</string>
     <string name="lbl_update_app">به روزرسانی نرم افزار</string>
+
+    <string name="lbl_btn_copy_text">کپی متن</string>
+    <string name="lbl_btn_share_text">اشتراک گذاری</string>
+    <string name="lbl_btn_delete_file">حذف فایل</string>
 </resources>
