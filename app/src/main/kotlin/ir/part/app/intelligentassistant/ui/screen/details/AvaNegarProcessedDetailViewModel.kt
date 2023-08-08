@@ -1,8 +1,13 @@
 package ir.part.app.intelligentassistant.ui.screen.details
 
+import androidx.compose.runtime.IntState
+import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.data.AvanegarRepository
@@ -13,25 +18,39 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val UNDO_REDO_LIMIT = 50
+
 @HiltViewModel
 class AvaNegarProcessedDetailViewModel @Inject constructor(
     private val repository: AvanegarRepository,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private var _processItemId =
+    private val _processItemId =
         mutableIntStateOf(savedStateHandle.get<Int>("id") ?: 0)
-    var processItemId = _processItemId
+    val processItemId: IntState = _processItemId.asIntState()
 
 
-    private var _archiveFile =
+    private val _archiveFile =
         MutableStateFlow<AvanegarProcessedFileView?>(null)
-    var archiveFile = _archiveFile.asStateFlow()
+    val archiveFile = _archiveFile.asStateFlow()
+
+    private var textList = mutableListOf("default")
+    private val currentIndex = mutableIntStateOf(textList.size - 1)
+
+    private var _textBody = mutableStateOf("")
+    var textBody = _textBody
 
     init {
         viewModelScope.launch {
-            repository.getArchiveFile(processItemId.intValue).collect {
+            val id = processItemId.intValue
+            repository.getArchiveFile(id).collect {
                 _archiveFile.value = it?.toAvanegarProcessedFileView()
+
+                it?.toAvanegarProcessedFileView()?.text?.let { text ->
+                    _textBody.value = text
+                    textList[0] = text
+                }
             }
         }
     }
@@ -46,5 +65,43 @@ class AvaNegarProcessedDetailViewModel @Inject constructor(
 
     fun setItemId(itemId: Int) {
         _processItemId.intValue = itemId
+    }
+
+    fun addTextToList(value: String) {
+        if (textList.size >= UNDO_REDO_LIMIT)
+            textList.removeAt(0)
+        textList.add(value)
+        _textBody.value = (value)
+        currentIndex.intValue = textList.size - 1
+    }
+
+    fun undo() {
+        if (currentIndex.intValue > 0) {
+            currentIndex.intValue -= 1
+            _textBody.value = textList[currentIndex.intValue]
+
+        }
+    }
+
+    fun redo() {
+        if (textList.size - 1 > currentIndex.intValue) {
+            currentIndex.intValue += 1
+            _textBody.value = textList[currentIndex.intValue]
+        }
+    }
+
+    fun canRedo(): Boolean {
+        return textList.size - 1 > currentIndex.intValue
+    }
+
+
+    fun canUndo(): Boolean {
+        return currentIndex.intValue > 0
+    }
+
+    fun saveEditedText() {
+        ProcessLifecycleOwner.get().lifecycleScope.launch {
+            repository.editText(textBody.value, _processItemId.intValue)
+        }
     }
 }

@@ -35,6 +35,9 @@ interface AvanegarDao {
     @Query("UPDATE AvanegarProcessedFileEntity SET title=:title WHERE id=:id")
     suspend fun updateTitle(title: String?, id: Int?)
 
+    @Query("UPDATE AvanegarProcessedFileEntity SET text=:text WHERE id=:id")
+    suspend fun editText(text: String, id: Int)
+
     @Query(
         """
         SELECT * FROM (

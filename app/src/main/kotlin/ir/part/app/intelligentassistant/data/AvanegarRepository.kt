@@ -111,4 +111,6 @@ class AvanegarRepository @Inject constructor(
 
     suspend fun updateTitle(title: String?, id: Int?) =
         avanegarLocalDataSource.updateTitle(title = title, id = id)
+
+    suspend fun editText(text: String, id: Int) = avanegarLocalDataSource.editText(text, id)
 }

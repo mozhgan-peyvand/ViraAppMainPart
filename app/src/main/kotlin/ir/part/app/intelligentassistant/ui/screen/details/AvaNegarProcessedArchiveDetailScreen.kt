@@ -36,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -44,15 +45,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,6 +73,7 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 import ir.part.app.intelligentassistant.R as AIResource
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AvaNegarProcessedArchiveDetailScreen(
     modifier: Modifier = Modifier,
@@ -79,6 +84,13 @@ fun AvaNegarProcessedArchiveDetailScreen(
     viewModel.setItemId(itemId ?: 0)
     val context = LocalContext.current
     val archive = viewModel.archiveFile.collectAsStateWithLifecycle()
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    DisposableEffect(context) {
+        onDispose {
+            viewModel.saveEditedText()
+        }
+    }
 
     val mediaPlayer: MediaPlayer? =
         remember(archive) {
@@ -207,6 +219,16 @@ fun AvaNegarProcessedArchiveDetailScreen(
             topBar = {
                 AvaNegarProcessedArchiveDetailTopAppBar(
                     title = processItem.value?.title ?: "",
+                    isUndoEnabled = viewModel.canUndo(),
+                    isRedoEnabled = viewModel.canRedo(),
+                    onUndoClick = {
+                        keyboardController?.hide()
+                        viewModel.undo()
+                    },
+                    onRedoClick = {
+                        keyboardController?.hide()
+                        viewModel.redo()
+                    },
                     onBackAction = {
                         // TODO: pass action not navController
                         navController.popBackStack()
@@ -253,7 +275,11 @@ fun AvaNegarProcessedArchiveDetailScreen(
             }
         ) { padding ->
             AvaNegarProcessedArchiveDetailBody(
-                padding, text = processItem.value?.text ?: "",
+                paddingValues = padding,
+                text = viewModel.textBody.value,
+                onTextChange = {
+                    viewModel.addTextToList(it)
+                },
                 mediaPlayer = mediaPlayer ?: MediaPlayer()
             )
         }
@@ -264,6 +290,10 @@ fun AvaNegarProcessedArchiveDetailScreen(
 fun AvaNegarProcessedArchiveDetailTopAppBar(
     modifier: Modifier = Modifier,
     title: String,
+    isUndoEnabled: Boolean,
+    isRedoEnabled: Boolean,
+    onUndoClick: () -> Unit,
+    onRedoClick: () -> Unit,
     onBackAction: () -> Unit,
     onMenuAction: () -> Unit,
 ) {
@@ -284,6 +314,26 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
             fontSize = 17.sp,
             fontWeight = FontWeight.Bold
         )
+
+        IconButton(
+            enabled = isRedoEnabled,
+            onClick = { onRedoClick() }
+        ) {
+            Icon(
+                painter = painterResource(id = AIResource.drawable.ic_arrow_redo),
+                contentDescription = null
+            )
+        }
+
+        IconButton(
+            enabled = isUndoEnabled,
+            onClick = { onUndoClick() }
+        ) {
+            Icon(
+                painter = painterResource(id = AIResource.drawable.ic_arrow_undo),
+                contentDescription = null
+            )
+        }
 
         IconButton(onClick = { onMenuAction() }) {
             Icon(
@@ -348,6 +398,7 @@ fun AvaNegarProcessedArchiveDetailBody(
     paddingValues: PaddingValues,
     modifier: Modifier = Modifier,
     text: String,
+    onTextChange: (String) -> Unit,
     mediaPlayer: MediaPlayer
 ) {
     Column(modifier = modifier.padding(paddingValues)) {
@@ -356,7 +407,7 @@ fun AvaNegarProcessedArchiveDetailBody(
         }
         TextField(
             value = text,
-            onValueChange = {},
+            onValueChange = { onTextChange(it) },
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp, vertical = 10.dp),
@@ -412,7 +463,7 @@ fun PlayerBody(
                 },
                 valueRange = 0f..mediaPlayer.duration.toFloat() / 1000
             )
-            Row() {
+            Row {
                 Text(text = ((mediaPlayer.currentPosition.toFloat() / 1000)).toString())
                 Text(text = "/")
                 Text(
