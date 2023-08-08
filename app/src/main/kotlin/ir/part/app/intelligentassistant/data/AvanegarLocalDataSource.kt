@@ -13,7 +13,11 @@ class AvanegarLocalDataSource @Inject constructor(
 ) {
 
     fun getArchiveFile(id: Int) = dao.getProcessedFileDetail(id).onEach {
-        it?.let { dao.markFileAsSeen(it.id) }
+        it?.let {
+            if (!it.isSeen) {
+                dao.markFileAsSeen(it.id)
+            }
+        }
     }.flowOn(IO)
 
     fun getAllArchiveFiles() = dao.getArchiveFiles().map {
@@ -53,4 +57,6 @@ class AvanegarLocalDataSource @Inject constructor(
     suspend fun deleteProcessFile(id: Int?) = dao.deleteProcessedFile(id)
     suspend fun updateTitle(title: String?, id: Int?) =
         dao.updateTitle(title = title, id = id)
+
+    suspend fun editText(text: String, id: Int) = dao.editText(text, id)
 }
