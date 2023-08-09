@@ -17,23 +17,41 @@ import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantE
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEventPublisher
 import ir.part.app.intelligentassistant.utils.common.file.FileCache
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
+import ir.part.app.intelligentassistant.utils.data.api_result.AppResult
+import ir.part.app.intelligentassistant.utils.data.api_result.AppResult.Error
+import ir.part.app.intelligentassistant.utils.data.api_result.AppResult.Success
+import ir.part.app.intelligentassistant.utils.ui.UiError
+import ir.part.app.intelligentassistant.utils.ui.UiException
+import ir.part.app.intelligentassistant.utils.ui.UiIdle
+import ir.part.app.intelligentassistant.utils.ui.UiLoading
+import ir.part.app.intelligentassistant.utils.ui.UiStatus
+import ir.part.app.intelligentassistant.utils.ui.UiSuccess
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 private const val DENIED_PERMISSION_KEY = "deniedPermissionKey"
+private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
 
 @HiltViewModel
 class AvaNegarArchiveViewModel @Inject constructor(
     private val repository: AvanegarRepository,
     private val fileCache: FileCache,
     private val aiEventPublisher: IntelligentAssistantEventPublisher,
-    private val sharedPref: SharedPreferences
+    private val sharedPref: SharedPreferences,
+    private val uiException: UiException,
 ) : ViewModel() {
+
+    private val _uiViewStat = MutableSharedFlow<UiStatus>()
+    val uiViewState: SharedFlow<UiStatus> = _uiViewStat
 
     private val _uploadFileState: MutableState<UploadFileStatus> = mutableStateOf(UploadIdle)
     val uploadFileState: State<UploadFileStatus> = _uploadFileState
@@ -75,6 +93,7 @@ class AvaNegarArchiveViewModel @Inject constructor(
         listener: UploadProgressCallback
     ) {
         _uploadFileState.value = UploadInProgress
+        _uiViewStat.tryEmit(UiLoading)
 
         //todo check the duration of file and use the correct one
         audioToTextAboveSixtySecond(title, uri, listener)
@@ -82,7 +101,19 @@ class AvaNegarArchiveViewModel @Inject constructor(
 
     fun trackLargeFileResult(token: String) {
         viewModelScope.launch(IO) {
-            repository.trackLargeFileResult(token)
+            val result = repository.trackLargeFileResult(token)
+
+            withContext(Main) {
+                when (result) {
+                    is Success -> {
+                        _uiViewStat.emit(UiSuccess)
+                    }
+
+                    is Error -> {
+                        _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
+                    }
+                }
+            }
         }
     }
 
@@ -99,10 +130,7 @@ class AvaNegarArchiveViewModel @Inject constructor(
             if (file != null) {
                 val result = repository.audioToTextBelowSixtySecond(title, file, listener)
 
-                if (result.isSuccess) {
-                    _uploadFileState.value = UploadSuccess
-                    changeUploadFileToIdle()
-                } else _uploadFileState.value = UploadFailure
+                handleResultState(result)
             }
         }
     }
@@ -121,12 +149,8 @@ class AvaNegarArchiveViewModel @Inject constructor(
                     title, file, listener
                 )
 
-                if (result.isSuccess) {
-                    _uploadFileState.value = UploadSuccess
-                    changeUploadFileToIdle()
-                } else _uploadFileState.value = UploadFailure
+                handleResultState(result)
             }
-
         }
     }
 
@@ -134,7 +158,7 @@ class AvaNegarArchiveViewModel @Inject constructor(
         viewModelScope.launch {
 
             //fixme set the correct value
-            delay(2000)
+            delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
             _uploadFileState.value = UploadIdle
         }
     }
@@ -151,6 +175,7 @@ class AvaNegarArchiveViewModel @Inject constructor(
     fun cancelDownload() {
         job?.cancel()
         _uploadFileState.value = UploadIdle
+        _uiViewStat.tryEmit(UiIdle)
     }
 
     fun updateIsSaving(value: Boolean) {
@@ -175,5 +200,20 @@ class AvaNegarArchiveViewModel @Inject constructor(
 
     fun hasDeniedPermissionPermanently(): Boolean {
         return sharedPref.getBoolean(DENIED_PERMISSION_KEY, false)
+    }
+
+    private suspend fun <T> handleResultState(result: AppResult<T>) {
+        when (result) {
+            is Success -> {
+                _uploadFileState.value = UploadSuccess
+                _uiViewStat.emit(UiSuccess)
+                changeUploadFileToIdle()
+            }
+
+            is Error -> {
+                _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
+                _uploadFileState.value = UploadFailure
+            }
+        }
     }
 }

@@ -4,7 +4,12 @@ import ir.part.app.intelligentassistant.data.entity.AvanegarProcessedFileEntity
 import ir.part.app.intelligentassistant.data.entity.AvanegarTrackingFileEntity
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
 import ir.part.app.intelligentassistant.utils.common.file.toMultiPart
-import ir.part.app.intelligentassistant.utils.data.api_result.ApiResult
+import ir.part.app.intelligentassistant.utils.data.NetworkHandler
+import ir.part.app.intelligentassistant.utils.data.api_result.AppException
+import ir.part.app.intelligentassistant.utils.data.api_result.AppResult
+import ir.part.app.intelligentassistant.utils.data.api_result.AppResult.Error
+import ir.part.app.intelligentassistant.utils.data.api_result.AppResult.Success
+import ir.part.app.intelligentassistant.utils.data.api_result.toAppResult
 import ir.part.app.intelligentassistant.utils.data.asPlainTextRequestBody
 import saman.zamani.persiandate.PersianDate
 import java.io.File
@@ -12,7 +17,8 @@ import javax.inject.Inject
 
 class AvanegarRepository @Inject constructor(
     private val avanegarRemoteDataSource: AvanegarRemoteDataSource,
-    private val avanegarLocalDataSource: AvanegarLocalDataSource
+    private val avanegarLocalDataSource: AvanegarLocalDataSource,
+    private val networkHandler: NetworkHandler
 ) {
 
     fun getArchiveFile(id: Int) =
@@ -28,82 +34,98 @@ class AvanegarRepository @Inject constructor(
         title: String,
         file: File,
         listener: UploadProgressCallback
-    ): Result<Boolean> {
+    ): AppResult<Boolean> {
 
-        val result = avanegarRemoteDataSource.audioToTextBelowSixtySecond(
-            multiPartFile = file.toMultiPart(listener),
-            language = "fa".asPlainTextRequestBody
-        )
+        return if (networkHandler.hasNetworkConnection()) {
+            val result = avanegarRemoteDataSource.audioToTextBelowSixtySecond(
+                multiPartFile = file.toMultiPart(listener),
+                language = "fa".asPlainTextRequestBody
+            ).toAppResult()
 
-        if (result is ApiResult.Success) {
-            avanegarLocalDataSource.insertProcessedFile(
-                AvanegarProcessedFileEntity(
-                    id = 0,
-                    title = title,
-                    text = result.data,
-                    createdAt = PersianDate().time, // TODO: improve
-                    filePath = file.absolutePath,
-                    isSeen = false
-                )
-            )
-        }
-        // TODO: handle error
+            when (result) {
+                is Success -> {
+                    avanegarLocalDataSource.insertProcessedFile(
+                        AvanegarProcessedFileEntity(
+                            id = 0,
+                            title = title,
+                            text = result.data,
+                            createdAt = PersianDate().time, // TODO: improve
+                            filePath = file.absolutePath,
+                            isSeen = false
+                        )
+                    )
 
-        // TODO: return error after parsing!!
-        return Result.success(true)
+                    Success(true)
+                }
+
+                is Error -> Error(result.error)
+            }
+        } else Error(AppException.NetworkConnectionException())
     }
 
     suspend fun audioToTextAboveSixtySecond(
         title: String,
         file: File,
         listener: UploadProgressCallback
-    ): Result<Boolean> {
-        val result = avanegarRemoteDataSource.audioToTextAboveSixtySecond(
-            multiPartFile = file.toMultiPart(listener),
-            language = "fa".asPlainTextRequestBody
-        )
+    ): AppResult<Boolean> {
 
-        if (result is ApiResult.Success) {
-            avanegarLocalDataSource.insertUnprocessedFile(
-                AvanegarTrackingFileEntity(
-                    token = result.data,
-                    filePath = file.absolutePath,
-                    title = title,
-                    createdAt = PersianDate().time, // TODO: improve
-                )
-            )
-        }
-        // TODO: handle error
+        return if (networkHandler.hasNetworkConnection()) {
 
-        // TODO: return error after parsing!!
+            val result = avanegarRemoteDataSource.audioToTextAboveSixtySecond(
+                multiPartFile = file.toMultiPart(listener),
+                language = "fa".asPlainTextRequestBody
+            ).toAppResult()
 
-        return Result.success(true)
+            when (result) {
+                is Success -> {
+                    avanegarLocalDataSource.insertUnprocessedFile(
+                        AvanegarTrackingFileEntity(
+                            token = result.data,
+                            filePath = file.absolutePath,
+                            title = title,
+                            createdAt = PersianDate().time, // TODO: improve
+                        )
+                    )
+                    Success(true)
+                }
+
+                is Error -> Error(result.error)
+            }
+        } else Error(AppException.NetworkConnectionException())
     }
 
-    suspend fun trackLargeFileResult(fileToken: String) {
-        val result = avanegarRemoteDataSource.trackLargeFileResult(
-            fileToken = fileToken
-        )
+    suspend fun trackLargeFileResult(fileToken: String): AppResult<Boolean> {
 
-        if (result is ApiResult.Success) {
-            val tracked = avanegarLocalDataSource.getUnprocessedFile(fileToken)
-            if (tracked != null) {
-                avanegarLocalDataSource.deleteUnprocessedFile(fileToken)
-                avanegarLocalDataSource.insertProcessedFile(
-                    AvanegarProcessedFileEntity(
-                        id = 0,
-                        title = tracked.title,
-                        text = result.data,
-                        createdAt = PersianDate().time, // TODO: improve,
-                        filePath = tracked.filePath,
-                        isSeen = false
-                    )
-                )
+        return if (networkHandler.hasNetworkConnection()) {
+
+            val result = avanegarRemoteDataSource.trackLargeFileResult(
+                fileToken = fileToken
+            ).toAppResult()
+
+            when (result) {
+                is Success -> {
+                    val tracked = avanegarLocalDataSource.getUnprocessedFile(fileToken)
+                    if (tracked != null) {
+                        avanegarLocalDataSource.deleteUnprocessedFile(fileToken)
+                        avanegarLocalDataSource.insertProcessedFile(
+                            AvanegarProcessedFileEntity(
+                                id = 0,
+                                title = tracked.title,
+                                text = result.data,
+                                createdAt = PersianDate().time, // TODO: improve,
+                                filePath = tracked.filePath,
+                                isSeen = false
+                            )
+                        )
+                    }
+
+                    Success(true)
+                }
+
+                is Error -> Error(result.error)
             }
-        }
-        // TODO: handle error
 
-        // TODO: return error after parsing!!
+        } else Error(AppException.NetworkConnectionException())
     }
 
     suspend fun deleteProcessFile(id: Int?) =

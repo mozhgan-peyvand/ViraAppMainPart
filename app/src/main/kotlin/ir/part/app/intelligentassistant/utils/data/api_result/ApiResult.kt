@@ -11,3 +11,9 @@ sealed class ApiResult<out T> {
         }
     }
 }
+
+fun <T> ApiResult<T>.toAppResult() =
+    when (this) {
+        is ApiResult.Success -> AppResult.Success(data)
+        is ApiResult.Error -> AppResult.Error(error.toAppException())
+    }

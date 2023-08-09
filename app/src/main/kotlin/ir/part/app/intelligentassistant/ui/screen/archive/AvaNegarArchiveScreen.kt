@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -65,6 +66,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.ui.navigation.ScreensRouter
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.ArchiveView
@@ -81,6 +83,8 @@ import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantE
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.filename
+import ir.part.app.intelligentassistant.utils.ui.UiError
+import ir.part.app.intelligentassistant.utils.ui.UiIdle
 import ir.part.app.intelligentassistant.utils.ui.isPermissionDeniedPermanently
 import ir.part.app.intelligentassistant.utils.ui.navigateToAppSettings
 import kotlinx.coroutines.launch
@@ -167,6 +171,17 @@ private fun AvaNegarArchiveBody(
         confirmValueChange = { false }
     )
 
+    val uiViewState = archiveViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle).value
+    LaunchedEffect(uiViewState) {
+        when (uiViewState) {
+            is UiError -> {
+                Toast.makeText(context, uiViewState.message, Toast.LENGTH_SHORT).show()
+            }
+
+            else -> {}
+        }
+    }
+
     val intent = Intent()
     intent.action = Intent.ACTION_GET_CONTENT
     intent.type = "audio/*"
@@ -215,6 +230,20 @@ private fun AvaNegarArchiveBody(
         }
     }
 
+    BackHandler(modalBottomSheetStateUpdate.isVisible) {
+        //we want to disable back
+    }
+
+    BackHandler(isFabExpanded || (modalBottomSheetState.isVisible && !modalBottomSheetStateUpdate.isVisible)) {
+        if (isFabExpanded)
+            isFabExpanded = false
+        if (modalBottomSheetState.isVisible) {
+            coroutineScope.launch {
+                modalBottomSheetState.hide()
+            }
+        }
+    }
+
     LaunchedEffect(archiveViewModel.aiEvent.value) {
         if (archiveViewModel.aiEvent.value == IntelligentAssistantEvent.TokenExpired) {
             setSelectedSheet(ArchiveBottomSheetType.Update)
@@ -238,9 +267,10 @@ private fun AvaNegarArchiveBody(
                         if (ContextCompat.checkSelfPermission(
                                 context,
                                 Manifest.permission.READ_EXTERNAL_STORAGE
-                            ) == PackageManager.PERMISSION_GRANTED) {
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
                             launchOpenFile.launch(intent)
-                        } else if(archiveViewModel.hasDeniedPermissionPermanently()){
+                        } else if (archiveViewModel.hasDeniedPermissionPermanently()) {
                             navigateToAppSettings(activity = context as Activity)
                             Toast.makeText(
                                 context,
