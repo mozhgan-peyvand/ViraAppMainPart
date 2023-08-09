@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -94,8 +95,8 @@ import ir.part.app.intelligentassistant.R as AIResource
 
 @Composable
 fun AvaNegarArchiveScreen(
-    archiveViewModel: AvaNegarArchiveViewModel = hiltViewModel(),
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    archiveViewModel: AvaNegarArchiveViewModel = hiltViewModel()
 ) {
     AvaNegarArchiveBody(
         archiveViewModel,
@@ -264,9 +265,15 @@ private fun AvaNegarArchiveBody(
                             } else modalBottomSheetState.hide()
                         }
 
+                        val permission = if(Build.VERSION.SDK_INT >= 33) {
+                            Manifest.permission.READ_MEDIA_AUDIO
+                        } else {
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                        }
+
                         if (ContextCompat.checkSelfPermission(
                                 context,
-                                Manifest.permission.READ_EXTERNAL_STORAGE
+                                permission
                             ) == PackageManager.PERMISSION_GRANTED
                         ) {
                             launchOpenFile.launch(intent)
@@ -279,7 +286,7 @@ private fun AvaNegarArchiveBody(
                             ).show()
                         } else {
                             // Asking for permission
-                            launcher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            launcher.launch(permission)
                         }
                     })
                 }
