@@ -67,6 +67,7 @@
     <string name="lbl_btn_copy_text">کپی متن</string>
     <string name="lbl_btn_share_text">اشتراک گذاری</string>
     <string name="lbl_btn_delete_file">حذف فایل</string>
+    <string name="lbl_try_again">تلاش مجدد</string>
 
     <!--region error message -->
     <string name="msg_there_is_a_problem">مشکلی به وجود آمده است</string>
@@ -77,4 +78,19 @@
     <string name="msg_connection_error">اتصال به اینترنت برقرار نمی باشد</string>
     <string name="msg_server_error">ارتباط با سرور برقرار نمی باشد</string>
     <!--endregion -->
+
+    <!--region description text -->
+    <string name="desc_back">بازگشت</string>
+    <string name="desc_search">جستجو</string>
+    <string name="desc_menu_upload_and_record">منو آپلود و ضبط صدا</string>
+    <string name="desc_record">ضبط صدا</string>
+    <string name="desc_upload">آپلود</string>
+    <string name="desc_menu">منو</string>
+    <string name="desc_undo">برگرداندن</string>
+    <string name="desc_redo">بازگشت به مورد قبلی</string>
+    <string name="desc_copy">کپی</string>
+    <string name="desc_share">اشتراک گذاری</string>
+    <string name="desc_forward">جلو</string>
+    <string name="desc_clear">پاک کردن</string>
+    <!--endregion-->
 </resources>

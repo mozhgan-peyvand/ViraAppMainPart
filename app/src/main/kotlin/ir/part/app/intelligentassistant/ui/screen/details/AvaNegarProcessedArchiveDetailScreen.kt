@@ -56,7 +56,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,6 +66,7 @@ import ir.part.app.intelligentassistant.ui.screen.archive.entity.BottomSheetShar
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.DeleteFileItemBottomSheet
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFile
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
+import ir.part.app.intelligentassistant.utils.common.orZero
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -81,7 +81,7 @@ fun AvaNegarProcessedArchiveDetailScreen(
     itemId: Int?,
     viewModel: AvaNegarProcessedDetailViewModel = hiltViewModel()
 ) {
-    viewModel.setItemId(itemId ?: 0)
+    viewModel.setItemId(itemId.orZero())
     val context = LocalContext.current
     val archive = viewModel.archiveFile.collectAsStateWithLifecycle()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -139,7 +139,6 @@ fun AvaNegarProcessedArchiveDetailScreen(
                                 bottomSheetState.hide()
                             }
                         }
-
                     },
                     onRemoveFileAction = {
                         setSelectedSheet(DetailBottomSheetState.Delete)
@@ -151,7 +150,6 @@ fun AvaNegarProcessedArchiveDetailScreen(
                                 bottomSheetState.hide()
                             }
                         }
-
                     }
                 )
             }
@@ -198,9 +196,8 @@ fun AvaNegarProcessedArchiveDetailScreen(
                         coroutineScope.launch {
                             bottomSheetState.hide()
                             convertTextToPdf(
-                                fileName = viewModel.archiveFile.value?.title
-                                    ?: "",
-                                text = processItem.value?.text ?: "",
+                                fileName = viewModel.archiveFile.value?.title.orEmpty(),
+                                text = processItem.value?.text.orEmpty(),
                                 context
                             )
                         }
@@ -218,7 +215,7 @@ fun AvaNegarProcessedArchiveDetailScreen(
             modifier = modifier.fillMaxSize(),
             topBar = {
                 AvaNegarProcessedArchiveDetailTopAppBar(
-                    title = processItem.value?.title ?: "",
+                    title = processItem.value?.title.orEmpty(),
                     isUndoEnabled = viewModel.canUndo(),
                     isRedoEnabled = viewModel.canRedo(),
                     onUndoClick = {
@@ -262,7 +259,7 @@ fun AvaNegarProcessedArchiveDetailScreen(
                     onCopyOnClick = {
                         localClipBoardManager.setText(
                             AnnotatedString(
-                                processItem.value?.text ?: ""
+                                processItem.value?.text.orEmpty()
                             )
                         )
                         Toast.makeText(
@@ -304,7 +301,7 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
         IconButton(onClick = { onBackAction() }) {
             Icon(
                 imageVector = Icons.Outlined.ArrowForward,
-                contentDescription = "menu"
+                contentDescription = stringResource(id = AIResource.string.desc_menu)
             )
         }
         Text(
@@ -321,7 +318,7 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
         ) {
             Icon(
                 painter = painterResource(id = AIResource.drawable.ic_arrow_redo),
-                contentDescription = null
+                contentDescription = stringResource(id = AIResource.string.desc_redo)
             )
         }
 
@@ -331,19 +328,17 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
         ) {
             Icon(
                 painter = painterResource(id = AIResource.drawable.ic_arrow_undo),
-                contentDescription = null
+                contentDescription = stringResource(id = AIResource.string.desc_undo)
             )
         }
 
         IconButton(onClick = { onMenuAction() }) {
             Icon(
                 painter = painterResource(id = AIResource.drawable.icon_container),
-                contentDescription = ""
+                contentDescription = stringResource(id = AIResource.string.desc_menu)
             )
         }
     }
-
-
 }
 
 @Composable
@@ -366,7 +361,7 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
             Row {
                 Image(
                     painter = painterResource(id = AIResource.drawable.icon_copy),
-                    contentDescription = "ic_share"
+                    contentDescription = stringResource(id = AIResource.string.desc_copy)
                 )
                 Text(text = stringResource(id = AIResource.string.lbl_btn_copy_text))
             }
@@ -385,7 +380,7 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
             Row {
                 Image(
                     painter = painterResource(id = AIResource.drawable.icon_share),
-                    contentDescription = "ic_share"
+                    contentDescription = stringResource(id = AIResource.string.desc_share)
                 )
                 Text(text = stringResource(id = AIResource.string.lbl_btn_share_text))
             }
@@ -408,7 +403,7 @@ fun AvaNegarProcessedArchiveDetailBody(
         TextField(
             value = text,
             onValueChange = { onTextChange(it) },
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp, vertical = 10.dp),
             colors = TextFieldDefaults.textFieldColors(
@@ -418,11 +413,7 @@ fun AvaNegarProcessedArchiveDetailBody(
                 backgroundColor = Color.Transparent
             )
         )
-
-
     }
-
-
 }
 
 @Composable
@@ -431,7 +422,7 @@ fun PlayerBody(
     mediaPlayer: MediaPlayer
 ) {
 
-    var isPlaying = remember {
+    val isPlaying = remember {
         mutableStateOf(false)
     }
     var progress by remember { mutableFloatStateOf(0f) }
@@ -481,14 +472,14 @@ fun PlayerBody(
                 }
             ) {
                 Surface(
-                    Modifier.size(50.dp),
+                    modifier = Modifier.size(50.dp),
                     shape = CircleShape,
                     color = Color.Black
                 ) {}
 
                 Image(
                     painter = painterResource(id = AIResource.drawable.icon_pause),
-                    contentDescription = ""
+                    contentDescription = null
                 )
             }
         } else {
@@ -500,13 +491,13 @@ fun PlayerBody(
                 }
             ) {
                 Surface(
-                    Modifier.size(50.dp),
+                    modifier = Modifier.size(50.dp),
                     shape = CircleShape,
                     color = Color.Black
                 ) {}
                 Image(
                     painter = painterResource(id = AIResource.drawable.icon_play),
-                    contentDescription = ""
+                    contentDescription = null
                 )
             }
         }
@@ -564,7 +555,10 @@ fun MenuDetailsScreenBottomSheetBody(
                 onItemClick()
             }
     ) {
-        Image(painter = icon, contentDescription = "icon")
+        Image(
+            painter = icon,
+            contentDescription = null
+        )
         Text(text = title)
     }
 }

@@ -23,7 +23,7 @@ fun AppNavigation(navController: NavHostController) {
             HomeScreen(navController = navController)
         }
         composable(route = ScreensRouter.AvaNegarOnBoardingScreen.router) {
-            AvaNegarOnBoardingScreen(navController)
+            AvaNegarOnBoardingScreen(navController = navController)
         }
         composable(route = ScreensRouter.AvaNegarArchiveScreen.router) {
             AvaNegarArchiveScreen(navHostController = navController)

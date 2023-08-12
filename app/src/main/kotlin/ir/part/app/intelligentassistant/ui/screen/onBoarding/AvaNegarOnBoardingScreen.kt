@@ -34,20 +34,9 @@ import ir.part.app.intelligentassistant.R as AIResource
 
 @Composable
 fun AvaNegarOnBoardingScreen(
-    navController: NavHostController,
-    onBoardingViewModel: OnBoardingViewModel = hiltViewModel()
-) {
-    AvaNegarOnBoardingBody(
-        navController = navController,
-        onBoardingViewModel = onBoardingViewModel
-    )
-}
-
-@Composable
-private fun AvaNegarOnBoardingBody(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    onBoardingViewModel: OnBoardingViewModel
+    onBoardingViewModel: OnBoardingViewModel = hiltViewModel()
 ) {
 
     val pagerState = rememberPagerState(pageCount = { 3 })
@@ -98,11 +87,12 @@ private fun AvaNegarOnBoardingItemBody(
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = CenterHorizontally
     ) {
         Image(
             painter = painterResource(id = onBoardingItem.image),
-            contentDescription = "on boardingImage", Modifier.size(350.dp)
+            contentDescription = null,
+            modifier = Modifier.size(350.dp)
         )
         Text(
             text = stringResource(id = onBoardingItem.title),
@@ -128,9 +118,7 @@ private fun FinishButton(
 ) {
     Row(
         modifier = modifier
-            .padding(
-                horizontal = 40.dp
-            )
+            .padding(horizontal = 40.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.End
@@ -143,6 +131,5 @@ private fun FinishButton(
                 Text(text = stringResource(id = AIResource.string.lbl_start))
             }
         }
-
     }
 }

@@ -66,7 +66,6 @@ fun AvaNegarSearchScreen(
     )
 }
 
-
 @Composable
 private fun AvaNegarSearchBody(
     modifier: Modifier = Modifier,
@@ -91,7 +90,7 @@ private fun AvaNegarSearchBody(
             }) {
                 Icon(
                     imageVector = Icons.Outlined.ArrowForward,
-                    contentDescription = ""
+                    contentDescription = stringResource(id = AIResource.string.desc_forward)
                 )
             }
             TextField(
@@ -104,7 +103,7 @@ private fun AvaNegarSearchBody(
                 leadingIcon = {
                     Image(
                         imageVector = Icons.Outlined.Search,
-                        contentDescription = ""
+                        contentDescription = stringResource(id = AIResource.string.desc_share)
                     )
                 },
                 trailingIcon = {
@@ -113,7 +112,7 @@ private fun AvaNegarSearchBody(
                     }) {
                         Icon(
                             imageVector = Icons.Outlined.Clear,
-                            contentDescription = ""
+                            contentDescription = stringResource(id = AIResource.string.desc_clear)
                         )
                     }
                 },
