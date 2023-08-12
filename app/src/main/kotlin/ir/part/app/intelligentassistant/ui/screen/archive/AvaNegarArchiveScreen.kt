@@ -14,7 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +39,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -53,8 +53,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -92,25 +92,10 @@ import kotlinx.coroutines.launch
 import java.io.File
 import ir.part.app.intelligentassistant.R as AIResource
 
-
 @Composable
 fun AvaNegarArchiveScreen(
     navHostController: NavHostController,
     archiveViewModel: AvaNegarArchiveViewModel = hiltViewModel()
-) {
-    AvaNegarArchiveBody(
-        archiveViewModel,
-        navHostController
-    ) { fileName, uri, listener ->
-        archiveViewModel.uploadFile(fileName.orEmpty(), uri, listener)
-    }
-}
-
-@Composable
-private fun AvaNegarArchiveBody(
-    archiveViewModel: AvaNegarArchiveViewModel,
-    navHostController: NavHostController,
-    callBack: (String?, Uri?, UploadProgressCallback) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -203,7 +188,7 @@ private fun AvaNegarArchiveBody(
             }
             try {
                 fileName.value =
-                    it.data?.data?.filename(context) ?: ""
+                    it.data?.data?.filename(context).orEmpty()
                 fileUri.value = it.data?.data
             } catch (_: Exception) {
 
@@ -265,7 +250,7 @@ private fun AvaNegarArchiveBody(
                             } else modalBottomSheetState.hide()
                         }
 
-                        val permission = if(Build.VERSION.SDK_INT >= 33) {
+                        val permission = if (Build.VERSION.SDK_INT >= 33) {
                             Manifest.permission.READ_MEDIA_AUDIO
                         } else {
                             Manifest.permission.READ_EXTERNAL_STORAGE
@@ -293,13 +278,13 @@ private fun AvaNegarArchiveBody(
 
                 ArchiveBottomSheetType.RenameUploading -> {
                     RenameFileBottomSheetContent(
-                        fileName.value ?: "",
+                        fileName.value.orEmpty(),
                         onValueChange = {
                             fileName.value = it
                         },
                         reNameAction = {
-                            callBack(
-                                fileName.value,
+                            archiveViewModel.uploadFile(
+                                fileName.value.orEmpty(),
                                 fileUri.value,
                                 listener
                             )
@@ -323,11 +308,11 @@ private fun AvaNegarArchiveBody(
 
                 ArchiveBottomSheetType.Rename -> {
                     RenameFile(
-                        fileName = fileName.value ?: "",
+                        fileName = fileName.value.orEmpty(),
                         onValueChange = { fileName.value = it },
                         reNameAction = {
                             archiveViewModel.updateTitle(
-                                title = fileName.value ?: "",
+                                title = fileName.value.orEmpty(),
                                 id = processItem.value?.id
                             )
                             coroutineScope.launch {
@@ -339,11 +324,11 @@ private fun AvaNegarArchiveBody(
 
                 ArchiveBottomSheetType.Detail -> {
                     BottomSheetDetailItem(
-                        text = processItem.value?.title ?: "",
+                        text = processItem.value?.title.orEmpty(),
                         copyItemAction = {
                             localClipBoardManager.setText(
                                 AnnotatedString(
-                                    processItem.value?.text ?: ""
+                                    processItem.value?.text.orEmpty()
                                 )
                             )
                             coroutineScope.launch {
@@ -399,8 +384,8 @@ private fun AvaNegarArchiveBody(
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
                                 convertTextToPdf(
-                                    fileName.value ?: "",
-                                    text = processItem.value?.text ?: "",
+                                    fileName.value.orEmpty(),
+                                    text = processItem.value?.text.orEmpty(),
                                     context
                                 )
                             }
@@ -415,7 +400,7 @@ private fun AvaNegarArchiveBody(
                         deleteAction = {
                             archiveViewModel.removeFile(processItem.value?.id)
                             File(
-                                processItem.value?.filePath ?: ""
+                                processItem.value?.filePath.orEmpty()
                             ).delete()
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
@@ -426,103 +411,57 @@ private fun AvaNegarArchiveBody(
                                 modalBottomSheetState.hide()
                             }
                         },
-                        fileName = processItem.value?.title ?: ""
+                        fileName = processItem.value?.title.orEmpty()
                     )
                 }
 
             }
         }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
+        Box(modifier = Modifier.fillMaxSize()) {
 
-        ) {
-            ArchiveAppBar(modifier = Modifier
-                .padding(top = 8.dp)
-                .alpha(if (isFabExpanded) 0.3f else 0.9f),
-                isLock = !isFabExpanded,
-                onBackClick = {
-                    navHostController.popBackStack()
-                },
-                onSearchClick = {
-                    navHostController.navigate(
-                        ScreensRouter.AvaNegarSearchScreen.router
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+
+            ) {
+                ArchiveAppBar(modifier = Modifier
+                    .padding(top = 8.dp),
+                    onBackClick = { navHostController.popBackStack() },
+                    onSearchClick = {
+                        navHostController.navigate(
+                            ScreensRouter.AvaNegarSearchScreen.router
+                        )
+                    })
+
+                if (archiveViewModel.uploadFileState.value != UploadIdle)
+                    UploadFileSection(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colors.primary.copy(0.8f))
+                            .weight(0.2f),
+                        uploadFileStatus = archiveViewModel.uploadFileState.value,
+                        fileName = processItem.value?.title.orEmpty(),
+                        uploadedPercent = uploadedPercent,
+                        isSavingFile = archiveViewModel.isSavingFile,
+                        onRetryCLick = {
+                            archiveViewModel.uploadFile(
+                                processItem.value?.title.orEmpty(),
+                                fileUri.value,
+                                listener
+                            )
+                        },
+                        onCancelClick = archiveViewModel::cancelDownload
                     )
-                })
 
-            if (archiveViewModel.uploadFileState.value != UploadIdle)
-                UploadFileSection(
+                ArchiveBody(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            MaterialTheme.colors.primary.copy(
-                                0.8f
-                            )
-                        )
-                        .weight(0.2f),
-                    uploadFileStatus = archiveViewModel.uploadFileState.value,
-                    fileName = processItem.value?.title.orEmpty(),
-                    uploadedPercent = uploadedPercent,
-                    isSavingFile = archiveViewModel.isSavingFile,
-                    onRetryCLick = {
-                        archiveViewModel.uploadFile(
-                            processItem.value?.title.orEmpty(),
-                            fileUri.value,
-                            listener
-                        )
-                    },
-                    onCancelClick = { archiveViewModel.cancelDownload() }
-                )
-
-            Box(modifier = Modifier.weight(1f)) {
-
-                if (archiveViewModel.allArchiveFiles.value.isEmpty()) {
-                    ArchiveBody(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .alpha(if (isFabExpanded) 0.3f else 0.9f)
-                    )
-                } else {
-                    ArchiveList(
-                        list = archiveViewModel.allArchiveFiles.value,
-                        isLock = isFabExpanded,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp)
-                            .alpha(if (isFabExpanded) 0.3f else 0.9f)
-                            .pointerInput(Unit) {},
-                        onTryAgainCLick = {
-                            archiveViewModel.trackLargeFileResult(it)
-                        },
-                        onMenuClick = { item ->
-                            setSelectedSheet(ArchiveBottomSheetType.Detail)
-                            coroutineScope.launch {
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                } else {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
-                            processItem.value = item
-                            fileName.value = item.title
-                        },
-                        onItemClick = {
-                            navHostController.navigate(
-                                ScreensRouter.AvaNegarProcessedArchiveDetailScreen.router.plus(
-                                    "/$it"
-                                )
-                            )
-                        })
-                }
-
-                Fabs(isFabExpanded = isFabExpanded,
-                    modifier = Modifier.align(Alignment.BottomStart),
-                    onMainFabClick = {
-                        isFabExpanded = !isFabExpanded
-                    },
-                    openBottomSheet = {
-                        setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    archiveViewList = archiveViewModel.allArchiveFiles.value,
+                    onTryAgainCLick = { archiveViewModel.trackLargeFileResult(it) },
+                    onMenuClick = { item ->
+                        setSelectedSheet(ArchiveBottomSheetType.Detail)
                         coroutineScope.launch {
                             if (!modalBottomSheetState.isVisible) {
                                 modalBottomSheetState.show()
@@ -530,18 +469,51 @@ private fun AvaNegarArchiveBody(
                                 modalBottomSheetState.hide()
                             }
                         }
-                    })
+                        processItem.value = item
+                        fileName.value = item.title
+                    },
+                    onItemClick = {
+                        navHostController.navigate(
+                            ScreensRouter.AvaNegarProcessedArchiveDetailScreen.router.plus(
+                                "/$it"
+                            )
+                        )
 
+                    },
+                )
             }
-        }
 
+            if (isFabExpanded) {
+                Surface(
+                    color = Color.White.copy(alpha = 0.6f),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) { isFabExpanded = false },
+                    content = {}
+                )
+            }
+            Fabs(isFabExpanded = isFabExpanded,
+                modifier = Modifier.align(Alignment.BottomStart),
+                onMainFabClick = {
+                    isFabExpanded = !isFabExpanded
+                },
+                openBottomSheet = {
+                    setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
+                    coroutineScope.launch {
+                        if (!modalBottomSheetState.isVisible) {
+                            modalBottomSheetState.show()
+                        } else {
+                            modalBottomSheetState.hide()
+                        }
+                    }
+                })
+        }
     }
 }
 
 @Composable
 private fun ArchiveAppBar(
     modifier: Modifier = Modifier,
-    isLock: Boolean,
     onBackClick: () -> Unit,
     onSearchClick: () -> Unit
 ) {
@@ -550,40 +522,53 @@ private fun ArchiveAppBar(
         verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        IconButton(
-            enabled = isLock,
-            onClick = { onBackClick() },
-        ) {
+        IconButton(onClick = onBackClick) {
             Icon(
                 painter = painterResource(id = AIResource.drawable.ic_arrow_forward),
-                contentDescription = null
+                contentDescription = stringResource(id = AIResource.string.desc_back)
             )
         }
         Text(
             text = stringResource(id = AIResource.string.lbl_ava_negar),
-            Modifier.weight(1f),
+            modifier = Modifier.weight(1f),
             textAlign = TextAlign.Start
         )
-
-        IconButton(
-            enabled = isLock,
-            onClick = onSearchClick
-        ) {
+        IconButton(onClick = onSearchClick) {
             Icon(
                 painter = painterResource(id = AIResource.drawable.ic_search),
-                contentDescription = null
+                contentDescription = stringResource(id = AIResource.string.desc_search)
             )
         }
-
     }
-
 }
 
 @Composable
 private fun ArchiveBody(
+    modifier: Modifier,
+    archiveViewList: List<ArchiveView>,
+    onTryAgainCLick: (String) -> Unit,
+    onMenuClick: (AvanegarProcessedFileView) -> Unit,
+    onItemClick: (Int) -> Unit
+) {
+    if (archiveViewList.isEmpty()) {
+        ArchiveEmptyBody(
+            modifier = modifier
+        )
+    } else {
+        ArchiveList(
+            list = archiveViewList,
+            modifier = modifier
+                .padding(top = 16.dp),
+            onTryAgainCLick = { onTryAgainCLick(it) },
+            onMenuClick = { onMenuClick(it) },
+            onItemClick = { onItemClick(it) })
+    }
+}
+
+@Composable
+private fun ArchiveEmptyBody(
     modifier: Modifier = Modifier
 ) {
-
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = modifier
@@ -618,10 +603,62 @@ private fun ArchiveBody(
             painter = painterResource(id = AIResource.drawable.img_arrow),
             contentDescription = null
         )
-
         Spacer(modifier = Modifier.size(100.dp))
     }
+}
 
+@Composable
+private fun ArchiveList(
+    list: List<ArchiveView>,
+    modifier: Modifier = Modifier,
+    onTryAgainCLick: (String) -> Unit,
+    onMenuClick: (AvanegarProcessedFileView) -> Unit,
+    onItemClick: (Int) -> Unit
+) {
+    LazyVerticalGrid(
+        modifier = modifier,
+        columns = GridCells.Adaptive(128.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(
+            items = list,
+            key = { item ->
+                when (item) {
+                    is AvanegarProcessedFileView -> item.id
+
+                    is AvanegarTrackingFileView -> item.token
+                    else -> {}
+                }
+            }) {
+
+            when (it) {
+                is AvanegarProcessedFileView -> {
+                    ArchiveProcessedFileElement(
+                        archiveViewProcessed = it,
+                        onItemClick = { id ->
+                            onItemClick(id)
+                        },
+                        onMenuClick = { item ->
+                            onMenuClick(item)
+                        }
+                    )
+
+                }
+
+                is AvanegarTrackingFileView -> {
+                    ArchiveTrackingFileElements(
+                        archiveTrackingView = it,
+                        onItemClick = {},
+                        onTryAgainButtonClick = { token ->
+                            onTryAgainCLick(token)
+                        }
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -643,12 +680,11 @@ private fun Fabs(
                 modifier = Modifier
                     .clip(CircleShape)
                     .padding(bottom = 8.dp),
-                onClick = {
-                    openBottomSheet()
-                }) {
+                onClick = openBottomSheet
+            ) {
                 Icon(
                     painter = painterResource(id = AIResource.drawable.ic_upload),
-                    contentDescription = null
+                    contentDescription = stringResource(id = AIResource.string.desc_upload)
                 )
             }
         }
@@ -664,7 +700,7 @@ private fun Fabs(
                 }) {
                 Icon(
                     painter = painterResource(id = AIResource.drawable.ic_mic),
-                    contentDescription = null
+                    contentDescription = stringResource(id = AIResource.string.desc_record)
                 )
             }
         }
@@ -675,84 +711,21 @@ private fun Fabs(
         ) {
             Icon(
                 painter = painterResource(id = if (isFabExpanded) AIResource.drawable.ic_close else AIResource.drawable.ic_add),
-                contentDescription = null
+                contentDescription = stringResource(id = AIResource.string.desc_menu_upload_and_record)
             )
         }
     }
 }
 
-
-@Composable
-private fun ArchiveList(
-    list: List<ArchiveView>,
-    isLock: Boolean,
-    modifier: Modifier = Modifier,
-    onTryAgainCLick: (String) -> Unit,
-    onMenuClick: (AvanegarProcessedFileView) -> Unit,
-    onItemClick: (Int) -> Unit
-) {
-    LazyVerticalGrid(
-        modifier = modifier,
-        userScrollEnabled = !isLock,
-        columns = GridCells.Adaptive(128.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        items(
-            items = list,
-            key = { item ->
-                when (item) {
-                    is AvanegarProcessedFileView -> item.id
-
-                    is AvanegarTrackingFileView -> item.token
-                    else -> {}
-                }
-            }) {
-
-            when (it) {
-                is AvanegarProcessedFileView -> {
-                    ArchiveProcessedFileElement(
-                        archiveViewProcessed = it,
-                        isLock = isLock,
-                        onItemClick = { id ->
-                            onItemClick(id)
-                        },
-                        onMenuClick = { item ->
-                            onMenuClick(item)
-                        }
-                    )
-
-                }
-
-                is AvanegarTrackingFileView -> {
-                    ArchiveTrackingFileElements(
-                        archiveTrackingView = it,
-                        isLock = isLock,
-                        onItemClick = {},
-                        onTryAgainButtonClick = { token ->
-                            onTryAgainCLick(token)
-                        }
-                    )
-
-                }
-            }
-        }
-    }
-}
-
-
 @Composable
 fun ArchiveProcessedFileElement(
     archiveViewProcessed: AvanegarProcessedFileView,
-    isLock: Boolean = false,
     onItemClick: (Int) -> Unit,
     onMenuClick: (AvanegarProcessedFileView) -> Unit
 ) {
     Card(
         backgroundColor = if (archiveViewProcessed.isSeen) MaterialTheme.colors.primaryVariant else MaterialTheme.colors.surface,
         shape = RoundedCornerShape(16.dp),
-        enabled = !isLock,
         onClick = { onItemClick(archiveViewProcessed.id) }
     ) {
         Column(
@@ -770,23 +743,17 @@ fun ArchiveProcessedFileElement(
                         .align(CenterVertically),
                     text = archiveViewProcessed.title
                 )
-
                 IconButton(
-                    modifier = Modifier.clickable { !isLock },
                     onClick = {
                         onMenuClick(archiveViewProcessed)
                     },
-                    enabled = !isLock
                 ) {
                     Icon(
                         painter = painterResource(id = AIResource.drawable.ic_dots_menu),
-                        contentDescription = null
+                        contentDescription = stringResource(id = AIResource.string.desc_menu)
                     )
                 }
             }
-
-
-
             Text(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -795,8 +762,6 @@ fun ArchiveProcessedFileElement(
                     .padding(vertical = 16.dp),
                 text = archiveViewProcessed.text
             )
-
-
             Text(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -809,14 +774,12 @@ fun ArchiveProcessedFileElement(
 @Composable
 private fun ArchiveTrackingFileElements(
     archiveTrackingView: AvanegarTrackingFileView,
-    isLock: Boolean,
     onItemClick: (String) -> Unit,
     onTryAgainButtonClick: (String) -> Unit
 ) {
     Card(
         backgroundColor = MaterialTheme.colors.primaryVariant,
         shape = RoundedCornerShape(16.dp),
-        enabled = !isLock,
         onClick = { onItemClick(archiveTrackingView.token) }
     ) {
         Column(
@@ -836,9 +799,8 @@ private fun ArchiveTrackingFileElements(
             //TODO Remove it
             Button(
                 onClick = { onTryAgainButtonClick(archiveTrackingView.token) },
-                enabled = !isLock
             ) {
-                Text(text = "تلاش مجدد")
+                Text(text = stringResource(id = AIResource.string.lbl_try_again))
             }
 
             Text(

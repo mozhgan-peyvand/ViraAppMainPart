@@ -13,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.data.AvanegarRepository
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.toAvanegarProcessedFileView
+import ir.part.app.intelligentassistant.utils.common.orZero
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -23,11 +24,11 @@ private const val UNDO_REDO_LIMIT = 50
 @HiltViewModel
 class AvaNegarProcessedDetailViewModel @Inject constructor(
     private val repository: AvanegarRepository,
-    private val savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _processItemId =
-        mutableIntStateOf(savedStateHandle.get<Int>("id") ?: 0)
+        mutableIntStateOf(savedStateHandle.get<Int>("id").orZero())
     val processItemId: IntState = _processItemId.asIntState()
 
 

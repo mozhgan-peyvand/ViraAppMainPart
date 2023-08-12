@@ -44,19 +44,21 @@ fun HomeScreen(
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
-            HomeTopAppBar() {
+            HomeTopAppBar {
                 coroutineScope.launch {
                     scaffoldState.drawerState.open()
                 }
             }
-        }, drawerContent = {
+        },
+        drawerContent = {
             DrawerHeader({}, {})
 
-        }, drawerGesturesEnabled = scaffoldState.drawerState.isOpen
+        },
+        drawerGesturesEnabled = scaffoldState.drawerState.isOpen
 
     ) { innerPadding ->
         HomeBody(
-            innerPadding,
+            paddingValues = innerPadding,
             homeViewModel = homeViewModel,
             navController = navController
         )
@@ -76,9 +78,7 @@ private fun HomeBody(
     Column(
         modifier = modifier
             .padding(paddingValues)
-            .verticalScroll(
-                scrollState
-            )
+            .verticalScroll(scrollState)
     ) {
         HomeBodyItem(
             title = stringResource(id = AIResource.string.lbl_ava_negar),
@@ -88,7 +88,6 @@ private fun HomeBody(
             // navigate to ava negar
             val screen by homeViewModel.startDestination
             navController.navigate(screen)
-
         }
         HomeBodyItem(
             title = stringResource(id = AIResource.string.lbl_ava_sho),
@@ -116,29 +115,31 @@ fun HomeBodyItem(
     title: String,
     description: String,
     modifier: Modifier = Modifier,
-    showNextStepIcon: Boolean = false, onCardClick: () -> Unit
+    showNextStepIcon: Boolean = false,
+    onCardClick: () -> Unit
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                horizontal = 20.dp, vertical = 10.dp
-            )
+            .padding(horizontal = 20.dp, vertical = 10.dp)
             .clickable { onCardClick() },
         shape = RoundedCornerShape(8.dp),
         backgroundColor = Gray_200
     ) {
         Row(
-            Modifier.padding(20.dp),
+            modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    Modifier.padding(10.dp),
+                    modifier = Modifier.padding(10.dp),
                     fontSize = 25.sp
                 )
-                Text(text = description, Modifier.padding(10.dp))
+                Text(
+                    text = description,
+                    modifier = Modifier.padding(10.dp)
+                )
             }
             if (showNextStepIcon) {
                 IconButton(
@@ -146,14 +147,12 @@ fun HomeBodyItem(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.KeyboardArrowLeft,
-                        contentDescription = "arrowForward"
+                        contentDescription = stringResource(AIResource.string.desc_forward)
                     )
                 }
             }
         }
-
     }
-
 }
 
 @Composable
@@ -171,12 +170,12 @@ private fun HomeTopAppBar(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Menu,
-                contentDescription = "menu", Modifier
+                contentDescription = stringResource(id = AIResource.string.desc_menu), Modifier
             )
         }
         Text(
             text = stringResource(id = AIResource.string.app_name),
-            Modifier.weight(1f),
+            modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center
         )
     }
