@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import ir.part.app.intelligentassistant.ui.theme.Gray_200
+import ir.part.app.intelligentassistant.ui.theme.BG
 import ir.part.app.intelligentassistant.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.R as AIResource
 
@@ -57,7 +57,7 @@ private fun DrawerHeaderBody(
         ) {
             Surface(
                 modifier = modifier.size(80.dp),
-                shape = CircleShape, color = Gray_200
+                shape = CircleShape, color = BG
             ) {}
             Column(modifier = modifier.padding(5.dp)) {
                 Text(text = stringResource(id = AIResource.string.app_name))

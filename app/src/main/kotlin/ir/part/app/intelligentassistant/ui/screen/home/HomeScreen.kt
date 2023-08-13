@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import ir.part.app.intelligentassistant.ui.theme.Gray_200
+import ir.part.app.intelligentassistant.ui.theme.BG
 import kotlinx.coroutines.launch
 import ir.part.app.intelligentassistant.R as AIResource
 
@@ -124,7 +124,7 @@ fun HomeBodyItem(
             .padding(horizontal = 20.dp, vertical = 10.dp)
             .clickable { onCardClick() },
         shape = RoundedCornerShape(8.dp),
-        backgroundColor = Gray_200
+        backgroundColor = BG
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
