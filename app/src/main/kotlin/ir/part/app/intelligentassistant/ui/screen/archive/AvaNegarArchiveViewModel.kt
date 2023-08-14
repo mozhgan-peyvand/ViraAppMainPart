@@ -10,9 +10,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.data.AvanegarRepository
+import ir.part.app.intelligentassistant.data.entity.AvanegarUploadingFileEntity
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.ArchiveView
+import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarUploadingFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.toAvanegarProcessedFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.toAvanegarTrackingFileView
+import ir.part.app.intelligentassistant.ui.screen.archive.entity.toAvanegarUploadingFileView
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEvent
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEventPublisher
 import ir.part.app.intelligentassistant.utils.common.file.FileCache
@@ -31,11 +34,14 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import saman.zamani.persiandate.PersianDate
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 
 private const val DENIED_PERMISSION_KEY = "deniedPermissionKey"
@@ -62,21 +68,27 @@ class AvaNegarArchiveViewModel @Inject constructor(
     private val _allArchiveFiles: MutableState<List<ArchiveView>> = mutableStateOf(listOf())
     val allArchiveFiles: State<List<ArchiveView>> = _allArchiveFiles
 
+    private var uploadingFileQueue = CopyOnWriteArrayList<AvanegarUploadingFileView>()
+
     //TODO set appropriate name
     var isSavingFile = false
         private set
 
+    private var isUploading = MutableStateFlow(false)
     private var files: MutableMap<Uri, File> = ConcurrentHashMap()
 
-    var job: Job? = null
+    private var job: Job? = null
 
     init {
         viewModelScope.launch {
             repository.getAllArchiveFiles().collect { avanegarArchiveFile ->
                 val processedList = avanegarArchiveFile.processed
                 val trackingList = avanegarArchiveFile.tracking
+                val uploadingList = avanegarArchiveFile.uploading
                 _allArchiveFiles.value =
-                    trackingList.map { it.toAvanegarTrackingFileView() } + processedList.map { it.toAvanegarProcessedFileView() }
+                    uploadingList.map { it.toAvanegarUploadingFileView() } +
+                            trackingList.map { it.toAvanegarTrackingFileView() } +
+                            processedList.map { it.toAvanegarProcessedFileView() }
             }
         }
 
@@ -85,18 +97,63 @@ class AvaNegarArchiveViewModel @Inject constructor(
                 _aiEvent.value = it
             }
         }
+
+        viewModelScope.launch {
+            isUploading.collect {
+                if (!it && uploadingFileQueue.isNotEmpty()) {
+                    _uploadFileState.value = UploadInProgress
+                    _uiViewStat.emit(UiLoading)
+
+                    isUploading.value = true
+                    audioToTextAboveSixtySecond(
+                        uploadingFileQueue.first().title,
+                        uploadingFileQueue.first().filePath,
+                        createProgressListener()
+                    )
+                }
+            }
+        }
     }
 
-    fun uploadFile(
-        title: String,
-        uri: Uri?,
-        listener: UploadProgressCallback
-    ) {
-        _uploadFileState.value = UploadInProgress
-        _uiViewStat.tryEmit(UiLoading)
+    fun addFileToUploadingQueue(title: String, uri: Uri?) {
+        uri?.let {
+            viewModelScope.launch {
 
-        //todo check the duration of file and use the correct one
-        audioToTextAboveSixtySecond(title, uri, listener)
+                createFileFromUri(uri)?.absolutePath?.let { absolutePath ->
+
+                    val createdAt = PersianDate().time
+                    val id = title + absolutePath
+
+                    uploadingFileQueue.add(
+                        AvanegarUploadingFileView(
+                            id = id,
+                            title = title,
+                            filePath = absolutePath,
+                            createdAt = createdAt,
+                            uploadedPercent = 0f, //it will not store in db
+                            isUploadingFinished = true, //it will not store in db
+                        )
+                    )
+
+                    withContext(IO) {
+                        insertUploadingFileToDatabase(
+                            id = id,
+                            title = title,
+                            filePath = absolutePath,
+                            createdAt = createdAt,
+                        )
+                    }
+
+                    if (uploadingFileQueue.isNotEmpty() && !isUploading.value) {
+                        _uploadFileState.value = UploadInProgress
+                        _uiViewStat.emit(UiLoading)
+
+                        isUploading.value = true
+                        audioToTextAboveSixtySecond(title, absolutePath, createProgressListener())
+                    }
+                }
+            }
+        }
     }
 
     fun trackLargeFileResult(token: String) {
@@ -128,7 +185,8 @@ class AvaNegarArchiveViewModel @Inject constructor(
             val file = createFileFromUri(uri!!) // todo show error if uri is null
             // todo: show error when file is null
             if (file != null) {
-                val result = repository.audioToTextBelowSixtySecond(title, file, listener)
+                val result =
+                    repository.audioToTextBelowSixtySecond(title, file, listener)
 
                 handleResultState(result)
             }
@@ -137,19 +195,26 @@ class AvaNegarArchiveViewModel @Inject constructor(
 
     private fun audioToTextAboveSixtySecond(
         title: String,
-        uri: Uri?,
+        filePath: String,
         listener: UploadProgressCallback
     ) {
         job?.cancel()
         job = viewModelScope.launch(IO) {
-            val file = createFileFromUri(uri!!) // todo show error if uri is null
-            // todo: show error when file is null
-            if (file != null) {
-                val result = repository.audioToTextAboveSixtySecond(
-                    title, file, listener
+            val file = File(filePath)
+
+            val result = repository.audioToTextAboveSixtySecond(
+                id = title + filePath,
+                title = title,
+                file = file,
+                listener = listener
+            )
+
+            handleResultState(result) { id ->
+                uploadingFileQueue = CopyOnWriteArrayList(
+                    uploadingFileQueue.filter { it.id != id.data }
                 )
 
-                handleResultState(result)
+                isUploading.value = false
             }
         }
     }
@@ -170,6 +235,22 @@ class AvaNegarArchiveViewModel @Inject constructor(
             files[uri] = file
             isSavingFile = false
         }
+    }
+
+    private suspend fun insertUploadingFileToDatabase(
+        id: String,
+        title: String,
+        filePath: String,
+        createdAt: Long
+    ) {
+        repository.insertUploadingFile(
+            AvanegarUploadingFileEntity(
+                id = id,
+                title = title,
+                filePath = filePath,
+                createdAt = createdAt
+            )
+        )
     }
 
     fun cancelDownload() {
@@ -202,12 +283,43 @@ class AvaNegarArchiveViewModel @Inject constructor(
         return sharedPref.getBoolean(DENIED_PERMISSION_KEY, false)
     }
 
-    private suspend fun <T> handleResultState(result: AppResult<T>) {
+    private fun createProgressListener() = object : UploadProgressCallback {
+        override fun onProgress(
+            id: String,
+            bytesUploaded: Long,
+            totalBytes: Long,
+            isDone: Boolean
+        ) {
+            _allArchiveFiles.value = _allArchiveFiles.value.map {
+                when (it) {
+                    is AvanegarUploadingFileView -> {
+                        if (id != it.id) it
+                        else {
+                            it.copy(
+                                uploadedPercent = (bytesUploaded.toDouble() / totalBytes).toFloat(),
+                                isUploadingFinished = isDone
+                            )
+                        }
+                    }
+
+                    else -> it
+                }
+            }
+        }
+    }
+
+    private suspend fun <T> handleResultState(
+        result: AppResult<T>,
+        onSuccess: ((Success<T>) -> Unit)? = null
+    ) {
         when (result) {
             is Success -> {
                 _uploadFileState.value = UploadSuccess
                 _uiViewStat.emit(UiSuccess)
                 changeUploadFileToIdle()
+                onSuccess?.let {
+                    it(result)
+                }
             }
 
             is Error -> {

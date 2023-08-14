@@ -15,6 +15,7 @@ import dagger.hilt.components.SingletonComponent
 import ir.part.app.intelligentassistant.data.DataStoreRepository
 import ir.part.app.intelligentassistant.data.entity.AvanegarProcessedFileEntity
 import ir.part.app.intelligentassistant.data.entity.AvanegarTrackingFileEntity
+import ir.part.app.intelligentassistant.data.entity.AvanegarUploadingFileEntity
 import ir.part.app.intelligentassistant.utils.data.db.IntelligentAssistantDb
 import saman.zamani.persiandate.PersianDate
 import javax.inject.Singleton
@@ -107,6 +108,21 @@ val trackingList = listOf(
     ),
 )
 
+val uploadingList = listOf(
+    AvanegarUploadingFileEntity(
+        id = "121",
+        filePath = "12",
+        title = "title2",
+        createdAt = PersianDate().time,
+    ),
+    AvanegarUploadingFileEntity(
+        id = "132",
+        filePath = "13",
+        title = "title3",
+        createdAt = PersianDate().time + 1,
+    ),
+)
+
 @Module
 @InstallIn(SingletonComponent::class)
 object LocalModule {
@@ -153,6 +169,19 @@ object LocalModule {
 
                         db.insert(
                             "AvanegarTrackingFileEntity",
+                            SQLiteDatabase.CONFLICT_REPLACE,
+                            values
+                        )
+                    }
+                    uploadingList.forEach {
+                        val values = ContentValues()
+                        values.put("filePath", it.filePath)
+                        values.put("title", it.title)
+                        values.put("id", it.id)
+                        values.put("createdAt", it.createdAt)
+
+                        db.insert(
+                            "AvanegarUploadingFileEntity",
                             SQLiteDatabase.CONFLICT_REPLACE,
                             values
                         )

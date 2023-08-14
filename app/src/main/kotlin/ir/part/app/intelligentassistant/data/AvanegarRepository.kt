@@ -2,6 +2,7 @@ package ir.part.app.intelligentassistant.data
 
 import ir.part.app.intelligentassistant.data.entity.AvanegarProcessedFileEntity
 import ir.part.app.intelligentassistant.data.entity.AvanegarTrackingFileEntity
+import ir.part.app.intelligentassistant.data.entity.AvanegarUploadingFileEntity
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
 import ir.part.app.intelligentassistant.utils.common.file.toMultiPart
 import ir.part.app.intelligentassistant.utils.data.NetworkHandler
@@ -36,9 +37,10 @@ class AvanegarRepository @Inject constructor(
         listener: UploadProgressCallback
     ): AppResult<Boolean> {
 
+        val time = PersianDate().time
         return if (networkHandler.hasNetworkConnection()) {
             val result = avanegarRemoteDataSource.audioToTextBelowSixtySecond(
-                multiPartFile = file.toMultiPart(listener),
+                multiPartFile = file.toMultiPart(title + time.toString(), listener),
                 language = "fa".asPlainTextRequestBody
             ).toAppResult()
 
@@ -49,7 +51,7 @@ class AvanegarRepository @Inject constructor(
                             id = 0,
                             title = title,
                             text = result.data,
-                            createdAt = PersianDate().time, // TODO: improve
+                            createdAt = time, // TODO: improve
                             filePath = file.absolutePath,
                             isSeen = false
                         )
@@ -64,20 +66,22 @@ class AvanegarRepository @Inject constructor(
     }
 
     suspend fun audioToTextAboveSixtySecond(
+        id: String,
         title: String,
         file: File,
         listener: UploadProgressCallback
-    ): AppResult<Boolean> {
+    ): AppResult<String> {
 
         return if (networkHandler.hasNetworkConnection()) {
 
             val result = avanegarRemoteDataSource.audioToTextAboveSixtySecond(
-                multiPartFile = file.toMultiPart(listener),
+                multiPartFile = file.toMultiPart(id, listener),
                 language = "fa".asPlainTextRequestBody
             ).toAppResult()
 
             when (result) {
                 is Success -> {
+                    avanegarLocalDataSource.deleteUploadingFile(id)
                     avanegarLocalDataSource.insertUnprocessedFile(
                         AvanegarTrackingFileEntity(
                             token = result.data,
@@ -86,7 +90,7 @@ class AvanegarRepository @Inject constructor(
                             createdAt = PersianDate().time, // TODO: improve
                         )
                     )
-                    Success(true)
+                    Success(id)
                 }
 
                 is Error -> Error(result.error)
@@ -135,4 +139,7 @@ class AvanegarRepository @Inject constructor(
         avanegarLocalDataSource.updateTitle(title = title, id = id)
 
     suspend fun editText(text: String, id: Int) = avanegarLocalDataSource.editText(text, id)
+
+    suspend fun insertUploadingFile(file: AvanegarUploadingFileEntity) =
+        avanegarLocalDataSource.insertUploadingFile(file)
 }

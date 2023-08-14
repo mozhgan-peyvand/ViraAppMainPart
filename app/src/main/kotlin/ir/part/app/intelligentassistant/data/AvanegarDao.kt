@@ -7,6 +7,7 @@ import androidx.room.Query
 import ir.part.app.intelligentassistant.data.entity.AvanegarArchiveUnionEntity
 import ir.part.app.intelligentassistant.data.entity.AvanegarProcessedFileEntity
 import ir.part.app.intelligentassistant.data.entity.AvanegarTrackingFileEntity
+import ir.part.app.intelligentassistant.data.entity.AvanegarUploadingFileEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -26,11 +27,17 @@ interface AvanegarDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProcessedFile(file: AvanegarProcessedFileEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertUploadingFile(file: AvanegarUploadingFileEntity)
+
     @Query("DELETE FROM AvanegarTrackingFileEntity WHERE token = :token")
     suspend fun deleteUnprocessedFile(token: String)
 
     @Query("DELETE FROM AvanegarProcessedFileEntity WHERE id = :id")
     suspend fun deleteProcessedFile(id: Int?)
+
+    @Query("DELETE FROM AvanegarUploadingFileEntity WHERE id =:id")
+    suspend fun deleteUploadingFile(id: String)
 
     @Query("UPDATE AvanegarProcessedFileEntity SET title=:title WHERE id=:id")
     suspend fun updateTitle(title: String?, id: Int?)
@@ -41,14 +48,20 @@ interface AvanegarDao {
     @Query(
         """
         SELECT * FROM (
-            SELECT 0 AS id, title, '' AS text, createdAt, filePath, token, 0 AS isSeen
+            SELECT 0 AS id,'' AS uploadingId, title, '' AS text, createdAt, filePath, token, 0 AS isSeen
             FROM AvanegarTrackingFileEntity
             ORDER BY createdAt DESC
         )
         UNION ALL
         SELECT * FROM (
-            SELECT id, title, text, createdAt, filePath, '' AS token, isSeen
+            SELECT id,'' AS uploadingId, title, text, createdAt, filePath, '' AS token, isSeen
             FROM AvanegarProcessedFileEntity
+            ORDER BY createdAt DESC
+        )
+        UNION ALL
+        SELECT * FROM (
+            SELECT 0 AS id, id AS uploadingId, title, '' AS text, createdAt, '' AS filePath,  '' AS token,  0 AS isSeen
+            FROM AvanegarUploadingFileEntity
             ORDER BY createdAt DESC
         )
     """

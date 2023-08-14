@@ -30,11 +30,11 @@ fun File.toMultiPart(partName: String): MultipartBody.Part {
     )
 }
 
-fun File.toMultiPart(listener: UploadProgressCallback): MultipartBody.Part {
+fun File.toMultiPart(id: String, listener: UploadProgressCallback): MultipartBody.Part {
     return MultipartBody.Part.createFormData(
         "file",
         this.name,
-        UploadFileRequestBody(this, listener)
+        UploadFileRequestBody(id, this, listener)
     )
 }
 

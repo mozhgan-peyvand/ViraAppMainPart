@@ -5,11 +5,13 @@ import androidx.room.RoomDatabase
 import ir.part.app.intelligentassistant.data.AvanegarDao
 import ir.part.app.intelligentassistant.data.entity.AvanegarProcessedFileEntity
 import ir.part.app.intelligentassistant.data.entity.AvanegarTrackingFileEntity
+import ir.part.app.intelligentassistant.data.entity.AvanegarUploadingFileEntity
 
 @Database(
     entities = [
         AvanegarProcessedFileEntity::class,
-        AvanegarTrackingFileEntity::class
+        AvanegarTrackingFileEntity::class,
+        AvanegarUploadingFileEntity::class
     ],
     version = 1,
     exportSchema = false
