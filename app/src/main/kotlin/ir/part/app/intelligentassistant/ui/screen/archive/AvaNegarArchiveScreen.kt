@@ -23,16 +23,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Card
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -45,7 +41,6 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,7 +58,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -73,6 +67,7 @@ import ir.part.app.intelligentassistant.ui.navigation.ScreensRouter
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.ArchiveView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarTrackingFileView
+import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarUploadingFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.BottomSheetDetailItem
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.BottomSheetShareDetailItem
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.ChooseFileBottomSheetContent
@@ -81,7 +76,6 @@ import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFile
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFileBottomSheetContent
 import ir.part.app.intelligentassistant.ui.screen.update.ForceUpdateScreen
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEvent
-import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.filename
 import ir.part.app.intelligentassistant.utils.ui.UiError
@@ -109,27 +103,6 @@ fun AvaNegarArchiveScreen(
 
     val fileName = remember {
         mutableStateOf<String?>("")
-    }
-
-    var isUploadFinished by remember { mutableStateOf(false) }
-    var uploadedPercent by remember { mutableFloatStateOf(0f) }
-
-    val listener by remember {
-        mutableStateOf<UploadProgressCallback>(
-            object : UploadProgressCallback {
-                override fun onProgress(
-                    bytesUploaded: Long,
-                    totalBytes: Long,
-                    isDone: Boolean
-                ) {
-                    if (totalBytes <= 0) archiveViewModel.updateIsSaving(
-                        true
-                    )
-                    uploadedPercent = (bytesUploaded.toDouble() / totalBytes).toFloat()
-                    isUploadFinished = isDone
-                }
-            }
-        )
     }
 
     val fileUri = remember {
@@ -171,7 +144,7 @@ fun AvaNegarArchiveScreen(
     val intent = Intent()
     intent.action = Intent.ACTION_GET_CONTENT
     intent.type = "audio/*"
-    val mimetypes = arrayOf("audio/aac", "audio/mpeg")
+    val mimetypes = arrayOf("audio/mpeg")
     intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes)
 
     val launchOpenFile = rememberLauncherForActivityResult(
@@ -283,10 +256,9 @@ fun AvaNegarArchiveScreen(
                             fileName.value = it
                         },
                         reNameAction = {
-                            archiveViewModel.uploadFile(
+                            archiveViewModel.addFileToUploadingQueue(
                                 fileName.value.orEmpty(),
-                                fileUri.value,
-                                listener
+                                fileUri.value
                             )
                             isFabExpanded = false
                             coroutineScope.launch {
@@ -442,13 +414,13 @@ fun AvaNegarArchiveScreen(
                             .weight(0.2f),
                         uploadFileStatus = archiveViewModel.uploadFileState.value,
                         fileName = processItem.value?.title.orEmpty(),
-                        uploadedPercent = uploadedPercent,
+                        //TODO it should be removed
+                        uploadedPercent = 0f,
                         isSavingFile = archiveViewModel.isSavingFile,
                         onRetryCLick = {
-                            archiveViewModel.uploadFile(
+                            archiveViewModel.addFileToUploadingQueue(
                                 processItem.value?.title.orEmpty(),
-                                fileUri.value,
-                                listener
+                                fileUri.value
                             )
                         },
                         onCancelClick = archiveViewModel::cancelDownload
@@ -479,7 +451,7 @@ fun AvaNegarArchiveScreen(
                             )
                         )
 
-                    },
+                    }
                 )
             }
 
@@ -561,7 +533,8 @@ private fun ArchiveBody(
                 .padding(top = 16.dp),
             onTryAgainCLick = { onTryAgainCLick(it) },
             onMenuClick = { onMenuClick(it) },
-            onItemClick = { onItemClick(it) })
+            onItemClick = { onItemClick(it) }
+        )
     }
 }
 
@@ -629,6 +602,8 @@ private fun ArchiveList(
                     is AvanegarProcessedFileView -> item.id
 
                     is AvanegarTrackingFileView -> item.token
+
+                    is AvanegarUploadingFileView -> item.id
                     else -> {}
                 }
             }) {
@@ -654,6 +629,14 @@ private fun ArchiveList(
                         onTryAgainButtonClick = { token ->
                             onTryAgainCLick(token)
                         }
+                    )
+                }
+
+                is AvanegarUploadingFileView -> {
+                    ArchiveUploadingFileElement(
+                        archiveUploadingFileView = it,
+                        onMenuClick = {},
+                        onItemClick = { /* TODO */ }
                     )
                 }
             }
@@ -712,101 +695,6 @@ private fun Fabs(
             Icon(
                 painter = painterResource(id = if (isFabExpanded) AIResource.drawable.ic_close else AIResource.drawable.ic_add),
                 contentDescription = stringResource(id = AIResource.string.desc_menu_upload_and_record)
-            )
-        }
-    }
-}
-
-@Composable
-fun ArchiveProcessedFileElement(
-    archiveViewProcessed: AvanegarProcessedFileView,
-    onItemClick: (Int) -> Unit,
-    onMenuClick: (AvanegarProcessedFileView) -> Unit
-) {
-    Card(
-        backgroundColor = if (archiveViewProcessed.isSeen) MaterialTheme.colors.primaryVariant else MaterialTheme.colors.surface,
-        shape = RoundedCornerShape(16.dp),
-        onClick = { onItemClick(archiveViewProcessed.id) }
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .height(128.dp)
-        ) {
-            Row {
-                Text(
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .weight(1f)
-                        .align(CenterVertically),
-                    text = archiveViewProcessed.title
-                )
-                IconButton(
-                    onClick = {
-                        onMenuClick(archiveViewProcessed)
-                    },
-                ) {
-                    Icon(
-                        painter = painterResource(id = AIResource.drawable.ic_dots_menu),
-                        contentDescription = stringResource(id = AIResource.string.desc_menu)
-                    )
-                }
-            }
-            Text(
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                text = archiveViewProcessed.text
-            )
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                text = archiveViewProcessed.createdAt
-            )
-        }
-    }
-}
-
-@Composable
-private fun ArchiveTrackingFileElements(
-    archiveTrackingView: AvanegarTrackingFileView,
-    onItemClick: (String) -> Unit,
-    onTryAgainButtonClick: (String) -> Unit
-) {
-    Card(
-        backgroundColor = MaterialTheme.colors.primaryVariant,
-        shape = RoundedCornerShape(16.dp),
-        onClick = { onItemClick(archiveTrackingView.token) }
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .height(128.dp)
-        ) {
-
-            Text(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                text = archiveTrackingView.title
-            )
-
-            //TODO Remove it
-            Button(
-                onClick = { onTryAgainButtonClick(archiveTrackingView.token) },
-            ) {
-                Text(text = stringResource(id = AIResource.string.lbl_try_again))
-            }
-
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                text = stringResource(id = AIResource.string.lbl_converting)
             )
         }
     }

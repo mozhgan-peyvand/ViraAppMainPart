@@ -18,7 +18,6 @@ class HeaderInterceptor @Inject constructor(
 
         val request = chain.request()
         val requestBuilder = request.newBuilder()
-        val response = chain.proceed(requestBuilder.build())
 
         if (request.header("gateway-token") == null)
             requestBuilder.addHeader(
@@ -26,10 +25,12 @@ class HeaderInterceptor @Inject constructor(
                 TOKEN
             )
 
-        //TODO check to make sure 401 really happen - should show update bottomSheet
+        val response = chain.proceed(requestBuilder.build())
+
+//        //TODO check to make sure 401 really happen - should show update bottomSheet
         if (response.code == 401) {
             aiEventPublisher.publishEvent(iaEvent = IntelligentAssistantEvent.TokenExpired)
         }
-        return chain.proceed(requestBuilder.build())
+        return response
     }
 }

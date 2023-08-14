@@ -11,6 +11,7 @@ import java.io.File
 import java.io.FileInputStream
 
 class UploadFileRequestBody(
+    private val id: String,
     private val file: File,
     private val callback: UploadProgressCallback
 
@@ -37,6 +38,7 @@ class UploadFileRequestBody(
             while (fis.read(buffer).also { read = it } != -1) {
                 handler.post {
                     callback.onProgress(
+                        id,
                         uploaded,
                         total,
 
