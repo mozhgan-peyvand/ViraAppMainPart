@@ -123,8 +123,7 @@ fun HomeBodyItem(
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 10.dp)
             .clickable { onCardClick() },
-        shape = RoundedCornerShape(8.dp),
-        backgroundColor = BG
+        shape = RoundedCornerShape(8.dp)
     ) {
         Row(
             modifier = Modifier.padding(20.dp),

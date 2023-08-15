@@ -23,8 +23,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -49,7 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -63,6 +65,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.ui.navigation.ScreensRouter
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.ArchiveView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarProcessedFileView
@@ -75,6 +78,11 @@ import ir.part.app.intelligentassistant.ui.screen.archive.entity.DeleteFileItemB
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFile
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFileBottomSheetContent
 import ir.part.app.intelligentassistant.ui.screen.update.ForceUpdateScreen
+import ir.part.app.intelligentassistant.ui.theme.Red
+import ir.part.app.intelligentassistant.ui.theme.Red_800
+import ir.part.app.intelligentassistant.ui.theme.Text_1
+import ir.part.app.intelligentassistant.ui.theme.Text_3
+import ir.part.app.intelligentassistant.ui.theme.White
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEvent
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.filename
@@ -390,7 +398,16 @@ fun AvaNegarArchiveScreen(
             }
         }
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = if (archiveViewModel.allArchiveFiles.value.isEmpty())
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colors.background)
+            else
+                Modifier
+                    .fillMaxSize()
+                    .paint(painterResource(id = R.drawable.bg_pattern))
+        ) {
 
             Column(
                 modifier = Modifier
@@ -406,24 +423,10 @@ fun AvaNegarArchiveScreen(
                         )
                     })
 
-                if (archiveViewModel.uploadFileState.value != UploadIdle)
-                    UploadFileSection(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colors.primary.copy(0.8f))
-                            .weight(0.2f),
-                        uploadFileStatus = archiveViewModel.uploadFileState.value,
-                        fileName = processItem.value?.title.orEmpty(),
-                        //TODO it should be removed
-                        uploadedPercent = 0f,
-                        isSavingFile = archiveViewModel.isSavingFile,
-                        onRetryCLick = {
-                            archiveViewModel.addFileToUploadingQueue(
-                                processItem.value?.title.orEmpty(),
-                                fileUri.value
-                            )
-                        },
-                        onCancelClick = archiveViewModel::cancelDownload
+                if (archiveViewModel.errorBanner.value && archiveViewModel.allArchiveFiles.value.isNotEmpty())
+                    ErrorBanner(
+                        modifier = Modifier.padding(top = 16.dp),
+                        errorMessage = stringResource(id = R.string.msg_internet_disconnected)
                     )
 
                 ArchiveBody(
@@ -457,7 +460,7 @@ fun AvaNegarArchiveScreen(
 
             if (isFabExpanded) {
                 Surface(
-                    color = Color.White.copy(alpha = 0.6f),
+                    color = MaterialTheme.colors.background.copy(alpha = 0.5f),
                     modifier = Modifier
                         .fillMaxSize()
                         .pointerInput(Unit) { isFabExpanded = false },
@@ -502,6 +505,8 @@ private fun ArchiveAppBar(
         }
         Text(
             text = stringResource(id = AIResource.string.lbl_ava_negar),
+            style = MaterialTheme.typography.subtitle2,
+            color = MaterialTheme.colors.onSurface,
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Start
         )
@@ -529,11 +534,38 @@ private fun ArchiveBody(
     } else {
         ArchiveList(
             list = archiveViewList,
-            modifier = modifier
-                .padding(top = 16.dp),
+            modifier = modifier.padding(vertical = 16.dp),
             onTryAgainCLick = { onTryAgainCLick(it) },
             onMenuClick = { onMenuClick(it) },
             onItemClick = { onItemClick(it) }
+        )
+    }
+}
+
+@Composable
+fun ErrorBanner(
+    errorMessage: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Red_800)
+    ) {
+
+        Icon(
+            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+            painter = painterResource(id = R.drawable.ic_failure_network),
+            contentDescription = null,
+            tint = Red
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+            text = errorMessage,
+            style = MaterialTheme.typography.body2,
+            color = Red
         )
     }
 }
@@ -552,31 +584,43 @@ private fun ArchiveEmptyBody(
                 .weight(0.6f)
         )
         Image(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            painter = painterResource(id = AIResource.drawable.ic_image_default),
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier
+                .size(200.dp)
+                .align(Alignment.CenterHorizontally),
+            painter = painterResource(id = AIResource.drawable.img_main_page),
             contentDescription = null
         )
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = stringResource(id = AIResource.string.lbl_dont_have_file),
+            style = MaterialTheme.typography.subtitle1,
+            color = Text_1,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(top = 8.dp)
         )
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = stringResource(id = AIResource.string.lbl_make_your_first_file),
+            style = MaterialTheme.typography.caption,
+            color = Text_3,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(vertical = 8.dp)
         )
-        Image(
-            modifier = Modifier
-                .fillMaxHeight()
-                .weight(1f),
-            contentScale = ContentScale.Crop,
-            painter = painterResource(id = AIResource.drawable.img_arrow),
-            contentDescription = null
-        )
-        Spacer(modifier = Modifier.size(100.dp))
+        Spacer(modifier = Modifier.height(58.dp))
+        Row(
+            modifier = Modifier.weight(0.8f)
+        ) {
+            Spacer(modifier = Modifier.width(80.dp))
+            Image(
+                modifier = Modifier.fillMaxHeight(),
+                contentScale = ContentScale.Crop,
+                painter = painterResource(id = AIResource.drawable.ic_arrow),
+                contentDescription = null
+            )
+        }
+
+        Spacer(modifier = Modifier.size(60.dp))
     }
 }
 
@@ -592,8 +636,8 @@ private fun ArchiveList(
         modifier = modifier,
         columns = GridCells.Adaptive(128.dp),
         contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         items(
             items = list,
@@ -651,33 +695,50 @@ private fun Fabs(
     onMainFabClick: () -> Unit,
     openBottomSheet: () -> Unit
 ) {
-    Column(
+    Row(
+        verticalAlignment = CenterVertically,
         modifier = modifier.padding(
             start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp
         )
     ) {
+        Column {
 
-        AnimatedVisibility(visible = isFabExpanded) {
+            AnimatedVisibility(visible = isFabExpanded) {
+
+                FloatingActionButton(
+                    backgroundColor = MaterialTheme.colors.primary,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .padding(bottom = 18.dp),
+                    onClick = openBottomSheet
+                ) {
+                    Icon(
+                        painter = painterResource(id = AIResource.drawable.ic_upload),
+                        contentDescription = stringResource(id = AIResource.string.desc_upload)
+                    )
+                }
+            }
 
             FloatingActionButton(
+                backgroundColor = if (isFabExpanded) White else MaterialTheme.colors.primary,
                 modifier = Modifier
-                    .clip(CircleShape)
-                    .padding(bottom = 8.dp),
-                onClick = openBottomSheet
+                    .clip(CircleShape),
+                onClick = onMainFabClick
             ) {
                 Icon(
-                    painter = painterResource(id = AIResource.drawable.ic_upload),
-                    contentDescription = stringResource(id = AIResource.string.desc_upload)
+                    tint = if (isFabExpanded) MaterialTheme.colors.primary else White,
+                    painter = painterResource(id = if (isFabExpanded) AIResource.drawable.ic_close else AIResource.drawable.ic_add),
+                    contentDescription = stringResource(id = AIResource.string.desc_menu_upload_and_record)
                 )
             }
         }
-
         AnimatedVisibility(visible = isFabExpanded) {
 
             FloatingActionButton(
+                backgroundColor = MaterialTheme.colors.primary,
                 modifier = Modifier
                     .clip(CircleShape)
-                    .padding(bottom = 8.dp),
+                    .padding(bottom = 8.dp, start = 8.dp),
                 onClick = {
                     //TODO implement onCLick
                 }) {
@@ -686,16 +747,6 @@ private fun Fabs(
                     contentDescription = stringResource(id = AIResource.string.desc_record)
                 )
             }
-        }
-
-        FloatingActionButton(
-            modifier = Modifier.clip(CircleShape),
-            onClick = onMainFabClick
-        ) {
-            Icon(
-                painter = painterResource(id = if (isFabExpanded) AIResource.drawable.ic_close else AIResource.drawable.ic_add),
-                contentDescription = stringResource(id = AIResource.string.desc_menu_upload_and_record)
-            )
         }
     }
 }
