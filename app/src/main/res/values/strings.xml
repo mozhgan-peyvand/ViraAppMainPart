@@ -35,7 +35,7 @@
     <string name="lbl_waiting_for_upload">در انتظار آپلود فایل</string>
 
     <string name="lbl_make_your_first_file">اولین فایل خود را ایجاد کنید.</string>
-    <string name="lbl_dont_have_file">هنوز فایلی برای نمایش ندارید.</string>
+    <string name="lbl_dont_have_file">فایلی برای نمایش ندارید.</string>
     <string name="lbl_choose_file">انتخاب فایل</string>
     <string name="lbl_you_can_only_choose_one_file">شما تنها میتوانید یک فایل برای پردازش ارسال کنید</string>
     <string name="lbl_allowed_format">فرمت های مجاز : mp3</string>
@@ -70,7 +70,7 @@
     <string name="lbl_btn_share_text">اشتراک گذاری</string>
     <string name="lbl_btn_delete_file">حذف فایل</string>
     <string name="lbl_try_again">تلاش مجدد</string>
-
+    <string name="msg_internet_disconnected">اتصال شما به اینترنت قطع است.</string>
     <!--region error message -->
     <string name="msg_there_is_a_problem">مشکلی به وجود آمده است</string>
     <string name="msg_invalid_input_data">داده های ورودی معتبر نمی باشد</string>

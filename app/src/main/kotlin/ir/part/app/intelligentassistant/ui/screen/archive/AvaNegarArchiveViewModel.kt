@@ -59,9 +59,6 @@ class AvaNegarArchiveViewModel @Inject constructor(
     private val _uiViewStat = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewStat
 
-    private val _uploadFileState: MutableState<UploadFileStatus> = mutableStateOf(UploadIdle)
-    val uploadFileState: State<UploadFileStatus> = _uploadFileState
-
     private val _aiEvent: MutableState<IntelligentAssistantEvent?> = mutableStateOf(null)
     val aiEvent: State<IntelligentAssistantEvent?> = _aiEvent
 
@@ -69,6 +66,9 @@ class AvaNegarArchiveViewModel @Inject constructor(
     val allArchiveFiles: State<List<ArchiveView>> = _allArchiveFiles
 
     private var uploadingFileQueue = CopyOnWriteArrayList<AvanegarUploadingFileView>()
+
+    private var _errorBanner: MutableState<Boolean> = mutableStateOf(false)
+    val errorBanner: State<Boolean> = _errorBanner
 
     //TODO set appropriate name
     var isSavingFile = false
@@ -101,7 +101,6 @@ class AvaNegarArchiveViewModel @Inject constructor(
         viewModelScope.launch {
             isUploading.collect {
                 if (!it && uploadingFileQueue.isNotEmpty()) {
-                    _uploadFileState.value = UploadInProgress
                     _uiViewStat.emit(UiLoading)
 
                     isUploading.value = true
@@ -145,7 +144,6 @@ class AvaNegarArchiveViewModel @Inject constructor(
                     }
 
                     if (uploadingFileQueue.isNotEmpty() && !isUploading.value) {
-                        _uploadFileState.value = UploadInProgress
                         _uiViewStat.emit(UiLoading)
 
                         isUploading.value = true
@@ -224,7 +222,6 @@ class AvaNegarArchiveViewModel @Inject constructor(
 
             //fixme set the correct value
             delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
-            _uploadFileState.value = UploadIdle
         }
     }
 
@@ -255,7 +252,6 @@ class AvaNegarArchiveViewModel @Inject constructor(
 
     fun cancelDownload() {
         job?.cancel()
-        _uploadFileState.value = UploadIdle
         _uiViewStat.tryEmit(UiIdle)
     }
 
@@ -314,7 +310,6 @@ class AvaNegarArchiveViewModel @Inject constructor(
     ) {
         when (result) {
             is Success -> {
-                _uploadFileState.value = UploadSuccess
                 _uiViewStat.emit(UiSuccess)
                 changeUploadFileToIdle()
                 onSuccess?.let {
@@ -324,7 +319,6 @@ class AvaNegarArchiveViewModel @Inject constructor(
 
             is Error -> {
                 _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
-                _uploadFileState.value = UploadFailure
             }
         }
     }
