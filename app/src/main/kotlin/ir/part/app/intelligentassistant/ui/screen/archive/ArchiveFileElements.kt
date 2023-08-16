@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
@@ -30,6 +31,7 @@ import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarProcess
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarTrackingFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarUploadingFileView
 import ir.part.app.intelligentassistant.ui.theme.Card_Stroke
+import ir.part.app.intelligentassistant.ui.theme.Red
 import ir.part.app.intelligentassistant.ui.theme.Text_1
 import ir.part.app.intelligentassistant.ui.theme.Text_2
 import ir.part.app.intelligentassistant.ui.theme.Text_3
@@ -115,6 +117,7 @@ fun ArchiveProcessedFileElement(
 @Composable
 fun ArchiveTrackingFileElements(
     archiveTrackingView: AvanegarTrackingFileView,
+    isNetworkAvailable: Boolean,
     onItemClick: (String) -> Unit,
     onTryAgainButtonClick: (String) -> Unit
 ) {
@@ -140,19 +143,22 @@ fun ArchiveTrackingFileElements(
                 text = archiveTrackingView.title
             )
 
-            //TODO Remove it
-            Button(
-                onClick = { onTryAgainButtonClick(archiveTrackingView.token) },
-            ) {
-                Text(text = stringResource(id = R.string.lbl_try_again))
-            }
+            if (isNetworkAvailable) {
+                //TODO Remove it
+                Button(
+                    onClick = { onTryAgainButtonClick(archiveTrackingView.token) },
+                ) {
+                    Text(text = stringResource(id = R.string.lbl_try_again))
+                }
 
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.body2,
-                color = Text_2,
-                text = stringResource(id = R.string.lbl_converting)
-            )
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.body2,
+                    color = Text_2,
+                    text = stringResource(id = R.string.lbl_converting)
+                )
+            } else
+                ArchiveBodyError(modifier = Modifier.weight(1f))
         }
     }
 }
@@ -160,6 +166,7 @@ fun ArchiveTrackingFileElements(
 @Composable
 fun ArchiveUploadingFileElement(
     archiveUploadingFileView: AvanegarUploadingFileView,
+    isNetworkAvailable: Boolean,
     onMenuClick: (AvanegarUploadingFileView) -> Unit,
     onItemClick: (String) -> Unit
 ) {
@@ -170,7 +177,12 @@ fun ArchiveUploadingFileElement(
     ) {
         Column(
             modifier = Modifier
-                .padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 16.dp)
+                .padding(
+                    start = 8.dp,
+                    end = 8.dp,
+                    top = 4.dp,
+                    bottom = 16.dp
+                )
                 .fillMaxWidth()
                 .height(128.dp)
         ) {
@@ -199,45 +211,64 @@ fun ArchiveUploadingFileElement(
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Bottom
+            if (isNetworkAvailable)
+                Row(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.Bottom,
-                        modifier = Modifier.weight(1f)
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Bottom
                     ) {
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            modifier = Modifier.weight(1f)
+                        ) {
 
-                        Text(
-                            modifier = Modifier.weight(1f),
-                            style = MaterialTheme.typography.caption,
-                            color = Text_3,
-                            text = stringResource(
-                                id = if (archiveUploadingFileView.uploadedPercent > 0) R.string.lbl_uploading
-                                else R.string.lbl_waiting_for_upload
+                            Text(
+                                modifier = Modifier.weight(1f),
+                                style = MaterialTheme.typography.caption,
+                                color = Text_3,
+                                text = stringResource(
+                                    id = if (archiveUploadingFileView.uploadedPercent > 0) R.string.lbl_uploading
+                                    else R.string.lbl_waiting_for_upload
+                                )
                             )
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            style = MaterialTheme.typography.caption,
-                            color = Text_3,
-                            text = "${(archiveUploadingFileView.uploadedPercent * 100).toInt()}%"
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                style = MaterialTheme.typography.caption,
+                                color = Text_3,
+                                text = "${(archiveUploadingFileView.uploadedPercent * 100).toInt()}%"
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                        LinearProgressIndicator(
+                            strokeCap = StrokeCap.Round,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp),
+                            progress = archiveUploadingFileView.uploadedPercent,
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-                    LinearProgressIndicator(
-                        strokeCap = StrokeCap.Round,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp),
-                        progress = archiveUploadingFileView.uploadedPercent,
-                    )
                 }
-            }
+            else
+                ArchiveBodyError(modifier = Modifier.weight(1f))
         }
+    }
+}
+
+@Composable
+private fun ArchiveBodyError(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        Text(
+            textAlign = TextAlign.Center,
+            text = stringResource(id = R.string.msg_internet_connection_problem),
+            style = MaterialTheme.typography.caption,
+            color = Red
+        )
     }
 }

@@ -71,6 +71,8 @@
     <string name="lbl_btn_delete_file">حذف فایل</string>
     <string name="lbl_try_again">تلاش مجدد</string>
     <string name="msg_internet_disconnected">اتصال شما به اینترنت قطع است.</string>
+    <string name="msg_internet_connection_problem">مشکل در اتصال به اینترنت</string>
+
     <!--region error message -->
     <string name="msg_there_is_a_problem">مشکلی به وجود آمده است</string>
     <string name="msg_invalid_input_data">داده های ورودی معتبر نمی باشد</string>
