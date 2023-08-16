@@ -47,7 +47,7 @@
     <string name="lbl_need_to_access_file_permission">شما نیازمند دسترسی به فایل ها هستید.</string>
     <string name="msg_access_file_permission_manually">شما نیازمند دسترسی به فایل ها هستید. باید بصورت دستی، اجاره دسترسی به فایل ها را بدهید.</string>
 
-    <string name="lbl_search_in_archive">برای جستجو در آرشیو تایپ نمایید</string>
+    <string name="lbl_search_in_archive">برای جستجو در آرشیو بنویسید…</string>
 
     <string name="lbl_copy_text_file">کپی متن فایل</string>
     <string name="lbl_share_file">اشتراک گذاری</string>
