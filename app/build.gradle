@@ -118,4 +118,5 @@ dependencies {
 
     //iText for pdf
     implementation 'com.itextpdf:itextpdf:5.5.13.1'
+    implementation "com.airbnb.android:lottie-compose:4.0.0"
 }

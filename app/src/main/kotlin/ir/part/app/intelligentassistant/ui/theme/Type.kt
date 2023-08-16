@@ -102,3 +102,10 @@ val Typography = Typography(
         lineHeight = 16.sp
     )
 )
+
+val Typography.labelMedium: TextStyle
+    get() = overline.copy(
+        fontSize = 12.sp,
+        fontFamily = FontFamily(Font(R.font.bahij_thesansarabic_plain)),
+        fontWeight = FontWeight(400)
+    )
