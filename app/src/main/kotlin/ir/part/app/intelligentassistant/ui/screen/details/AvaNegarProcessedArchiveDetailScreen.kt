@@ -3,8 +3,8 @@ package ir.part.app.intelligentassistant.ui.screen.details
 import android.media.MediaPlayer
 import android.net.Uri
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,12 +17,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
@@ -32,8 +35,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -55,22 +56,25 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.BottomSheetShareDetailItem
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.DeleteFileItemBottomSheet
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFile
+import ir.part.app.intelligentassistant.ui.theme.BG_Solid_2
+import ir.part.app.intelligentassistant.ui.theme.Primary_300
+import ir.part.app.intelligentassistant.ui.theme.Primary_Opacity_15
+import ir.part.app.intelligentassistant.ui.theme.Surface_Container_High
+import ir.part.app.intelligentassistant.ui.theme.White
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.orZero
+import ir.part.app.intelligentassistant.utils.ui.formatDuration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
-import java.util.concurrent.TimeUnit
 import ir.part.app.intelligentassistant.R as AIResource
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -85,6 +89,8 @@ fun AvaNegarProcessedArchiveDetailScreen(
     val context = LocalContext.current
     val archive = viewModel.archiveFile.collectAsStateWithLifecycle()
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    val scrollState = rememberScrollState(0)
 
     DisposableEffect(context) {
         onDispose {
@@ -239,7 +245,8 @@ fun AvaNegarProcessedArchiveDetailScreen(
                                 bottomSheetState.hide()
                             }
                         }
-                    }
+                    },
+                    scrollStateValue = scrollState.value
                 )
             },
             bottomBar = {
@@ -277,7 +284,9 @@ fun AvaNegarProcessedArchiveDetailScreen(
                 onTextChange = {
                     viewModel.addTextToList(it)
                 },
-                mediaPlayer = mediaPlayer ?: MediaPlayer()
+                mediaPlayer = mediaPlayer ?: MediaPlayer(),
+                scrollState = scrollState,
+                scrollStateValue = scrollState.value
             )
         }
     }
@@ -293,48 +302,55 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
     onRedoClick: () -> Unit,
     onBackAction: () -> Unit,
     onMenuAction: () -> Unit,
+    scrollStateValue: Int
 ) {
+    val color =
+        if (scrollStateValue > 0) Surface_Container_High else MaterialTheme.colors.primaryVariant
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .background(color = color),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { onBackAction() }) {
+        IconButton(
+            onClick = { onBackAction() }, modifier = Modifier.weight(1f)
+        ) {
             Icon(
-                imageVector = Icons.Outlined.ArrowForward,
+
+                painter = painterResource(id = AIResource.drawable.ic_arrow_forward),
                 contentDescription = stringResource(id = AIResource.string.desc_menu)
             )
         }
         Text(
             text = title,
-            modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Start,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold
+            modifier = Modifier.weight(2f),
+            style = MaterialTheme.typography.subtitle2,
+            color = White
         )
 
-        IconButton(
-            enabled = isRedoEnabled,
-            onClick = { onRedoClick() }
-        ) {
+        IconButton(enabled = isRedoEnabled,
+            modifier = Modifier.weight(1f),
+            onClick = { onRedoClick() }) {
             Icon(
-                painter = painterResource(id = AIResource.drawable.ic_arrow_redo),
+                painter = painterResource(id = AIResource.drawable.ic_redo),
                 contentDescription = stringResource(id = AIResource.string.desc_redo)
             )
         }
 
-        IconButton(
-            enabled = isUndoEnabled,
-            onClick = { onUndoClick() }
-        ) {
+        IconButton(enabled = isUndoEnabled,
+            modifier = Modifier.weight(1f),
+            onClick = { onUndoClick() }) {
             Icon(
-                painter = painterResource(id = AIResource.drawable.ic_arrow_undo),
+                painter = painterResource(id = AIResource.drawable.ic_undo),
                 contentDescription = stringResource(id = AIResource.string.desc_undo)
             )
         }
 
-        IconButton(onClick = { onMenuAction() }) {
+        IconButton(
+            onClick = { onMenuAction() }, modifier = Modifier.weight(1f)
+        ) {
             Icon(
-                painter = painterResource(id = AIResource.drawable.icon_container),
+                painter = painterResource(id = AIResource.drawable.ic_menu),
                 contentDescription = stringResource(id = AIResource.string.desc_menu)
             )
         }
@@ -347,42 +363,63 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
     onShareClick: () -> Unit,
     onCopyOnClick: () -> Unit
 ) {
-    Row(modifier = modifier.fillMaxWidth()) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+            .background(BG_Solid_2)
+    ) {
         Button(
             modifier = Modifier
                 .weight(1f)
-                .padding(10.dp),
+                .padding(end = 8.dp),
             onClick = { onCopyOnClick() },
             colors = ButtonDefaults.buttonColors(
-                contentColor = Color.Black, backgroundColor = Color.White
-            ),
-            border = BorderStroke(1.dp, Color.Black)
+                contentColor = Primary_300,
+                backgroundColor = Primary_Opacity_15
+            )
         ) {
-            Row {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Image(
-                    painter = painterResource(id = AIResource.drawable.icon_copy),
-                    contentDescription = stringResource(id = AIResource.string.desc_copy)
+                    painter = painterResource(id = AIResource.drawable.ic_copy),
+                    contentDescription = stringResource(id = AIResource.string.desc_copy),
+                    modifier.padding(end = 8.dp)
                 )
-                Text(text = stringResource(id = AIResource.string.lbl_btn_copy_text))
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_btn_copy_text),
+                    style = MaterialTheme.typography.button,
+                    color = Primary_300
+                )
             }
         }
 
         Button(
             modifier = Modifier
                 .weight(1f)
-                .padding(10.dp),
+                .padding(start = 8.dp),
             onClick = { onShareClick() },
             colors = ButtonDefaults.buttonColors(
-                contentColor = Color.Black, backgroundColor = Color.White
-            ),
-            border = BorderStroke(1.dp, Color.Black)
+                contentColor = Primary_300,
+                backgroundColor = Primary_Opacity_15
+            )
         ) {
-            Row {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Image(
-                    painter = painterResource(id = AIResource.drawable.icon_share),
-                    contentDescription = stringResource(id = AIResource.string.desc_share)
+                    painter = painterResource(id = AIResource.drawable.ic_share),
+                    contentDescription = stringResource(id = AIResource.string.desc_share),
+                    modifier.padding(end = 8.dp)
                 )
-                Text(text = stringResource(id = AIResource.string.lbl_btn_share_text))
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_btn_share_text),
+                    style = MaterialTheme.typography.button,
+                    color = Primary_300
+                )
             }
         }
     }
@@ -394,24 +431,29 @@ fun AvaNegarProcessedArchiveDetailBody(
     modifier: Modifier = Modifier,
     text: String,
     onTextChange: (String) -> Unit,
-    mediaPlayer: MediaPlayer
+    mediaPlayer: MediaPlayer,
+    scrollState: ScrollState,
+    scrollStateValue: Int
 ) {
     Column(modifier = modifier.padding(paddingValues)) {
-        Row {
-            PlayerBody(mediaPlayer = mediaPlayer)
-        }
+        PlayerBody(
+            mediaPlayer = mediaPlayer,
+            scrollStateValue = scrollStateValue
+        )
         TextField(
             value = text,
             onValueChange = { onTextChange(it) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 10.dp),
+                .padding(horizontal = 10.dp, vertical = 10.dp)
+                .verticalScroll(scrollState),
             colors = TextFieldDefaults.textFieldColors(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
                 backgroundColor = Color.Transparent
-            )
+            ),
+            textStyle = MaterialTheme.typography.body1
         )
     }
 }
@@ -419,9 +461,11 @@ fun AvaNegarProcessedArchiveDetailBody(
 @Composable
 fun PlayerBody(
     modifier: Modifier = Modifier,
-    mediaPlayer: MediaPlayer
+    mediaPlayer: MediaPlayer,
+    scrollStateValue: Int
 ) {
-
+    val color =
+        if (scrollStateValue > 0) Surface_Container_High else MaterialTheme.colors.primaryVariant
     val isPlaying = remember {
         mutableStateOf(false)
     }
@@ -438,62 +482,80 @@ fun PlayerBody(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color.LightGray),
-        horizontalArrangement = Arrangement.End
+            .background(color)
+            .padding(
+                start = 24.dp, end = 24.dp, top = 16.dp, bottom = 16.dp
+            ),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-            Slider(
-                colors = SliderDefaults.colors(
-                    activeTrackColor = Color.White,
-                    inactiveTrackColor = Color.Black
-                ),
-                value = progress,
-                onValueChange = {
-                    progress = it
-                    mediaPlayer.seekTo((it * 1000).toInt())
-                },
-                valueRange = 0f..mediaPlayer.duration.toFloat() / 1000
+        Row(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Text(
+                text = formatDuration(mediaPlayer.duration.toLong()),
+                textAlign = TextAlign.End,
+                style = MaterialTheme.typography.caption
             )
-            Row {
-                Text(text = ((mediaPlayer.currentPosition.toFloat() / 1000)).toString())
-                Text(text = "/")
-                Text(
-                    text = TimeUnit.SECONDS.toMinutes(mediaPlayer.duration.toLong())
-                        .toString()
-                )
-            }
+            Text(
+                text = "-",
+                textAlign = TextAlign.End,
+                style = MaterialTheme.typography.caption,
+                modifier = Modifier.padding(end = 12.dp)
+            )
         }
+        Slider(
+            colors = SliderDefaults.colors(
+                activeTrackColor = Primary_300,
+                inactiveTrackColor = Surface_Container_High,
+                thumbColor = White
+            ),
+            value = progress,
+            onValueChange = {
+                progress = it
+                mediaPlayer.seekTo((it * 1000).toInt())
+            },
+            valueRange = 0f..mediaPlayer.duration.toFloat() / 1000,
+            modifier = Modifier
+                .weight(4f)
+                .padding(end = 12.dp)
+        )
         if (isPlaying.value) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.clickable {
-                    isPlaying.value = !isPlaying.value
-                    mediaPlayer.pause()
-                }
+                modifier = Modifier
+                    .clickable {
+                        isPlaying.value = !isPlaying.value
+                        mediaPlayer.pause()
+                    }
+                    .weight(1f)
             ) {
                 Surface(
-                    modifier = Modifier.size(50.dp),
+                    modifier = Modifier.size(46.dp),
                     shape = CircleShape,
-                    color = Color.Black
+                    color = MaterialTheme.colors.primary
                 ) {}
-
                 Image(
                     painter = painterResource(id = AIResource.drawable.icon_pause),
                     contentDescription = null
                 )
             }
+
         } else {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.clickable {
-                    isPlaying.value = !isPlaying.value
-                    mediaPlayer.start()
-                }
+                modifier = Modifier
+                    .clickable {
+                        isPlaying.value = !isPlaying.value
+                        mediaPlayer.start()
+                    }
+                    .weight(1f)
             ) {
                 Surface(
-                    modifier = Modifier.size(50.dp),
+                    modifier = Modifier.size(46.dp),
                     shape = CircleShape,
-                    color = Color.Black
+                    color = MaterialTheme.colors.primary
                 ) {}
                 Image(
                     painter = painterResource(id = AIResource.drawable.icon_play),
