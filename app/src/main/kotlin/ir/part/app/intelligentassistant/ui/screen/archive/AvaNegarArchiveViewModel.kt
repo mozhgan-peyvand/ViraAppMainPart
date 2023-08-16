@@ -20,6 +20,8 @@ import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantE
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEventPublisher
 import ir.part.app.intelligentassistant.utils.common.file.FileCache
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
+import ir.part.app.intelligentassistant.utils.data.NetworkStatus
+import ir.part.app.intelligentassistant.utils.data.NetworkStatusTracker
 import ir.part.app.intelligentassistant.utils.data.api_result.AppResult
 import ir.part.app.intelligentassistant.utils.data.api_result.AppResult.Error
 import ir.part.app.intelligentassistant.utils.data.api_result.AppResult.Success
@@ -54,6 +56,7 @@ class AvaNegarArchiveViewModel @Inject constructor(
     private val aiEventPublisher: IntelligentAssistantEventPublisher,
     private val sharedPref: SharedPreferences,
     private val uiException: UiException,
+    networkStatusTracker: NetworkStatusTracker,
 ) : ViewModel() {
 
     private val _uiViewStat = MutableSharedFlow<UiStatus>()
@@ -65,10 +68,10 @@ class AvaNegarArchiveViewModel @Inject constructor(
     private val _allArchiveFiles: MutableState<List<ArchiveView>> = mutableStateOf(listOf())
     val allArchiveFiles: State<List<ArchiveView>> = _allArchiveFiles
 
-    private var uploadingFileQueue = CopyOnWriteArrayList<AvanegarUploadingFileView>()
+    private val _isNetworkAvailable: MutableState<Boolean> = mutableStateOf(false)
+    val isNetworkAvailable: State<Boolean> = _isNetworkAvailable
 
-    private var _errorBanner: MutableState<Boolean> = mutableStateOf(false)
-    val errorBanner: State<Boolean> = _errorBanner
+    private var uploadingFileQueue = CopyOnWriteArrayList<AvanegarUploadingFileView>()
 
     //TODO set appropriate name
     var isSavingFile = false
@@ -80,6 +83,15 @@ class AvaNegarArchiveViewModel @Inject constructor(
     private var job: Job? = null
 
     init {
+        viewModelScope.launch {
+            networkStatusTracker.networkStatus.collect {
+                when (it) {
+                    NetworkStatus.Available -> _isNetworkAvailable.value = true
+                    NetworkStatus.Unavailable -> _isNetworkAvailable.value = false
+                }
+            }
+        }
+
         viewModelScope.launch {
             repository.getAllArchiveFiles().collect { avanegarArchiveFile ->
                 val processedList = avanegarArchiveFile.processed

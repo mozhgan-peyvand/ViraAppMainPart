@@ -423,7 +423,7 @@ fun AvaNegarArchiveScreen(
                         )
                     })
 
-                if (archiveViewModel.errorBanner.value && archiveViewModel.allArchiveFiles.value.isNotEmpty())
+                if (!archiveViewModel.isNetworkAvailable.value && archiveViewModel.allArchiveFiles.value.isNotEmpty())
                     ErrorBanner(
                         modifier = Modifier.padding(top = 16.dp),
                         errorMessage = stringResource(id = R.string.msg_internet_disconnected)
@@ -434,6 +434,7 @@ fun AvaNegarArchiveScreen(
                         .weight(1f)
                         .fillMaxWidth(),
                     archiveViewList = archiveViewModel.allArchiveFiles.value,
+                    isNetworkAvailable = archiveViewModel.isNetworkAvailable.value,
                     onTryAgainCLick = { archiveViewModel.trackLargeFileResult(it) },
                     onMenuClick = { item ->
                         setSelectedSheet(ArchiveBottomSheetType.Detail)
@@ -523,6 +524,7 @@ private fun ArchiveAppBar(
 private fun ArchiveBody(
     modifier: Modifier,
     archiveViewList: List<ArchiveView>,
+    isNetworkAvailable: Boolean,
     onTryAgainCLick: (String) -> Unit,
     onMenuClick: (AvanegarProcessedFileView) -> Unit,
     onItemClick: (Int) -> Unit
@@ -535,6 +537,7 @@ private fun ArchiveBody(
         ArchiveList(
             list = archiveViewList,
             modifier = modifier.padding(vertical = 16.dp),
+            isNetworkAvailable = isNetworkAvailable,
             onTryAgainCLick = { onTryAgainCLick(it) },
             onMenuClick = { onMenuClick(it) },
             onItemClick = { onItemClick(it) }
@@ -628,6 +631,7 @@ private fun ArchiveEmptyBody(
 private fun ArchiveList(
     list: List<ArchiveView>,
     modifier: Modifier = Modifier,
+    isNetworkAvailable: Boolean,
     onTryAgainCLick: (String) -> Unit,
     onMenuClick: (AvanegarProcessedFileView) -> Unit,
     onItemClick: (Int) -> Unit
@@ -669,6 +673,7 @@ private fun ArchiveList(
                 is AvanegarTrackingFileView -> {
                     ArchiveTrackingFileElements(
                         archiveTrackingView = it,
+                        isNetworkAvailable = isNetworkAvailable,
                         onItemClick = {},
                         onTryAgainButtonClick = { token ->
                             onTryAgainCLick(token)
@@ -679,6 +684,7 @@ private fun ArchiveList(
                 is AvanegarUploadingFileView -> {
                     ArchiveUploadingFileElement(
                         archiveUploadingFileView = it,
+                        isNetworkAvailable = isNetworkAvailable,
                         onMenuClick = {},
                         onItemClick = { /* TODO */ }
                     )
