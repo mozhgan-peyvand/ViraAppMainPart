@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -52,6 +53,7 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -219,6 +221,8 @@ fun AvaNegarArchiveScreen(
     }
 
     ModalBottomSheetLayout(
+        sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
+        sheetBackgroundColor = Color.Black,
         sheetState = if (isAnyBottomSheetOtherThanUpdate) modalBottomSheetState
         else modalBottomSheetStateUpdate,
         sheetContent = {
