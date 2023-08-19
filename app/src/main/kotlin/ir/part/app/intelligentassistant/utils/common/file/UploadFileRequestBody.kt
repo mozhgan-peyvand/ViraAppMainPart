@@ -20,9 +20,8 @@ class UploadFileRequestBody(
         MimeTypeMap.getSingleton()
     }
 
-    override fun contentType(): MediaType {
-        //fixme remove !!
-        return mimeTypeMap.getMimeTypeFromExtension(file.extension)!!.toMediaType()
+    override fun contentType(): MediaType? {
+        return mimeTypeMap.getMimeTypeFromExtension(file.extension)?.toMediaType()
     }
 
     override fun contentLength(): Long = file.length()

@@ -60,7 +60,7 @@ interface AvanegarDao {
         )
         UNION ALL
         SELECT * FROM (
-            SELECT 0 AS id, id AS uploadingId, title, '' AS text, createdAt, '' AS filePath,  '' AS token,  0 AS isSeen
+            SELECT 0 AS id, id AS uploadingId, title, '' AS text, createdAt, filePath,  '' AS token,  0 AS isSeen
             FROM AvanegarUploadingFileEntity
             ORDER BY createdAt DESC
         )

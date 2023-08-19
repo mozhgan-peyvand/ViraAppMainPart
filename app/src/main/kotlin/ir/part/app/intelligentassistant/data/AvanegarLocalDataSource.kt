@@ -29,7 +29,7 @@ class AvanegarLocalDataSource @Inject constructor(
         it.forEach { archive ->
             if (archive.token.isNotBlank()) {
                 tracking.add(archive.toAvanegarTrackingFileEntity())
-            } else if (archive.filePath.isBlank() && archive.token.isBlank() && archive.text.isBlank()) {
+            } else if (archive.token.isBlank() && archive.text.isBlank()) {
                 uploading.add(archive.toAvanegarUploadingFileEntity())
             } else {
                 processed.add(archive.toAvanegarProcessedFileEntity())
