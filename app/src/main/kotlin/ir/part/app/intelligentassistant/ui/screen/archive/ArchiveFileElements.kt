@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -126,7 +125,7 @@ fun ArchiveTrackingFileElements(
     archiveTrackingView: AvanegarTrackingFileView,
     isNetworkAvailable: Boolean,
     onItemClick: (String) -> Unit,
-    onTryAgainButtonClick: (String) -> Unit
+    onMenuClick: (AvanegarTrackingFileView) -> Unit
 ) {
     Card(
         border = BorderStroke(0.5.dp, Color_Card_Stroke),
@@ -135,37 +134,56 @@ fun ArchiveTrackingFileElements(
     ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 16.dp)
+                .padding(start = 8.dp, bottom = 16.dp)
                 .fillMaxWidth()
         ) {
 
-            Text(
+            Row(
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth(),
-                color = Color_Text_1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.subtitle2,
-                text = archiveTrackingView.title
-            )
-
-            if (isNetworkAvailable) {
-                //TODO Remove it
-                Button(
-                    onClick = { onTryAgainButtonClick(archiveTrackingView.token) },
-                ) {
-                    Text(text = stringResource(id = R.string.lbl_try_again))
-                }
-
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.body2,
-                    color = Color_Text_2,
-                    text = stringResource(id = R.string.lbl_converting)
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.CenterVertically),
+                    color = Color_Text_1,
+                    style = MaterialTheme.typography.subtitle2,
+                    text = archiveTrackingView.title
                 )
-            } else
-                ArchiveBodyError(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(4.dp))
+                IconButton(
+                    modifier = Modifier.size(48.dp),
+                    onClick = { onMenuClick(archiveTrackingView) }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_dots_menu),
+                        contentDescription = stringResource(id = R.string.desc_menu)
+                    )
+                }
+            }
+
+            Column(
+                verticalArrangement = Arrangement.Bottom,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                if (isNetworkAvailable) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(end = 8.dp),
+                        style = MaterialTheme.typography.body2,
+                        color = Color_Text_2,
+                        text = stringResource(id = R.string.lbl_converting)
+                    )
+                } else
+                    ArchiveBodyError(modifier = Modifier.weight(1f))
+            }
+
         }
     }
 }
@@ -176,13 +194,13 @@ fun ArchiveUploadingFileElement(
     isUploading: Boolean,
     isNetworkAvailable: Boolean,
     onMenuClick: (AvanegarUploadingFileView) -> Unit,
-    onItemClick: (String) -> Unit
+    onItemClick: (AvanegarUploadingFileView) -> Unit
 ) {
     Card(
         backgroundColor = Color_Card,
         border = BorderStroke(0.5.dp, Color_Card_Stroke),
         modifier = Modifier.height(156.dp),
-        onClick = { onItemClick(archiveUploadingFileView.id) }
+        onClick = { onItemClick(archiveUploadingFileView) }
     ) {
         Column(
             modifier = Modifier

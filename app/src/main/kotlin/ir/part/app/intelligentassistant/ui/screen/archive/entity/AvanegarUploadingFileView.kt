@@ -4,7 +4,7 @@ import ir.part.app.intelligentassistant.data.entity.AvanegarUploadingFileEntity
 
 data class AvanegarUploadingFileView(
     val id: String,
-    val title: String,
+    override val title: String,
     val filePath: String,
     val createdAt: Long,
     val uploadedPercent: Float,

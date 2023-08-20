@@ -76,7 +76,7 @@ import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarUploadi
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.BottomSheetDetailItem
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.BottomSheetShareDetailItem
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.ChooseFileBottomSheetContent
-import ir.part.app.intelligentassistant.ui.screen.archive.entity.DeleteFileItemBottomSheet
+import ir.part.app.intelligentassistant.ui.screen.archive.entity.DeleteFileItemConfirmationBottomSheet
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFile
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFileBottomSheetContent
 import ir.part.app.intelligentassistant.ui.screen.update.ForceUpdateScreen
@@ -109,6 +109,11 @@ fun AvaNegarArchiveScreen(
     val processItem = remember {
         mutableStateOf<AvanegarProcessedFileView?>(null)
     }
+
+    val archiveViewItem = remember {
+        mutableStateOf<ArchiveView?>(null)
+    }
+
     val localClipBoardManager = LocalClipboardManager.current
 
     val fileName = remember {
@@ -354,7 +359,7 @@ fun AvaNegarArchiveScreen(
                             }
                         },
                         deleteItemAction = {
-                            setSelectedSheet(ArchiveBottomSheetType.Delete)
+                            setSelectedSheet(ArchiveBottomSheetType.DeleteConfirmation)
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
                                 if (!modalBottomSheetState.isVisible) {
@@ -384,10 +389,22 @@ fun AvaNegarArchiveScreen(
                     )
                 }
 
-                ArchiveBottomSheetType.Delete -> {
-                    DeleteFileItemBottomSheet(
+                ArchiveBottomSheetType.DeleteConfirmation -> {
+                    DeleteFileItemConfirmationBottomSheet(
                         deleteAction = {
-                            archiveViewModel.removeFile(processItem.value?.id)
+
+                            when (val file = archiveViewItem.value) {
+                                is AvanegarTrackingFileView ->
+                                    archiveViewModel.removeTrackingFile(file.token)
+
+                                is AvanegarUploadingFileView ->
+                                    archiveViewModel.removeUploadingFile(file.id)
+
+                                is AvanegarProcessedFileView ->
+                                    archiveViewModel.removeProcessedFile(processItem.value?.id)
+
+                            }
+
                             File(
                                 processItem.value?.filePath.orEmpty()
                             ).delete()
@@ -401,6 +418,23 @@ fun AvaNegarArchiveScreen(
                             }
                         },
                         fileName = processItem.value?.title.orEmpty()
+                    )
+                }
+
+                ArchiveBottomSheetType.Delete -> {
+                    DeleteBottomSheet(
+                        fileName = archiveViewItem.value?.title.orEmpty(),
+                        onDelete = {
+                            setSelectedSheet(ArchiveBottomSheetType.DeleteConfirmation)
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
+                                } else {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        }
                     )
                 }
 
@@ -451,16 +485,35 @@ fun AvaNegarArchiveScreen(
                     isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                     onTryAgainCLick = { archiveViewModel.trackLargeFileResult(it) },
                     onMenuClick = { item ->
-                        setSelectedSheet(ArchiveBottomSheetType.Detail)
-                        coroutineScope.launch {
-                            if (!modalBottomSheetState.isVisible) {
-                                modalBottomSheetState.show()
-                            } else {
-                                modalBottomSheetState.hide()
+                        when (item) {
+                            is AvanegarProcessedFileView -> {
+                                setSelectedSheet(ArchiveBottomSheetType.Detail)
+                                coroutineScope.launch {
+                                    if (!modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.show()
+                                    } else {
+                                        modalBottomSheetState.hide()
+                                    }
+                                }
+                                archiveViewItem.value = item
+                                processItem.value = item
+                                fileName.value = item.title
+                            }
+
+                            else -> {
+                                setSelectedSheet(ArchiveBottomSheetType.Delete)
+                                coroutineScope.launch {
+                                    if (!modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.show()
+                                    } else {
+                                        modalBottomSheetState.hide()
+                                    }
+                                }
+                                archiveViewItem.value = item
+                                fileName.value = item.title
                             }
                         }
-                        processItem.value = item
-                        fileName.value = item.title
+
                     },
                     onItemClick = {
                         navHostController.navigate(
@@ -541,7 +594,7 @@ private fun ArchiveBody(
     isNetworkAvailable: Boolean,
     isUploading: Boolean,
     onTryAgainCLick: (String) -> Unit,
-    onMenuClick: (AvanegarProcessedFileView) -> Unit,
+    onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (Int) -> Unit
 ) {
     if (archiveViewList.isEmpty()) {
@@ -649,7 +702,7 @@ private fun ArchiveList(
     isNetworkAvailable: Boolean,
     isUploading: Boolean,
     onTryAgainCLick: (String) -> Unit,
-    onMenuClick: (AvanegarProcessedFileView) -> Unit,
+    onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (Int) -> Unit
 ) {
     LazyVerticalGrid(
@@ -691,8 +744,8 @@ private fun ArchiveList(
                         archiveTrackingView = it,
                         isNetworkAvailable = isNetworkAvailable,
                         onItemClick = {},
-                        onTryAgainButtonClick = { token ->
-                            onTryAgainCLick(token)
+                        onMenuClick = { item ->
+                            onMenuClick(item)
                         }
                     )
                 }
@@ -702,7 +755,9 @@ private fun ArchiveList(
                         archiveUploadingFileView = it,
                         isUploading = isUploading,
                         isNetworkAvailable = isNetworkAvailable,
-                        onMenuClick = {},
+                        onMenuClick = { item ->
+                            onMenuClick(item)
+                        },
                         onItemClick = { /* TODO */ }
                     )
                 }

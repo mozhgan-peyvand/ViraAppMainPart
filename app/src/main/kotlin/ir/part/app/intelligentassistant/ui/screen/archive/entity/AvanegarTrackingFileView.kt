@@ -7,7 +7,7 @@ import saman.zamani.persiandate.PersianDateFormat
 data class AvanegarTrackingFileView(
     val token: String,
     val filePath: String,
-    val title: String,
+    override val title: String,
     val createdAt: String
 ) : ArchiveView
 

@@ -411,7 +411,7 @@ fun ChooseFileBottomSheetContent(
 }
 
 @Composable
-fun DeleteFileItemBottomSheet(
+fun DeleteFileItemConfirmationBottomSheet(
     modifier: Modifier = Modifier,
     deleteAction: () -> Unit,
     cancelAction: () -> Unit,

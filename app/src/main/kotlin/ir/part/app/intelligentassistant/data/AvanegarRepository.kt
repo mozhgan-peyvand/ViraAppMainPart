@@ -135,6 +135,12 @@ class AvanegarRepository @Inject constructor(
     suspend fun deleteProcessFile(id: Int?) =
         avanegarLocalDataSource.deleteProcessFile(id)
 
+    suspend fun deleteUnprocessedFile(id: String) =
+        avanegarLocalDataSource.deleteUnprocessedFile(id)
+
+    suspend fun deleteUploadingFile(id: String) =
+        avanegarLocalDataSource.deleteUploadingFile(id)
+
     suspend fun updateTitle(title: String?, id: Int?) =
         avanegarLocalDataSource.updateTitle(title = title, id = id)
 
