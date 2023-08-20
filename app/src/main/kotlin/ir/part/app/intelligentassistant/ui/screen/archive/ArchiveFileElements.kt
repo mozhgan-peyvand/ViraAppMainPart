@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.Card
@@ -31,6 +32,7 @@ import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarProcess
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarTrackingFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarUploadingFileView
 import ir.part.app.intelligentassistant.ui.theme.Card_Stroke
+import ir.part.app.intelligentassistant.ui.theme.Primary_300
 import ir.part.app.intelligentassistant.ui.theme.Red
 import ir.part.app.intelligentassistant.ui.theme.Text_1
 import ir.part.app.intelligentassistant.ui.theme.Text_2
@@ -49,15 +51,15 @@ fun ArchiveProcessedFileElement(
             0.5.dp,
             if (archiveViewProcessed.isSeen) Card_Stroke else MaterialTheme.colors.primary
         ),
+        modifier = Modifier.height(156.dp),
         onClick = {
             onItemClick(archiveViewProcessed.id)
         }
     ) {
         Column(
             modifier = Modifier
-                .padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 16.dp)
+                .padding(start = 8.dp, bottom = 16.dp)
                 .fillMaxWidth()
-                .height(128.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -74,6 +76,7 @@ fun ArchiveProcessedFileElement(
                     text = archiveViewProcessed.title
                 )
                 IconButton(
+                    modifier = Modifier.size(48.dp),
                     onClick = { onMenuClick(archiveViewProcessed) }
                 ) {
                     Icon(
@@ -89,18 +92,21 @@ fun ArchiveProcessedFileElement(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(vertical = 16.dp),
+                    .padding(top = 16.dp, bottom = 16.dp, end = 8.dp),
                 color = Text_2,
                 style = MaterialTheme.typography.body2,
                 text = archiveViewProcessed.text
             )
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 8.dp)
             ) {
                 Icon(
                     modifier = Modifier.align(alignment = Alignment.CenterVertically),
                     painter = painterResource(id = R.drawable.ic_calendar),
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = Primary_300
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
@@ -123,13 +129,13 @@ fun ArchiveTrackingFileElements(
 ) {
     Card(
         border = BorderStroke(0.5.dp, Card_Stroke),
+        modifier = Modifier.height(156.dp),
         onClick = { onItemClick(archiveTrackingView.token) }
     ) {
         Column(
             modifier = Modifier
                 .padding(horizontal = 8.dp, vertical = 16.dp)
                 .fillMaxWidth()
-                .height(128.dp)
         ) {
 
             Text(
@@ -166,6 +172,7 @@ fun ArchiveTrackingFileElements(
 @Composable
 fun ArchiveUploadingFileElement(
     archiveUploadingFileView: AvanegarUploadingFileView,
+    isUploading: Boolean,
     isNetworkAvailable: Boolean,
     onMenuClick: (AvanegarUploadingFileView) -> Unit,
     onItemClick: (String) -> Unit
@@ -173,18 +180,13 @@ fun ArchiveUploadingFileElement(
     Card(
         backgroundColor = ir.part.app.intelligentassistant.ui.theme.Card,
         border = BorderStroke(0.5.dp, Card_Stroke),
+        modifier = Modifier.height(156.dp),
         onClick = { onItemClick(archiveUploadingFileView.id) }
     ) {
         Column(
             modifier = Modifier
-                .padding(
-                    start = 8.dp,
-                    end = 8.dp,
-                    top = 4.dp,
-                    bottom = 16.dp
-                )
+                .padding(start = 8.dp, bottom = 16.dp)
                 .fillMaxWidth()
-                .height(128.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -202,6 +204,7 @@ fun ArchiveUploadingFileElement(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 IconButton(
+                    modifier = Modifier.size(48.dp),
                     onClick = { onMenuClick(archiveUploadingFileView) }
                 ) {
                     Icon(
@@ -215,44 +218,71 @@ fun ArchiveUploadingFileElement(
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Bottom
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.Bottom,
-                            modifier = Modifier.weight(1f)
+                    if (archiveUploadingFileView.uploadedPercent > 0 && isUploading)
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Bottom
                         ) {
+                            Row(
+                                verticalAlignment = Alignment.Bottom,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 8.dp)
+                            ) {
 
-                            Text(
-                                modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.caption,
-                                color = Text_3,
-                                text = stringResource(
-                                    id = if (archiveUploadingFileView.uploadedPercent > 0) R.string.lbl_uploading
-                                    else R.string.lbl_waiting_for_upload
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    style = MaterialTheme.typography.caption,
+                                    color = Text_3,
+                                    text = stringResource(id = R.string.lbl_uploading)
                                 )
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                style = MaterialTheme.typography.caption,
-                                color = Text_3,
-                                text = "${(archiveUploadingFileView.uploadedPercent * 100).toInt()}%"
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    style = MaterialTheme.typography.caption,
+                                    color = Text_3,
+                                    text = "${(archiveUploadingFileView.uploadedPercent * 100).toInt()}%"
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+                            LinearProgressIndicator(
+                                strokeCap = StrokeCap.Round,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .padding(end = 8.dp),
+                                progress = archiveUploadingFileView.uploadedPercent,
                             )
                         }
+                    else Row(
+                        verticalAlignment = Alignment.Bottom,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(end = 8.dp)
+                    ) {
+                        Icon(
+                            modifier = Modifier.padding(bottom = 4.dp),
+                            painter = painterResource(id = R.drawable.ic_in_uploading_queue),
+                            contentDescription = null,
+                            tint = Primary_300
+                        )
 
-                        Spacer(modifier = Modifier.height(12.dp))
-                        LinearProgressIndicator(
-                            strokeCap = StrokeCap.Round,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp),
-                            progress = archiveUploadingFileView.uploadedPercent,
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            style = MaterialTheme.typography.caption,
+                            color = Text_3,
+                            text = stringResource(id = R.string.lbl_waiting_for_upload)
                         )
                     }
+
                 }
             else
-                ArchiveBodyError(modifier = Modifier.weight(1f))
+                ArchiveBodyError(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
+                )
         }
     }
 }

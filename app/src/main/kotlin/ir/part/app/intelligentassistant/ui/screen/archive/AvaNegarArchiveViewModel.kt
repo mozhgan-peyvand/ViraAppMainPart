@@ -11,6 +11,10 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.data.AvanegarRepository
 import ir.part.app.intelligentassistant.data.entity.AvanegarUploadingFileEntity
+import ir.part.app.intelligentassistant.ui.screen.archive.UploadingFileStatus.FailureUpload
+import ir.part.app.intelligentassistant.ui.screen.archive.UploadingFileStatus.Idle
+import ir.part.app.intelligentassistant.ui.screen.archive.UploadingFileStatus.IsNotUploading
+import ir.part.app.intelligentassistant.ui.screen.archive.UploadingFileStatus.Uploading
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.ArchiveView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarUploadingFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.toAvanegarProcessedFileView
@@ -38,6 +42,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import saman.zamani.persiandate.PersianDate
@@ -48,6 +54,7 @@ import javax.inject.Inject
 
 private const val DENIED_PERMISSION_KEY = "deniedPermissionKey"
 private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
+private const val NUMBER_OF_REQUEST = 3
 
 @HiltViewModel
 class AvaNegarArchiveViewModel @Inject constructor(
@@ -68,8 +75,8 @@ class AvaNegarArchiveViewModel @Inject constructor(
     private val _allArchiveFiles: MutableState<List<ArchiveView>> = mutableStateOf(listOf())
     val allArchiveFiles: State<List<ArchiveView>> = _allArchiveFiles
 
-    private val _isNetworkAvailable: MutableState<Boolean> = mutableStateOf(false)
-    val isNetworkAvailable: State<Boolean> = _isNetworkAvailable
+    private val _isNetworkAvailable = MutableStateFlow(false)
+    val isNetworkAvailable: StateFlow<Boolean> = _isNetworkAvailable
 
     private var uploadingFileQueue = CopyOnWriteArrayList<AvanegarUploadingFileView>()
 
@@ -77,17 +84,30 @@ class AvaNegarArchiveViewModel @Inject constructor(
     var isSavingFile = false
         private set
 
-    private var isUploading = MutableStateFlow(false)
+    private val _isUploading: MutableStateFlow<UploadingFileStatus> = MutableStateFlow(Idle)
+    val isUploading: StateFlow<UploadingFileStatus> = _isUploading.asStateFlow()
+
     private var files: MutableMap<Uri, File> = ConcurrentHashMap()
+
+    private var numberOfRequest = NUMBER_OF_REQUEST
 
     private var job: Job? = null
 
     init {
         viewModelScope.launch {
-            networkStatusTracker.networkStatus.collect {
-                when (it) {
-                    NetworkStatus.Available -> _isNetworkAvailable.value = true
-                    NetworkStatus.Unavailable -> _isNetworkAvailable.value = false
+            networkStatusTracker.networkStatus.collect { isNetworkAvailable ->
+                when (isNetworkAvailable) {
+                    NetworkStatus.Available -> _isNetworkAvailable.emit(true)
+                    NetworkStatus.Unavailable -> {
+
+                        job?.cancel()
+                        _allArchiveFiles.value = _allArchiveFiles.value.map {
+                            if (it is AvanegarUploadingFileView) {
+                                it.copy(uploadedPercent = 0f)
+                            } else it
+                        }
+                        _isNetworkAvailable.emit(false)
+                    }
                 }
             }
         }
@@ -97,6 +117,10 @@ class AvaNegarArchiveViewModel @Inject constructor(
                 val processedList = avanegarArchiveFile.processed
                 val trackingList = avanegarArchiveFile.tracking
                 val uploadingList = avanegarArchiveFile.uploading
+                if (uploadingFileQueue.isEmpty())
+                    uploadingFileQueue = CopyOnWriteArrayList(
+                        uploadingList.map { it.toAvanegarUploadingFileView() }.reversed()
+                    )
                 _allArchiveFiles.value =
                     uploadingList.map { it.toAvanegarUploadingFileView() } +
                             trackingList.map { it.toAvanegarTrackingFileView() } +
@@ -111,11 +135,13 @@ class AvaNegarArchiveViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            isUploading.collect {
-                if (!it && uploadingFileQueue.isNotEmpty()) {
+            _isUploading.collect {
+                if (it != Uploading && it != FailureUpload && uploadingFileQueue.isNotEmpty()) {
                     _uiViewStat.emit(UiLoading)
 
-                    isUploading.value = true
+                    _isUploading.value = Uploading
+
+                    //TODO should calculate audio file duration
                     audioToTextAboveSixtySecond(
                         uploadingFileQueue.first().title,
                         uploadingFileQueue.first().filePath,
@@ -127,42 +153,44 @@ class AvaNegarArchiveViewModel @Inject constructor(
     }
 
     fun addFileToUploadingQueue(title: String, uri: Uri?) {
-        uri?.let {
-            viewModelScope.launch {
+        viewModelScope.launch(IO) {
 
-                createFileFromUri(uri)?.absolutePath?.let { absolutePath ->
-
-                    val createdAt = PersianDate().time
-                    val id = title + absolutePath
-
-                    uploadingFileQueue.add(
-                        AvanegarUploadingFileView(
-                            id = id,
-                            title = title,
-                            filePath = absolutePath,
-                            createdAt = createdAt,
-                            uploadedPercent = 0f, //it will not store in db
-                            isUploadingFinished = true, //it will not store in db
-                        )
-                    )
-
-                    withContext(IO) {
-                        insertUploadingFileToDatabase(
-                            id = id,
-                            title = title,
-                            filePath = absolutePath,
-                            createdAt = createdAt,
-                        )
-                    }
-
-                    if (uploadingFileQueue.isNotEmpty() && !isUploading.value) {
-                        _uiViewStat.emit(UiLoading)
-
-                        isUploading.value = true
-                        audioToTextAboveSixtySecond(title, absolutePath, createProgressListener())
-                    }
-                }
+            if (uri == null) {
+                _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile()))
+                return@launch
             }
+
+            val absolutePath = createFileFromUri(uri)?.absolutePath
+
+            if (!absolutePath.isNullOrBlank()) {
+                val createdAt = PersianDate().time
+                val id = title + absolutePath
+                uploadingFileQueue.add(
+                    AvanegarUploadingFileView(
+                        id = id,
+                        title = title,
+                        filePath = absolutePath,
+                        createdAt = createdAt,
+                        uploadedPercent = 0f, //it will not store in db
+                        isUploadingFinished = true, //it will not store in db
+                    )
+                )
+
+                insertUploadingFileToDatabase(
+                    id = id,
+                    title = title,
+                    filePath = absolutePath,
+                    createdAt = createdAt,
+                )
+
+                if (uploadingFileQueue.isNotEmpty() && _isUploading.value != Uploading) {
+                    _uiViewStat.emit(UiLoading)
+
+                    _isUploading.value = Uploading
+                    audioToTextAboveSixtySecond(title, absolutePath, createProgressListener())
+                }
+
+            } else _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile()))
         }
     }
 
@@ -173,10 +201,12 @@ class AvaNegarArchiveViewModel @Inject constructor(
             withContext(Main) {
                 when (result) {
                     is Success -> {
+                        //TODO should not emit state
                         _uiViewStat.emit(UiSuccess)
                     }
 
                     is Error -> {
+                        //TODO should not emit state
                         _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
                     }
                 }
@@ -184,34 +214,34 @@ class AvaNegarArchiveViewModel @Inject constructor(
         }
     }
 
-    private fun audioToTextBelowSixtySecond(
-        title: String,
-        uri: Uri?,
-        listener: UploadProgressCallback
-    ) {
-        job?.cancel()
-
-        job = viewModelScope.launch(IO) {
-            val file = createFileFromUri(uri!!) // todo show error if uri is null
-            // todo: show error when file is null
-            if (file != null) {
-                val result =
-                    repository.audioToTextBelowSixtySecond(title, file, listener)
-
-                handleResultState(result)
-            }
-        }
-    }
-
-    private fun audioToTextAboveSixtySecond(
+    private suspend fun audioToTextBelowSixtySecond(
         title: String,
         filePath: String,
         listener: UploadProgressCallback
     ) {
         job?.cancel()
         job = viewModelScope.launch(IO) {
-            val file = File(filePath)
 
+            val file = File(filePath)
+            val result = repository.audioToTextBelowSixtySecond(
+                title = title,
+                file = file,
+                listener = listener
+            )
+
+            handleResultState(result)
+        }
+    }
+
+    private suspend fun audioToTextAboveSixtySecond(
+        title: String,
+        filePath: String,
+        listener: UploadProgressCallback
+    ) {
+        job?.cancel()
+        job = viewModelScope.launch(IO) {
+
+            val file = File(filePath)
             val result = repository.audioToTextAboveSixtySecond(
                 id = title + filePath,
                 title = title,
@@ -219,13 +249,7 @@ class AvaNegarArchiveViewModel @Inject constructor(
                 listener = listener
             )
 
-            handleResultState(result) { id ->
-                uploadingFileQueue = CopyOnWriteArrayList(
-                    uploadingFileQueue.filter { it.id != id.data }
-                )
-
-                isUploading.value = false
-            }
+            handleResultState(result)
         }
     }
 
@@ -291,6 +315,10 @@ class AvaNegarArchiveViewModel @Inject constructor(
         return sharedPref.getBoolean(DENIED_PERMISSION_KEY, false)
     }
 
+    fun startUploading() {
+        _isUploading.value = IsNotUploading
+    }
+
     private fun createProgressListener() = object : UploadProgressCallback {
         override fun onProgress(
             id: String,
@@ -322,15 +350,28 @@ class AvaNegarArchiveViewModel @Inject constructor(
     ) {
         when (result) {
             is Success -> {
+
+                numberOfRequest = NUMBER_OF_REQUEST
                 _uiViewStat.emit(UiSuccess)
                 changeUploadFileToIdle()
+                uploadingFileQueue = CopyOnWriteArrayList(
+                    uploadingFileQueue.filter { it.id != result.data }
+                )
+                _isUploading.value = Idle
+
                 onSuccess?.let {
                     it(result)
                 }
             }
 
             is Error -> {
-                _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
+                if (numberOfRequest > 0) {
+                    numberOfRequest--
+                    _isUploading.value = Idle
+                } else {
+                    _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
+                    _isUploading.value = FailureUpload
+                }
             }
         }
     }

@@ -140,11 +140,16 @@ fun AvaNegarArchiveScreen(
         confirmValueChange = { false }
     )
 
-    val uiViewState = archiveViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle).value
+    val uploadingFileState by archiveViewModel.isUploading.collectAsStateWithLifecycle(
+        UploadingFileStatus.Idle
+    )
+    val isNetworkAvailable by archiveViewModel.isNetworkAvailable.collectAsStateWithLifecycle(false)
+
+    val uiViewState by archiveViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
     LaunchedEffect(uiViewState) {
         when (uiViewState) {
             is UiError -> {
-                Toast.makeText(context, uiViewState.message, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, (uiViewState as UiError).message, Toast.LENGTH_SHORT).show()
             }
 
             else -> {}
@@ -427,10 +432,14 @@ fun AvaNegarArchiveScreen(
                         )
                     })
 
-                if (!archiveViewModel.isNetworkAvailable.value && archiveViewModel.allArchiveFiles.value.isNotEmpty())
+                if (
+                    (!isNetworkAvailable && archiveViewModel.allArchiveFiles.value.isNotEmpty()) ||
+                    uiViewState is UiError
+                )
                     ErrorBanner(
                         modifier = Modifier.padding(top = 16.dp),
-                        errorMessage = stringResource(id = R.string.msg_internet_disconnected)
+                        errorMessage = if (uiViewState is UiError) (uiViewState as UiError).message
+                        else stringResource(id = R.string.msg_internet_disconnected)
                     )
 
                 ArchiveBody(
@@ -438,7 +447,8 @@ fun AvaNegarArchiveScreen(
                         .weight(1f)
                         .fillMaxWidth(),
                     archiveViewList = archiveViewModel.allArchiveFiles.value,
-                    isNetworkAvailable = archiveViewModel.isNetworkAvailable.value,
+                    isNetworkAvailable = isNetworkAvailable,
+                    isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                     onTryAgainCLick = { archiveViewModel.trackLargeFileResult(it) },
                     onMenuClick = { item ->
                         setSelectedSheet(ArchiveBottomSheetType.Detail)
@@ -529,6 +539,7 @@ private fun ArchiveBody(
     modifier: Modifier,
     archiveViewList: List<ArchiveView>,
     isNetworkAvailable: Boolean,
+    isUploading: Boolean,
     onTryAgainCLick: (String) -> Unit,
     onMenuClick: (AvanegarProcessedFileView) -> Unit,
     onItemClick: (Int) -> Unit
@@ -540,8 +551,8 @@ private fun ArchiveBody(
     } else {
         ArchiveList(
             list = archiveViewList,
-            modifier = modifier.padding(vertical = 16.dp),
             isNetworkAvailable = isNetworkAvailable,
+            isUploading = isUploading,
             onTryAgainCLick = { onTryAgainCLick(it) },
             onMenuClick = { onMenuClick(it) },
             onItemClick = { onItemClick(it) }
@@ -636,6 +647,7 @@ private fun ArchiveList(
     list: List<ArchiveView>,
     modifier: Modifier = Modifier,
     isNetworkAvailable: Boolean,
+    isUploading: Boolean,
     onTryAgainCLick: (String) -> Unit,
     onMenuClick: (AvanegarProcessedFileView) -> Unit,
     onItemClick: (Int) -> Unit
@@ -643,7 +655,7 @@ private fun ArchiveList(
     LazyVerticalGrid(
         modifier = modifier,
         columns = GridCells.Adaptive(128.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = PaddingValues(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -688,6 +700,7 @@ private fun ArchiveList(
                 is AvanegarUploadingFileView -> {
                     ArchiveUploadingFileElement(
                         archiveUploadingFileView = it,
+                        isUploading = isUploading,
                         isNetworkAvailable = isNetworkAvailable,
                         onMenuClick = {},
                         onItemClick = { /* TODO */ }

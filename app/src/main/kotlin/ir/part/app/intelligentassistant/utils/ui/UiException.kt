@@ -37,4 +37,6 @@ class UiException @Inject constructor(
 
         return message
     }
+
+    fun getErrorMessageInvalidFile(): String = context.getString(R.string.msg_invalid_file)
 }

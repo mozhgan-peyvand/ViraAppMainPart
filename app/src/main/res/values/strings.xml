@@ -81,6 +81,7 @@
     <string name="msg_url_not_found">آدرس درخواست داده شده وجود ندارد!</string>
     <string name="msg_connection_error">اتصال به اینترنت برقرار نمی باشد</string>
     <string name="msg_server_error">ارتباط با سرور برقرار نمی باشد</string>
+    <string name="msg_invalid_file">فایل نامعتبر می باشد</string>
     <!--endregion -->
 
     <!--region description text -->
