@@ -45,9 +45,9 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import ir.part.app.intelligentassistant.ui.screen.archive.ArchiveProcessedFileElement
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.ui.theme.IntelligentAssistantTheme
-import ir.part.app.intelligentassistant.ui.theme.Text_1
-import ir.part.app.intelligentassistant.ui.theme.Text_3
-import ir.part.app.intelligentassistant.ui.theme.White
+import ir.part.app.intelligentassistant.ui.theme.Color_Text_1
+import ir.part.app.intelligentassistant.ui.theme.Color_Text_3
+import ir.part.app.intelligentassistant.ui.theme.Color_White
 import ir.part.app.intelligentassistant.ui.theme.labelMedium
 import ir.part.app.intelligentassistant.R as AIResource
 
@@ -206,10 +206,10 @@ private fun SearchToolbar(
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
                 backgroundColor = Color.Transparent,
-                trailingIconColor = White,
-                leadingIconColor = White,
-                textColor = Text_1,
-                placeholderColor = Text_3
+                trailingIconColor = Color_White,
+                leadingIconColor = Color_White,
+                textColor = Color_Text_1,
+                placeholderColor = Color_Text_3
             ),
 
             )

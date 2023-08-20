@@ -65,11 +65,11 @@ import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.BottomSheetShareDetailItem
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.DeleteFileItemBottomSheet
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFile
-import ir.part.app.intelligentassistant.ui.theme.BG_Solid_2
-import ir.part.app.intelligentassistant.ui.theme.Primary_300
-import ir.part.app.intelligentassistant.ui.theme.Primary_Opacity_15
-import ir.part.app.intelligentassistant.ui.theme.Surface_Container_High
-import ir.part.app.intelligentassistant.ui.theme.White
+import ir.part.app.intelligentassistant.ui.theme.Color_BG_Solid_2
+import ir.part.app.intelligentassistant.ui.theme.Color_Primary_300
+import ir.part.app.intelligentassistant.ui.theme.Color_Primary_Opacity_15
+import ir.part.app.intelligentassistant.ui.theme.Color_Surface_Container_High
+import ir.part.app.intelligentassistant.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.orZero
 import ir.part.app.intelligentassistant.utils.ui.formatDuration
@@ -310,7 +310,7 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
     scrollStateValue: Int
 ) {
     val color =
-        if (scrollStateValue > 0) Surface_Container_High else MaterialTheme.colors.primaryVariant
+        if (scrollStateValue > 0) Color_Surface_Container_High else MaterialTheme.colors.primaryVariant
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -330,7 +330,7 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
             text = title,
             modifier = Modifier.weight(2f),
             style = MaterialTheme.typography.subtitle2,
-            color = White
+            color = Color_White
         )
 
         IconButton(enabled = isRedoEnabled,
@@ -372,7 +372,7 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
         modifier = modifier
             .fillMaxWidth()
             .padding(20.dp)
-            .background(BG_Solid_2)
+            .background(Color_BG_Solid_2)
     ) {
         Button(
             modifier = Modifier
@@ -380,8 +380,8 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                 .padding(end = 8.dp),
             onClick = { onCopyOnClick() },
             colors = ButtonDefaults.buttonColors(
-                contentColor = Primary_300,
-                backgroundColor = Primary_Opacity_15
+                contentColor = Color_Primary_300,
+                backgroundColor = Color_Primary_Opacity_15
             )
         ) {
             Row(
@@ -396,7 +396,7 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                 Text(
                     text = stringResource(id = AIResource.string.lbl_btn_copy_text),
                     style = MaterialTheme.typography.button,
-                    color = Primary_300
+                    color = Color_Primary_300
                 )
             }
         }
@@ -407,8 +407,8 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                 .padding(start = 8.dp),
             onClick = { onShareClick() },
             colors = ButtonDefaults.buttonColors(
-                contentColor = Primary_300,
-                backgroundColor = Primary_Opacity_15
+                contentColor = Color_Primary_300,
+                backgroundColor = Color_Primary_Opacity_15
             )
         ) {
             Row(
@@ -423,7 +423,7 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                 Text(
                     text = stringResource(id = AIResource.string.lbl_btn_share_text),
                     style = MaterialTheme.typography.button,
-                    color = Primary_300
+                    color = Color_Primary_300
                 )
             }
         }
@@ -470,7 +470,7 @@ fun PlayerBody(
     scrollStateValue: Int
 ) {
     val color =
-        if (scrollStateValue > 0) Surface_Container_High else MaterialTheme.colors.primaryVariant
+        if (scrollStateValue > 0) Color_Surface_Container_High else MaterialTheme.colors.primaryVariant
     val isPlaying = remember {
         mutableStateOf(false)
     }
@@ -512,9 +512,9 @@ fun PlayerBody(
         }
         Slider(
             colors = SliderDefaults.colors(
-                activeTrackColor = Primary_300,
-                inactiveTrackColor = Surface_Container_High,
-                thumbColor = White
+                activeTrackColor = Color_Primary_300,
+                inactiveTrackColor = Color_Surface_Container_High,
+                thumbColor = Color_White
             ),
             value = progress,
             onValueChange = {
