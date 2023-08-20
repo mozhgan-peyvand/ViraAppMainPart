@@ -31,12 +31,13 @@ import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarTrackingFileView
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarUploadingFileView
-import ir.part.app.intelligentassistant.ui.theme.Card_Stroke
-import ir.part.app.intelligentassistant.ui.theme.Primary_300
-import ir.part.app.intelligentassistant.ui.theme.Red
-import ir.part.app.intelligentassistant.ui.theme.Text_1
-import ir.part.app.intelligentassistant.ui.theme.Text_2
-import ir.part.app.intelligentassistant.ui.theme.Text_3
+import ir.part.app.intelligentassistant.ui.theme.Color_Card
+import ir.part.app.intelligentassistant.ui.theme.Color_Card_Stroke
+import ir.part.app.intelligentassistant.ui.theme.Color_Primary_300
+import ir.part.app.intelligentassistant.ui.theme.Color_Red
+import ir.part.app.intelligentassistant.ui.theme.Color_Text_1
+import ir.part.app.intelligentassistant.ui.theme.Color_Text_2
+import ir.part.app.intelligentassistant.ui.theme.Color_Text_3
 
 
 @Composable
@@ -46,10 +47,10 @@ fun ArchiveProcessedFileElement(
     onMenuClick: (AvanegarProcessedFileView) -> Unit
 ) {
     Card(
-        backgroundColor = ir.part.app.intelligentassistant.ui.theme.Card,
+        backgroundColor = Color_Card,
         border = BorderStroke(
             0.5.dp,
-            if (archiveViewProcessed.isSeen) Card_Stroke else MaterialTheme.colors.primary
+            if (archiveViewProcessed.isSeen) Color_Card_Stroke else MaterialTheme.colors.primary
         ),
         modifier = Modifier.height(156.dp),
         onClick = {
@@ -71,7 +72,7 @@ fun ArchiveProcessedFileElement(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .weight(1f),
-                    color = if (archiveViewProcessed.isSeen) Text_1 else MaterialTheme.colors.primary,
+                    color = if (archiveViewProcessed.isSeen) Color_Text_1 else MaterialTheme.colors.primary,
                     style = MaterialTheme.typography.subtitle2,
                     text = archiveViewProcessed.title
                 )
@@ -93,7 +94,7 @@ fun ArchiveProcessedFileElement(
                     .fillMaxWidth()
                     .weight(1f)
                     .padding(top = 16.dp, bottom = 16.dp, end = 8.dp),
-                color = Text_2,
+                color = Color_Text_2,
                 style = MaterialTheme.typography.body2,
                 text = archiveViewProcessed.text
             )
@@ -106,12 +107,12 @@ fun ArchiveProcessedFileElement(
                     modifier = Modifier.align(alignment = Alignment.CenterVertically),
                     painter = painterResource(id = R.drawable.ic_calendar),
                     contentDescription = null,
-                    tint = Primary_300
+                    tint = Color_Primary_300
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     modifier = Modifier.weight(1f),
-                    color = Text_3,
+                    color = Color_Text_3,
                     style = MaterialTheme.typography.caption,
                     text = archiveViewProcessed.createdAt
                 )
@@ -128,7 +129,7 @@ fun ArchiveTrackingFileElements(
     onTryAgainButtonClick: (String) -> Unit
 ) {
     Card(
-        border = BorderStroke(0.5.dp, Card_Stroke),
+        border = BorderStroke(0.5.dp, Color_Card_Stroke),
         modifier = Modifier.height(156.dp),
         onClick = { onItemClick(archiveTrackingView.token) }
     ) {
@@ -142,7 +143,7 @@ fun ArchiveTrackingFileElements(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                color = Text_1,
+                color = Color_Text_1,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.subtitle2,
@@ -160,7 +161,7 @@ fun ArchiveTrackingFileElements(
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.body2,
-                    color = Text_2,
+                    color = Color_Text_2,
                     text = stringResource(id = R.string.lbl_converting)
                 )
             } else
@@ -178,8 +179,8 @@ fun ArchiveUploadingFileElement(
     onItemClick: (String) -> Unit
 ) {
     Card(
-        backgroundColor = ir.part.app.intelligentassistant.ui.theme.Card,
-        border = BorderStroke(0.5.dp, Card_Stroke),
+        backgroundColor = Color_Card,
+        border = BorderStroke(0.5.dp, Color_Card_Stroke),
         modifier = Modifier.height(156.dp),
         onClick = { onItemClick(archiveUploadingFileView.id) }
     ) {
@@ -198,7 +199,7 @@ fun ArchiveUploadingFileElement(
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically),
-                    color = Text_1,
+                    color = Color_Text_1,
                     style = MaterialTheme.typography.subtitle2,
                     text = archiveUploadingFileView.title
                 )
@@ -233,13 +234,13 @@ fun ArchiveUploadingFileElement(
                                 Text(
                                     modifier = Modifier.weight(1f),
                                     style = MaterialTheme.typography.caption,
-                                    color = Text_3,
+                                    color = Color_Text_3,
                                     text = stringResource(id = R.string.lbl_uploading)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     style = MaterialTheme.typography.caption,
-                                    color = Text_3,
+                                    color = Color_Text_3,
                                     text = "${(archiveUploadingFileView.uploadedPercent * 100).toInt()}%"
                                 )
                             }
@@ -264,14 +265,14 @@ fun ArchiveUploadingFileElement(
                             modifier = Modifier.padding(bottom = 4.dp),
                             painter = painterResource(id = R.drawable.ic_in_uploading_queue),
                             contentDescription = null,
-                            tint = Primary_300
+                            tint = Color_Primary_300
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
                             style = MaterialTheme.typography.caption,
-                            color = Text_3,
+                            color = Color_Text_3,
                             text = stringResource(id = R.string.lbl_waiting_for_upload)
                         )
                     }
@@ -298,7 +299,7 @@ private fun ArchiveBodyError(modifier: Modifier = Modifier) {
             textAlign = TextAlign.Center,
             text = stringResource(id = R.string.msg_internet_connection_problem),
             style = MaterialTheme.typography.caption,
-            color = Red
+            color = Color_Red
         )
     }
 }

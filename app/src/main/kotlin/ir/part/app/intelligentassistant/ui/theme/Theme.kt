@@ -11,15 +11,15 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 
 private val DarkColorScheme = darkColors(
-    primary = Primary,
-    primaryVariant = BG,
-    background = BG,
-    surface = Card,
-    error = Red_Opacity_15,
-    onPrimary = White,
-    onBackground = White,
-    onSurface = Text_1,
-    onError = Red
+    primary = Color_Primary,
+    primaryVariant = Color_BG,
+    background = Color_BG,
+    surface = Color_Card,
+    error = Color_Red_Opacity_15,
+    onPrimary = Color_White,
+    onBackground = Color_White,
+    onSurface = Color_Text_1,
+    onError = Color_Red
 )
 
 @Composable

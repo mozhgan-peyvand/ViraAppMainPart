@@ -80,11 +80,11 @@ import ir.part.app.intelligentassistant.ui.screen.archive.entity.DeleteFileItemB
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFile
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFileBottomSheetContent
 import ir.part.app.intelligentassistant.ui.screen.update.ForceUpdateScreen
-import ir.part.app.intelligentassistant.ui.theme.Red
-import ir.part.app.intelligentassistant.ui.theme.Red_800
-import ir.part.app.intelligentassistant.ui.theme.Text_1
-import ir.part.app.intelligentassistant.ui.theme.Text_3
-import ir.part.app.intelligentassistant.ui.theme.White
+import ir.part.app.intelligentassistant.ui.theme.Color_Red
+import ir.part.app.intelligentassistant.ui.theme.Color_Red_800
+import ir.part.app.intelligentassistant.ui.theme.Color_Text_1
+import ir.part.app.intelligentassistant.ui.theme.Color_Text_3
+import ir.part.app.intelligentassistant.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEvent
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.filename
@@ -569,21 +569,21 @@ fun ErrorBanner(
         horizontalArrangement = Arrangement.Center,
         modifier = modifier
             .fillMaxWidth()
-            .background(Red_800)
+            .background(Color_Red_800)
     ) {
 
         Icon(
             modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
             painter = painterResource(id = R.drawable.ic_failure_network),
             contentDescription = null,
-            tint = Red
+            tint = Color_Red
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
             modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
             text = errorMessage,
             style = MaterialTheme.typography.body2,
-            color = Red
+            color = Color_Red
         )
     }
 }
@@ -613,7 +613,7 @@ private fun ArchiveEmptyBody(
         Text(
             text = stringResource(id = AIResource.string.lbl_dont_have_file),
             style = MaterialTheme.typography.subtitle1,
-            color = Text_1,
+            color = Color_Text_1,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
         )
@@ -621,7 +621,7 @@ private fun ArchiveEmptyBody(
         Text(
             text = stringResource(id = AIResource.string.lbl_make_your_first_file),
             style = MaterialTheme.typography.caption,
-            color = Text_3,
+            color = Color_Text_3,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
         )
@@ -743,13 +743,13 @@ private fun Fabs(
             }
 
             FloatingActionButton(
-                backgroundColor = if (isFabExpanded) White else MaterialTheme.colors.primary,
+                backgroundColor = if (isFabExpanded) Color_White else MaterialTheme.colors.primary,
                 modifier = Modifier
                     .clip(CircleShape),
                 onClick = onMainFabClick
             ) {
                 Icon(
-                    tint = if (isFabExpanded) MaterialTheme.colors.primary else White,
+                    tint = if (isFabExpanded) MaterialTheme.colors.primary else Color_White,
                     painter = painterResource(id = if (isFabExpanded) AIResource.drawable.ic_close else AIResource.drawable.ic_add),
                     contentDescription = stringResource(id = AIResource.string.desc_menu_upload_and_record)
                 )

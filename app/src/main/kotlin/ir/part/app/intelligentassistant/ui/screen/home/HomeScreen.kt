@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import ir.part.app.intelligentassistant.ui.theme.BG
 import kotlinx.coroutines.launch
 import ir.part.app.intelligentassistant.R as AIResource
 

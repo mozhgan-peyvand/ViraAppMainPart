@@ -26,14 +26,14 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import ir.part.app.intelligentassistant.ui.theme.OutLine
-import ir.part.app.intelligentassistant.ui.theme.Primary_300
-import ir.part.app.intelligentassistant.ui.theme.Primary_Opacity_15
-import ir.part.app.intelligentassistant.ui.theme.Red_Opacity_15
-import ir.part.app.intelligentassistant.ui.theme.Text_1
-import ir.part.app.intelligentassistant.ui.theme.Text_2
-import ir.part.app.intelligentassistant.ui.theme.Text_3
-import ir.part.app.intelligentassistant.ui.theme.White
+import ir.part.app.intelligentassistant.ui.theme.Color_OutLine
+import ir.part.app.intelligentassistant.ui.theme.Color_Primary_300
+import ir.part.app.intelligentassistant.ui.theme.Color_Primary_Opacity_15
+import ir.part.app.intelligentassistant.ui.theme.Color_Red_Opacity_15
+import ir.part.app.intelligentassistant.ui.theme.Color_Text_1
+import ir.part.app.intelligentassistant.ui.theme.Color_Text_2
+import ir.part.app.intelligentassistant.ui.theme.Color_Text_3
+import ir.part.app.intelligentassistant.ui.theme.Color_White
 import ir.part.app.intelligentassistant.R as AIResource
 
 @Composable
@@ -53,7 +53,7 @@ fun BottomSheetDetailItem(
         Text(
             text = text,
             style = MaterialTheme.typography.h6,
-            color = Text_1,
+            color = Color_Text_1,
             modifier = Modifier.padding(
                 horizontal = 16.dp,
                 vertical = 12.dp
@@ -68,7 +68,7 @@ fun BottomSheetDetailItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp),
-            color = OutLine
+            color = Color_OutLine
         )
         BottomSheetArchiveItemBody(
             text = AIResource.string.lbl_share_file,
@@ -80,7 +80,7 @@ fun BottomSheetDetailItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp),
-            color = OutLine
+            color = Color_OutLine
         )
         BottomSheetArchiveItemBody(
             text = AIResource.string.lbl_change_file_name,
@@ -91,7 +91,7 @@ fun BottomSheetDetailItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp),
-            color = OutLine
+            color = Color_OutLine
         )
         BottomSheetArchiveItemBody(
             text = AIResource.string.lbl_delete_file,
@@ -110,7 +110,7 @@ fun BottomSheetArchiveItemBody(
     text: Int,
     icon: Int,
     onItemClick: () -> Unit,
-    textColor: Color = Text_2
+    textColor: Color = Color_Text_2
 ) {
     Row(
         modifier = modifier
@@ -168,7 +168,7 @@ fun BottomSheetShareDetailItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp),
-            color = OutLine
+            color = Color_OutLine
         )
         BottomSheetDetailItemBody(
             stringResource(id = AIResource.string.lbl_share_with_pdf),
@@ -180,7 +180,7 @@ fun BottomSheetShareDetailItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp),
-            color = OutLine
+            color = Color_OutLine
         )
         BottomSheetDetailItemBody(
             stringResource(id = AIResource.string.lbl_text_without_change),
@@ -212,7 +212,7 @@ fun BottomSheetDetailItemBody(
             )
             Text(
                 text = text,
-                style = MaterialTheme.typography.subtitle1, color = Text_2
+                style = MaterialTheme.typography.subtitle1, color = Color_Text_2
             )
         }
     }
@@ -266,7 +266,7 @@ fun RenameFileBottomSheetContent(
             },
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.primary,
-                contentColor = White
+                contentColor = Color_White
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -312,7 +312,7 @@ fun RenameFile(
             Column(modifier.weight(2f)) {
                 Text(
                     text = stringResource(id = AIResource.string.lbl_file_name),
-                    color = Text_3,
+                    color = Color_Text_3,
                     style = MaterialTheme.typography.caption
                 )
                 TextField(
@@ -324,7 +324,7 @@ fun RenameFile(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         disabledIndicatorColor = Color.Transparent,
-                        backgroundColor = Color.Black, textColor = Text_2
+                        backgroundColor = Color.Black, textColor = Color_Text_2
                     ),
                     textStyle = MaterialTheme.typography.body1
                 )
@@ -340,7 +340,7 @@ fun RenameFile(
             },
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.primary,
-                contentColor = White
+                contentColor = Color_White
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -396,7 +396,7 @@ fun ChooseFileBottomSheetContent(
             },
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.primary,
-                contentColor = White
+                contentColor = Color_White
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -444,8 +444,8 @@ fun DeleteFileItemBottomSheet(
                     cancelAction()
                 },
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Primary_Opacity_15,
-                    contentColor = Primary_300
+                    backgroundColor = Color_Primary_Opacity_15,
+                    contentColor = Color_Primary_300
                 ),
                 shape = RoundedCornerShape(8.dp)
 
@@ -464,7 +464,7 @@ fun DeleteFileItemBottomSheet(
                     deleteAction()
                 },
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Red_Opacity_15,
+                    backgroundColor = Color_Red_Opacity_15,
                     contentColor = MaterialTheme.colors.onError
                 ),
                 shape = RoundedCornerShape(8.dp)
