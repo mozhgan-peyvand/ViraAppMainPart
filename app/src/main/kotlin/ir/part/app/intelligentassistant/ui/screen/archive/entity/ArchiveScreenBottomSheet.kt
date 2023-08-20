@@ -1,7 +1,9 @@
 package ir.part.app.intelligentassistant.ui.screen.archive.entity
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,19 +13,27 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import ir.part.app.intelligentassistant.ui.theme.OutLine
+import ir.part.app.intelligentassistant.ui.theme.Primary_300
+import ir.part.app.intelligentassistant.ui.theme.Primary_Opacity_15
+import ir.part.app.intelligentassistant.ui.theme.Red_Opacity_15
+import ir.part.app.intelligentassistant.ui.theme.Text_1
+import ir.part.app.intelligentassistant.ui.theme.Text_2
+import ir.part.app.intelligentassistant.ui.theme.Text_3
+import ir.part.app.intelligentassistant.ui.theme.White
 import ir.part.app.intelligentassistant.R as AIResource
 
 @Composable
@@ -38,48 +48,87 @@ fun BottomSheetDetailItem(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 10.dp)
+            .padding(vertical = 12.dp)
     ) {
         Text(
             text = text,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 20.dp)
+            style = MaterialTheme.typography.h6,
+            color = Text_1,
+            modifier = Modifier.padding(
+                horizontal = 16.dp,
+                vertical = 12.dp
+            )
         )
-        BottomSheetDetailItemBody(text = AIResource.string.lbl_copy_text_file) {
-            copyItemAction()
-        }
-        BottomSheetDetailItemBody(text = AIResource.string.lbl_share_file) {
-            shareItemAction()
-        }
-        BottomSheetDetailItemBody(text = AIResource.string.lbl_change_file_name) {
-            renameItemAction()
-        }
-        BottomSheetDetailItemBody(text = AIResource.string.lbl_delete_file) {
-            deleteItemAction()
-        }
-    }
-}
-
-@Composable
-fun BottomSheetDetailItemBody(
-    modifier: Modifier = Modifier, text: Int,
-    onItemClick: () -> Unit
-) {
-    Column(modifier = modifier
-        .fillMaxWidth()
-        .clickable { onItemClick() }) {
-        Text(
-            text = stringResource(id = text),
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 20.dp)
+        BottomSheetArchiveItemBody(
+            text = AIResource.string.lbl_copy_text_file,
+            icon = AIResource.drawable.ic_copy_new,
+            onItemClick = { copyItemAction() }
         )
         Divider(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp),
-            color = Color.LightGray
+            color = OutLine
+        )
+        BottomSheetArchiveItemBody(
+            text = AIResource.string.lbl_share_file,
+            icon = AIResource.drawable.ic_share_new, onItemClick = {
+                shareItemAction()
+            }
+        )
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp),
+            color = OutLine
+        )
+        BottomSheetArchiveItemBody(
+            text = AIResource.string.lbl_change_file_name,
+            icon = AIResource.drawable.ic_rename,
+            onItemClick = { renameItemAction() }
+        )
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp),
+            color = OutLine
+        )
+        BottomSheetArchiveItemBody(
+            text = AIResource.string.lbl_delete_file,
+            icon = AIResource.drawable.ic_removefile,
+            onItemClick = {
+                deleteItemAction()
+            },
+            textColor = MaterialTheme.colors.onError
+        )
+    }
+}
+
+@Composable
+fun BottomSheetArchiveItemBody(
+    modifier: Modifier = Modifier,
+    text: Int,
+    icon: Int,
+    onItemClick: () -> Unit,
+    textColor: Color = Text_2
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp, horizontal = 8.dp)
+            .clickable { onItemClick() },
+        verticalAlignment = Alignment.CenterVertically
+
+    ) {
+        Image(
+            painter = painterResource(id = icon),
+            contentDescription = "",
+            modifier = Modifier.padding(8.dp)
+        )
+        Text(
+            text = stringResource(id = text),
+            style = MaterialTheme.typography.subtitle1,
+            color = textColor
         )
     }
 }
@@ -94,33 +143,48 @@ fun BottomSheetShareDetailItem(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 10.dp)
     ) {
-        Text(
-            text = stringResource(id = AIResource.string.lbl_share_file),
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
-        )
-        Text(
-            text = stringResource(id = AIResource.string.choose_format),
-            fontSize = 20.sp,
-            modifier = Modifier.padding(bottom = 20.dp)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Text(
+                text = stringResource(id = AIResource.string.lbl_share_file),
+                style = MaterialTheme.typography.h6
+            )
+            Text(
+                text = stringResource(id = AIResource.string.choose_format),
+                style = MaterialTheme.typography.subtitle2
+            )
+        }
         BottomSheetDetailItemBody(
             stringResource(id = AIResource.string.lbl_share_with_word),
-            painterResource(id = AIResource.drawable.icon_word)
+            painterResource(id = AIResource.drawable.ic_word_new)
         ) {
             onWordClick()
         }
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp),
+            color = OutLine
+        )
         BottomSheetDetailItemBody(
             stringResource(id = AIResource.string.lbl_share_with_pdf),
-            painterResource(id = AIResource.drawable.icon_pdf)
+            painterResource(id = AIResource.drawable.ic_pdf_new)
         ) {
             onPdfClick()
         }
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp),
+            color = OutLine
+        )
         BottomSheetDetailItemBody(
             stringResource(id = AIResource.string.lbl_text_without_change),
-            painterResource(id = AIResource.drawable.icon_text)
+            painterResource(id = AIResource.drawable.ic_text_new)
         ) {
             onOnlyTextClick()
         }
@@ -136,24 +200,21 @@ fun BottomSheetDetailItemBody(
         .fillMaxWidth()
         .clickable { onShareItemClick() }) {
         Row(
-            modifier = Modifier.padding(vertical = 20.dp),
+            modifier = Modifier.padding(
+                vertical = 12.dp,
+                horizontal = 8.dp
+            ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = icon, contentDescription = "icon"
+                painter = icon, contentDescription = "icon",
+                modifier = Modifier.padding(8.dp)
             )
             Text(
                 text = text,
-                modifier = Modifier.padding(horizontal = 10.dp)
+                style = MaterialTheme.typography.subtitle1, color = Text_2
             )
         }
-        Divider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp),
-            color = Color.LightGray
-        )
-
     }
 }
 
@@ -166,39 +227,53 @@ fun RenameFileBottomSheetContent(
 ) {
     Column(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 15.dp, vertical = 10.dp)
+            .padding(20.dp)
     ) {
         Text(
             text = stringResource(id = AIResource.string.lbl_change_name),
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
+            style = MaterialTheme.typography.subtitle1,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
         Text(
             text = stringResource(id = AIResource.string.lbl_choose_name),
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
+            style = MaterialTheme.typography.body1,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
-        TextField(value = fileName, onValueChange = {
-            onValueChange(it)
-        }, modifier.fillMaxWidth())
+        TextField(
+            value = fileName, onValueChange = {
+                onValueChange(it)
+            },
+            modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)
+                .border(
+                    1.dp,
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colors.primary
+                ), textStyle = MaterialTheme.typography.body2,
+            colors = TextFieldDefaults.textFieldColors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+            )
+        )
         Button(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 30.dp, vertical = 10.dp),
+                .padding(top = 10.dp),
             onClick = {
                 reNameAction()
             },
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Black, contentColor = Color.White
+                backgroundColor = MaterialTheme.colors.primary,
+                contentColor = White
             ),
-            shape = RoundedCornerShape(10.dp)
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Text(text = stringResource(id = AIResource.string.lbl_save))
+            Text(
+                text = stringResource(id = AIResource.string.lbl_save),
+                style = MaterialTheme.typography.button
+            )
         }
     }
 }
@@ -213,38 +288,66 @@ fun RenameFile(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 15.dp, vertical = 10.dp)
+            .padding(20.dp),
     ) {
         Text(
             text = stringResource(id = AIResource.string.lbl_change_name),
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
+            style = MaterialTheme.typography.h6
         )
-        Text(
-            text = stringResource(id = AIResource.string.lbl_choose_name),
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
-        )
-        TextField(value = fileName, onValueChange = {
-            onValueChange(it)
-        }, modifier.fillMaxWidth())
+        Row(
+            modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colors.primary,
+                    shape = RoundedCornerShape(11.dp)
+                ),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = AIResource.drawable.ic_rename),
+                contentDescription = "",
+            )
+            Column(modifier.weight(2f)) {
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_file_name),
+                    color = Text_3,
+                    style = MaterialTheme.typography.caption
+                )
+                TextField(
+                    value = fileName,
+                    onValueChange = {
+                        onValueChange(it)
+                    },
+                    colors = TextFieldDefaults.textFieldColors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                        backgroundColor = Color.Black, textColor = Text_2
+                    ),
+                    textStyle = MaterialTheme.typography.body1
+                )
+            }
+
+        }
         Button(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 30.dp, vertical = 10.dp),
+                .padding(top = 8.dp),
             onClick = {
                 reNameAction()
             },
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Black, contentColor = Color.White
+                backgroundColor = MaterialTheme.colors.primary,
+                contentColor = White
             ),
-            shape = RoundedCornerShape(10.dp)
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Text(text = stringResource(id = AIResource.string.lbl_save))
+            Text(
+                text = stringResource(id = AIResource.string.lbl_save),
+                style = MaterialTheme.typography.button
+            )
         }
     }
 }
@@ -256,30 +359,31 @@ fun ChooseFileBottomSheetContent(
 ) {
     Column(
         modifier = modifier
+            .clip(
+                RoundedCornerShape(
+                    topStart = 10f,
+                    topEnd = 10f,
+                    bottomEnd = 0f,
+                    bottomStart = 0f
+                )
+            )
             .fillMaxWidth()
-            .padding(horizontal = 15.dp, vertical = 10.dp)
+            .padding(20.dp)
     ) {
         Text(
             text = stringResource(id = AIResource.string.lbl_choose_file),
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
+            style = MaterialTheme.typography.subtitle1,
+            modifier = Modifier.padding(bottom = 5.dp)
         )
         Text(
             text = stringResource(id = AIResource.string.lbl_you_can_only_choose_one_file),
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
+            style = MaterialTheme.typography.body1,
         )
         Text(
             text = stringResource(id = AIResource.string.lbl_allowed_format),
-            fontWeight = FontWeight.Bold,
-            fontSize = 13.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(vertical = 5.dp)
-        )
+            style = MaterialTheme.typography.body1,
+
+            )
         Button(
             modifier = Modifier
                 .fillMaxWidth()
@@ -291,12 +395,15 @@ fun ChooseFileBottomSheetContent(
                 onOpenFile()
             },
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Black,
-                contentColor = Color.White
+                backgroundColor = MaterialTheme.colors.primary,
+                contentColor = White
             ),
-            shape = RoundedCornerShape(10.dp)
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Text(text = stringResource(id = AIResource.string.lbl_button_upload_new_file))
+            Text(
+                text = stringResource(id = AIResource.string.lbl_button_upload_new_file),
+                style = MaterialTheme.typography.button
+            )
         }
 
     }
@@ -313,59 +420,59 @@ fun DeleteFileItemBottomSheet(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp, horizontal = 15.dp)
+            .padding(20.dp)
     ) {
         Text(
             text = stringResource(id = AIResource.string.lbl_delete_file),
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 10.dp)
+            style = MaterialTheme.typography.h6,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
         Text(
             text = stringResource(
                 id = AIResource.string.lbl_ask_delete_file,
                 fileName
             ),
-            fontSize = 15.sp,
-            modifier = Modifier.padding(vertical = 10.dp)
-        )
-        Text(
-            text = stringResource(id = AIResource.string.lbl_delete_are_you_sure),
-            fontSize = 15.sp,
-            modifier = Modifier.padding(vertical = 10.dp)
+            style = MaterialTheme.typography.body2,
+            modifier = Modifier.padding(bottom = 28.dp)
         )
         Row(modifier = Modifier.fillMaxWidth()) {
             Button(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(5.dp),
+                    .padding(end = 8.dp),
                 onClick = {
                     cancelAction()
                 },
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color.Black,
-                    contentColor = Color.White
+                    backgroundColor = Primary_Opacity_15,
+                    contentColor = Primary_300
                 ),
-                shape = RoundedCornerShape(2.dp)
+                shape = RoundedCornerShape(8.dp)
 
             ) {
-                Text(text = stringResource(id = AIResource.string.lbl_btn_cancel))
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_btn_cancel),
+                    style = MaterialTheme.typography.button
+                )
             }
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(5.dp),
+                    .padding(end = 8.dp),
                 onClick = {
                     deleteAction()
                 },
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color.White,
-                    contentColor = Color.Black
+                    backgroundColor = Red_Opacity_15,
+                    contentColor = MaterialTheme.colors.onError
                 ),
-                shape = RoundedCornerShape(2.dp)
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text(text = stringResource(id = AIResource.string.lbl_btn_delete))
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_btn_delete),
+                    style = MaterialTheme.typography.button
+                )
             }
         }
     }

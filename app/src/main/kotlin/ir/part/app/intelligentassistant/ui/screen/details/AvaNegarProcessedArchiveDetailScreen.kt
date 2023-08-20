@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -130,17 +131,21 @@ fun AvaNegarProcessedArchiveDetailScreen(
         )
     })
 
-    ModalBottomSheetLayout(sheetState = bottomSheetState, sheetContent = {
-        when (selectedSheet) {
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetState,
+        sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
+        sheetBackgroundColor = Color.Black,
+        sheetContent = {
+            when (selectedSheet) {
 
-            DetailBottomSheetState.Menu -> {
-                MenuDetailsScreenBottomSheet(
-                    onRenameAction = {
-                        setSelectedSheet(DetailBottomSheetState.Rename)
-                        coroutineScope.launch {
-                            bottomSheetState.hide()
-                            if (!bottomSheetState.isVisible) {
-                                bottomSheetState.show()
+                DetailBottomSheetState.Menu -> {
+                    MenuDetailsScreenBottomSheet(
+                        onRenameAction = {
+                            setSelectedSheet(DetailBottomSheetState.Rename)
+                            coroutineScope.launch {
+                                bottomSheetState.hide()
+                                if (!bottomSheetState.isVisible) {
+                                    bottomSheetState.show()
                             } else {
                                 bottomSheetState.hide()
                             }

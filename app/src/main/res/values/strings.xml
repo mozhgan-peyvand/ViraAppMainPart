@@ -52,12 +52,12 @@
     <string name="lbl_copy_text_file">کپی متن فایل</string>
     <string name="lbl_share_file">اشتراک گذاری</string>
     <string name="lbl_change_file_name">تغییر نام</string>
+    <string name="lbl_file_name">نام فایل </string>
     <string name="choose_format">انتخاب فرمت</string>
     <string name="lbl_share_with_word">Word</string>
     <string name="lbl_share_with_pdf">PDf</string>
     <string name="lbl_text_without_change">متن خام</string>
-    <string name="lbl_ask_delete_file">ایا از حذف فایل  %s  </string>
-    <string name="lbl_delete_are_you_sure">مطمین هستید؟</string>
+    <string name="lbl_ask_delete_file">ایا از حذف فایل %s مطمین هستید؟</string>
     <string name="lbl_btn_cancel">انصراف</string>
     <string name="lbl_btn_delete">حذف</string>
     <string name="lbl_text_save_in_clipboard">متن فایل در کلیپ بورد ذخیره شد</string>
