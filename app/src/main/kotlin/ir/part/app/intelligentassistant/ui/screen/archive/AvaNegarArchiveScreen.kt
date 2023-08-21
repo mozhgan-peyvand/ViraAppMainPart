@@ -483,7 +483,8 @@ fun AvaNegarArchiveScreen(
                     archiveViewList = archiveViewModel.allArchiveFiles.value,
                     isNetworkAvailable = isNetworkAvailable,
                     isUploading = uploadingFileState == UploadingFileStatus.Uploading,
-                    onTryAgainCLick = { archiveViewModel.trackLargeFileResult(it) },
+                    isErrorState = uiViewState is UiError,
+                    onTryAgainCLick = { archiveViewModel.startUploading(it) },
                     onMenuClick = { item ->
                         when (item) {
                             is AvanegarProcessedFileView -> {
@@ -592,8 +593,9 @@ private fun ArchiveBody(
     modifier: Modifier,
     archiveViewList: List<ArchiveView>,
     isNetworkAvailable: Boolean,
+    isErrorState: Boolean,
     isUploading: Boolean,
-    onTryAgainCLick: (String) -> Unit,
+    onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (Int) -> Unit
 ) {
@@ -606,6 +608,7 @@ private fun ArchiveBody(
             list = archiveViewList,
             isNetworkAvailable = isNetworkAvailable,
             isUploading = isUploading,
+            isErrorState = isErrorState,
             onTryAgainCLick = { onTryAgainCLick(it) },
             onMenuClick = { onMenuClick(it) },
             onItemClick = { onItemClick(it) }
@@ -701,7 +704,8 @@ private fun ArchiveList(
     modifier: Modifier = Modifier,
     isNetworkAvailable: Boolean,
     isUploading: Boolean,
-    onTryAgainCLick: (String) -> Unit,
+    isErrorState: Boolean,
+    onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (Int) -> Unit
 ) {
@@ -736,7 +740,6 @@ private fun ArchiveList(
                             onMenuClick(item)
                         }
                     )
-
                 }
 
                 is AvanegarTrackingFileView -> {
@@ -744,9 +747,7 @@ private fun ArchiveList(
                         archiveTrackingView = it,
                         isNetworkAvailable = isNetworkAvailable,
                         onItemClick = {},
-                        onMenuClick = { item ->
-                            onMenuClick(item)
-                        }
+                        onMenuClick = { item -> onMenuClick(item) }
                     )
                 }
 
@@ -755,6 +756,8 @@ private fun ArchiveList(
                         archiveUploadingFileView = it,
                         isUploading = isUploading,
                         isNetworkAvailable = isNetworkAvailable,
+                        isErrorState = isErrorState,
+                        onTryAgainClick = { value -> onTryAgainCLick(value) },
                         onMenuClick = { item ->
                             onMenuClick(item)
                         },

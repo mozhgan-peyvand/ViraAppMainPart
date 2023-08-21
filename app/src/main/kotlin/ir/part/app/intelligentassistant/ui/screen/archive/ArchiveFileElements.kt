@@ -3,6 +3,7 @@ package ir.part.app.intelligentassistant.ui.screen.archive
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,12 +12,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +36,7 @@ import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarUploadi
 import ir.part.app.intelligentassistant.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.ui.theme.Color_Card_Stroke
 import ir.part.app.intelligentassistant.ui.theme.Color_Primary_300
+import ir.part.app.intelligentassistant.ui.theme.Color_Primary_Opacity_15
 import ir.part.app.intelligentassistant.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.ui.theme.Color_Text_2
@@ -181,7 +185,10 @@ fun ArchiveTrackingFileElements(
                         text = stringResource(id = R.string.lbl_converting)
                     )
                 } else
-                    ArchiveBodyError(modifier = Modifier.weight(1f))
+                    ErrorMessage(
+                        isNetworkAvailable = isNetworkAvailable,
+                        modifier = Modifier.fillMaxWidth()
+                    )
             }
 
         }
@@ -193,6 +200,8 @@ fun ArchiveUploadingFileElement(
     archiveUploadingFileView: AvanegarUploadingFileView,
     isUploading: Boolean,
     isNetworkAvailable: Boolean,
+    isErrorState: Boolean,
+    onTryAgainClick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (AvanegarUploadingFileView) -> Unit,
     onItemClick: (AvanegarUploadingFileView) -> Unit
 ) {
@@ -233,7 +242,7 @@ fun ArchiveUploadingFileElement(
                 }
             }
 
-            if (isNetworkAvailable)
+            if (!isErrorState && isNetworkAvailable)
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -298,26 +307,81 @@ fun ArchiveUploadingFileElement(
                 }
             else
                 ArchiveBodyError(
+                    isNetworkAvailable = isNetworkAvailable,
                     modifier = Modifier
                         .weight(1f)
-                        .padding(end = 8.dp)
+                        .padding(end = 8.dp),
+                    onTryAgainClick = { onTryAgainClick(archiveUploadingFileView) }
                 )
         }
     }
 }
 
 @Composable
-private fun ArchiveBodyError(modifier: Modifier = Modifier) {
+private fun ArchiveBodyError(
+    isNetworkAvailable: Boolean,
+    onTryAgainClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
-        Text(
-            textAlign = TextAlign.Center,
-            text = stringResource(id = R.string.msg_internet_connection_problem),
-            style = MaterialTheme.typography.caption,
-            color = Color_Red
-        )
+
+        ErrorMessage(isNetworkAvailable)
+
+        if (isNetworkAvailable) {
+            Spacer(modifier = Modifier.size(8.dp))
+
+            TextButton(
+                modifier = Modifier,
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color_Primary_Opacity_15
+                ),
+                contentPadding = PaddingValues(
+                    start = 28.dp,
+                    end = 24.dp,
+                    top = 10.dp,
+                    bottom = 10.dp
+                ),
+                onClick = { onTryAgainClick() }
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.lbl_try_again),
+                        style = MaterialTheme.typography.button,
+                        color = Color_Primary_300
+                    )
+
+                    Spacer(modifier = Modifier.size(8.dp))
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_retry),
+                        contentDescription = null,
+                        tint = Color_Primary_300
+                    )
+                }
+            }
+        }
     }
+}
+
+@Composable
+fun ErrorMessage(
+    isNetworkAvailable: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        modifier = modifier,
+        textAlign = TextAlign.Center,
+        text = stringResource(
+            id = if (isNetworkAvailable) R.string.msg_server_error
+            else R.string.msg_internet_connection_problem
+        ),
+        style = MaterialTheme.typography.caption,
+        color = Color_Red
+    )
 }
