@@ -4,7 +4,7 @@ import ir.part.app.intelligentassistant.data.entity.AvanegarProcessedFileEntity
 
 data class AvanegarProcessedFileView(
     val id: Int,
-    val title: String,
+    override val title: String,
     val text: String,
     val createdAt: String,
     val filePath: String,

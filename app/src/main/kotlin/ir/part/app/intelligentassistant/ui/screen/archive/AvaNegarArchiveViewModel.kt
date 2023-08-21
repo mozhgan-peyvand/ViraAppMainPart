@@ -295,8 +295,20 @@ class AvaNegarArchiveViewModel @Inject constructor(
         isSavingFile = value
     }
 
-    fun removeFile(id: Int?) = viewModelScope.launch {
+    fun removeProcessedFile(id: Int?) = viewModelScope.launch {
         repository.deleteProcessFile(id)
+    }
+
+    fun removeTrackingFile(id: String?) = viewModelScope.launch {
+        id?.let {
+            repository.deleteUnprocessedFile(it)
+        }
+    }
+
+    fun removeUploadingFile(id: String?) = viewModelScope.launch {
+        id?.let {
+            repository.deleteUploadingFile(it)
+        }
     }
 
     fun updateTitle(title: String?, id: Int?) = viewModelScope.launch {

@@ -63,7 +63,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.BottomSheetShareDetailItem
-import ir.part.app.intelligentassistant.ui.screen.archive.entity.DeleteFileItemBottomSheet
+import ir.part.app.intelligentassistant.ui.screen.archive.entity.DeleteFileItemConfirmationBottomSheet
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.RenameFile
 import ir.part.app.intelligentassistant.ui.theme.Color_BG_Solid_2
 import ir.part.app.intelligentassistant.ui.theme.Color_Primary_300
@@ -146,82 +146,82 @@ fun AvaNegarProcessedArchiveDetailScreen(
                                 bottomSheetState.hide()
                                 if (!bottomSheetState.isVisible) {
                                     bottomSheetState.show()
-                            } else {
+                                } else {
+                                    bottomSheetState.hide()
+                                }
+                            }
+                        },
+                        onRemoveFileAction = {
+                            setSelectedSheet(DetailBottomSheetState.Delete)
+                            coroutineScope.launch {
                                 bottomSheetState.hide()
+                                if (!bottomSheetState.isVisible) {
+                                    bottomSheetState.show()
+                                } else {
+                                    bottomSheetState.hide()
+                                }
                             }
                         }
-                    },
-                    onRemoveFileAction = {
-                        setSelectedSheet(DetailBottomSheetState.Delete)
-                        coroutineScope.launch {
-                            bottomSheetState.hide()
-                            if (!bottomSheetState.isVisible) {
-                                bottomSheetState.show()
-                            } else {
+                    )
+                }
+
+                DetailBottomSheetState.Delete -> {
+                    DeleteFileItemConfirmationBottomSheet(
+                        deleteAction = {
+                            coroutineScope.launch {
+                                bottomSheetState.hide()
+                                navController.popBackStack()
+                            }
+                            viewModel.removeFile(viewModel.processItemId.intValue)
+                        },
+                        cancelAction = {
+                            coroutineScope.launch {
                                 bottomSheetState.hide()
                             }
-                        }
-                    }
-                )
-            }
+                        },
+                        fileName = viewModel.archiveFile.value?.title ?: ""
+                    )
+                }
 
-            DetailBottomSheetState.Delete -> {
-                DeleteFileItemBottomSheet(
-                    deleteAction = {
-                        coroutineScope.launch {
-                            bottomSheetState.hide()
-                            navController.popBackStack()
-                        }
-                        viewModel.removeFile(viewModel.processItemId.intValue)
-                    },
-                    cancelAction = {
-                        coroutineScope.launch {
-                            bottomSheetState.hide()
-                        }
-                    },
-                    fileName = viewModel.archiveFile.value?.title ?: ""
-                )
-            }
-
-            DetailBottomSheetState.Rename -> {
-                RenameFile(
-                    fileName = fileName.value
-                        ?: viewModel.archiveFile.value?.title ?: "",
-                    onValueChange = {
-                        fileName.value = it
-                    },
-                    reNameAction = {
-                        coroutineScope.launch {
-                            bottomSheetState.hide()
-                        }
-                        viewModel.updateTitle(
-                            title = fileName.value,
-                            id = viewModel.processItemId.intValue
-                        )
-                    })
-            }
-
-            DetailBottomSheetState.Share -> {
-                BottomSheetShareDetailItem(
-                    onPdfClick = {
-                        coroutineScope.launch {
-                            bottomSheetState.hide()
-                            convertTextToPdf(
-                                fileName = viewModel.archiveFile.value?.title.orEmpty(),
-                                text = processItem.value?.text.orEmpty(),
-                                context
+                DetailBottomSheetState.Rename -> {
+                    RenameFile(
+                        fileName = fileName.value
+                            ?: viewModel.archiveFile.value?.title ?: "",
+                        onValueChange = {
+                            fileName.value = it
+                        },
+                        reNameAction = {
+                            coroutineScope.launch {
+                                bottomSheetState.hide()
+                            }
+                            viewModel.updateTitle(
+                                title = fileName.value,
+                                id = viewModel.processItemId.intValue
                             )
-                        }
-                    },
-                    onWordClick = {},
-                    onOnlyTextClick = {}
-                )
+                        })
+                }
+
+                DetailBottomSheetState.Share -> {
+                    BottomSheetShareDetailItem(
+                        onPdfClick = {
+                            coroutineScope.launch {
+                                bottomSheetState.hide()
+                                convertTextToPdf(
+                                    fileName = viewModel.archiveFile.value?.title.orEmpty(),
+                                    text = processItem.value?.text.orEmpty(),
+                                    context
+                                )
+                            }
+                        },
+                        onWordClick = {},
+                        onOnlyTextClick = {}
+                    )
+                }
+
             }
 
-        }
 
-
-    }) {
+        }) {
         Scaffold(
             modifier = modifier.fillMaxSize(),
             topBar = {
