@@ -79,6 +79,7 @@ class AvaNegarArchiveViewModel @Inject constructor(
     val isNetworkAvailable: StateFlow<Boolean> = _isNetworkAvailable
 
     private var uploadingFileQueue = CopyOnWriteArrayList<AvanegarUploadingFileView>()
+    private var indexOfItemThatShouldBeDownloaded = 0
 
     //TODO set appropriate name
     var isSavingFile = false
@@ -101,11 +102,8 @@ class AvaNegarArchiveViewModel @Inject constructor(
                     NetworkStatus.Unavailable -> {
 
                         job?.cancel()
-                        _allArchiveFiles.value = _allArchiveFiles.value.map {
-                            if (it is AvanegarUploadingFileView) {
-                                it.copy(uploadedPercent = 0f)
-                            } else it
-                        }
+                        resetUploadProcess()
+                        resetIndexOfItemThatShouldBeDownloaded()
                         _isNetworkAvailable.emit(false)
                     }
                 }
@@ -117,14 +115,16 @@ class AvaNegarArchiveViewModel @Inject constructor(
                 val processedList = avanegarArchiveFile.processed
                 val trackingList = avanegarArchiveFile.tracking
                 val uploadingList = avanegarArchiveFile.uploading
-                if (uploadingFileQueue.isEmpty())
-                    uploadingFileQueue = CopyOnWriteArrayList(
-                        uploadingList.map { it.toAvanegarUploadingFileView() }.reversed()
-                    )
+                if (uploadingFileQueue.isEmpty()) uploadingFileQueue = CopyOnWriteArrayList(
+                    uploadingList.map { it.toAvanegarUploadingFileView() }.reversed()
+                )
                 _allArchiveFiles.value =
                     uploadingList.map { it.toAvanegarUploadingFileView() } +
                             trackingList.map { it.toAvanegarTrackingFileView() } +
                             processedList.map { it.toAvanegarProcessedFileView() }
+
+                if (_isUploading.value != Uploading)
+                    startUploading()
             }
         }
 
@@ -136,17 +136,24 @@ class AvaNegarArchiveViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isUploading.collect {
+
                 if (it != Uploading && it != FailureUpload && uploadingFileQueue.isNotEmpty()) {
                     _uiViewStat.emit(UiLoading)
-
                     _isUploading.value = Uploading
 
                     //TODO should calculate audio file duration
-                    audioToTextAboveSixtySecond(
-                        uploadingFileQueue.first().title,
-                        uploadingFileQueue.first().filePath,
-                        createProgressListener()
-                    )
+                    indexOfItemThatShouldBeDownloaded.run {
+                        if (this == 0) audioToTextAboveSixtySecond(
+                            uploadingFileQueue.first().title,
+                            uploadingFileQueue.first().filePath,
+                            createProgressListener()
+                        )
+                        else audioToTextAboveSixtySecond(
+                            uploadingFileQueue[this].title,
+                            uploadingFileQueue[this].filePath,
+                            createProgressListener()
+                        )
+                    }
                 }
             }
         }
@@ -172,7 +179,7 @@ class AvaNegarArchiveViewModel @Inject constructor(
                         filePath = absolutePath,
                         createdAt = createdAt,
                         uploadedPercent = 0f, //it will not store in db
-                        isUploadingFinished = true, //it will not store in db
+                        isUploadingFinished = false, //it will not store in db
                     )
                 )
 
@@ -307,7 +314,12 @@ class AvaNegarArchiveViewModel @Inject constructor(
 
     fun removeUploadingFile(id: String?) = viewModelScope.launch {
         id?.let {
-            repository.deleteUploadingFile(it)
+            viewModelScope.launch {
+                repository.deleteUploadingFile(it)
+                resetUploadProcess()
+                resetIndexOfItemThatShouldBeDownloaded()
+                _isUploading.value = FailureUpload
+            }
         }
     }
 
@@ -327,7 +339,13 @@ class AvaNegarArchiveViewModel @Inject constructor(
         return sharedPref.getBoolean(DENIED_PERMISSION_KEY, false)
     }
 
-    fun startUploading() {
+    fun startUploading(avanegarUploadingFile: AvanegarUploadingFileView? = null) {
+        //to make sure that it does not return -1
+        indexOfItemThatShouldBeDownloaded = if (avanegarUploadingFile != null &&
+            uploadingFileQueue.contains(avanegarUploadingFile)
+        ) uploadingFileQueue.indexOf(avanegarUploadingFile)
+        else 0
+
         _isUploading.value = IsNotUploading
     }
 
@@ -344,8 +362,7 @@ class AvaNegarArchiveViewModel @Inject constructor(
                         if (id != it.id) it
                         else {
                             it.copy(
-                                uploadedPercent = (bytesUploaded.toDouble() / totalBytes).toFloat(),
-                                isUploadingFinished = isDone
+                                uploadedPercent = (bytesUploaded.toDouble() / totalBytes).toFloat()
                             )
                         }
                     }
@@ -356,19 +373,30 @@ class AvaNegarArchiveViewModel @Inject constructor(
         }
     }
 
+    private fun resetUploadProcess() {
+        _allArchiveFiles.value = _allArchiveFiles.value.map {
+            if (it is AvanegarUploadingFileView) {
+                it.copy(uploadedPercent = 0f)
+            } else it
+        }
+    }
+
+    private fun resetIndexOfItemThatShouldBeDownloaded() {
+        indexOfItemThatShouldBeDownloaded = 0
+    }
+
     private suspend fun <T> handleResultState(
         result: AppResult<T>,
         onSuccess: ((Success<T>) -> Unit)? = null
     ) {
         when (result) {
             is Success -> {
-
+                resetIndexOfItemThatShouldBeDownloaded()
                 numberOfRequest = NUMBER_OF_REQUEST
                 _uiViewStat.emit(UiSuccess)
                 changeUploadFileToIdle()
-                uploadingFileQueue = CopyOnWriteArrayList(
-                    uploadingFileQueue.filter { it.id != result.data }
-                )
+                uploadingFileQueue =
+                    CopyOnWriteArrayList(uploadingFileQueue.filter { it.id != result.data })
                 _isUploading.value = Idle
 
                 onSuccess?.let {
@@ -381,6 +409,8 @@ class AvaNegarArchiveViewModel @Inject constructor(
                     numberOfRequest--
                     _isUploading.value = Idle
                 } else {
+                    resetUploadProcess()
+                    resetIndexOfItemThatShouldBeDownloaded()
                     _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
                     _isUploading.value = FailureUpload
                 }
