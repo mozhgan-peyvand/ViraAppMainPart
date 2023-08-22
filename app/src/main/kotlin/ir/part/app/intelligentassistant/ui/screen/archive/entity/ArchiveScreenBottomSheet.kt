@@ -5,10 +5,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -123,8 +126,15 @@ fun BottomSheetArchiveItemBody(
         Image(
             painter = painterResource(id = icon),
             contentDescription = "",
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(
+                top = 8.dp,
+                bottom = 8.dp,
+                start = 8.dp
+            )
         )
+
+        Spacer(modifier = Modifier.size(12.dp))
+
         Text(
             text = stringResource(id = text),
             style = MaterialTheme.typography.subtitle1,
@@ -193,7 +203,9 @@ fun BottomSheetShareDetailItem(
 
 @Composable
 fun BottomSheetDetailItemBody(
-    text: String, icon: Painter, modifier: Modifier = Modifier,
+    text: String,
+    icon: Painter,
+    modifier: Modifier = Modifier,
     onShareItemClick: () -> Unit
 ) {
     Column(modifier = modifier
@@ -207,9 +219,17 @@ fun BottomSheetDetailItemBody(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = icon, contentDescription = "icon",
-                modifier = Modifier.padding(8.dp)
+                painter = icon,
+                contentDescription = "icon",
+                modifier = Modifier.padding(
+                    top = 12.dp,
+                    bottom = 12.dp,
+                    start = 12.dp
+                )
             )
+
+            Spacer(modifier = Modifier.size(12.dp))
+
             Text(
                 text = text,
                 style = MaterialTheme.typography.subtitle1, color = Color_Text_2
@@ -257,10 +277,13 @@ fun RenameFileBottomSheetContent(
                 disabledIndicatorColor = Color.Transparent,
             )
         )
+
+        Spacer(modifier = Modifier.size(10.dp))
+
         Button(
+            contentPadding = PaddingValues(14.dp),
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp),
+                .fillMaxWidth(),
             onClick = {
                 reNameAction()
             },
@@ -331,10 +354,13 @@ fun RenameFile(
             }
 
         }
+
+        Spacer(modifier = Modifier.size(8.dp))
+
         Button(
+            contentPadding = PaddingValues(14.dp),
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
+                .fillMaxWidth(),
             onClick = {
                 reNameAction()
             },
@@ -385,6 +411,7 @@ fun ChooseFileBottomSheetContent(
 
             )
         Button(
+            contentPadding = PaddingValues(14.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
@@ -437,9 +464,9 @@ fun DeleteFileItemConfirmationBottomSheet(
         )
         Row(modifier = Modifier.fillMaxWidth()) {
             Button(
+                contentPadding = PaddingValues(14.dp),
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp),
+                    .weight(1f),
                 onClick = {
                     cancelAction()
                 },
@@ -455,11 +482,14 @@ fun DeleteFileItemConfirmationBottomSheet(
                     style = MaterialTheme.typography.button
                 )
             }
+
+            Spacer(modifier = Modifier.size(8.dp))
+
             Button(
+                contentPadding = PaddingValues(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .padding(end = 8.dp),
+                    .weight(1f),
                 onClick = {
                     deleteAction()
                 },

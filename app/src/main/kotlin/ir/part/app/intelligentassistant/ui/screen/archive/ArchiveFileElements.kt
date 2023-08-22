@@ -69,7 +69,6 @@ fun ArchiveProcessedFileElement(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -80,13 +79,12 @@ fun ArchiveProcessedFileElement(
                     text = archiveViewProcessed.title
                 )
                 IconButton(
-                    modifier = Modifier.size(48.dp),
                     onClick = { onMenuClick(archiveViewProcessed) }
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_dots_menu),
                         contentDescription = stringResource(id = R.string.desc_menu),
-                        modifier = Modifier.padding(8.dp)
+                        modifier = Modifier.padding(12.dp)
                     )
                 }
             }
@@ -157,12 +155,14 @@ fun ArchiveTrackingFileElements(
                     style = MaterialTheme.typography.subtitle2,
                     text = archiveTrackingView.title
                 )
+
                 Spacer(modifier = Modifier.width(4.dp))
+
                 IconButton(
-                    modifier = Modifier.size(48.dp),
                     onClick = { onMenuClick(archiveTrackingView) }
                 ) {
                     Icon(
+                        modifier = Modifier.padding(12.dp),
                         painter = painterResource(id = R.drawable.ic_dots_menu),
                         contentDescription = stringResource(id = R.string.desc_menu)
                     )
@@ -187,7 +187,10 @@ fun ArchiveTrackingFileElements(
                 } else
                     ErrorMessage(
                         isNetworkAvailable = isNetworkAvailable,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(end = 8.dp)
+
                     )
             }
 
@@ -230,12 +233,14 @@ fun ArchiveUploadingFileElement(
                     style = MaterialTheme.typography.subtitle2,
                     text = archiveUploadingFileView.title
                 )
+
                 Spacer(modifier = Modifier.width(4.dp))
+
                 IconButton(
-                    modifier = Modifier.size(48.dp),
                     onClick = { onMenuClick(archiveUploadingFileView) }
                 ) {
                     Icon(
+                        modifier = Modifier.padding(12.dp),
                         painter = painterResource(id = R.drawable.ic_dots_menu),
                         contentDescription = stringResource(id = R.string.desc_menu)
                     )
@@ -335,15 +340,15 @@ private fun ArchiveBodyError(
             Spacer(modifier = Modifier.size(8.dp))
 
             TextButton(
-                modifier = Modifier,
+                modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color_Primary_Opacity_15
                 ),
                 contentPadding = PaddingValues(
                     start = 28.dp,
                     end = 24.dp,
-                    top = 10.dp,
-                    bottom = 10.dp
+                    top = 12.dp,
+                    bottom = 12.dp
                 ),
                 onClick = { onTryAgainClick() }
             ) {
@@ -379,7 +384,7 @@ fun ErrorMessage(
         textAlign = TextAlign.Center,
         text = stringResource(
             id = if (isNetworkAvailable) R.string.msg_server_error
-            else R.string.msg_internet_connection_problem
+            else R.string.msg_upload_will_start_after_connect_to_internet
         ),
         style = MaterialTheme.typography.caption,
         color = Color_Red

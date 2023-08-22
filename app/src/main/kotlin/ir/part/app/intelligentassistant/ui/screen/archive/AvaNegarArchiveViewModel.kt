@@ -98,7 +98,13 @@ class AvaNegarArchiveViewModel @Inject constructor(
         viewModelScope.launch {
             networkStatusTracker.networkStatus.collect { isNetworkAvailable ->
                 when (isNetworkAvailable) {
-                    NetworkStatus.Available -> _isNetworkAvailable.emit(true)
+                    NetworkStatus.Available -> {
+                        _isNetworkAvailable.emit(true)
+
+                        if (_isUploading.value != Uploading && uploadingFileQueue.isNotEmpty() ) {
+                            startUploading()
+                        }
+                    }
                     NetworkStatus.Unavailable -> {
 
                         job?.cancel()
