@@ -49,9 +49,8 @@ fun DeleteBottomSheet(
         Spacer(modifier = Modifier.size(24.dp))
 
         TextButton(
-            contentPadding = PaddingValues(vertical = 0.dp),
-            modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+            contentPadding = PaddingValues(12.dp),
             onClick = onDelete
         ) {
             Row(

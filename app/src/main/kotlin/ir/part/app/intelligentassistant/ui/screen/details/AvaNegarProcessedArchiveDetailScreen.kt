@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -314,48 +315,57 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(color = color),
+            .background(color = color)
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
-            onClick = { onBackAction() }, modifier = Modifier.weight(1f)
+            onClick = { onBackAction() }
         ) {
             Icon(
-
+                modifier = Modifier.padding(8.dp),
                 painter = painterResource(id = AIResource.drawable.ic_arrow_forward),
-                contentDescription = stringResource(id = AIResource.string.desc_menu)
+                contentDescription = stringResource(id = AIResource.string.desc_back)
             )
         }
+
+        Spacer(modifier = Modifier.size(8.dp))
+
         Text(
             text = title,
-            modifier = Modifier.weight(2f),
+            modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.subtitle2,
             color = Color_White
         )
 
-        IconButton(enabled = isRedoEnabled,
-            modifier = Modifier.weight(1f),
+        Spacer(modifier = Modifier.size(8.dp))
+
+        IconButton(
+            enabled = isRedoEnabled,
             onClick = { onRedoClick() }) {
             Icon(
+                modifier = Modifier.padding(12.dp),
                 painter = painterResource(id = AIResource.drawable.ic_redo),
                 contentDescription = stringResource(id = AIResource.string.desc_redo)
             )
         }
 
-        IconButton(enabled = isUndoEnabled,
-            modifier = Modifier.weight(1f),
+        IconButton(
+            enabled = isUndoEnabled,
             onClick = { onUndoClick() }) {
             Icon(
+                modifier = Modifier.padding(12.dp),
                 painter = painterResource(id = AIResource.drawable.ic_undo),
                 contentDescription = stringResource(id = AIResource.string.desc_undo)
             )
         }
 
         IconButton(
-            onClick = { onMenuAction() }, modifier = Modifier.weight(1f)
+            onClick = { onMenuAction() }
         ) {
             Icon(
-                painter = painterResource(id = AIResource.drawable.ic_menu),
+                modifier = Modifier.padding(12.dp),
+                painter = painterResource(id = AIResource.drawable.ic_dots_menu),
                 contentDescription = stringResource(id = AIResource.string.desc_menu)
             )
         }
@@ -375,9 +385,10 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
             .background(Color_BG_Solid_2)
     ) {
         Button(
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp),
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(
+                top = 14.dp, bottom = 14.dp, start = 19.dp, end = 23.dp
+            ),
             onClick = { onCopyOnClick() },
             colors = ButtonDefaults.buttonColors(
                 contentColor = Color_Primary_300,
@@ -401,10 +412,13 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
             }
         }
 
+        Spacer(modifier = Modifier.size(16.dp))
+
         Button(
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 8.dp),
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(
+                top = 14.dp, bottom = 14.dp, start = 19.dp, end = 23.dp
+            ),
             onClick = { onShareClick() },
             colors = ButtonDefaults.buttonColors(
                 contentColor = Color_Primary_300,
@@ -488,9 +502,7 @@ fun PlayerBody(
         modifier = modifier
             .fillMaxWidth()
             .background(color)
-            .padding(
-                start = 24.dp, end = 24.dp, top = 16.dp, bottom = 16.dp
-            ),
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically,
     ) {

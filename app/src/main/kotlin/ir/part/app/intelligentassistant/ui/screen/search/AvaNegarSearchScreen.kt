@@ -22,21 +22,16 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -44,7 +39,6 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import ir.part.app.intelligentassistant.ui.screen.archive.ArchiveProcessedFileElement
 import ir.part.app.intelligentassistant.ui.screen.archive.entity.AvanegarProcessedFileView
-import ir.part.app.intelligentassistant.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.ui.theme.Color_White
@@ -163,7 +157,7 @@ private fun SearchToolbar(
             Icon(
                 painter = painterResource(id = AIResource.drawable.ic_arrow_right),
                 contentDescription = stringResource(id = AIResource.string.desc_forward),
-                modifier = Modifier.padding(10.dp)
+                modifier = Modifier.padding(12.dp)
             )
         }
         TextField(
@@ -197,7 +191,7 @@ private fun SearchToolbar(
                     Icon(
                         painter = painterResource(id = AIResource.drawable.ic_clear),
                         contentDescription = stringResource(id = AIResource.string.desc_clear),
-                        modifier = Modifier.padding(10.dp)
+                        modifier = Modifier.padding(12.dp)
                     )
                 }
             },
@@ -213,16 +207,5 @@ private fun SearchToolbar(
             ),
 
             )
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun AvaNegarSearchScreenPreview() {
-    IntelligentAssistantTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            AvaNegarSearchScreen(navHostController = rememberNavController())
-        }
     }
 }

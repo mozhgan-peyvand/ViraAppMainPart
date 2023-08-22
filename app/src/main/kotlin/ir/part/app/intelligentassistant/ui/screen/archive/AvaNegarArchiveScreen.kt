@@ -471,7 +471,6 @@ fun AvaNegarArchiveScreen(
                     uiViewState is UiError
                 )
                     ErrorBanner(
-                        modifier = Modifier.padding(top = 16.dp),
                         errorMessage = if (uiViewState is UiError) (uiViewState as UiError).message
                         else stringResource(id = R.string.msg_internet_disconnected)
                     )
@@ -562,16 +561,22 @@ private fun ArchiveAppBar(
     onSearchClick: () -> Unit
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp),
         verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
         IconButton(onClick = onBackClick) {
             Icon(
+                modifier = Modifier.padding(12.dp),
                 painter = painterResource(id = AIResource.drawable.ic_arrow_forward),
                 contentDescription = stringResource(id = AIResource.string.desc_back)
             )
         }
+
+        Spacer(modifier = Modifier.size(8.dp))
+
         Text(
             text = stringResource(id = AIResource.string.lbl_ava_negar),
             style = MaterialTheme.typography.subtitle2,
@@ -579,8 +584,12 @@ private fun ArchiveAppBar(
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Start
         )
+
+        Spacer(modifier = Modifier.size(8.dp))
+
         IconButton(onClick = onSearchClick) {
             Icon(
+                modifier = Modifier.padding(12.dp),
                 painter = painterResource(id = AIResource.drawable.ic_search),
                 contentDescription = stringResource(id = AIResource.string.desc_search)
             )
@@ -626,17 +635,16 @@ fun ErrorBanner(
         modifier = modifier
             .fillMaxWidth()
             .background(Color_Red_800)
+            .padding(8.dp)
     ) {
 
         Icon(
-            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
             painter = painterResource(id = R.drawable.ic_failure_network),
             contentDescription = null,
             tint = Color_Red
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
-            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
             text = errorMessage,
             style = MaterialTheme.typography.body2,
             color = Color_Red
