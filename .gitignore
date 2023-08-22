@@ -1,5 +1,7 @@
 *.iml
 .gradle
+app/.signing-debug
+app/.signing
 /.idea
 .DS_Store
 /build

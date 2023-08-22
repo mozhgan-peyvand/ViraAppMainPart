@@ -22,9 +22,51 @@ android {
         }
     }
 
-    buildTypes {
+    signingConfigs {
+        debug {
+            File props = file(".signing-debug/signing.properties")
+            File keystore = file(".signing-debug/debug.jks")
+            if (props.exists()) {
+                def signing = new Properties()
+                props.withInputStream { signing.load(it) }
+                if (signing.KEYSTORE_PASSWORD)
+                    storePassword signing.getProperty('KEYSTORE_PASSWORD')
+                if (signing.KEY_PASSWORD)
+                    keyPassword signing.getProperty('KEY_PASSWORD')
+                if (signing.KEY_ALIAS)
+                    keyAlias signing.getProperty('KEY_ALIAS')
+            }
+            if (keystore.exists())
+                storeFile keystore
+        }
         release {
+            File props = file(".signing/signing.properties")
+            File keystore = file(".signing/release.jks")
+            if (props.exists()) {
+                def signing = new Properties()
+                props.withInputStream { signing.load(it) }
+                if (signing.KEYSTORE_PASSWORD)
+                    storePassword signing.getProperty('KEYSTORE_PASSWORD')
+                if (signing.KEY_PASSWORD)
+                    keyPassword signing.getProperty('KEY_PASSWORD')
+                if (signing.KEY_ALIAS)
+                    keyAlias signing.getProperty('KEY_ALIAS')
+            }
+            if (keystore.exists())
+                storeFile keystore
+        }
+    }
+
+    buildTypes {
+        debug {
             minifyEnabled false
+            shrinkResources false
+            signingConfig signingConfigs.debug
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
