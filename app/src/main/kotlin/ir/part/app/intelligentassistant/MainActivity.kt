@@ -13,10 +13,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.LayoutDirection.Rtl
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import ir.part.app.intelligentassistant.ui.navigation.AppNavigation
-import ir.part.app.intelligentassistant.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.navigation.AppNavigation
+import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -26,7 +27,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             IntelligentAssistantTheme {
                 CompositionLocalProvider(
-                    LocalLayoutDirection provides LayoutDirection.Rtl,
+                    LocalLayoutDirection provides Rtl,
                 ) {
                     Scaffold(
                         modifier = Modifier
