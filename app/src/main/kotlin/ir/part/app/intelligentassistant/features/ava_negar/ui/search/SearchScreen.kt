@@ -37,7 +37,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.ArchiveProcessedFileElement
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementGrid
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
@@ -48,8 +48,8 @@ import ir.part.app.intelligentassistant.R as AIResource
 
 @Composable
 fun AvaNegarSearchScreen(
-        viewModel: SearchViewModel = hiltViewModel(),
-        navHostController: NavHostController
+    viewModel: SearchViewModel = hiltViewModel(),
+    navHostController: NavHostController
 ) {
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val searchResult by viewModel.getSearchResult.collectAsStateWithLifecycle()
@@ -73,12 +73,12 @@ fun AvaNegarSearchScreen(
 
 @Composable
 private fun AvaNegarSearchBody(
-        modifier: Modifier = Modifier,
-        searchText: String,
-        searchResult: List<AvanegarProcessedFileView>,
-        arrowForwardAction: () -> Unit,
-        onValueChangeAction: (String) -> Unit,
-        clearState: () -> Unit, isSearch: Boolean
+    modifier: Modifier = Modifier,
+    searchText: String,
+    searchResult: List<AvanegarProcessedFileView>,
+    arrowForwardAction: () -> Unit,
+    onValueChangeAction: (String) -> Unit,
+    clearState: () -> Unit, isSearch: Boolean
 ) {
     val composition by rememberLottieComposition(
         LottieCompositionSpec
@@ -117,7 +117,8 @@ private fun AvaNegarSearchBody(
                     items(
                         items = searchResult,
                     ) { item ->
-                        ArchiveProcessedFileElement(archiveViewProcessed = item,
+                        ArchiveProcessedFileElementGrid(
+                            archiveViewProcessed = item,
                             onItemClick = {},
                             onMenuClick = {})
                     }
@@ -131,10 +132,8 @@ private fun AvaNegarSearchBody(
                     modifier = Modifier.size(100.dp)
                 )
             }
-
         }
     }
-
 }
 
 @Composable
@@ -205,7 +204,6 @@ private fun SearchToolbar(
                 textColor = Color_Text_1,
                 placeholderColor = Color_Text_3
             ),
-
             )
     }
 }
