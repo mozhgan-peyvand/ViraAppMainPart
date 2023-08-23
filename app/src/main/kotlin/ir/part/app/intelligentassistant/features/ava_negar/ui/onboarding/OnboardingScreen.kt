@@ -29,23 +29,23 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.pager.HorizontalPagerIndicator
-import ir.part.app.intelligentassistant.utils.ui.navigation.ScreensRouter
+import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import ir.part.app.intelligentassistant.R as AIResource
 
 @Composable
-fun AvaNegarOnBoardingScreen(
+fun AvaNegarOnboardingScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    onBoardingViewModel: OnBoardingViewModel = hiltViewModel()
+    onBoardingViewModel: OnboardingViewModel = hiltViewModel()
 ) {
 
     val pagerState = rememberPagerState(pageCount = { 3 })
     val scrollState = rememberScrollState()
 
     val pages = listOf(
-            OnBoardingItem.First,
-            OnBoardingItem.Second,
-            OnBoardingItem.Third
+            OnboardingItem.First,
+            OnboardingItem.Second,
+            OnboardingItem.Third
     )
 
     Column(
@@ -70,7 +70,7 @@ fun AvaNegarOnBoardingScreen(
             onClick = {
                 onBoardingViewModel.saveOnBoardingState(completed = true)
                 navController.popBackStack()
-                navController.navigate(ScreensRouter.AvaNegarArchiveScreen.router)
+                navController.navigate(ScreenRoutes.AvaNegarArchiveList.route)
             },
             modifier = Modifier.weight(1f)
         )
@@ -80,7 +80,7 @@ fun AvaNegarOnBoardingScreen(
 @Composable
 private fun AvaNegarOnBoardingItemBody(
     modifier: Modifier = Modifier,
-    onBoardingItem: OnBoardingItem
+    onBoardingItem: OnboardingItem
 ) {
     Column(
         modifier = modifier

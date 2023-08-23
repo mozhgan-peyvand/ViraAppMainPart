@@ -22,7 +22,7 @@ import javax.inject.Inject
 private const val UNDO_REDO_LIMIT = 50
 
 @HiltViewModel
-class AvaNegarProcessedDetailViewModel @Inject constructor(
+class ArchiveDetailViewModel @Inject constructor(
         private val repository: AvanegarRepository,
         savedStateHandle: SavedStateHandle
 ) : ViewModel() {

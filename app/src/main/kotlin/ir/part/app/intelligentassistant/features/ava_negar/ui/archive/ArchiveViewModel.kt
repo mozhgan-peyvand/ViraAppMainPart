@@ -11,12 +11,13 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.features.ava_negar.data.AvanegarRepository
 import ir.part.app.intelligentassistant.features.ava_negar.data.entity.AvanegarUploadingFileEntity
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.UploadingFileStatus.FailureUpload
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.UploadingFileStatus.Idle
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.UploadingFileStatus.IsNotUploading
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.UploadingFileStatus.Uploading
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus.FailureUpload
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus.Idle
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus.IsNotUploading
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus.Uploading
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.ArchiveView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.toAvanegarProcessedFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.toAvanegarTrackingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.toAvanegarUploadingFileView
@@ -57,7 +58,7 @@ private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
 private const val NUMBER_OF_REQUEST = 3
 
 @HiltViewModel
-class AvaNegarArchiveViewModel @Inject constructor(
+class ArchiveViewModel @Inject constructor(
         private val repository: AvanegarRepository,
         private val fileCache: FileCache,
         private val aiEventPublisher: IntelligentAssistantEventPublisher,

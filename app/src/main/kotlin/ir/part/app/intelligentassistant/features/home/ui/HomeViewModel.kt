@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.features.ava_negar.data.DataStoreRepository
-import ir.part.app.intelligentassistant.utils.ui.navigation.ScreensRouter
+import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,7 +16,7 @@ class HomeViewModel @Inject() constructor(
 ) : ViewModel() {
 
     private val _startDestination: MutableState<String> =
-        mutableStateOf(ScreensRouter.AvaNegarOnBoardingScreen.router)
+        mutableStateOf(ScreenRoutes.AvaNegarOnboarding.route)
 
     val startDestination = _startDestination
 
@@ -25,10 +25,10 @@ class HomeViewModel @Inject() constructor(
             repository.readOnBoardingState().collect { completed ->
                 if (completed) {
                     _startDestination.value =
-                        ScreensRouter.AvaNegarArchiveScreen.router
+                        ScreenRoutes.AvaNegarArchiveList.route
                 } else {
                     _startDestination.value =
-                        ScreensRouter.AvaNegarOnBoardingScreen.router
+                        ScreenRoutes.AvaNegarOnboarding.route
                 }
             }
         }

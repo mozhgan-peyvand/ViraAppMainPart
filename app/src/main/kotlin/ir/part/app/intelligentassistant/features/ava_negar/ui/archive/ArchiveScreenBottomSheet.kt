@@ -1,4 +1,4 @@
-package ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model
+package ir.part.app.intelligentassistant.features.ava_negar.ui.archive
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border

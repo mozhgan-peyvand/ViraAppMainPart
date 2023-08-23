@@ -63,9 +63,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.BottomSheetShareDetailItem
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.DeleteFileItemConfirmationBottomSheet
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.RenameFile
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.BottomSheetShareDetailItem
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.DeleteFileItemConfirmationBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.RenameFile
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Solid_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
@@ -81,11 +81,11 @@ import ir.part.app.intelligentassistant.R as AIResource
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun AvaNegarProcessedArchiveDetailScreen(
+fun AvaNegarArchiveDetailScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     itemId: Int?,
-    viewModel: AvaNegarProcessedDetailViewModel = hiltViewModel()
+    viewModel: ArchiveDetailViewModel = hiltViewModel()
 ) {
     viewModel.setItemId(itemId.orZero())
     val context = LocalContext.current
@@ -128,7 +128,7 @@ fun AvaNegarProcessedArchiveDetailScreen(
     val coroutineScope = rememberCoroutineScope()
     val (selectedSheet, setSelectedSheet) = remember(calculation = {
         mutableStateOf(
-                DetailBottomSheetState.Menu
+                ArchiveDetailBottomSheetType.Menu
         )
     })
 
@@ -139,10 +139,10 @@ fun AvaNegarProcessedArchiveDetailScreen(
         sheetContent = {
             when (selectedSheet) {
 
-                DetailBottomSheetState.Menu -> {
+                ArchiveDetailBottomSheetType.Menu -> {
                     MenuDetailsScreenBottomSheet(
                         onRenameAction = {
-                            setSelectedSheet(DetailBottomSheetState.Rename)
+                            setSelectedSheet(ArchiveDetailBottomSheetType.Rename)
                             coroutineScope.launch {
                                 bottomSheetState.hide()
                                 if (!bottomSheetState.isVisible) {
@@ -153,7 +153,7 @@ fun AvaNegarProcessedArchiveDetailScreen(
                             }
                         },
                         onRemoveFileAction = {
-                            setSelectedSheet(DetailBottomSheetState.Delete)
+                            setSelectedSheet(ArchiveDetailBottomSheetType.Delete)
                             coroutineScope.launch {
                                 bottomSheetState.hide()
                                 if (!bottomSheetState.isVisible) {
@@ -166,7 +166,7 @@ fun AvaNegarProcessedArchiveDetailScreen(
                     )
                 }
 
-                DetailBottomSheetState.Delete -> {
+                ArchiveDetailBottomSheetType.Delete -> {
                     DeleteFileItemConfirmationBottomSheet(
                         deleteAction = {
                             coroutineScope.launch {
@@ -184,7 +184,7 @@ fun AvaNegarProcessedArchiveDetailScreen(
                     )
                 }
 
-                DetailBottomSheetState.Rename -> {
+                ArchiveDetailBottomSheetType.Rename -> {
                     RenameFile(
                         fileName = fileName.value
                             ?: viewModel.archiveFile.value?.title ?: "",
@@ -202,7 +202,7 @@ fun AvaNegarProcessedArchiveDetailScreen(
                         })
                 }
 
-                DetailBottomSheetState.Share -> {
+                ArchiveDetailBottomSheetType.Share -> {
                     BottomSheetShareDetailItem(
                         onPdfClick = {
                             coroutineScope.launch {
@@ -243,7 +243,7 @@ fun AvaNegarProcessedArchiveDetailScreen(
                         navController.popBackStack()
                     },
                     onMenuAction = {
-                        setSelectedSheet(DetailBottomSheetState.Menu)
+                        setSelectedSheet(ArchiveDetailBottomSheetType.Menu)
                         coroutineScope.launch {
                             if (!bottomSheetState.isVisible) {
                                 bottomSheetState.show()
@@ -258,7 +258,7 @@ fun AvaNegarProcessedArchiveDetailScreen(
             bottomBar = {
                 AvaNegarProcessedArchiveDetailBottomBar(
                     onShareClick = {
-                        setSelectedSheet(DetailBottomSheetState.Share)
+                        setSelectedSheet(ArchiveDetailBottomSheetType.Share)
                         coroutineScope.launch {
                             bottomSheetState.hide()
                             if (!bottomSheetState.isVisible) {

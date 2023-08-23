@@ -1,6 +1,6 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.details
 
-enum class DetailBottomSheetState {
+enum class ArchiveDetailBottomSheetType {
     Delete,
     Menu,
     Rename,

@@ -68,17 +68,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.R
-import ir.part.app.intelligentassistant.utils.ui.navigation.ScreensRouter
+import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.ArchiveView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarTrackingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.BottomSheetDetailItem
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.BottomSheetShareDetailItem
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.ChooseFileBottomSheetContent
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.DeleteFileItemConfirmationBottomSheet
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.RenameFile
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.RenameFileBottomSheetContent
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus
 import ir.part.app.intelligentassistant.features.ava_negar.ui.update.ForceUpdateScreen
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red_800
@@ -97,9 +92,9 @@ import java.io.File
 import ir.part.app.intelligentassistant.R as AIResource
 
 @Composable
-fun AvaNegarArchiveScreen(
+fun AvaNegarArchiveListScreen(
     navHostController: NavHostController,
-    archiveViewModel: AvaNegarArchiveViewModel = hiltViewModel()
+    archiveViewModel: ArchiveViewModel = hiltViewModel()
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -462,7 +457,7 @@ fun AvaNegarArchiveScreen(
                     onBackClick = { navHostController.popBackStack() },
                     onSearchClick = {
                         navHostController.navigate(
-                            ScreensRouter.AvaNegarSearchScreen.router
+                            ScreenRoutes.AvaNegarSearch.route
                         )
                     })
 
@@ -517,7 +512,7 @@ fun AvaNegarArchiveScreen(
                     },
                     onItemClick = {
                         navHostController.navigate(
-                            ScreensRouter.AvaNegarProcessedArchiveDetailScreen.router.plus(
+                            ScreenRoutes.AvaNegarArchiveDetail.route.plus(
                                 "/$it"
                             )
                         )
