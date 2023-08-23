@@ -88,6 +88,8 @@
     <!--region description text -->
     <string name="desc_back">بازگشت</string>
     <string name="desc_search">جستجو</string>
+    <string name="desc_column">ستونی</string>
+    <string name="desc_grid">مشبک</string>
     <string name="desc_menu_upload_and_record">منو آپلود و ضبط صدا</string>
     <string name="desc_record">ضبط صدا</string>
     <string name="desc_upload">آپلود</string>

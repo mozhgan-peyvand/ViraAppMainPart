@@ -27,9 +27,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
@@ -42,11 +44,13 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -58,28 +62,31 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.R
-import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementColumn
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementGrid
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveTrackingFileElementGrid
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveTrackingFileElementsColumn
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveUploadingFileElementColumn
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveUploadingFileElementGrid
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.ArchiveView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarTrackingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus
 import ir.part.app.intelligentassistant.features.ava_negar.ui.update.ForceUpdateScreen
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red_800
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEvent
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.filename
@@ -87,6 +94,13 @@ import ir.part.app.intelligentassistant.utils.ui.UiError
 import ir.part.app.intelligentassistant.utils.ui.UiIdle
 import ir.part.app.intelligentassistant.utils.ui.isPermissionDeniedPermanently
 import ir.part.app.intelligentassistant.utils.ui.navigateToAppSettings
+import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red_800
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
+import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import kotlinx.coroutines.launch
 import java.io.File
 import ir.part.app.intelligentassistant.R as AIResource
@@ -119,9 +133,11 @@ fun AvaNegarArchiveListScreen(
         mutableStateOf<Uri?>(null)
     }
 
+    var isGrid by rememberSaveable { mutableStateOf(true) }
+
     val (selectedSheet, setSelectedSheet) = remember(calculation = {
         mutableStateOf(
-                ArchiveBottomSheetType.ChooseFile
+            ArchiveBottomSheetType.ChooseFile
         )
     })
 
@@ -141,7 +157,7 @@ fun AvaNegarArchiveListScreen(
     )
 
     val uploadingFileState by archiveViewModel.isUploading.collectAsStateWithLifecycle(
-            UploadingFileStatus.Idle
+        UploadingFileStatus.Idle
     )
     val isNetworkAvailable by archiveViewModel.isNetworkAvailable.collectAsStateWithLifecycle(false)
 
@@ -455,6 +471,8 @@ fun AvaNegarArchiveListScreen(
                 ArchiveAppBar(modifier = Modifier
                     .padding(top = 8.dp),
                     onBackClick = { navHostController.popBackStack() },
+                    isGrid = isGrid,
+                    onChangeListTypeClick = { isGrid = !isGrid },
                     onSearchClick = {
                         navHostController.navigate(
                             ScreenRoutes.AvaNegarSearch.route
@@ -478,6 +496,7 @@ fun AvaNegarArchiveListScreen(
                     isNetworkAvailable = isNetworkAvailable,
                     isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                     isErrorState = uiViewState is UiError,
+                    isGrid = isGrid,
                     onTryAgainCLick = { archiveViewModel.startUploading(it) },
                     onMenuClick = { item ->
                         when (item) {
@@ -552,6 +571,8 @@ fun AvaNegarArchiveListScreen(
 @Composable
 private fun ArchiveAppBar(
     modifier: Modifier = Modifier,
+    isGrid: Boolean,
+    onChangeListTypeClick: () -> Unit,
     onBackClick: () -> Unit,
     onSearchClick: () -> Unit
 ) {
@@ -582,6 +603,20 @@ private fun ArchiveAppBar(
 
         Spacer(modifier = Modifier.size(8.dp))
 
+        IconButton(onClick = onChangeListTypeClick) {
+            Icon(
+                modifier = Modifier.padding(12.dp),
+                painter = painterResource(
+                    id = if (isGrid) AIResource.drawable.ic_list_column
+                    else AIResource.drawable.ic_list_grid
+                ),
+                contentDescription = stringResource(
+                    id = if (isGrid) AIResource.string.desc_grid
+                    else AIResource.string.desc_column
+                )
+            )
+        }
+
         IconButton(onClick = onSearchClick) {
             Icon(
                 modifier = Modifier.padding(12.dp),
@@ -594,14 +629,15 @@ private fun ArchiveAppBar(
 
 @Composable
 private fun ArchiveBody(
-        modifier: Modifier,
-        archiveViewList: List<ArchiveView>,
-        isNetworkAvailable: Boolean,
-        isErrorState: Boolean,
-        isUploading: Boolean,
-        onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
-        onMenuClick: (ArchiveView) -> Unit,
-        onItemClick: (Int) -> Unit
+    modifier: Modifier,
+    archiveViewList: List<ArchiveView>,
+    isNetworkAvailable: Boolean,
+    isErrorState: Boolean,
+    isUploading: Boolean,
+    isGrid: Boolean,
+    onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
+    onMenuClick: (ArchiveView) -> Unit,
+    onItemClick: (Int) -> Unit
 ) {
     if (archiveViewList.isEmpty()) {
         ArchiveEmptyBody(
@@ -613,6 +649,7 @@ private fun ArchiveBody(
             isNetworkAvailable = isNetworkAvailable,
             isUploading = isUploading,
             isErrorState = isErrorState,
+            isGrid = isGrid,
             onTryAgainCLick = { onTryAgainCLick(it) },
             onMenuClick = { onMenuClick(it) },
             onItemClick = { onItemClick(it) }
@@ -703,73 +740,121 @@ private fun ArchiveEmptyBody(
 
 @Composable
 private fun ArchiveList(
-        list: List<ArchiveView>,
-        modifier: Modifier = Modifier,
-        isNetworkAvailable: Boolean,
-        isUploading: Boolean,
-        isErrorState: Boolean,
-        onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
-        onMenuClick: (ArchiveView) -> Unit,
-        onItemClick: (Int) -> Unit
+    list: List<ArchiveView>,
+    modifier: Modifier = Modifier,
+    isNetworkAvailable: Boolean,
+    isUploading: Boolean,
+    isErrorState: Boolean,
+    isGrid: Boolean,
+    onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
+    onMenuClick: (ArchiveView) -> Unit,
+    onItemClick: (Int) -> Unit
 ) {
-    LazyVerticalGrid(
-        modifier = modifier,
-        columns = GridCells.Adaptive(128.dp),
-        contentPadding = PaddingValues(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        items(
-            items = list,
-            key = { item ->
-                when (item) {
-                    is AvanegarProcessedFileView -> item.id
 
-                    is AvanegarTrackingFileView -> item.token
+    if (isGrid)
+        LazyVerticalGrid(
+            modifier = modifier,
+            columns = GridCells.Adaptive(128.dp),
+            contentPadding = PaddingValues(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            items(
+                items = list,
+                key = { item ->
+                    when (item) {
+                        is AvanegarProcessedFileView -> item.id
 
-                    is AvanegarUploadingFileView -> item.id
-                    else -> {}
-                }
-            }) {
+                        is AvanegarTrackingFileView -> item.token
 
-            when (it) {
-                is AvanegarProcessedFileView -> {
-                    ArchiveProcessedFileElement(
-                        archiveViewProcessed = it,
-                        onItemClick = { id ->
-                            onItemClick(id)
-                        },
-                        onMenuClick = { item ->
-                            onMenuClick(item)
-                        }
-                    )
-                }
+                        is AvanegarUploadingFileView -> item.id
+                        else -> {}
+                    }
+                }) {
 
-                is AvanegarTrackingFileView -> {
-                    ArchiveTrackingFileElements(
-                        archiveTrackingView = it,
-                        isNetworkAvailable = isNetworkAvailable,
-                        onItemClick = {},
-                        onMenuClick = { item -> onMenuClick(item) }
-                    )
-                }
+                when (it) {
+                    is AvanegarProcessedFileView -> {
+                        ArchiveProcessedFileElementGrid(
+                            archiveViewProcessed = it,
+                            onItemClick = { id ->
+                                onItemClick(id)
+                            },
+                            onMenuClick = { item ->
+                                onMenuClick(item)
+                            }
+                        )
+                    }
 
-                is AvanegarUploadingFileView -> {
-                    ArchiveUploadingFileElement(
-                        archiveUploadingFileView = it,
-                        isUploading = isUploading,
-                        isNetworkAvailable = isNetworkAvailable,
-                        isErrorState = isErrorState,
-                        onTryAgainClick = { value -> onTryAgainCLick(value) },
-                        onMenuClick = { item ->
-                            onMenuClick(item)
-                        },
-                        onItemClick = { /* TODO */ }
-                    )
+                    is AvanegarTrackingFileView -> {
+                        ArchiveTrackingFileElementGrid(
+                            archiveTrackingView = it,
+                            isNetworkAvailable = isNetworkAvailable,
+                            onItemClick = {},
+                            onMenuClick = { item -> onMenuClick(item) }
+                        )
+                    }
+
+                    is AvanegarUploadingFileView -> {
+                        ArchiveUploadingFileElementGrid(
+                            archiveUploadingFileView = it,
+                            isUploading = isUploading,
+                            isNetworkAvailable = isNetworkAvailable,
+                            isErrorState = isErrorState,
+                            onTryAgainClick = { value -> onTryAgainCLick(value) },
+                            onMenuClick = { item ->
+                                onMenuClick(item)
+                            },
+                            onItemClick = { /* TODO */ }
+                        )
+                    }
                 }
             }
         }
-    }
+    else
+        LazyColumn(
+            modifier = modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(list) {
+                when (it) {
+                    is AvanegarProcessedFileView -> {
+                        ArchiveProcessedFileElementColumn(
+                            archiveViewProcessed = it,
+                            onItemClick = { id ->
+                                onItemClick(id)
+                            },
+                            onMenuClick = { item ->
+                                onMenuClick(item)
+                            }
+                        )
+                    }
+
+                    is AvanegarTrackingFileView -> {
+                        ArchiveTrackingFileElementsColumn(
+                            archiveTrackingView = it,
+                            isNetworkAvailable = isNetworkAvailable,
+                            onItemClick = {},
+                            onMenuClick = { item -> onMenuClick(item) }
+                        )
+                    }
+
+                    is AvanegarUploadingFileView -> {
+                        ArchiveUploadingFileElementColumn(
+                            archiveUploadingFileView = it,
+                            isUploading = isUploading,
+                            isNetworkAvailable = isNetworkAvailable,
+                            isErrorState = isErrorState,
+                            onTryAgainClick = { value -> onTryAgainCLick(value) },
+                            onMenuClick = { item ->
+                                onMenuClick(item)
+                            },
+                            onItemClick = { /* TODO */ }
+                        )
+                    }
+                }
+            }
+        }
 }
 
 @Composable
@@ -831,6 +916,22 @@ private fun Fabs(
                     contentDescription = stringResource(id = AIResource.string.desc_record)
                 )
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ArchiveBodyErrorPreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            ArchiveAppBar(
+                modifier = Modifier,
+                onBackClick = {},
+                isGrid = true,
+                onChangeListTypeClick = {},
+                onSearchClick = {},
+            )
         }
     }
 }
