@@ -40,9 +40,12 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -75,6 +78,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.features.ava_negar.ui.SnackBar
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementColumn
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementGrid
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveTrackingFileElementGrid
@@ -101,6 +105,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.io.File
 import ir.part.app.intelligentassistant.R as AIResource
@@ -161,16 +166,10 @@ fun AvaNegarArchiveListScreen(
     )
     val isNetworkAvailable by archiveViewModel.isNetworkAvailable.collectAsStateWithLifecycle(false)
 
-    val uiViewState by archiveViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
-    LaunchedEffect(uiViewState) {
-        when (uiViewState) {
-            is UiError -> {
-                Toast.makeText(context, (uiViewState as UiError).message, Toast.LENGTH_SHORT).show()
-            }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
 
-            else -> {}
-        }
-    }
+    val uiViewState by archiveViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
 
     val intent = Intent()
     intent.action = Intent.ACTION_GET_CONTENT
@@ -211,12 +210,12 @@ fun AvaNegarArchiveListScreen(
                     permission = Manifest.permission.READ_EXTERNAL_STORAGE
                 )
             )
-            Toast.makeText(
-                context,
-                AIResource.string.lbl_need_to_access_file_permission,
-                Toast.LENGTH_SHORT
-            ).show()
 
+            showMessage(
+                snackbarHostState,
+                coroutineScope,
+                context.getString(AIResource.string.lbl_need_to_access_file_permission)
+            )
         }
     }
 
@@ -241,329 +240,344 @@ fun AvaNegarArchiveListScreen(
         }
     }
 
-    ModalBottomSheetLayout(
-        sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
-        sheetBackgroundColor = Color.Black,
-        sheetState = if (isAnyBottomSheetOtherThanUpdate) modalBottomSheetState
-        else modalBottomSheetStateUpdate,
-        sheetContent = {
-            when (selectedSheet) {
-                ArchiveBottomSheetType.ChooseFile -> {
-                    ChooseFileBottomSheetContent(onOpenFile = {
+    Scaffold(
+        backgroundColor = if (archiveViewModel.allArchiveFiles.value.isEmpty())
+            MaterialTheme.colors.background
+        else
+            Color.Transparent,
+        modifier = if (archiveViewModel.allArchiveFiles.value.isNotEmpty())
+            Modifier.paint(
+                painter = painterResource(id = R.drawable.bg_pattern),
+                contentScale = ContentScale.Crop
+            )
+        else
+            Modifier,
+        scaffoldState = scaffoldState,
+        snackbarHost = {
+            SnackBar(it, isFabExpanded)
+        },
+    ) { innerPadding ->
+        ModalBottomSheetLayout(
+            sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
+            sheetBackgroundColor = Color.Black,
+            sheetState = if (isAnyBottomSheetOtherThanUpdate) modalBottomSheetState
+            else modalBottomSheetStateUpdate,
+            sheetContent = {
+                when (selectedSheet) {
+                    ArchiveBottomSheetType.ChooseFile -> {
+                        ChooseFileBottomSheetContent(onOpenFile = {
+                            coroutineScope.launch {
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
+                                } else modalBottomSheetState.hide()
+                            }
+
+                            val permission = if (Build.VERSION.SDK_INT >= 33) {
+                                Manifest.permission.READ_MEDIA_AUDIO
+                            } else {
+                                Manifest.permission.READ_EXTERNAL_STORAGE
+                            }
+
+                            if (ContextCompat.checkSelfPermission(
+                                    context,
+                                    permission
+                                ) == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                launchOpenFile.launch(intent)
+                            } else if (archiveViewModel.hasDeniedPermissionPermanently()) {
+                                navigateToAppSettings(activity = context as Activity)
+
+                                showMessage(
+                                    snackbarHostState,
+                                    coroutineScope,
+                                    context.getString(
+                                        AIResource.string.msg_access_file_permission_manually
+                                    )
+                                )
+                            } else {
+                                // Asking for permission
+                                launcher.launch(permission)
+                            }
+                        })
+                    }
+
+                    ArchiveBottomSheetType.RenameUploading -> {
+                        RenameFileBottomSheetContent(
+                            fileName.value.orEmpty(),
+                            onValueChange = {
+                                fileName.value = it
+                            },
+                            reNameAction = {
+                                archiveViewModel.addFileToUploadingQueue(
+                                    fileName.value.orEmpty(),
+                                    fileUri.value
+                                )
+                                isFabExpanded = false
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        )
+                    }
+
+                    ArchiveBottomSheetType.Update -> {
+                        ForceUpdateScreen(
+                            onUpdateClick = {
+                                //TODO should download update from Bazar or Google play store
+                                Toast.makeText(context, "Will Update", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        )
+                    }
+
+                    ArchiveBottomSheetType.Rename -> {
+                        RenameFile(
+                            fileName = fileName.value.orEmpty(),
+                            onValueChange = { fileName.value = it },
+                            reNameAction = {
+                                archiveViewModel.updateTitle(
+                                    title = fileName.value.orEmpty(),
+                                    id = processItem.value?.id
+                                )
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        )
+                    }
+
+                    ArchiveBottomSheetType.Detail -> {
+                        BottomSheetDetailItem(
+                            text = processItem.value?.title.orEmpty(),
+                            copyItemAction = {
+                                localClipBoardManager.setText(
+                                    AnnotatedString(
+                                        processItem.value?.text.orEmpty()
+                                    )
+                                )
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+
+                                showMessage(
+                                    snackbarHostState,
+                                    coroutineScope,
+                                    context.getString(AIResource.string.lbl_text_save_in_clipboard)
+                                )
+                            },
+                            shareItemAction = {
+                                setSelectedSheet(ArchiveBottomSheetType.Share)
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                    if (!modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.show()
+                                    } else {
+                                        modalBottomSheetState.hide()
+                                    }
+                                }
+                            },
+                            renameItemAction = {
+                                setSelectedSheet(ArchiveBottomSheetType.Rename)
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                    if (!modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.show()
+                                    } else {
+                                        modalBottomSheetState.hide()
+                                    }
+
+                                }
+                            },
+                            deleteItemAction = {
+                                setSelectedSheet(ArchiveBottomSheetType.DeleteConfirmation)
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                    if (!modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.show()
+                                    } else {
+                                        modalBottomSheetState.hide()
+                                    }
+                                }
+                            },
+                        )
+                    }
+
+                    ArchiveBottomSheetType.Share -> {
+                        BottomSheetShareDetailItem(
+                            onPdfClick = {
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                    convertTextToPdf(
+                                        fileName.value.orEmpty(),
+                                        text = processItem.value?.text.orEmpty(),
+                                        context
+                                    )
+                                }
+                            },
+                            onWordClick = {},
+                            onOnlyTextClick = {}
+                        )
+                    }
+
+                    ArchiveBottomSheetType.DeleteConfirmation -> {
+                        DeleteFileItemConfirmationBottomSheet(
+                            deleteAction = {
+
+                                when (val file = archiveViewItem.value) {
+                                    is AvanegarTrackingFileView ->
+                                        archiveViewModel.removeTrackingFile(file.token)
+
+                                    is AvanegarUploadingFileView ->
+                                        archiveViewModel.removeUploadingFile(file.id)
+
+                                    is AvanegarProcessedFileView ->
+                                        archiveViewModel.removeProcessedFile(processItem.value?.id)
+
+                                }
+
+                                File(
+                                    processItem.value?.filePath.orEmpty()
+                                ).delete()
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            },
+                            cancelAction = {
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            },
+                            fileName = processItem.value?.title.orEmpty()
+                        )
+                    }
+
+                    ArchiveBottomSheetType.Delete -> {
+                        DeleteBottomSheet(
+                            fileName = archiveViewItem.value?.title.orEmpty(),
+                            onDelete = {
+                                setSelectedSheet(ArchiveBottomSheetType.DeleteConfirmation)
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                    if (!modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.show()
+                                    } else {
+                                        modalBottomSheetState.hide()
+                                    }
+                                }
+                            }
+                        )
+                    }
+
+                }
+            }
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+
+                Column(modifier = Modifier.fillMaxSize()) {
+                    ArchiveAppBar(modifier = Modifier
+                        .padding(top = 8.dp),
+                        onBackClick = { navHostController.popBackStack() },
+                        isGrid = isGrid,
+                        onChangeListTypeClick = { isGrid = !isGrid },
+                        onSearchClick = {
+                            navHostController.navigate(
+                                ScreenRoutes.AvaNegarSearch.route
+                            )
+                        })
+
+                    if (
+                        (!isNetworkAvailable && archiveViewModel.allArchiveFiles.value.isNotEmpty()) ||
+                        uiViewState is UiError
+                    )
+                        ErrorBanner(
+                            errorMessage = if (uiViewState is UiError) (uiViewState as UiError).message
+                            else stringResource(id = R.string.msg_internet_disconnected)
+                        )
+
+                    ArchiveBody(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        archiveViewList = archiveViewModel.allArchiveFiles.value,
+                        isNetworkAvailable = isNetworkAvailable,
+                        isUploading = uploadingFileState == UploadingFileStatus.Uploading,
+                        isErrorState = uiViewState is UiError,
+                        isGrid = isGrid,
+                        onTryAgainCLick = { archiveViewModel.startUploading(it) },
+                        onMenuClick = { item ->
+                            when (item) {
+                                is AvanegarProcessedFileView -> {
+                                    setSelectedSheet(ArchiveBottomSheetType.Detail)
+                                    coroutineScope.launch {
+                                        if (!modalBottomSheetState.isVisible) {
+                                            modalBottomSheetState.show()
+                                        } else {
+                                            modalBottomSheetState.hide()
+                                        }
+                                    }
+                                    archiveViewItem.value = item
+                                    processItem.value = item
+                                    fileName.value = item.title
+                                }
+
+                                else -> {
+                                    setSelectedSheet(ArchiveBottomSheetType.Delete)
+                                    coroutineScope.launch {
+                                        if (!modalBottomSheetState.isVisible) {
+                                            modalBottomSheetState.show()
+                                        } else {
+                                            modalBottomSheetState.hide()
+                                        }
+                                    }
+                                    archiveViewItem.value = item
+                                    fileName.value = item.title
+                                }
+                            }
+
+                        },
+                        onItemClick = {
+                            navHostController.navigate(
+                                ScreenRoutes.AvaNegarArchiveDetail.route.plus(
+                                    "/$it"
+                                )
+                            )
+
+                        }
+                    )
+                }
+
+
+                if (isFabExpanded) {
+                    Surface(
+                        color = MaterialTheme.colors.background.copy(alpha = 0.5f),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pointerInput(Unit) { isFabExpanded = false },
+                        content = {}
+                    )
+                }
+                Fabs(isFabExpanded = isFabExpanded,
+                    modifier = Modifier.align(Alignment.BottomStart),
+                    onMainFabClick = {
+                        isFabExpanded = !isFabExpanded
+                    },
+                    openBottomSheet = {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
                         coroutineScope.launch {
                             if (!modalBottomSheetState.isVisible) {
                                 modalBottomSheetState.show()
-                            } else modalBottomSheetState.hide()
-                        }
-
-                        val permission = if (Build.VERSION.SDK_INT >= 33) {
-                            Manifest.permission.READ_MEDIA_AUDIO
-                        } else {
-                            Manifest.permission.READ_EXTERNAL_STORAGE
-                        }
-
-                        if (ContextCompat.checkSelfPermission(
-                                context,
-                                permission
-                            ) == PackageManager.PERMISSION_GRANTED
-                        ) {
-                            launchOpenFile.launch(intent)
-                        } else if (archiveViewModel.hasDeniedPermissionPermanently()) {
-                            navigateToAppSettings(activity = context as Activity)
-                            Toast.makeText(
-                                context,
-                                AIResource.string.msg_access_file_permission_manually,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            // Asking for permission
-                            launcher.launch(permission)
+                            } else {
+                                modalBottomSheetState.hide()
+                            }
                         }
                     })
-                }
-
-                ArchiveBottomSheetType.RenameUploading -> {
-                    RenameFileBottomSheetContent(
-                        fileName.value.orEmpty(),
-                        onValueChange = {
-                            fileName.value = it
-                        },
-                        reNameAction = {
-                            archiveViewModel.addFileToUploadingQueue(
-                                fileName.value.orEmpty(),
-                                fileUri.value
-                            )
-                            isFabExpanded = false
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                            }
-                        }
-                    )
-                }
-
-                ArchiveBottomSheetType.Update -> {
-                    ForceUpdateScreen(
-                        onUpdateClick = {
-                            //TODO should download update from Bazar or Google play store
-                            Toast.makeText(context, "Will Update", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                    )
-                }
-
-                ArchiveBottomSheetType.Rename -> {
-                    RenameFile(
-                        fileName = fileName.value.orEmpty(),
-                        onValueChange = { fileName.value = it },
-                        reNameAction = {
-                            archiveViewModel.updateTitle(
-                                title = fileName.value.orEmpty(),
-                                id = processItem.value?.id
-                            )
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                            }
-                        }
-                    )
-                }
-
-                ArchiveBottomSheetType.Detail -> {
-                    BottomSheetDetailItem(
-                        text = processItem.value?.title.orEmpty(),
-                        copyItemAction = {
-                            localClipBoardManager.setText(
-                                AnnotatedString(
-                                    processItem.value?.text.orEmpty()
-                                )
-                            )
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                            }
-                            Toast.makeText(
-                                context,
-                                AIResource.string.lbl_text_save_in_clipboard,
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-                        },
-                        shareItemAction = {
-                            setSelectedSheet(ArchiveBottomSheetType.Share)
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                } else {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
-                        },
-                        renameItemAction = {
-                            setSelectedSheet(ArchiveBottomSheetType.Rename)
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                } else {
-                                    modalBottomSheetState.hide()
-                                }
-
-                            }
-                        },
-                        deleteItemAction = {
-                            setSelectedSheet(ArchiveBottomSheetType.DeleteConfirmation)
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                } else {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
-                        },
-                    )
-                }
-
-                ArchiveBottomSheetType.Share -> {
-                    BottomSheetShareDetailItem(
-                        onPdfClick = {
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                                convertTextToPdf(
-                                    fileName.value.orEmpty(),
-                                    text = processItem.value?.text.orEmpty(),
-                                    context
-                                )
-                            }
-                        },
-                        onWordClick = {},
-                        onOnlyTextClick = {}
-                    )
-                }
-
-                ArchiveBottomSheetType.DeleteConfirmation -> {
-                    DeleteFileItemConfirmationBottomSheet(
-                        deleteAction = {
-
-                            when (val file = archiveViewItem.value) {
-                                is AvanegarTrackingFileView ->
-                                    archiveViewModel.removeTrackingFile(file.token)
-
-                                is AvanegarUploadingFileView ->
-                                    archiveViewModel.removeUploadingFile(file.id)
-
-                                is AvanegarProcessedFileView ->
-                                    archiveViewModel.removeProcessedFile(processItem.value?.id)
-
-                            }
-
-                            File(
-                                processItem.value?.filePath.orEmpty()
-                            ).delete()
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                            }
-                        },
-                        cancelAction = {
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                            }
-                        },
-                        fileName = processItem.value?.title.orEmpty()
-                    )
-                }
-
-                ArchiveBottomSheetType.Delete -> {
-                    DeleteBottomSheet(
-                        fileName = archiveViewItem.value?.title.orEmpty(),
-                        onDelete = {
-                            setSelectedSheet(ArchiveBottomSheetType.DeleteConfirmation)
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                } else {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
-                        }
-                    )
-                }
-
             }
-        }
-    ) {
-        Box(
-            modifier = if (archiveViewModel.allArchiveFiles.value.isEmpty())
-                Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colors.background)
-            else
-                Modifier
-                    .fillMaxSize()
-                    .paint(painterResource(id = R.drawable.bg_pattern))
-        ) {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-
-            ) {
-                ArchiveAppBar(modifier = Modifier
-                    .padding(top = 8.dp),
-                    onBackClick = { navHostController.popBackStack() },
-                    isGrid = isGrid,
-                    onChangeListTypeClick = { isGrid = !isGrid },
-                    onSearchClick = {
-                        navHostController.navigate(
-                            ScreenRoutes.AvaNegarSearch.route
-                        )
-                    })
-
-                if (
-                    (!isNetworkAvailable && archiveViewModel.allArchiveFiles.value.isNotEmpty()) ||
-                    uiViewState is UiError
-                )
-                    ErrorBanner(
-                        errorMessage = if (uiViewState is UiError) (uiViewState as UiError).message
-                        else stringResource(id = R.string.msg_internet_disconnected)
-                    )
-
-                ArchiveBody(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    archiveViewList = archiveViewModel.allArchiveFiles.value,
-                    isNetworkAvailable = isNetworkAvailable,
-                    isUploading = uploadingFileState == UploadingFileStatus.Uploading,
-                    isErrorState = uiViewState is UiError,
-                    isGrid = isGrid,
-                    onTryAgainCLick = { archiveViewModel.startUploading(it) },
-                    onMenuClick = { item ->
-                        when (item) {
-                            is AvanegarProcessedFileView -> {
-                                setSelectedSheet(ArchiveBottomSheetType.Detail)
-                                coroutineScope.launch {
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    } else {
-                                        modalBottomSheetState.hide()
-                                    }
-                                }
-                                archiveViewItem.value = item
-                                processItem.value = item
-                                fileName.value = item.title
-                            }
-
-                            else -> {
-                                setSelectedSheet(ArchiveBottomSheetType.Delete)
-                                coroutineScope.launch {
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    } else {
-                                        modalBottomSheetState.hide()
-                                    }
-                                }
-                                archiveViewItem.value = item
-                                fileName.value = item.title
-                            }
-                        }
-
-                    },
-                    onItemClick = {
-                        navHostController.navigate(
-                            ScreenRoutes.AvaNegarArchiveDetail.route.plus(
-                                "/$it"
-                            )
-                        )
-
-                    }
-                )
-            }
-
-            if (isFabExpanded) {
-                Surface(
-                    color = MaterialTheme.colors.background.copy(alpha = 0.5f),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .pointerInput(Unit) { isFabExpanded = false },
-                    content = {}
-                )
-            }
-            Fabs(isFabExpanded = isFabExpanded,
-                modifier = Modifier.align(Alignment.BottomStart),
-                onMainFabClick = {
-                    isFabExpanded = !isFabExpanded
-                },
-                openBottomSheet = {
-                    setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
-                    coroutineScope.launch {
-                        if (!modalBottomSheetState.isVisible) {
-                            modalBottomSheetState.show()
-                        } else {
-                            modalBottomSheetState.hide()
-                        }
-                    }
-                })
         }
     }
 }
@@ -689,43 +703,55 @@ private fun ArchiveEmptyBody(
     modifier: Modifier = Modifier
 ) {
     Column(
-        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom,
         modifier = modifier
     ) {
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.6f)
-        )
-        Image(
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier
-                .size(200.dp)
-                .align(Alignment.CenterHorizontally),
-            painter = painterResource(id = AIResource.drawable.img_main_page),
-            contentDescription = null
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = stringResource(id = AIResource.string.lbl_dont_have_file),
-            style = MaterialTheme.typography.subtitle1,
-            color = Color_Text_1,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = stringResource(id = AIResource.string.lbl_make_your_first_file),
-            style = MaterialTheme.typography.caption,
-            color = Color_Text_3,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-        )
-        Spacer(modifier = Modifier.height(58.dp))
+
+        Column(
+            modifier = Modifier.weight(0.7f),
+            verticalArrangement = Arrangement.Bottom,
+        ) {
+            Image(
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier
+                    .size(200.dp)
+                    .align(Alignment.CenterHorizontally),
+                painter = painterResource(id = AIResource.drawable.img_main_page),
+                contentDescription = null
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = stringResource(id = AIResource.string.lbl_dont_have_file),
+                style = MaterialTheme.typography.subtitle1,
+                color = Color_Text_1,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = stringResource(id = AIResource.string.lbl_make_your_first_file),
+                style = MaterialTheme.typography.caption,
+                color = Color_Text_3,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(53.dp))
+
         Row(
-            modifier = Modifier.weight(0.8f)
+            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier
+                .weight(0.3f)
+                .fillMaxWidth()
         ) {
             Spacer(modifier = Modifier.width(80.dp))
+
             Image(
                 modifier = Modifier.fillMaxHeight(),
                 contentScale = ContentScale.Crop,
@@ -920,6 +946,18 @@ private fun Fabs(
     }
 }
 
+
+private fun showMessage(
+    snackbarHostState: SnackbarHostState,
+    coroutineScope: CoroutineScope,
+    message: String
+) {
+    coroutineScope.launch {
+        snackbarHostState.showSnackbar(message = message)
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 private fun ArchiveBodyErrorPreview() {
@@ -932,6 +970,16 @@ private fun ArchiveBodyErrorPreview() {
                 onChangeListTypeClick = {},
                 onSearchClick = {},
             )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ArchiveEmptyBodyPreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            ArchiveEmptyBody()
         }
     }
 }
