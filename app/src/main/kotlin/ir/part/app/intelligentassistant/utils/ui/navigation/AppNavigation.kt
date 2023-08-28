@@ -8,17 +8,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.AvaNegarArchiveListScreen
 import ir.part.app.intelligentassistant.features.ava_negar.ui.details.AvaNegarArchiveDetailScreen
-import ir.part.app.intelligentassistant.features.home.ui.HomeScreen
 import ir.part.app.intelligentassistant.features.ava_negar.ui.onboarding.AvaNegarOnboardingScreen
 import ir.part.app.intelligentassistant.features.ava_negar.ui.record.AvaNegarVoiceRecordingScreen
 import ir.part.app.intelligentassistant.features.ava_negar.ui.search.AvaNegarSearchScreen
+import ir.part.app.intelligentassistant.features.ava_negar.ui.splash.SplashScreen
+import ir.part.app.intelligentassistant.features.home.ui.HomeScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = ScreenRoutes.Home.route
+        startDestination = ScreenRoutes.SplashScreen.route
     ) {
+        composable(route = ScreenRoutes.SplashScreen.route) {
+            SplashScreen(navController = navController)
+        }
         composable(route = ScreenRoutes.Home.route) {
             HomeScreen(navController = navController)
         }

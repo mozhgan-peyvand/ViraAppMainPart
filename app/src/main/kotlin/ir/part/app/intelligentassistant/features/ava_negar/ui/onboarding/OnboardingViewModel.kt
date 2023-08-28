@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.features.ava_negar.data.DataStoreRepository
+import ir.part.app.intelligentassistant.features.ava_negar.data.PreferencesKey.onBoardingKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,8 +16,7 @@ class OnboardingViewModel @Inject constructor(
 
     fun saveOnBoardingState(completed: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.saveOnBoardingState(completed = completed)
-
+            repository.saveOnBoardingState(completed = completed, key = onBoardingKey)
         }
     }
 }

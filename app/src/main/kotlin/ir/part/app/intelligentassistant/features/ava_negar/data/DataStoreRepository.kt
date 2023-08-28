@@ -3,7 +3,6 @@ package ir.part.app.intelligentassistant.features.ava_negar.data
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -16,20 +15,15 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "on
 
 class DataStoreRepository(context: Context) {
 
-    private object PreferencesKey {
-        val onBoardingKey =
-            booleanPreferencesKey(name = "on_boarding_completed")
-    }
-
     private val dataStore = context.dataStore
 
-    suspend fun saveOnBoardingState(completed: Boolean) {
+    suspend fun saveOnBoardingState(completed: Boolean, key: Preferences.Key<Boolean>) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKey.onBoardingKey] = completed
+            preferences[key] = completed
         }
     }
 
-    fun readOnBoardingState(): Flow<Boolean> {
+    fun readOnBoardingState(key: Preferences.Key<Boolean>): Flow<Boolean> {
         return dataStore.data
             .catch { exception ->
                 if (exception is IOException) {
@@ -40,7 +34,7 @@ class DataStoreRepository(context: Context) {
             }
             .map { preferences ->
                 val onBoardingState =
-                    preferences[PreferencesKey.onBoardingKey] ?: false
+                    preferences[key] ?: false
                 onBoardingState
             }
     }

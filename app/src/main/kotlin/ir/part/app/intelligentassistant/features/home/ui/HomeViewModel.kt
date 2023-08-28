@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.features.ava_negar.data.DataStoreRepository
+import ir.part.app.intelligentassistant.features.ava_negar.data.PreferencesKey.onBoardingKey
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,7 +23,7 @@ class HomeViewModel @Inject() constructor(
 
     init {
         viewModelScope.launch {
-            repository.readOnBoardingState().collect { completed ->
+            repository.readOnBoardingState(onBoardingKey).collect { completed ->
                 if (completed) {
                     _startDestination.value =
                         ScreenRoutes.AvaNegarArchiveList.route
