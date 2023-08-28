@@ -1,185 +1,319 @@
 package ir.part.app.intelligentassistant.features.home.ui
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.KeyboardArrowLeft
-import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.paint
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.launch
+import ir.part.app.intelligentassistant.features.home.HomeItemScreen
+import ir.part.app.intelligentassistant.utils.ui.theme.Blue_Grey_900
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
+import ir.part.app.intelligentassistant.utils.ui.theme.Indigo_300
+import ir.part.app.intelligentassistant.utils.ui.theme.Light_blue_50
+import ir.part.app.intelligentassistant.utils.ui.theme.labelMedium
 import ir.part.app.intelligentassistant.R as AIResource
 
 @Composable
 fun HomeScreen(
-        homeViewModel: HomeViewModel = hiltViewModel(),
-        navController: NavHostController
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    navController: NavHostController
 ) {
     val scaffoldState = rememberScaffoldState()
-    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         scaffoldState = scaffoldState,
-        topBar = {
-            HomeTopAppBar {
-                coroutineScope.launch {
-                    scaffoldState.drawerState.open()
-                }
-            }
-        },
-        drawerContent = {
-            DrawerHeader({}, {})
-
-        },
-        drawerGesturesEnabled = scaffoldState.drawerState.isOpen
-
+        bottomBar = {
+            BottomBar()
+        }
     ) { innerPadding ->
         HomeBody(
             paddingValues = innerPadding,
-            homeViewModel = homeViewModel,
-            navController = navController
+            onAvaneagrClick = {
+                // navigate to ava negar
+                val screen by homeViewModel.startDestination
+                navController.navigate(screen)
+            }
         )
     }
-
-
 }
 
 @Composable
 private fun HomeBody(
-        paddingValues: PaddingValues,
-        modifier: Modifier = Modifier,
-        homeViewModel: HomeViewModel,
-        navController: NavHostController,
+    paddingValues: PaddingValues,
+    onAvaneagrClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val scrollState = rememberScrollState()
+    val homeItem = remember {
+        mutableListOf(
+            HomeItemScreen(
+                icon = AIResource.drawable.img_avasho,
+                title = AIResource.string.lbl_ava_sho,
+                description = AIResource.string.lbl_ava_sho_desc
+            ) {},
+            HomeItemScreen(
+                icon = AIResource.drawable.ic_nevise_negar,
+                title = AIResource.string.lbl_nevise_nama,
+                description = AIResource.string.lbl_nevise_negar_desc
+            ) {},
+            HomeItemScreen(
+                icon = AIResource.drawable.img_vira,
+                title = AIResource.string.lbl_vira_part,
+                description = AIResource.string.lbl_vira_part_desc
+            ) {},
+            HomeItemScreen(
+                icon = AIResource.drawable.img_nevisenama,
+                title = AIResource.string.lbl_nevise_nama,
+                description = AIResource.string.lbl_nevise_nama_desc
+            ) {}
+        )
+    }
+
     Column(
         modifier = modifier
+            .fillMaxSize()
             .padding(paddingValues)
-            .verticalScroll(scrollState)
-    ) {
-        HomeBodyItem(
-            title = stringResource(id = AIResource.string.lbl_ava_negar),
-            description = stringResource(id = AIResource.string.lbl_change_voice_to_text),
-            showNextStepIcon = true
-        ) {
-            // navigate to ava negar
-            val screen by homeViewModel.startDestination
-            navController.navigate(screen)
-        }
-        HomeBodyItem(
-            title = stringResource(id = AIResource.string.lbl_ava_sho),
-            description = stringResource(id = AIResource.string.coming_soon)
-        ) {
-
-        }
-        HomeBodyItem(
-            title = stringResource(id = AIResource.string.lbl_vira_part),
-            description = stringResource(id = AIResource.string.coming_soon)
-        ) {
-
-        }
-        HomeBodyItem(
-            title = stringResource(id = AIResource.string.lbl_nevise_negar),
-            description = stringResource(id = AIResource.string.coming_soon)
-        ) {
-
-        }
-    }
-}
-
-@Composable
-fun HomeBodyItem(
-    title: String,
-    description: String,
-    modifier: Modifier = Modifier,
-    showNextStepIcon: Boolean = false,
-    onCardClick: () -> Unit
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 10.dp)
-            .clickable { onCardClick() },
-        shape = RoundedCornerShape(8.dp)
+            .paint(
+                painterResource(id = AIResource.drawable.bg_pattern),
+                contentScale = ContentScale.Crop
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp),
+            horizontalArrangement = Arrangement.Center
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    modifier = Modifier.padding(10.dp),
-                    fontSize = 25.sp
+            Image(
+                painter = painterResource(id = AIResource.drawable.ic_vira),
+                contentDescription = null
+            )
+            Text(
+                text = stringResource(id = AIResource.string.lbl_vira),
+                modifier = Modifier.padding(start = 8.dp),
+                style = MaterialTheme.typography.h6,
+                color = Color_Text_1
+            )
+        }
+        Text(
+            text = stringResource(id = AIResource.string.lbl_assistant),
+            modifier = Modifier.padding(top = 4.dp),
+            style = MaterialTheme.typography.body2,
+            color = Color_Text_2
+        )
+        Card(
+            modifier = modifier
+                .padding(
+                    horizontal = 20.dp,
+                    vertical = 10.dp
                 )
-                Text(
-                    text = description,
-                    modifier = Modifier.padding(10.dp)
-                )
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            onClick = {
+                onAvaneagrClick()
             }
-            if (showNextStepIcon) {
-                IconButton(
-                    onClick = { }
+        ) {
+            Row(
+                modifier = Modifier
+                    .background(Color.Transparent)
+                    .padding(
+                        top = 18.dp,
+                        bottom = 18.dp,
+                        start = 30.dp,
+                        end = 18.dp
+                    ),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = AIResource.drawable.img_voice),
+                    contentDescription = "",
+                    modifier = Modifier.size(
+                        width = 68.dp,
+                        height = 80.dp
+                    )
+                )
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.KeyboardArrowLeft,
-                        contentDescription = stringResource(AIResource.string.desc_forward)
+                    Text(
+                        text = stringResource(id = AIResource.string.lbl_ava_negar),
+                        style = MaterialTheme.typography.h6,
+                        color = Color_Text_1
+                    )
+                    Text(
+                        text = stringResource(id = AIResource.string.lbl_ava_negar_desc),
+                        color = Light_blue_50,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(48.dp)
+                        .background(
+                            Color.Black
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Image(
+                        painter = painterResource(id = AIResource.drawable.ic_arrow_crooked),
+                        contentDescription = "ic_arrow"
                     )
                 }
             }
         }
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(128.dp),
+            contentPadding = PaddingValues(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(
+                items = homeItem,
+            ) { item ->
+                HomeBodyItem(item = item)
+            }
+
+        }
     }
 }
 
 @Composable
-private fun HomeTopAppBar(
-    modifier: Modifier = Modifier,
-    onNavigationClick: () -> Unit
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
+fun HomeBodyItem(item: HomeItemScreen) {
+    Box(
+        modifier = Modifier
+            .aspectRatio(0.95f)
+            .fillMaxSize()
+            .background(Color.Transparent),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        IconButton(
-            onClick = { onNavigationClick() },
+        Card(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 32.dp),
+            border = BorderStroke(0.5.dp, color = Color_Card_Stroke),
+            backgroundColor = Color_Card
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Menu,
-                contentDescription = stringResource(id = AIResource.string.desc_menu), Modifier
-            )
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(id = item.title),
+                    style = MaterialTheme.typography.subtitle1,
+                    color = Color_Text_1
+                )
+                Text(
+                    text = stringResource(id = item.description),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Indigo_300
+                )
+
+                Surface(
+                    shape = CircleShape,
+                    border = BorderStroke(
+                        0.5.dp,
+                        color = Color_Card_Stroke
+                    ),
+                    modifier = Modifier.padding(top = 16.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = AIResource.string.lbl_coming_soon),
+                        modifier = Modifier
+                            .background(Blue_Grey_900)
+                            .padding(
+                                horizontal = 17.dp,
+                                vertical = 10.dp
+                            ),
+                        style = MaterialTheme.typography.overline,
+                        color = Color_Text_3
+                    )
+                }
+            }
         }
-        Text(
-            text = stringResource(id = AIResource.string.app_name),
-            modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Center
+        Image(
+            painter = painterResource(id = item.icon),
+            contentDescription = null,
+            modifier = Modifier
+                .size(64.dp)
+                .shadow(4.dp)
         )
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun BottomBar(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .paint(
+                painterResource(id = AIResource.drawable.img_bottom_navigation_background),
+                contentScale = ContentScale.Crop
+            )
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        Image(
+            painter = painterResource(id = AIResource.drawable.ic_home),
+            contentDescription = "",
+            modifier = Modifier.weight(1f)
+        )
 
-
-
-
+        Image(
+            painter = painterResource(id = AIResource.drawable.img_home_item),
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+        )
+        Image(
+            painter = painterResource(id = AIResource.drawable.ic_details),
+            contentDescription = null,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}

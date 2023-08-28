@@ -1,9 +1,14 @@
 <resources>
     <string name="app_name">ویرا</string>
     <string name="lbl_ava_negar">آوا نگار</string>
+    <string name="lbl_ava_negar_desc">تبدیل گفتار به متن</string>
     <string name="lbl_ava_sho">آواشو</string>
+    <string name="lbl_ava_sho_desc">تبدیل متن به گفتار</string>
     <string name="lbl_vira_part">ویرا پارت</string>
-    <string name="lbl_nevise_negar">نویسه نگار</string>
+    <string name="lbl_vira_part_desc">ویراستار هوشمند متن</string>
+    <string name="lbl_nevise_nama">نویسه نما</string>
+    <string name="lbl_nevise_nama_desc">تولید تصویر از متن</string>
+    <string name="lbl_nevise_negar_desc">استخراج متن از تصویر</string>
     <string name="lbl_change_voice_to_text">تبدیل صوت به متن</string>
     <string name="coming_soon">به زودی</string>
     <string name="lbl_assistant_smart_voice"> دستیار صوتی هوشمند</string>
@@ -100,5 +105,8 @@
     <string name="desc_share">اشتراک گذاری</string>
     <string name="desc_forward">جلو</string>
     <string name="desc_clear">پاک کردن</string>
+    <string name="lbl_assistant">دستیار هوشمند</string>
+    <string name="lbl_vira">ویــــــــرا</string>
+    <string name="lbl_coming_soon">به زودی</string>
     <!--endregion-->
 </resources>
