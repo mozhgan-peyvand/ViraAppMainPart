@@ -1,6 +1,7 @@
 package ir.part.app.intelligentassistant.utils.ui.navigation
 
 sealed class ScreenRoutes(val route: String) {
+    object SplashScreen : ScreenRoutes("splash_screen")
     object Home : ScreenRoutes("home_screen")
     object AvaNegarVoiceRecording :
         ScreenRoutes("avaNegarVoiceRecording_screen")

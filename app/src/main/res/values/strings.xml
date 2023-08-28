@@ -109,4 +109,10 @@
     <string name="lbl_vira">ویــــــــرا</string>
     <string name="lbl_coming_soon">به زودی</string>
     <!--endregion-->
+
+    <!-- region onBoarding -->
+    <string name="lbl_intelligence_services">سرویس های کاربردی مبتنی بر هوش مصنوعی</string>
+    <string name="lbl_drag_to_start">برای شروع بکشید</string>
+    <!-- endregion -->
+
 </resources>
