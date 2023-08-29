@@ -2,9 +2,13 @@ package ir.part.app.intelligentassistant.features.ava_negar.ui.onboarding
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,124 +16,213 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.HorizontalPagerIndicator
+import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
-import ir.part.app.intelligentassistant.R as AIResource
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_On_Surface_Variant
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
+import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 
 @Composable
 fun AvaNegarOnboardingScreen(
-    modifier: Modifier = Modifier,
     navController: NavHostController,
-    onBoardingViewModel: OnboardingViewModel = hiltViewModel()
+    viewModel: OnboardingViewModel = hiltViewModel()
 ) {
-
+    val context = LocalContext.current
     val pagerState = rememberPagerState(pageCount = { 3 })
-    val scrollState = rememberScrollState()
-
     val pages = listOf(
-            OnboardingItem.First,
-            OnboardingItem.Second,
-            OnboardingItem.Third
+        OnboardingItem.First(context),
+        OnboardingItem.Second(context),
+        OnboardingItem.Third(context)
     )
 
-    Column(
-        modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-    ) {
-        HorizontalPager(
-            state = pagerState, Modifier.weight(10f)
-        ) { position ->
-            AvaNegarOnBoardingItemBody(onBoardingItem = pages[position])
+    LaunchedEffect(viewModel.shouldNavigate.value) {
+        if (viewModel.shouldNavigate.value) {
+            navController.navigate(ScreenRoutes.AvaNegarArchiveList.route) {
+                popUpTo(ScreenRoutes.AvaNegarOnboarding.route) {
+                    inclusive = true
+                    saveState = true
+                }
+            }
         }
+    }
+
+    Column(
+        horizontalAlignment = Alignment.End,
+        modifier = Modifier
+            .fillMaxSize()
+            .paint(
+                painter = painterResource(id = R.drawable.bg_pattern),
+                contentScale = ContentScale.Crop
+            )
+    ) {
+
+        Row(modifier = Modifier.weight(0.08f)) {
+            AnimatedVisibility(pagerState.currentPage != 2) {
+                TextButton(
+                    contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
+                    modifier = Modifier
+                        .padding(top = 12.dp, end = 20.dp)
+                        .background(Color_Card, RoundedCornerShape(32.dp))
+                        .border(
+                            width = 1.dp,
+                            shape = RoundedCornerShape(32.dp),
+                            color = Color_Card_Stroke,
+                        ),
+                    onClick = {
+                        viewModel.navigateArchiveListScreen()
+                    }
+                ) {
+                    Text(
+                        text = stringResource(R.string.lbl_skip),
+                        style = MaterialTheme.typography.button,
+                        color = Color_Text_1
+                    )
+                }
+            }
+        }
+
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.weight(0.6f)
+        ) { position ->
+            MainOnBoardingItemBody(
+                modifier = Modifier.fillMaxSize(),
+                onBoardingItem = pages[position]
+            )
+        }
+
         HorizontalPagerIndicator(
             pagerState = pagerState,
             pageCount = 3,
-            Modifier
-                .align(CenterHorizontally)
-                .weight(1f)
+            activeColor = Color_Primary_200,
+            inactiveColor = Color_On_Surface_Variant,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+
         FinishButton(
+            modifier = Modifier
+                .padding(horizontal = 28.dp)
+                .weight(0.2f),
             pagerState = pagerState,
             onClick = {
-                onBoardingViewModel.saveOnBoardingState(completed = true)
-                navController.popBackStack()
-                navController.navigate(ScreenRoutes.AvaNegarArchiveList.route)
-            },
-            modifier = Modifier.weight(1f)
+                viewModel.navigateArchiveListScreen()
+            }
         )
     }
 }
 
 @Composable
-private fun AvaNegarOnBoardingItemBody(
+private fun MainOnBoardingItemBody(
     modifier: Modifier = Modifier,
     onBoardingItem: OnboardingItem
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = CenterHorizontally
+        modifier = modifier.padding(horizontal = 28.dp),
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Image(
             painter = painterResource(id = onBoardingItem.image),
             contentDescription = null,
-            modifier = Modifier.size(350.dp)
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .padding(bottom = 24.dp, top = 39.dp)
+                .weight(0.5f)
         )
-        Text(
-            text = stringResource(id = onBoardingItem.title),
-            textAlign = TextAlign.Center,
-            fontSize = 25.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = stringResource(id = onBoardingItem.description),
-            textAlign = TextAlign.Center,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 20.dp)
-        )
+
+        Column(
+            modifier = modifier
+                .weight(0.5f)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = onBoardingItem.title,
+                style = MaterialTheme.typography.h5,
+                color = Color_Primary_200,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.size(16.dp))
+
+            Text(
+                text = onBoardingItem.description,
+                style = MaterialTheme.typography.body1,
+                color = Color_Text_2,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
 @Composable
 private fun FinishButton(
-    modifier: Modifier,
     pagerState: PagerState,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
-            .padding(horizontal = 40.dp)
+            .padding(start = 20.dp, end = 20.dp, bottom = 58.dp)
             .fillMaxWidth(),
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.End
     ) {
         AnimatedVisibility(
-            visible =
-            pagerState.currentPage == 2
+            visible = pagerState.currentPage == 2
         ) {
-            Button(onClick = { onClick() }) {
-                Text(text = stringResource(id = AIResource.string.lbl_start))
+            Button(
+                contentPadding = PaddingValues(vertical = 14.dp),
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { onClick() }
+            ) {
+                Text(
+                    text = stringResource(id = R.string.lbl_start),
+                    style = MaterialTheme.typography.button,
+                    color = Color_Text_1
+                )
             }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun AvaNegarOnboardingScreenPreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            AvaNegarOnboardingScreen(rememberNavController())
         }
     }
 }

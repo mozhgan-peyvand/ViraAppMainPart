@@ -118,12 +118,21 @@
 
     <!--region onBoarding -->
     <!-- AvaNegar  -->
-    <string name="lbl_welcome_on_boarding">به آوانگار خوش امدید!</string>
-    <string name="lbl_on_boarding_first_slide_description">به کمک آوانگار میتونید صداهای ضبط شده را به راحتی به متن فارسی تبدیل کنید.</string>
-    <string name="lbl_support_accent">پشتیبانی از لهجه ها</string>
-    <string name="lbl_on_boarding_second_slide_description">"آوانگار امکان پشتیبانی و تبدیل لهجه های مختلف فارسی به متن را هم دارد."</string>
-    <string name="lbl_different_format">فرمت های مختلف</string>
-    <string name="lbl_on_boarding_third_slide_description">در آوانگار میتونید فایل متن را در فرمت های مختلف مثل pdf و word  خروجی بگیرید.</string>
+    <string name="lbl_avanegar_onboarding_first_title">آوانگار</string>
+    <string name="lbl_avanegar_onboarding_first_description">تنها سرویس تبدیل گفتار به متن فارسی مبتنی بر فناوری هوش مصنوعی با قابلیت تشخیص تمامی لهجه های بومی ایرانی</string>
+    <string name="lbl_avanegar_onboarding_second_title">آوانگار برای شما</string>
+    <string name="lbl_avanegar_onboarding_second_description_first">کاملا رایگان</string>
+    <string name="lbl_avanegar_onboarding_second_description_second">امکان ضبط صدا و بارگذاری فایل صوتی</string>
+    <string name="lbl_avanegar_onboarding_second_description_third">ارائه خروجی به صورت متن قابل ویرایش</string>
+    <string name="lbl_avanegar_onboarding_second_description_fourth">ارائه خروجی به صورت فایل pdf</string>
+    <string name="lbl_avanegar_onboarding_second_description_fifth">تبدیل گفتار به متن در محیط های پر سر و صدا</string>
+    <string name="lbl_avanegar_onboarding_second_description_sixth">تشخیص گفتار محاوره­‌ای</string>
+    <string name="lbl_avanegar_onboarding_third_title">به‌زودی در آوانگار</string>
+    <string name="lbl_avanegar_onboarding_third_description_first">اضافه کردن خودکار علائم نگارشی به متن خروجی</string>
+    <string name="lbl_avanegar_onboarding_third_description_second">تشخیص و تمیز دادن گویندگان متفاوت از هم</string>
+    <string name="lbl_avanegar_onboarding_third_description_third">تبدیل صدای پشت تلفن</string>
+    <string name="lbl_avanegar_onboarding_third_description_fourth">تبدیل همزمان گفتار به متن</string>
+    <string name="lbl_avanegar_onboarding_third_description_fifth">تنظیم نحوه ی نمایش اعداد</string>
 
     <!-- Main -->
     <string name="lbl_avanegar_service">سرویس‌ آوانگار</string>

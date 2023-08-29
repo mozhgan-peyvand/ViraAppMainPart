@@ -515,7 +515,7 @@ fun AvaNegarArchiveListScreen(
                 Column(modifier = Modifier.fillMaxSize()) {
                     ArchiveAppBar(modifier = Modifier
                         .padding(top = 8.dp),
-                        onBackClick = { navHostController.popBackStack() },
+                        onBackClick = { navHostController.navigateUp() },
                         isGrid = isGrid,
                         onChangeListTypeClick = { isGrid = !isGrid },
                         onSearchClick = {
