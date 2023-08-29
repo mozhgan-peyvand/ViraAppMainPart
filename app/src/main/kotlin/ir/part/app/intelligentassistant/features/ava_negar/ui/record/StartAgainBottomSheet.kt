@@ -33,14 +33,14 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 
 @Composable
-fun BottomSheetContentStartAgain(
+fun StartAgainBottomSheet(
     actionCancel: () -> Unit,
     actionStartAgain: () -> Unit
 ) {
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .background(Color_Card)
     ) {
 
@@ -120,7 +120,7 @@ fun BottomSheetContentStartAgain(
 fun BottomSheetContentBottomSheetContentStartAgainPreview() {
     IntelligentAssistantTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            BottomSheetContentStartAgain(
+            StartAgainBottomSheet(
                 {},
                 {}
             )

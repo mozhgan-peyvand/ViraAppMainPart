@@ -21,6 +21,10 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -241,10 +245,12 @@ fun BottomSheetDetailItemBody(
 @Composable
 fun RenameFileBottomSheetContent(
     fileName: String,
-    onValueChange: (String) -> Unit,
-    reNameAction: () -> Unit,
+    renameAction: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    var name by remember(fileName) { mutableStateOf(fileName) }
+
     Column(
         modifier = modifier
             .padding(20.dp)
@@ -260,8 +266,9 @@ fun RenameFileBottomSheetContent(
             modifier = Modifier.padding(bottom = 16.dp)
         )
         TextField(
-            value = fileName, onValueChange = {
-                onValueChange(it)
+            value = name,
+            onValueChange = {
+                name = it
             },
             modifier
                 .fillMaxWidth()
@@ -285,13 +292,14 @@ fun RenameFileBottomSheetContent(
             modifier = Modifier
                 .fillMaxWidth(),
             onClick = {
-                reNameAction()
+                renameAction(name)
             },
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.primary,
                 contentColor = Color_White
             ),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
+            enabled = name.isNotBlank()
         ) {
             Text(
                 text = stringResource(id = AIResource.string.lbl_save),

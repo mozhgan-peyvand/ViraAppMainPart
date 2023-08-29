@@ -45,7 +45,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
         composable(route = ScreenRoutes.AvaNegarVoiceRecording.route) {
-            AvaNegarVoiceRecordingScreen()
+            AvaNegarVoiceRecordingScreen(navController = navController)
         }
         composable(route = ScreenRoutes.AvaNegarSearch.route) {
             AvaNegarSearchScreen(navHostController = navController)

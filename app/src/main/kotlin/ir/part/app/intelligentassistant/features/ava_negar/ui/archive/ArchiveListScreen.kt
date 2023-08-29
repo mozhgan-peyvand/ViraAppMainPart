@@ -90,6 +90,8 @@ import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.Avan
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarTrackingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus
+import ir.part.app.intelligentassistant.features.ava_negar.ui.record.RecordFileResult
+import ir.part.app.intelligentassistant.features.ava_negar.ui.record.RecordFileResult.Companion.FILE_NAME
 import ir.part.app.intelligentassistant.features.ava_negar.ui.update.ForceUpdateScreen
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEvent
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
@@ -198,16 +200,23 @@ fun AvaNegarArchiveListScreen(
             }
         }
     }
-    val launcher = rememberLauncherForActivityResult(
+    val chooseAudioPermLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
             launchOpenFile.launch(intent)
         } else {
+            val permission = if (Build.VERSION.SDK_INT >= 33) {
+                Manifest.permission.READ_MEDIA_AUDIO
+            } else {
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            }
+
             archiveViewModel.putDeniedPermissionToSharedPref(
-                isPermissionDeniedPermanently(
+                permission = permission,
+                deniedPermanently = isPermissionDeniedPermanently(
                     activity = context as Activity,
-                    permission = Manifest.permission.READ_EXTERNAL_STORAGE
+                    permission = permission
                 )
             )
 
@@ -218,6 +227,33 @@ fun AvaNegarArchiveListScreen(
             )
         }
     }
+
+    val recordAudioPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            gotoRecordAudioScreen(navHostController)
+        } else {
+            archiveViewModel.putDeniedPermissionToSharedPref(
+                permission = Manifest.permission.RECORD_AUDIO,
+                deniedPermanently = isPermissionDeniedPermanently(
+                    activity = context as Activity,
+                    permission = Manifest.permission.RECORD_AUDIO
+                )
+            )
+
+            showMessage(
+                snackbarHostState,
+                coroutineScope,
+                context.getString(AIResource.string.lbl_need_to_access_to_record_audio_permission)
+            )
+        }
+    }
+
+    navHostController.currentBackStackEntry
+        ?.savedStateHandle?.remove<RecordFileResult>(FILE_NAME)?.let {
+            archiveViewModel.addFileToUploadingQueue(it.title, Uri.fromFile(File(it.filepath)))
+        }
 
     BackHandler(modalBottomSheetStateUpdate.isVisible) {
         //we want to disable back
@@ -272,6 +308,7 @@ fun AvaNegarArchiveListScreen(
                                 } else modalBottomSheetState.hide()
                             }
 
+                            // PermissionCheck Duplicate 1
                             val permission = if (Build.VERSION.SDK_INT >= 33) {
                                 Manifest.permission.READ_MEDIA_AUDIO
                             } else {
@@ -284,7 +321,9 @@ fun AvaNegarArchiveListScreen(
                                 ) == PackageManager.PERMISSION_GRANTED
                             ) {
                                 launchOpenFile.launch(intent)
-                            } else if (archiveViewModel.hasDeniedPermissionPermanently()) {
+                            } else if (archiveViewModel.hasDeniedPermissionPermanently(permission)) {
+                                // needs improvement, just need to save if permission is alreadyRequested
+                                // and everytime check shouldShow
                                 navigateToAppSettings(activity = context as Activity)
 
                                 showMessage(
@@ -296,7 +335,7 @@ fun AvaNegarArchiveListScreen(
                                 )
                             } else {
                                 // Asking for permission
-                                launcher.launch(permission)
+                                chooseAudioPermLauncher.launch(permission)
                             }
                         })
                     }
@@ -304,14 +343,9 @@ fun AvaNegarArchiveListScreen(
                     ArchiveBottomSheetType.RenameUploading -> {
                         RenameFileBottomSheetContent(
                             fileName.value.orEmpty(),
-                            onValueChange = {
+                            renameAction = {
                                 fileName.value = it
-                            },
-                            reNameAction = {
-                                archiveViewModel.addFileToUploadingQueue(
-                                    fileName.value.orEmpty(),
-                                    fileUri.value
-                                )
+                                archiveViewModel.addFileToUploadingQueue(it, fileUri.value)
                                 isFabExpanded = false
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
@@ -566,7 +600,7 @@ fun AvaNegarArchiveListScreen(
                     onMainFabClick = {
                         isFabExpanded = !isFabExpanded
                     },
-                    openBottomSheet = {
+                    selectFile = {
                         snackbarHostState.currentSnackbarData?.dismiss()
                         setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
                         coroutineScope.launch {
@@ -576,7 +610,38 @@ fun AvaNegarArchiveListScreen(
                                 modalBottomSheetState.hide()
                             }
                         }
-                    })
+                    },
+                    openRecordingScreen = {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+
+                        // PermissionCheck Duplicate 2
+                        if (
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.RECORD_AUDIO
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
+                            gotoRecordAudioScreen(navHostController)
+                        } else {
+                            // needs improvement, just need to save if permission is alreadyRequested
+                            // and everytime check shouldShow
+                            if (archiveViewModel.hasDeniedPermissionPermanently(Manifest.permission.RECORD_AUDIO)) {
+                                navigateToAppSettings(activity = context as Activity)
+
+                                showMessage(
+                                    snackbarHostState,
+                                    coroutineScope,
+                                    context.getString(
+                                        AIResource.string.msg_record_audio_permission_manually
+                                    )
+                                )
+                            } else {
+                                recordAudioPermLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                            }
+                        }
+
+                    }
+                )
             }
         }
     }
@@ -888,7 +953,8 @@ private fun Fabs(
     modifier: Modifier = Modifier,
     isFabExpanded: Boolean,
     onMainFabClick: () -> Unit,
-    openBottomSheet: () -> Unit
+    selectFile: () -> Unit,
+    openRecordingScreen: () -> Unit
 ) {
     Row(
         verticalAlignment = CenterVertically,
@@ -905,7 +971,7 @@ private fun Fabs(
                     modifier = Modifier
                         .clip(CircleShape)
                         .padding(bottom = 18.dp),
-                    onClick = openBottomSheet
+                    onClick = selectFile
                 ) {
                     Icon(
                         painter = painterResource(id = AIResource.drawable.ic_upload),
@@ -935,7 +1001,7 @@ private fun Fabs(
                     .clip(CircleShape)
                     .padding(bottom = 8.dp, start = 8.dp),
                 onClick = {
-                    //TODO implement onCLick
+                    openRecordingScreen()
                 }) {
                 Icon(
                     painter = painterResource(id = AIResource.drawable.ic_mic),
@@ -982,4 +1048,8 @@ private fun ArchiveEmptyBodyPreview() {
             ArchiveEmptyBody()
         }
     }
+}
+
+private fun gotoRecordAudioScreen(navHostController: NavHostController) {
+    navHostController.navigate(ScreenRoutes.AvaNegarVoiceRecording.route)
 }

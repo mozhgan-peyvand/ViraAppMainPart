@@ -24,7 +24,7 @@
 
     <string name="lbl_back">بازگشت</string>
     <string name="msg_if_click_back_file_will_be_deleted">با بازگشت به صفحه اصلی، فایل صوتی حذف خواهد شد. برای جلوگیری از حذف فایل ابتدا فایل را به متن تبدیل کنید.</string>
-    <string name="lbl_convert_to_file">تبدیل به متن</string>
+    <string name="lbl_convert_to_text">تبدیل به متن</string>
     <string name="lbl_delete_file">حذف فایل</string>
     <string name="msg_if_start_again_file_will_be_deleted">با شروع مجدد، فایل صوتی حذف خواهد شد. برای جلوگیری از حذف فایل ابتدا فایل را به متن تبدیل کنید.</string>
     <string name="lbl_cancel">انصراف</string>
@@ -50,7 +50,9 @@
     <string name="lbl_choose_name">اگر چنانچه تمایل دارید میتوانید نام دلخواه برای فایل خود انتخاب کنید</string>
     <string name="lbl_save">ذخیره</string>
     <string name="lbl_need_to_access_file_permission">شما نیازمند دسترسی به فایل ها هستید.</string>
+    <string name="lbl_need_to_access_to_record_audio_permission">شما نیازمند دسترسی به ضبط صدا هستید.</string>
     <string name="msg_access_file_permission_manually">شما نیازمند دسترسی به فایل ها هستید. باید بصورت دستی، اجاره دسترسی به فایل ها را بدهید.</string>
+    <string name="msg_record_audio_permission_manually">شما نیازمند دسترسی به ضبط صدا هستید. باید بصورت دستی، اجاره دسترسی به ضبط صدا را بدهید.</string>
 
     <string name="lbl_search_in_archive">برای جستجو در آرشیو بنویسید…</string>
 
@@ -105,14 +107,31 @@
     <string name="desc_share">اشتراک گذاری</string>
     <string name="desc_forward">جلو</string>
     <string name="desc_clear">پاک کردن</string>
-    <string name="lbl_assistant">دستیار هوشمند</string>
-    <string name="lbl_vira">ویــــــــرا</string>
-    <string name="lbl_coming_soon">به زودی</string>
+    <string name="desc_convert_to_text">تبدیل به متن</string>
+    <string name="desc_stop_recording">پایان ضبط صدا</string>
+    <string name="desc_pause_recording">توقف ضبط صدا</string>
+    <string name="desc_start_recording">شروع ضبط صدا</string>
+    <string name="desc_start_playing">پخش صدا</string>
+    <string name="desc_stop_playing">توقف صدا</string>
     <!--endregion-->
 
     <!-- region onBoarding -->
     <string name="lbl_intelligence_services">سرویس های کاربردی مبتنی بر هوش مصنوعی</string>
     <string name="lbl_drag_to_start">برای شروع بکشید</string>
     <!-- endregion -->
+
+    <string name="lbl_assistant">دستیار هوشمند</string>
+    <string name="lbl_vira">ویــــــــرا</string>
+    <string name="lbl_coming_soon">به زودی</string>
+
+    <string name="lbl_record_voice">ضبط صدا</string>
+    <string name="lbl_speech_to_text_using_avanegar">تبدیل صدا به متن با سیستم آوانگار</string>
+    <string name="lbl_press_to_start_recording">برای شروع ضبط، بر روی دکمه [icon] بزنید.</string>
+    <string name="lbl_press_to_continue_recording">برای ادامه ضبط، بر روی دکمه [icon] بزنید.</string>
+    <string name="lbl_press_to_convert_to_text">برای تبدیل، بر روی دکمه [icon] بزنید.</string>
+    <string name="lbl_recording_in_progress">در حال ضبط صدا…</string>
+    <string name="lbl_recording_paused">توقف ضبط…</string>
+    <string name="lbl_recording_finished">پایان ضبط صدا</string>
+    <string name="mgs_general_error_playing_file">خطایی در هنگام پخش صدا رخ داد.</string>
 
 </resources>

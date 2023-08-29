@@ -109,3 +109,21 @@ val Typography.labelMedium: TextStyle
         fontFamily = FontFamily(Font(R.font.bahij_thesansarabic_plain)),
         fontWeight = FontWeight(400)
     )
+
+/*
+displayLarge -> h1
+displayMedium -> h2
+displaySmall -> h3
+headLineLarge -> N/A
+headlineMedium -> h4
+headlineSmall -> h5
+titleLarge -> h6
+titleMedium -> subtitle1
+titleSmall -> subtitle2
+bodyLarge -> body1
+bodyMedium -> body2
+bodySmall -> caption
+labelLarge -> button
+labelMedium -> N/A
+labelSmall -> overline
+* */

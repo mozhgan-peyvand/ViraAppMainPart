@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'dagger.hilt.android.plugin'
     id 'org.jetbrains.kotlin.kapt'
+    id 'kotlin-parcelize'
 }
 
 android {
@@ -161,4 +162,7 @@ dependencies {
     //iText for pdf
     implementation 'com.itextpdf:itextpdf:5.5.13.1'
     implementation "com.airbnb.android:lottie-compose:4.0.0"
+
+    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.27'
+
 }
