@@ -63,17 +63,18 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.BottomSheetShareDetailItem
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.DeleteFileItemConfirmationBottomSheet
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.RenameFile
+import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
+import ir.part.app.intelligentassistant.utils.common.orZero
+import ir.part.app.intelligentassistant.utils.ui.formatAsDuration
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Solid_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Container_High
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
-import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
-import ir.part.app.intelligentassistant.utils.common.orZero
-import ir.part.app.intelligentassistant.utils.ui.formatDuration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -128,7 +129,7 @@ fun AvaNegarArchiveDetailScreen(
     val coroutineScope = rememberCoroutineScope()
     val (selectedSheet, setSelectedSheet) = remember(calculation = {
         mutableStateOf(
-                ArchiveDetailBottomSheetType.Menu
+            ArchiveDetailBottomSheetType.Menu
         )
     })
 
@@ -511,7 +512,7 @@ fun PlayerBody(
             horizontalArrangement = Arrangement.End
         ) {
             Text(
-                text = formatDuration(mediaPlayer.duration.toLong()),
+                text = mediaPlayer.duration.formatAsDuration(),
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.caption
             )
@@ -522,6 +523,7 @@ fun PlayerBody(
                 modifier = Modifier.padding(end = 12.dp)
             )
         }
+        Spacer(modifier = Modifier.size(12.dp))
         Slider(
             colors = SliderDefaults.colors(
                 activeTrackColor = Color_Primary_300,
@@ -538,45 +540,29 @@ fun PlayerBody(
                 .weight(4f)
                 .padding(end = 12.dp)
         )
-        if (isPlaying.value) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .clickable {
-                        isPlaying.value = !isPlaying.value
-                        mediaPlayer.pause()
-                    }
-                    .weight(1f)
-            ) {
-                Surface(
-                    modifier = Modifier.size(46.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colors.primary
-                ) {}
+        Spacer(modifier = Modifier.size(12.dp))
+        IconButton(
+            onClick = {
+                isPlaying.value = !isPlaying.value
+                if (isPlaying.value) {
+                    mediaPlayer.start()
+                } else {
+                    mediaPlayer.pause()
+                }
+            },
+            modifier = Modifier.size(46.dp)
+        ) {
+            if (isPlaying.value) {
                 Image(
-                    painter = painterResource(id = AIResource.drawable.icon_pause),
-                    contentDescription = null
+                    painter = painterResource(id = R.drawable.ic_pause),
+                    contentDescription = stringResource(id = R.string.desc_stop_playing),
+                    modifier = modifier.fillMaxSize()
                 )
-            }
-
-        } else {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .clickable {
-                        isPlaying.value = !isPlaying.value
-                        mediaPlayer.start()
-                    }
-                    .weight(1f)
-            ) {
-                Surface(
-                    modifier = Modifier.size(46.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colors.primary
-                ) {}
+            } else {
                 Image(
-                    painter = painterResource(id = AIResource.drawable.icon_play),
-                    contentDescription = null
+                    painter = painterResource(id = R.drawable.ic_play),
+                    contentDescription = stringResource(id = R.string.desc_start_playing),
+                    modifier = modifier.fillMaxSize()
                 )
             }
         }

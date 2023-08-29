@@ -34,13 +34,13 @@ import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 
 
 @Composable
-fun BottomSheetContentBackToRecordingScreen(
+fun BackToArchiveListConfirmationBottomSheet(
     actionConvertFile: () -> Unit,
     actionDeleteFile: () -> Unit
 ) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .background(Color_Card)
     ) {
 
@@ -84,14 +84,14 @@ fun BottomSheetContentBackToRecordingScreen(
             TextButton(
 
                 contentPadding = PaddingValues(vertical = 14.dp),
-                onClick = actionDeleteFile,
+                onClick = actionConvertFile,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color_Primary_Opacity_15
                 ),
             ) {
                 Text(
-                    text = stringResource(id = R.string.lbl_convert_to_file),
+                    text = stringResource(id = R.string.lbl_convert_to_text),
                     style = MaterialTheme.typography.button,
                     color = Color_Primary_300,
                 )
@@ -99,7 +99,7 @@ fun BottomSheetContentBackToRecordingScreen(
 
             TextButton(
                 contentPadding = PaddingValues(vertical = 14.dp),
-                onClick = actionConvertFile,
+                onClick = actionDeleteFile,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color_Red_Opacity_15
@@ -121,7 +121,7 @@ fun BottomSheetContentBackToRecordingScreen(
 fun BottomSheetContentBackToRecordingScreenPreview() {
     IntelligentAssistantTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            BottomSheetContentBackToRecordingScreen(
+            BackToArchiveListConfirmationBottomSheet(
                 {},
                 {}
             )

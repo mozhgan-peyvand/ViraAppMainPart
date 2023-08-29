@@ -6,18 +6,19 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
+import androidx.core.net.toFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.features.ava_negar.data.AvanegarRepository
 import ir.part.app.intelligentassistant.features.ava_negar.data.entity.AvanegarUploadingFileEntity
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.ArchiveView
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus.FailureUpload
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus.Idle
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus.IsNotUploading
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus.Uploading
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.ArchiveView
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.toAvanegarProcessedFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.toAvanegarTrackingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.toAvanegarUploadingFileView
@@ -53,18 +54,17 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 
-private const val DENIED_PERMISSION_KEY = "deniedPermissionKey"
 private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
 private const val NUMBER_OF_REQUEST = 3
 
 @HiltViewModel
 class ArchiveViewModel @Inject constructor(
-        private val repository: AvanegarRepository,
-        private val fileCache: FileCache,
-        private val aiEventPublisher: IntelligentAssistantEventPublisher,
-        private val sharedPref: SharedPreferences,
-        private val uiException: UiException,
-        networkStatusTracker: NetworkStatusTracker,
+    private val repository: AvanegarRepository,
+    private val fileCache: FileCache,
+    private val aiEventPublisher: IntelligentAssistantEventPublisher,
+    private val sharedPref: SharedPreferences,
+    private val uiException: UiException,
+    networkStatusTracker: NetworkStatusTracker,
 ) : ViewModel() {
 
     private val _uiViewStat = MutableSharedFlow<UiStatus>()
@@ -102,10 +102,11 @@ class ArchiveViewModel @Inject constructor(
                     NetworkStatus.Available -> {
                         _isNetworkAvailable.emit(true)
 
-                        if (_isUploading.value != Uploading && uploadingFileQueue.isNotEmpty() ) {
+                        if (_isUploading.value != Uploading && uploadingFileQueue.isNotEmpty()) {
                             startUploading()
                         }
                     }
+
                     NetworkStatus.Unavailable -> {
 
                         job?.cancel()
@@ -174,7 +175,11 @@ class ArchiveViewModel @Inject constructor(
                 return@launch
             }
 
-            val absolutePath = createFileFromUri(uri)?.absolutePath
+            val absolutePath = if(uri.scheme == "file") {
+                uri.toFile().absolutePath
+            } else {
+                createFileFromUri(uri)?.absolutePath
+            }
 
             if (!absolutePath.isNullOrBlank()) {
                 val createdAt = PersianDate().time
@@ -334,16 +339,16 @@ class ArchiveViewModel @Inject constructor(
         repository.updateTitle(title = title, id = id)
     }
 
-    fun putDeniedPermissionToSharedPref(value: Boolean) {
+    fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) {
         viewModelScope.launch {
             sharedPref.edit {
-                this.putBoolean(DENIED_PERMISSION_KEY, value)
+                this.putBoolean(permissionDeniedPrefKey(permission), deniedPermanently)
             }
         }
     }
 
-    fun hasDeniedPermissionPermanently(): Boolean {
-        return sharedPref.getBoolean(DENIED_PERMISSION_KEY, false)
+    fun hasDeniedPermissionPermanently(permission: String): Boolean {
+        return sharedPref.getBoolean(permissionDeniedPrefKey(permission), false)
     }
 
     fun startUploading(avanegarUploadingFile: AvanegarUploadingFileView? = null) {
@@ -423,5 +428,9 @@ class ArchiveViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun permissionDeniedPrefKey(permission: String): String {
+        return "deniedPermission_$permission"
     }
 }
