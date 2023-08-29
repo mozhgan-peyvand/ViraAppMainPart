@@ -15,12 +15,7 @@
     <string name="lbl_about_us">درباره ما</string>
     <string name="lbl_invite_friends">معرفی به دوستان</string>
     <string name="lbl_start">شروع</string>
-    <string name="lbl_welcome_on_boarding">به آوانگار خوش امدید!</string>
-    <string name="lbl_on_boarding_first_slide_description">به کمک آوانگار میتونید صداهای ضبط شده را به راحتی به متن فارسی تبدیل کنید.</string>
-    <string name="lbl_support_accent">پشتیبانی از لهجه ها</string>
-    <string name="lbl_on_boarding_second_slide_description">"آوانگار امکان پشتیبانی و تبدیل لهجه های مختلف فارسی به متن را هم دارد."</string>
-    <string name="lbl_different_format">فرمت های مختلف</string>
-    <string name="lbl_on_boarding_third_slide_description">در آوانگار میتونید فایل متن را در فرمت های مختلف مثل pdf و word  خروجی بگیرید.</string>
+
 
     <string name="lbl_back">بازگشت</string>
     <string name="msg_if_click_back_file_will_be_deleted">با بازگشت به صفحه اصلی، فایل صوتی حذف خواهد شد. برای جلوگیری از حذف فایل ابتدا فایل را به متن تبدیل کنید.</string>
@@ -118,6 +113,26 @@
     <!-- region onBoarding -->
     <string name="lbl_intelligence_services">سرویس های کاربردی مبتنی بر هوش مصنوعی</string>
     <string name="lbl_drag_to_start">برای شروع بکشید</string>
+    <string name="lbl_skip">رد کردن</string>
+    <!-- endregion -->
+
+    <!--region onBoarding -->
+    <!-- AvaNegar  -->
+    <string name="lbl_welcome_on_boarding">به آوانگار خوش امدید!</string>
+    <string name="lbl_on_boarding_first_slide_description">به کمک آوانگار میتونید صداهای ضبط شده را به راحتی به متن فارسی تبدیل کنید.</string>
+    <string name="lbl_support_accent">پشتیبانی از لهجه ها</string>
+    <string name="lbl_on_boarding_second_slide_description">"آوانگار امکان پشتیبانی و تبدیل لهجه های مختلف فارسی به متن را هم دارد."</string>
+    <string name="lbl_different_format">فرمت های مختلف</string>
+    <string name="lbl_on_boarding_third_slide_description">در آوانگار میتونید فایل متن را در فرمت های مختلف مثل pdf و word  خروجی بگیرید.</string>
+
+    <!-- Main -->
+    <string name="lbl_avanegar_service">سرویس‌ آوانگار</string>
+    <string name="lbl_avanegar_service_details">تنها سرویس تبدیل گفتار به متن فارسی با قابلیت تشخیص تمامی لهجه های بومی ایرانی</string>
+    <string name="lbl_soon_in_vira">به‌زودی در ویرا</string>
+    <string name="lbl_soon_in_vira_description_first">آواشو : &#160; تبدیل متن به گفتار با لحن طبیعی انسان</string>
+    <string name="lbl_soon_in_vira_description_second">نویسه نگار : &#160; استخراج متن از تصویر و فایل</string>
+    <string name="lbl_soon_in_vira_description_third">ویراپارت : &#160; ویرایشگر هوشمند متون فارسی</string>
+    <string name="lbl_soon_in_vira_description_fourth">نویسه نما: &#160; ایجاد تصویر از توضیح متنی</string>
     <!-- endregion -->
 
     <string name="lbl_assistant">دستیار هوشمند</string>
@@ -133,5 +148,4 @@
     <string name="lbl_recording_paused">توقف ضبط…</string>
     <string name="lbl_recording_finished">پایان ضبط صدا</string>
     <string name="mgs_general_error_playing_file">خطایی در هنگام پخش صدا رخ داد.</string>
-
 </resources>

@@ -1,12 +1,14 @@
-package ir.part.app.intelligentassistant.features.ava_negar.ui.splash
+package ir.part.app.intelligentassistant.features.home.splash
 
+import android.content.SharedPreferences
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.features.ava_negar.data.DataStoreRepository
 import ir.part.app.intelligentassistant.features.ava_negar.data.PreferencesKey.mainOnBoardingKey
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -14,13 +16,17 @@ import javax.inject.Inject
 @HiltViewModel
 class SplashViewModel @Inject constructor(
     private val repository: DataStoreRepository,
-
+    private val sharedPreferences: SharedPreferences
     ) : ViewModel() {
+
+    var shouldNavigate = mutableStateOf(false)
+        private set
 
     var hasOnboardingShown = mutableStateOf(false)
         private set
 
     init {
+
         viewModelScope.launch {
             repository.readOnBoardingState(mainOnBoardingKey)
                 .stateIn(scope = viewModelScope)
@@ -30,10 +36,7 @@ class SplashViewModel @Inject constructor(
         }
     }
 
-    //TODO move it to mainOnBoarding viewModel after it has been implemented
-    fun onBoardingShown() {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.saveOnBoardingState(completed = true, key = mainOnBoardingKey)
-        }
+    fun navigateToMainOnboarding() {
+        shouldNavigate.value = true
     }
 }

@@ -1,4 +1,4 @@
-package ir.part.app.intelligentassistant.features.ava_negar.ui.splash
+package ir.part.app.intelligentassistant.features.home.splash
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -124,14 +124,14 @@ fun SplashScreen(
         mutableStateOf(false)
     }
 
-    LaunchedEffect(isSwipeToStartVisible, viewModel.hasOnboardingShown.value) {
+    LaunchedEffect(isSwipeToStartVisible, viewModel.shouldNavigate.value) {
         if (isSwipeToStartVisible) {
 
-            if (viewModel.hasOnboardingShown.value) {
+            if (viewModel.shouldNavigate.value) {
 
                 navController.popBackStack()
                 navController.navigate(
-                    route = ScreenRoutes.Home.route,
+                    route = ScreenRoutes.HomeMainOnboardingScreen.route
                 )
             }
         }
@@ -173,10 +173,8 @@ fun SplashScreen(
                 visible = isLottieAndAppNameVisible,
                 enter = slideInVertically(
                     // Enters by sliding down from offset -fullHeight to 0.
-                    initialOffsetY = { fullHeight -> fullHeight },
-                    animationSpec = tween(
-                        durationMillis = LOTTIE_ANIMATION_DURATION,
-                        easing = FastOutLinearInEasing
+                    initialOffsetY = { fullHeight -> fullHeight }, animationSpec = tween(
+                        durationMillis = LOTTIE_ANIMATION_DURATION, easing = FastOutLinearInEasing
                     )
                 ),
             ) {
@@ -188,13 +186,10 @@ fun SplashScreen(
             }
 
             AnimatedVisibility(
-                visible = isLottieAndAppNameVisible,
-                enter = slideInVertically(
+                visible = isLottieAndAppNameVisible, enter = slideInVertically(
                     // Enters by sliding down from offset -fullHeight to 0.
-                    initialOffsetY = { fullHeight -> -fullHeight },
-                    animationSpec = tween(
-                        durationMillis = APP_NAME_ANIMATION_DURATION,
-                        easing = FastOutLinearInEasing
+                    initialOffsetY = { fullHeight -> -fullHeight }, animationSpec = tween(
+                        durationMillis = APP_NAME_ANIMATION_DURATION, easing = FastOutLinearInEasing
                     )
                 )
             ) {
@@ -221,56 +216,46 @@ fun SplashScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            if (!viewModel.hasOnboardingShown.value)
-                AnimatedVisibility(
-                    visible = isSwipeToStartVisible,
-                    enter = slideInVertically(
-                        // Enters by sliding down from offset -fullHeight to 0.
-                        initialOffsetY = { fullHeight -> fullHeight },
-                        animationSpec = tween(
-                            durationMillis = SWIPEABLE_CARD_ANIMATION_DURATION,
-                            easing = FastOutSlowInEasing
-                        )
-                    ),
+            //todo should remove it
+            AnimatedVisibility(
+                visible = isSwipeToStartVisible,
+                enter = slideInVertically(
+                    // Enters by sliding down from offset -fullHeight to 0.
+                    initialOffsetY = { fullHeight -> fullHeight }, animationSpec = tween(
+                        durationMillis = SWIPEABLE_CARD_ANIMATION_DURATION,
+                        easing = FastOutSlowInEasing
+                    )
+                )
+            ) {
+
+                Card(
+                    border = BorderStroke(1.dp, Color_Card_Stroke),
+                    backgroundColor = Color_Card,
+                    shape = RoundedCornerShape(32.dp),
                 ) {
 
-                    Card(
-                        border = BorderStroke(1.dp, Color_Card_Stroke),
-                        backgroundColor = Color_Card,
-                        shape = RoundedCornerShape(32.dp),
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically, modifier = Modifier
                     ) {
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                        ) {
+                        Spacer(modifier = Modifier.size(12.dp))
 
-                            Spacer(modifier = Modifier.size(12.dp))
+                        Text(
+                            text = stringResource(id = R.string.lbl_drag_to_start),
+                            style = MaterialTheme.typography.subtitle1,
+                            color = Color_Text_2
+                        )
 
-                            Text(
-                                text = stringResource(id = R.string.lbl_drag_to_start),
-                                style = MaterialTheme.typography.subtitle1,
-                                color = Color_Text_2
-                            )
+                        Spacer(modifier = Modifier.size(12.dp))
 
-                            Spacer(modifier = Modifier.size(12.dp))
-
-                            SwipeToDismiss(modifier = Modifier.padding(vertical = 8.dp)) {
-
-                                //TODO should navigate to main splash screen
-                                navController.popBackStack()
-                                navController.navigate(
-                                    route = ScreenRoutes.Home.route,
-                                )
-
-                                //TODO remove it after main onBoarding implemented
-                                viewModel.onBoardingShown()
-                            }
-
-                            Spacer(modifier = Modifier.size(8.dp))
+                        SwipeToDismiss(modifier = Modifier.padding(vertical = 8.dp)) {
+                            viewModel.navigateToMainOnboarding()
                         }
+
+                        Spacer(modifier = Modifier.size(8.dp))
                     }
                 }
+            }
             Spacer(modifier = Modifier.size(58.dp))
         }
     }
@@ -280,33 +265,24 @@ fun SplashScreen(
 @ExperimentalMaterialApi
 @Composable
 fun SwipeToDismiss(
-    modifier: Modifier,
-    onDismiss: () -> Unit
+    modifier: Modifier, onDismiss: () -> Unit
 ) {
     val dismissState = rememberDismissState(initialValue = DismissValue.Default)
 
-    SwipeToDismiss(
-        modifier = modifier,
-        state = dismissState,
-        background = {},
-        dismissContent = {
-            Card(
-                backgroundColor = Color_Primary_300,
-                shape = RoundedCornerShape(32.dp)
-            ) {
-                Icon(
-                    modifier = Modifier.padding(horizontal = 25.dp, vertical = 12.dp),
-                    painter = painterResource(id = R.drawable.ic_arrow_right),
-                    contentDescription = null,
-                    tint = Color_White
-                )
-            }
-        },
-        directions = setOf(DismissDirection.EndToStart),
-        dismissThresholds = { _ ->
-            FractionalThreshold(0.50f)
+    SwipeToDismiss(modifier = modifier, state = dismissState, background = {}, dismissContent = {
+        Card(
+            backgroundColor = Color_Primary_300, shape = RoundedCornerShape(32.dp)
+        ) {
+            Icon(
+                modifier = Modifier.padding(horizontal = 25.dp, vertical = 12.dp),
+                painter = painterResource(id = R.drawable.ic_arrow_right),
+                contentDescription = null,
+                tint = Color_White
+            )
         }
-    )
+    }, directions = setOf(DismissDirection.EndToStart), dismissThresholds = { _ ->
+        FractionalThreshold(0.50f)
+    })
 
     if (dismissState.isDismissed(DismissDirection.EndToStart)) {
         onDismiss.invoke()
