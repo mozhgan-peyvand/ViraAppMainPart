@@ -124,15 +124,22 @@ fun SplashScreen(
         mutableStateOf(false)
     }
 
-    LaunchedEffect(isSwipeToStartVisible, viewModel.shouldNavigate.value) {
+    LaunchedEffect(isSwipeToStartVisible, viewModel.shouldNavigate.value, viewModel.hasOnboardingShown.value) {
         if (isSwipeToStartVisible) {
 
             if (viewModel.shouldNavigate.value) {
 
-                navController.popBackStack()
-                navController.navigate(
-                    route = ScreenRoutes.HomeMainOnboardingScreen.route
-                )
+                if (viewModel.hasOnboardingShown.value) {
+                    navController.popBackStack()
+                    navController.navigate(
+                        route = ScreenRoutes.Home.route
+                    )
+                } else {
+                    navController.popBackStack()
+                    navController.navigate(
+                        route = ScreenRoutes.HomeMainOnboardingScreen.route
+                    )
+                }
             }
         }
     }

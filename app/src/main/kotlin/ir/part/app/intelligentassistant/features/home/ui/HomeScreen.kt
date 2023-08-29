@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,14 +21,13 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.features.home.HomeItemScreen
+import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import ir.part.app.intelligentassistant.utils.ui.theme.Blue_Grey_900
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
@@ -61,6 +60,19 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
+
+    LaunchedEffect(homeViewModel.onboardingHasBeenShown.value, homeViewModel.shouldNavigate.value) {
+
+        if (homeViewModel.shouldNavigate.value) {
+            if (!homeViewModel.onboardingHasBeenShown.value)
+                navController.navigate(ScreenRoutes.AvaNegarOnboarding.route)
+            else
+                navController.navigate(ScreenRoutes.AvaNegarArchiveList.route)
+
+            homeViewModel.shouldNavigate.value = false
+        }
+    }
+
     val scaffoldState = rememberScaffoldState()
     Scaffold(
         scaffoldState = scaffoldState,
@@ -72,8 +84,7 @@ fun HomeScreen(
             paddingValues = innerPadding,
             onAvaneagrClick = {
                 // navigate to ava negar
-                val screen by homeViewModel.startDestination
-                navController.navigate(screen)
+                homeViewModel.navigate()
             }
         )
     }

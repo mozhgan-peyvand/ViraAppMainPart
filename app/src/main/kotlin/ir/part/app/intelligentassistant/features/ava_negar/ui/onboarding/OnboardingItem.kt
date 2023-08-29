@@ -1,31 +1,112 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.onboarding
 
+import android.content.Context
 import androidx.annotation.DrawableRes
+import ir.part.app.intelligentassistant.features.home.onboarding.addBullet
 import ir.part.app.intelligentassistant.R as AiResource
 
 sealed class OnboardingItem(
     @DrawableRes
     val image: Int,
-    val title: Int,
-    val description: Int
+    val title: String,
+    val description: String
 ) {
 
-    object First : OnboardingItem(
-        image = AiResource.drawable.img_bwink_edu,
-        title = AiResource.string.lbl_welcome_on_boarding,
-        description = AiResource.string.lbl_on_boarding_first_slide_description
+    data class First(val context: Context) : OnboardingItem(
+        image = AiResource.drawable.img_avanegar_onboarding_mic,
+        title = context.getString(AiResource.string.lbl_avanegar_onboarding_first_title),
+        description = context.getString(AiResource.string.lbl_avanegar_onboarding_first_description)
     )
 
-    object Second : OnboardingItem(
-        image = AiResource.drawable.img_mobile,
-        title = AiResource.string.lbl_support_accent,
-        description = AiResource.string.lbl_on_boarding_second_slide_description
+    data class Second(val context: Context) : OnboardingItem(
+        image = AiResource.drawable.img_avanegar_onboarding_rubic,
+        title = context.getString(AiResource.string.lbl_avanegar_onboarding_second_title),
+        description = buildString {
+            append(
+                context.getString(
+                    AiResource.string.lbl_avanegar_onboarding_second_description_first
+                ).addBullet()
+            )
+
+            append("\n")
+
+            append(
+                context.getString(
+                    AiResource.string.lbl_avanegar_onboarding_second_description_second
+                ).addBullet()
+            )
+
+            append("\n")
+
+            append(
+                context.getString(
+                    AiResource.string.lbl_avanegar_onboarding_second_description_third
+                ).addBullet()
+            )
+
+            append("\n")
+
+            append(
+                context.getString(
+                    AiResource.string.lbl_avanegar_onboarding_second_description_fourth
+                ).addBullet()
+            )
+
+            append("\n")
+
+            append(
+                context.getString(
+                    AiResource.string.lbl_avanegar_onboarding_second_description_fifth
+                ).addBullet()
+            )
+
+            append("\n")
+
+            append(
+                context.getString(
+                    AiResource.string.lbl_avanegar_onboarding_second_description_sixth
+                ).addBullet()
+            )
+        }
     )
 
-    object Third : OnboardingItem(
-        image = AiResource.drawable.img_creative_design,
-        title = AiResource.string.lbl_different_format,
-        description = AiResource.string.lbl_on_boarding_third_slide_description
-    )
+    data class Third(val context: Context) : OnboardingItem(
+        image = AiResource.drawable.img_avanegar_onboarding_cub,
+        title = context.getString(AiResource.string.lbl_avanegar_onboarding_third_title),
+        description = buildString {
+            append(
+                context.getString(
+                    AiResource.string.lbl_avanegar_onboarding_third_description_first
+                ).addBullet()
+            )
+            append("\n")
 
+            append(
+                context.getString(
+                    AiResource.string.lbl_avanegar_onboarding_third_description_second
+                ).addBullet()
+            )
+            append("\n")
+
+            append(
+                context.getString(
+                    AiResource.string.lbl_avanegar_onboarding_third_description_third
+                ).addBullet()
+            )
+            append("\n")
+
+            append(
+                context.getString(
+                    AiResource.string.lbl_avanegar_onboarding_third_description_fourth
+                ).addBullet()
+            )
+            append("\n")
+
+            append(
+                context.getString(
+                    AiResource.string.lbl_avanegar_onboarding_third_description_fifth
+                ).addBullet()
+            )
+        }
+    )
 }

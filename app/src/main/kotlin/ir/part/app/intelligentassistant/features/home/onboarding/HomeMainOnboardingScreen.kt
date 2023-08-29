@@ -116,10 +116,7 @@ fun HomeMainOnboardingScreen(
             modifier = Modifier.padding(bottom = 58.dp)
         ) {
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
 
                 Spacer(modifier = Modifier.size(12.dp))
 

@@ -19,18 +19,40 @@ sealed class MainOnboardingItem(
     data class Second(private val context: Context) : MainOnboardingItem(
         image = AiResource.drawable.img_main_onboarding_lamp,
         title = AiResource.string.lbl_soon_in_vira,
-        description = context.getString(AiResource.string.lbl_soon_in_vira_description_first).addBullet().goNextLine().plus(
-            context.getString(AiResource.string.lbl_soon_in_vira_description_second).addBullet().goNextLine().plus(
-                context.getString(AiResource.string.lbl_soon_in_vira_description_third).addBullet().goNextLine().plus(
-                    context.getString(AiResource.string.lbl_soon_in_vira_description_fourth).addBullet()
-                )
+        description = buildString {
+            append(
+                context.getString(
+                    AiResource.string.lbl_soon_in_vira_description_first
+                ).addBullet()
             )
-        )
+
+            append("\n")
+
+            append(
+                context.getString(
+                    AiResource.string.lbl_soon_in_vira_description_second
+                ).addBullet()
+            )
+
+            append("\n")
+
+            append(
+                context.getString(
+                    AiResource.string.lbl_soon_in_vira_description_third
+                ).addBullet()
+            )
+
+            append("\n")
+
+            append(
+                context.getString(
+                    AiResource.string.lbl_soon_in_vira_description_fourth
+                ).addBullet()
+            )
+        }
     )
 }
+
 fun String.addBullet(): String {
     return "•   $this"
-}
-fun String.goNextLine(): String {
-    return "$this \n"
 }
