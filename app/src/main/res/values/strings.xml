@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">ویرا</string>
-    <string name="lbl_ava_negar">آوا نگار</string>
     <string name="lbl_ava_negar_desc">تبدیل گفتار به متن</string>
+    <string name="lbl_ava_negar">آوانگار</string>
     <string name="lbl_ava_sho">آواشو</string>
     <string name="lbl_ava_sho_desc">تبدیل متن به گفتار</string>
     <string name="lbl_vira_part">ویرا پارت</string>
