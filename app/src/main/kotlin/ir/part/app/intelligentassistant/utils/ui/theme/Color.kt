@@ -27,7 +27,7 @@ private val White_opacity_17 = Color(0x2BFFFFFF)
 private val Brown_700 = Color(0xFF343430)
 private val Purple_50 = Color(0xFFF3F0F4)
 
-val Color_BG = Black
+val Color_BG = Black // also is used in color.xml for splash
 val Color_BG_Solid = Blue_Gray_900_40
 val Color_BG_Solid_2 = Blue_Gray_900_216
 val Color_Primary = Blue_700
