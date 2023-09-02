@@ -16,8 +16,11 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
+import java.io.FileWriter
+import java.io.IOException
 
 
 fun File.toMultiPart(partName: String): MultipartBody.Part {
@@ -63,43 +66,69 @@ suspend fun convertTextToPdf(
 
     val outputFile = File(context.filesDir, "$fileName.pdf")
 
-    if (!outputFile.exists()) {
+    try {
 
-        try {
+        if (outputFile.exists()) deleteFile(context, fileName, "pdf")
 
-            PdfWriter.getInstance(document, FileOutputStream(outputFile.absolutePath))
-            document.open()
+        PdfWriter.getInstance(document, FileOutputStream(outputFile.absolutePath))
+        document.open()
 
-            //todo read font from font
-            //todo set appropriate font
-            val fontPath = readFileFromRawFolder(
-                context,
-                "iran_yekan_regular.ttf",
-                R.raw.iran_yekan_regular
-            ).absolutePath
-            val persianFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED)
+        //todo read font from font
+        //todo set appropriate font
+        val fontPath = readFileFromRawFolder(
+            context,
+            "iran_yekan_regular.ttf",
+            R.raw.iran_yekan_regular
+        ).absolutePath
+        val persianFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED)
 
-            val font = Font(persianFont, 12f)
+        val font = Font(persianFont, 14f)
 
-            val p = Paragraph(text, font)
+        val p = Paragraph(text, font)
 
-            p.alignment = Paragraph.ALIGN_RIGHT // Right-align the text
-            p.spacingBefore = 5f
-            p.spacingAfter = 5f
-            p.alignment = Paragraph.ALIGN_CENTER
-            val table = PdfPTable(1)
-            val cell = PdfPCell(p)
-            cell.border = 0
-            cell.runDirection = PdfWriter.RUN_DIRECTION_RTL
-            table.addCell(cell)
-            document.add(table)
+        p.alignment = Paragraph.ALIGN_RIGHT // Right-align the text
+        p.spacingBefore = 5f
+        p.spacingAfter = 5f
+        p.alignment = Paragraph.ALIGN_CENTER
+        val table = PdfPTable(1)
+        val cell = PdfPCell(p)
+        cell.border = 0
+        cell.runDirection = PdfWriter.RUN_DIRECTION_RTL
+        table.addCell(cell)
+        document.add(table)
 
-            outputFile
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        } finally {
-            document.close()
-        }
-    } else outputFile
+        outputFile
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    } finally {
+        document.close()
+    }
+}
+
+
+suspend fun convertTextToTXTFile(
+    context: Context,
+    fileName: String,
+    text: String,
+): File? = withContext(IO) {
+
+    val outputFile = File(context.filesDir, "$fileName.txt")
+
+    try {
+        val writer = BufferedWriter(FileWriter(outputFile))
+
+        writer.write(text)
+        writer.close()
+
+        outputFile
+    } catch (e: IOException) {
+        e.printStackTrace()
+        null
+    }
+}
+
+private fun deleteFile(context: Context, fileName: String, fileNameExtension: String) {
+    val outputFile = File(context.filesDir, "$fileName.$fileNameExtension")
+    if (outputFile.exists()) outputFile.delete()
 }

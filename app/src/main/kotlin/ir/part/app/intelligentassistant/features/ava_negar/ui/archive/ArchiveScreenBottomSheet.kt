@@ -33,6 +33,11 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
+import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_OutLine
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
@@ -150,57 +155,78 @@ fun BottomSheetArchiveItemBody(
 @Composable
 fun BottomSheetShareDetailItem(
     modifier: Modifier = Modifier,
+    isConverting: Boolean,
     onPdfClick: () -> Unit,
-    onWordClick: () -> Unit,
+    onTextClick: () -> Unit,
     onOnlyTextClick: () -> Unit
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-    ) {
+    val composition by rememberLottieComposition(
+        //TODO set appropriate lottie file
+        spec = LottieCompositionSpec.RawRes(resId = R.raw.lottie_loading)
+    )
+
+    if (isConverting) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier.fillMaxWidth()
         ) {
-            Text(
-                text = stringResource(id = AIResource.string.lbl_share_file),
-                style = MaterialTheme.typography.h6
-            )
-            Text(
-                text = stringResource(id = AIResource.string.choose_format),
-                style = MaterialTheme.typography.subtitle2
+            LottieAnimation(
+                composition = composition,
+                iterations = LottieConstants.IterateForever,
+                modifier = Modifier
+                    .padding(vertical = 80.dp)
+                    .size(48.dp)
             )
         }
-        BottomSheetDetailItemBody(
-            stringResource(id = AIResource.string.lbl_share_with_word),
-            painterResource(id = AIResource.drawable.ic_word_new)
-        ) {
-            onWordClick()
-        }
-        Divider(
-            modifier = Modifier
+    } else {
+        Column(
+            modifier = modifier
                 .fillMaxWidth()
-                .height(1.dp),
-            color = Color_OutLine
-        )
-        BottomSheetDetailItemBody(
-            stringResource(id = AIResource.string.lbl_share_with_pdf),
-            painterResource(id = AIResource.drawable.ic_pdf_new)
         ) {
-            onPdfClick()
-        }
-        Divider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp),
-            color = Color_OutLine
-        )
-        BottomSheetDetailItemBody(
-            stringResource(id = AIResource.string.lbl_text_without_change),
-            painterResource(id = AIResource.drawable.ic_text_new)
-        ) {
-            onOnlyTextClick()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_share_file),
+                    style = MaterialTheme.typography.h6
+                )
+                Text(
+                    text = stringResource(id = AIResource.string.choose_format),
+                    style = MaterialTheme.typography.subtitle2
+                )
+            }
+            BottomSheetDetailItemBody(
+                stringResource(id = AIResource.string.lbl_share_with_Text),
+                painterResource(id = AIResource.drawable.ic_text)
+            ) {
+                onTextClick()
+            }
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp),
+                color = Color_OutLine
+            )
+            BottomSheetDetailItemBody(
+                stringResource(id = AIResource.string.lbl_share_with_pdf),
+                painterResource(id = AIResource.drawable.ic_pdf_new)
+            ) {
+                onPdfClick()
+            }
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp),
+                color = Color_OutLine
+            )
+            BottomSheetDetailItemBody(
+                stringResource(id = AIResource.string.lbl_text_without_change),
+                painterResource(id = AIResource.drawable.ic_text_new)
+            ) {
+                onOnlyTextClick()
+            }
         }
     }
 }

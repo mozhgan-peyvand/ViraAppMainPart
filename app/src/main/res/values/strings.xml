@@ -56,7 +56,7 @@
     <string name="lbl_change_file_name">تغییر نام</string>
     <string name="lbl_file_name">نام فایل </string>
     <string name="choose_format">انتخاب فرمت</string>
-    <string name="lbl_share_with_word">Word</string>
+    <string name="lbl_share_with_Text">Text</string>
     <string name="lbl_share_with_pdf">PDf</string>
     <string name="lbl_text_without_change">متن خام</string>
     <string name="lbl_ask_delete_file">ایا از حذف فایل %s مطمین هستید؟</string>
@@ -86,6 +86,8 @@
     <string name="msg_server_error">ارتباط با سرور برقرار نمی باشد</string>
     <string name="msg_invalid_file">فایل نامعتبر می باشد</string>
     <!--endregion -->
+
+    <string name="msg_convert_error">خطایی رخ داده است</string>
 
     <!--region description text -->
     <string name="desc_back">بازگشت</string>
