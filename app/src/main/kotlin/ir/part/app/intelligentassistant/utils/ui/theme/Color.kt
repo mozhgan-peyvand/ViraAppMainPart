@@ -54,3 +54,5 @@ val Color_Card_Stroke = White_opacity_17
 val Light_blue_50 = Color(0xFFD8FBFF)
 val Indigo_300 = Color(0xFF8A8AB2)
 val Blue_Grey_900 = Color(0xFF0E0E0F)
+val Blue_Grey_800_2 = Color(0xFF3E3E40)
+val Light_blue_50_2 = Color(0xFFFDFEFF)
