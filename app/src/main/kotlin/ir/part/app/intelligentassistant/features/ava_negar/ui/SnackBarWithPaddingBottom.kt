@@ -19,13 +19,39 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Inverse
 
 
 @Composable
-fun SnackBar(
+fun SnackBarWithPaddingBottom(
     snackbarHostState: SnackbarHostState,
     isFabExpanded: Boolean
 ) {
     SnackbarHost(
         hostState = snackbarHostState,
-        modifier = Modifier.padding(horizontal = 20.dp).bottomAlignSnackBar(isFabExpanded),
+        modifier = Modifier
+            .padding(horizontal = 20.dp)
+            .bottomAlignSnackBar(isFabExpanded),
+        snackbar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color_Surface_Inverse, RoundedCornerShape(5.dp))
+            ) {
+                Text(
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    text = it.message,
+                    style = MaterialTheme.typography.body2,
+                    color = Color_On_Surface_Inverse
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun SnackBar(snackbarHostState: SnackbarHostState) {
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.padding(horizontal = 20.dp),
         snackbar = {
             Column(
                 modifier = Modifier

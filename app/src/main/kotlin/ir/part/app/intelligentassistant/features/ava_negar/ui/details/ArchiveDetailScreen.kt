@@ -2,7 +2,6 @@ package ir.part.app.intelligentassistant.features.ava_negar.ui.details
 
 import android.media.MediaPlayer
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -31,10 +30,12 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -62,6 +63,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.features.ava_negar.ui.SnackBar
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.BottomSheetShareDetailItem
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.DeleteFileItemConfirmationBottomSheet
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.RenameFile
@@ -72,6 +74,7 @@ import ir.part.app.intelligentassistant.utils.ui.formatAsDuration
 import ir.part.app.intelligentassistant.utils.ui.sharePdf
 import ir.part.app.intelligentassistant.utils.ui.shareTXT
 import ir.part.app.intelligentassistant.utils.ui.shareText
+import ir.part.app.intelligentassistant.utils.ui.showMessage
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Solid_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
@@ -94,8 +97,9 @@ fun AvaNegarArchiveDetailScreen(
     val context = LocalContext.current
     val archive = viewModel.archiveFile.collectAsStateWithLifecycle()
     val keyboardController = LocalSoftwareKeyboardController.current
-
+    val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState(0)
+    val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
 
     var isConverting by rememberSaveable { mutableStateOf(false) }
 
@@ -261,6 +265,8 @@ fun AvaNegarArchiveDetailScreen(
         }) {
         Scaffold(
             modifier = modifier.fillMaxSize(),
+            scaffoldState = scaffoldState,
+            snackbarHost = { SnackBar(it) },
             topBar = {
                 AvaNegarProcessedArchiveDetailTopAppBar(
                     title = processItem.value?.title.orEmpty(),
@@ -311,11 +317,12 @@ fun AvaNegarArchiveDetailScreen(
                                 processItem.value?.text.orEmpty()
                             )
                         )
-                        Toast.makeText(
-                            context,
-                            AIResource.string.lbl_text_save_in_clipboard,
-                            Toast.LENGTH_SHORT
-                        ).show()
+
+                        showMessage(
+                            snackbarHostState,
+                            coroutineScope,
+                            context.getString(AIResource.string.lbl_text_save_in_clipboard)
+                        )
                     }
                 )
             }
