@@ -124,37 +124,25 @@ fun AvaNegarArchiveListScreen(
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    var isFabExpanded by remember { mutableStateOf(false) }
-
-    val processItem = remember {
-        mutableStateOf<AvanegarProcessedFileView?>(null)
-    }
-
-    val archiveViewItem = remember {
-        mutableStateOf<ArchiveView?>(null)
-    }
+    var isFabExpanded by rememberSaveable { mutableStateOf(false) }
 
     val localClipBoardManager = LocalClipboardManager.current
 
     var isConverting by rememberSaveable { mutableStateOf(false) }
 
-    val fileName = remember {
-        mutableStateOf<String?>("")
-    }
+    val fileName = rememberSaveable { mutableStateOf<String?>("") }
 
-    val fileUri = remember {
-        mutableStateOf<Uri?>(null)
-    }
+    val fileUri = rememberSaveable { mutableStateOf<Uri?>(null) }
 
     var isGrid by rememberSaveable { mutableStateOf(true) }
 
-    val (selectedSheet, setSelectedSheet) = remember(calculation = {
+    val (selectedSheet, setSelectedSheet) = rememberSaveable {
         mutableStateOf(
             ArchiveBottomSheetType.ChooseFile
         )
-    })
+    }
 
-    val isAnyBottomSheetOtherThanUpdate by remember(selectedSheet) {
+    val isAnyBottomSheetOtherThanUpdate by rememberSaveable(selectedSheet) {
         mutableStateOf(selectedSheet != ArchiveBottomSheetType.Update)
     }
 
@@ -172,7 +160,6 @@ fun AvaNegarArchiveListScreen(
     val uploadingFileState by archiveViewModel.isUploading.collectAsStateWithLifecycle(
         UploadingFileStatus.Idle
     )
-    val isNetworkAvailable by archiveViewModel.isNetworkAvailable.collectAsStateWithLifecycle(false)
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
@@ -377,7 +364,7 @@ fun AvaNegarArchiveListScreen(
                             reNameAction = {
                                 archiveViewModel.updateTitle(
                                     title = fileName.value.orEmpty(),
-                                    id = processItem.value?.id
+                                    id = archiveViewModel.processItem?.id
                                 )
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
@@ -388,11 +375,11 @@ fun AvaNegarArchiveListScreen(
 
                     ArchiveBottomSheetType.Detail -> {
                         BottomSheetDetailItem(
-                            text = processItem.value?.title.orEmpty(),
+                            text = archiveViewModel.processItem?.title.orEmpty(),
                             copyItemAction = {
                                 localClipBoardManager.setText(
                                     AnnotatedString(
-                                        processItem.value?.text.orEmpty()
+                                        archiveViewModel.processItem?.text.orEmpty()
                                     )
                                 )
                                 coroutineScope.launch {
@@ -451,7 +438,7 @@ fun AvaNegarArchiveListScreen(
 
                                     val pdfFile = convertTextToPdf(
                                         fileName.value.orEmpty(),
-                                        text = processItem.value?.text.orEmpty(),
+                                        text = archiveViewModel.processItem?.text.orEmpty(),
                                         context
                                     )
                                     isConverting = false
@@ -469,7 +456,7 @@ fun AvaNegarArchiveListScreen(
 
                                     val file = convertTextToTXTFile(
                                         context = context,
-                                        text = processItem.value?.text.orEmpty(),
+                                        text = archiveViewModel.processItem?.text.orEmpty(),
                                         fileName = fileName.value.orEmpty()
                                     )
 
@@ -484,7 +471,7 @@ fun AvaNegarArchiveListScreen(
                             onOnlyTextClick = {
                                 shareText(
                                     context = context,
-                                    text = processItem.value?.text.orEmpty()
+                                    text = archiveViewModel.processItem?.text.orEmpty()
                                 )
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
@@ -497,7 +484,7 @@ fun AvaNegarArchiveListScreen(
                         DeleteFileItemConfirmationBottomSheet(
                             deleteAction = {
 
-                                when (val file = archiveViewItem.value) {
+                                when (val file = archiveViewModel.archiveViewItem) {
                                     is AvanegarTrackingFileView ->
                                         archiveViewModel.removeTrackingFile(file.token)
 
@@ -505,12 +492,12 @@ fun AvaNegarArchiveListScreen(
                                         archiveViewModel.removeUploadingFile(file.id)
 
                                     is AvanegarProcessedFileView ->
-                                        archiveViewModel.removeProcessedFile(processItem.value?.id)
+                                        archiveViewModel.removeProcessedFile(archiveViewModel.processItem?.id)
 
                                 }
 
                                 File(
-                                    processItem.value?.filePath.orEmpty()
+                                    archiveViewModel.processItem?.filePath.orEmpty()
                                 ).delete()
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
@@ -521,13 +508,13 @@ fun AvaNegarArchiveListScreen(
                                     modalBottomSheetState.hide()
                                 }
                             },
-                            fileName = processItem.value?.title.orEmpty()
+                            fileName = archiveViewModel.processItem?.title.orEmpty()
                         )
                     }
 
                     ArchiveBottomSheetType.Delete -> {
                         DeleteBottomSheet(
-                            fileName = archiveViewItem.value?.title.orEmpty(),
+                            fileName = archiveViewModel.archiveViewItem?.title.orEmpty(),
                             onDelete = {
                                 setSelectedSheet(ArchiveBottomSheetType.DeleteConfirmation)
                                 coroutineScope.launch {
@@ -565,7 +552,7 @@ fun AvaNegarArchiveListScreen(
                         })
 
                     if (
-                        (!isNetworkAvailable && archiveViewModel.allArchiveFiles.value.isNotEmpty()) ||
+                        (!archiveViewModel.isNetworkAvailable.value && archiveViewModel.allArchiveFiles.value.isNotEmpty()) ||
                         uiViewState is UiError
                     )
                         ErrorBanner(
@@ -578,7 +565,7 @@ fun AvaNegarArchiveListScreen(
                             .weight(1f)
                             .fillMaxWidth(),
                         archiveViewList = archiveViewModel.allArchiveFiles.value,
-                        isNetworkAvailable = isNetworkAvailable,
+                        isNetworkAvailable = archiveViewModel.isNetworkAvailable.value,
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                         isErrorState = uiViewState is UiError,
                         isGrid = isGrid,
@@ -594,8 +581,8 @@ fun AvaNegarArchiveListScreen(
                                             modalBottomSheetState.hide()
                                         }
                                     }
-                                    archiveViewItem.value = item
-                                    processItem.value = item
+                                    archiveViewModel.archiveViewItem = item
+                                    archiveViewModel.processItem = item
                                     fileName.value = item.title
                                 }
 
@@ -608,7 +595,7 @@ fun AvaNegarArchiveListScreen(
                                             modalBottomSheetState.hide()
                                         }
                                     }
-                                    archiveViewItem.value = item
+                                    archiveViewModel.archiveViewItem = item
                                     fileName.value = item.title
                                 }
                             }

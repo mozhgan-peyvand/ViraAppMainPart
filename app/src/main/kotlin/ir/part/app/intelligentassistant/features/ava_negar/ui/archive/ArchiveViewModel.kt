@@ -4,7 +4,9 @@ import android.content.SharedPreferences
 import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.edit
 import androidx.core.net.toFile
 import androidx.lifecycle.ViewModel
@@ -13,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.features.ava_negar.data.AvanegarRepository
 import ir.part.app.intelligentassistant.features.ava_negar.data.entity.AvanegarUploadingFileEntity
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.ArchiveView
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus.FailureUpload
@@ -76,8 +79,8 @@ class ArchiveViewModel @Inject constructor(
     private val _allArchiveFiles: MutableState<List<ArchiveView>> = mutableStateOf(listOf())
     val allArchiveFiles: State<List<ArchiveView>> = _allArchiveFiles
 
-    private val _isNetworkAvailable = MutableStateFlow(false)
-    val isNetworkAvailable: StateFlow<Boolean> = _isNetworkAvailable
+    private val _isNetworkAvailable = mutableStateOf(false)
+    val isNetworkAvailable: State<Boolean> = _isNetworkAvailable
 
     private var uploadingFileQueue = CopyOnWriteArrayList<AvanegarUploadingFileView>()
     private var indexOfItemThatShouldBeDownloaded = 0
@@ -95,12 +98,17 @@ class ArchiveViewModel @Inject constructor(
 
     private var job: Job? = null
 
+    //placed these variables in viewModel to save from configuration change,
+    // can not make these, rememberSaveable because these are dataClass
+    var archiveViewItem by mutableStateOf<ArchiveView?>(null)
+    var processItem by mutableStateOf<AvanegarProcessedFileView?>(null)
+
     init {
         viewModelScope.launch {
             networkStatusTracker.networkStatus.collect { isNetworkAvailable ->
                 when (isNetworkAvailable) {
                     NetworkStatus.Available -> {
-                        _isNetworkAvailable.emit(true)
+                        _isNetworkAvailable.value = true
 
                         if (_isUploading.value != Uploading && uploadingFileQueue.isNotEmpty()) {
                             startUploading()
@@ -112,7 +120,7 @@ class ArchiveViewModel @Inject constructor(
                         job?.cancel()
                         resetUploadProcess()
                         resetIndexOfItemThatShouldBeDownloaded()
-                        _isNetworkAvailable.emit(false)
+                        _isNetworkAvailable.value = false
                     }
                 }
             }
@@ -175,7 +183,7 @@ class ArchiveViewModel @Inject constructor(
                 return@launch
             }
 
-            val absolutePath = if(uri.scheme == "file") {
+            val absolutePath = if (uri.scheme == "file") {
                 uri.toFile().absolutePath
             } else {
                 createFileFromUri(uri)?.absolutePath
