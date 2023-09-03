@@ -78,7 +78,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.R
-import ir.part.app.intelligentassistant.features.ava_negar.ui.SnackBar
+import ir.part.app.intelligentassistant.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementColumn
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementGrid
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveTrackingFileElementGrid
@@ -105,13 +105,13 @@ import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import ir.part.app.intelligentassistant.utils.ui.sharePdf
 import ir.part.app.intelligentassistant.utils.ui.shareTXT
 import ir.part.app.intelligentassistant.utils.ui.shareText
+import ir.part.app.intelligentassistant.utils.ui.showMessage
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red_800
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.io.File
 import ir.part.app.intelligentassistant.R as AIResource
@@ -283,7 +283,7 @@ fun AvaNegarArchiveListScreen(
             Modifier,
         scaffoldState = scaffoldState,
         snackbarHost = {
-            SnackBar(it, isFabExpanded)
+            SnackBarWithPaddingBottom(it, isFabExpanded)
         },
     ) { innerPadding ->
         ModalBottomSheetLayout(
@@ -1040,18 +1040,6 @@ private fun Fabs(
         }
     }
 }
-
-
-private fun showMessage(
-    snackbarHostState: SnackbarHostState,
-    coroutineScope: CoroutineScope,
-    message: String
-) {
-    coroutineScope.launch {
-        snackbarHostState.showSnackbar(message = message)
-    }
-}
-
 
 @Preview(showBackground = true)
 @Composable
