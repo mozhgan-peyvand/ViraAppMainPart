@@ -95,12 +95,16 @@ import ir.part.app.intelligentassistant.features.ava_negar.ui.record.RecordFileR
 import ir.part.app.intelligentassistant.features.ava_negar.ui.update.ForceUpdateScreen
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEvent
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
+import ir.part.app.intelligentassistant.utils.common.file.convertTextToTXTFile
 import ir.part.app.intelligentassistant.utils.common.file.filename
 import ir.part.app.intelligentassistant.utils.ui.UiError
 import ir.part.app.intelligentassistant.utils.ui.UiIdle
 import ir.part.app.intelligentassistant.utils.ui.isPermissionDeniedPermanently
 import ir.part.app.intelligentassistant.utils.ui.navigateToAppSettings
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
+import ir.part.app.intelligentassistant.utils.ui.sharePdf
+import ir.part.app.intelligentassistant.utils.ui.shareTXT
+import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red_800
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
@@ -131,6 +135,8 @@ fun AvaNegarArchiveListScreen(
     }
 
     val localClipBoardManager = LocalClipboardManager.current
+
+    var isConverting by rememberSaveable { mutableStateOf(false) }
 
     val fileName = remember {
         mutableStateOf<String?>("")
@@ -438,18 +444,52 @@ fun AvaNegarArchiveListScreen(
 
                     ArchiveBottomSheetType.Share -> {
                         BottomSheetShareDetailItem(
+                            isConverting = isConverting,
                             onPdfClick = {
                                 coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                    convertTextToPdf(
+                                    isConverting = true
+
+                                    val pdfFile = convertTextToPdf(
                                         fileName.value.orEmpty(),
                                         text = processItem.value?.text.orEmpty(),
                                         context
                                     )
+                                    isConverting = false
+
+                                    modalBottomSheetState.hide()
+
+                                    pdfFile?.let {
+                                        sharePdf(context = context, file = it)
+                                    }
                                 }
                             },
-                            onWordClick = {},
-                            onOnlyTextClick = {}
+                            onTextClick = {
+                                coroutineScope.launch {
+                                    isConverting = true
+
+                                    val file = convertTextToTXTFile(
+                                        context = context,
+                                        text = processItem.value?.text.orEmpty(),
+                                        fileName = fileName.value.orEmpty()
+                                    )
+
+                                    isConverting = false
+                                    modalBottomSheetState.hide()
+
+                                    file?.let {
+                                        shareTXT(context = context, file = it)
+                                    }
+                                }
+                            },
+                            onOnlyTextClick = {
+                                shareText(
+                                    context = context,
+                                    text = processItem.value?.text.orEmpty()
+                                )
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
                         )
                     }
 
@@ -925,7 +965,9 @@ private fun ArchiveList(
                         ArchiveTrackingFileElementsColumn(
                             archiveTrackingView = it,
                             isNetworkAvailable = isNetworkAvailable,
-                            onItemClick = {},
+                            onItemClick = {
+
+                            },
                             onMenuClick = { item -> onMenuClick(item) }
                         )
                     }

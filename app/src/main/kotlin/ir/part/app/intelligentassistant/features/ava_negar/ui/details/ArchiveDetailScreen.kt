@@ -8,7 +8,6 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
@@ -33,7 +31,6 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -46,6 +43,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -68,8 +66,12 @@ import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.BottomShee
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.DeleteFileItemConfirmationBottomSheet
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.RenameFile
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
+import ir.part.app.intelligentassistant.utils.common.file.convertTextToTXTFile
 import ir.part.app.intelligentassistant.utils.common.orZero
 import ir.part.app.intelligentassistant.utils.ui.formatAsDuration
+import ir.part.app.intelligentassistant.utils.ui.sharePdf
+import ir.part.app.intelligentassistant.utils.ui.shareTXT
+import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Solid_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
@@ -94,6 +96,8 @@ fun AvaNegarArchiveDetailScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val scrollState = rememberScrollState(0)
+
+    var isConverting by rememberSaveable { mutableStateOf(false) }
 
     DisposableEffect(context) {
         onDispose {
@@ -205,21 +209,55 @@ fun AvaNegarArchiveDetailScreen(
 
                 ArchiveDetailBottomSheetType.Share -> {
                     BottomSheetShareDetailItem(
+                        isConverting = isConverting,
                         onPdfClick = {
                             coroutineScope.launch {
-                                bottomSheetState.hide()
-                                convertTextToPdf(
+                                isConverting = true
+
+                                val pdfFile = convertTextToPdf(
                                     fileName = viewModel.archiveFile.value?.title.orEmpty(),
                                     text = processItem.value?.text.orEmpty(),
                                     context
                                 )
+                                isConverting = false
+
+                                bottomSheetState.hide()
+
+                                pdfFile?.let {
+                                    sharePdf(context = context, file = it)
+                                }
                             }
                         },
-                        onWordClick = {},
-                        onOnlyTextClick = {}
+                        onTextClick = {
+                            coroutineScope.launch {
+                                isConverting = true
+
+                                val file = convertTextToTXTFile(
+                                    context = context,
+                                    text = processItem.value?.text.orEmpty(),
+                                    fileName = fileName.value.orEmpty()
+                                )
+
+                                isConverting = false
+                                bottomSheetState.hide()
+
+                                file?.let {
+                                    shareTXT(context = context, file = it)
+                                }
+
+                            }
+                        },
+                        onOnlyTextClick = {
+                            shareText(
+                                context = context,
+                                text = processItem.value?.text.orEmpty()
+                            )
+                            coroutineScope.launch {
+                                bottomSheetState.hide()
+                            }
+                        }
                     )
                 }
-
             }
 
 
