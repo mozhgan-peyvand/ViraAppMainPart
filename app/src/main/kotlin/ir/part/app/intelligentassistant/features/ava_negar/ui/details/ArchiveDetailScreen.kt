@@ -125,17 +125,14 @@ fun AvaNegarArchiveDetailScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    val fileName = remember {
-        mutableStateOf<String?>(null)
-    }
+    val fileName = rememberSaveable { mutableStateOf<String?>(null) }
+
     val localClipBoardManager = LocalClipboardManager.current
 
     val coroutineScope = rememberCoroutineScope()
-    val (selectedSheet, setSelectedSheet) = remember(calculation = {
-        mutableStateOf(
-            ArchiveDetailBottomSheetType.Menu
-        )
-    })
+    val (selectedSheet, setSelectedSheet) = rememberSaveable {
+        mutableStateOf(ArchiveDetailBottomSheetType.Menu)
+    }
 
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,

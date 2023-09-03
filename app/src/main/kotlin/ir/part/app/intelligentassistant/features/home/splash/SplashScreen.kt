@@ -82,9 +82,7 @@ fun SplashScreen(
         iterations = 1,
     )
 
-    var isAppNameVisible by remember {
-        mutableStateOf(false)
-    }
+    var isAppNameVisible by rememberSaveable { mutableStateOf(false) }
 
     if (lottieProgress > 0.001f && !isAppNameVisible) {
         isAppNameVisible = true
@@ -118,7 +116,7 @@ fun SplashScreen(
     }
 
     val colorList = listOf(Color_BG, Light_blue_50_2)
-    val brush = remember(progress.value) {
+    val brush = remember(progress) {
         object : ShaderBrush() {
             override fun createShader(size: Size): Shader {
                 val widthOffset = size.width * progress.value
