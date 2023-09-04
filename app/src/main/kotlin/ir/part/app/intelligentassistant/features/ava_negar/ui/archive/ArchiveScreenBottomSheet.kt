@@ -1,6 +1,7 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.archive
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
@@ -38,6 +40,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_OutLine
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
@@ -345,68 +348,67 @@ fun RenameFile(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(20.dp),
+            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp, top = 16.dp),
     ) {
         Text(
             text = stringResource(id = AIResource.string.lbl_change_name),
-            style = MaterialTheme.typography.h6
+            style = MaterialTheme.typography.h6,
+            color = Color_Text_1
         )
+
+        Spacer(modifier = Modifier.size(28.dp))
+
         Row(
-            modifier
+            modifier = Modifier
                 .fillMaxWidth()
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colors.primary,
-                    shape = RoundedCornerShape(11.dp)
-                ),
+                .background(Color_Card, RoundedCornerShape(12.dp))
+                .padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
                 painter = painterResource(id = AIResource.drawable.ic_rename),
-                contentDescription = "",
+                contentDescription = null,
+                modifier = Modifier.padding(top = 6.dp)
             )
-            Column(modifier.weight(2f)) {
+
+            Spacer(modifier = Modifier.size(12.dp))
+
+            Column(
+                modifier = modifier
+                    .weight(1f)
+                    .padding(vertical = 6.dp)
+            ) {
                 Text(
                     text = stringResource(id = AIResource.string.lbl_file_name),
                     color = Color_Text_3,
                     style = MaterialTheme.typography.caption
                 )
-                TextField(
+
+                BasicTextField(
                     value = fileName,
-                    onValueChange = {
-                        onValueChange(it)
-                    },
-                    colors = TextFieldDefaults.textFieldColors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent,
-                        backgroundColor = Color.Black, textColor = Color_Text_2
-                    ),
-                    textStyle = MaterialTheme.typography.body1
+                    singleLine = true,
+                    onValueChange = { onValueChange(it) },
+                    textStyle = MaterialTheme.typography.body1.copy(color = Color_Text_2),
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
-
         }
 
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(modifier = Modifier.size(28.dp))
 
         Button(
             contentPadding = PaddingValues(14.dp),
             modifier = Modifier
-                .fillMaxWidth(),
-            onClick = {
-                reNameAction()
-            },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = MaterialTheme.colors.primary,
-                contentColor = Color_White
-            ),
-            shape = RoundedCornerShape(8.dp)
+                .fillMaxWidth()
+                .padding(bottom = 6.dp),
+            onClick = reNameAction,
+            shape = RoundedCornerShape(8.dp),
         ) {
             Text(
                 text = stringResource(id = AIResource.string.lbl_save),
-                style = MaterialTheme.typography.button
+                style = MaterialTheme.typography.button,
+                color = Color_Text_1
             )
         }
     }

@@ -142,7 +142,8 @@ private fun HomeBody(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp),
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
                 painter = painterResource(id = AIResource.drawable.ic_vira),
@@ -213,9 +214,7 @@ private fun HomeBody(
                     modifier = Modifier
                         .clip(CircleShape)
                         .size(48.dp)
-                        .background(
-                            Color.Black
-                        ),
+                        .background(Blue_Grey_900),
                     contentAlignment = Alignment.Center,
                 ) {
                     Image(
