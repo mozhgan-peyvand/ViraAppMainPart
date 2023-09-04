@@ -1,9 +1,6 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.record
 
-import android.media.MediaPlayer
-import android.net.Uri
 import android.os.SystemClock
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -33,11 +30,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -74,10 +68,8 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Container_H
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import pl.droidsonroids.gif.GifDrawable
 import pl.droidsonroids.gif.GifImageView
-import java.io.File
 
 // check for audio permission here!
 @Composable
@@ -99,6 +91,11 @@ fun AvaNegarVoiceRecordingScreen(
     val timer by viewModel.timer.collectAsState()
 
     val recorder by viewModel::recorder
+    val playerState by viewModel::playerState
+
+    if (state is VoiceRecordingViewState.Stopped) {
+        playerState.tryInitWith(recorder.currentFile)
+    }
 
     BackHandler(state != VoiceRecordingViewState.Idle) {
         // BackHandler: Duplicate 1
@@ -140,6 +137,7 @@ fun AvaNegarVoiceRecordingScreen(
                             bottomSheetState.hide(coroutineScope)
                         },
                         actionStartAgain = {
+                            playerState.reset()
                             bottomSheetState.hide(coroutineScope)
                             recorder.removeCurrentRecording()
                             // RecordStart: Duplicate1
@@ -213,7 +211,7 @@ fun AvaNegarVoiceRecordingScreen(
                 isRecording = isRecording,
                 hasPaused = hasPaused,
                 timer = timer,
-                currentFile = recorder.currentFile,
+                playerState = playerState,
                 startRecord = {
                     if (state is VoiceRecordingViewState.Stopped) {
                         bottomSheetContentType =
@@ -285,7 +283,7 @@ fun VoiceRecordingBody(
     hasPaused: Boolean,
     isStopped: Boolean,
     timer: Int,
-    currentFile: File?,
+    playerState: VoicePlayerState,
     startRecord: () -> Unit,
     stopRecord: () -> Unit,
     pauseRecord: () -> Unit,
@@ -297,7 +295,7 @@ fun VoiceRecordingBody(
         VoiceRecordingPreviewSection(
             isRecording = isRecording,
             isStopped = isStopped,
-            currentFile = currentFile,
+            playerState = playerState,
             modifier = Modifier.weight(2.5f)
         )
         VoiceRecordingHintSection(
@@ -323,32 +321,10 @@ fun VoiceRecordingBody(
 fun VoiceRecordingPreviewSection(
     isRecording: Boolean,
     isStopped: Boolean,
-    currentFile: File?,
+    playerState: VoicePlayerState,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-
-    val player = remember {
-        MediaPlayer().apply {
-            if (currentFile != null && currentFile.exists()) {
-                kotlin.runCatching {
-                    stop()
-                    reset()
-                }
-                setDataSource(context, Uri.fromFile(currentFile))
-                prepare()
-            }
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            kotlin.runCatching {
-                player.stop()
-                player.release()
-            }
-        }
-    }
 
     Box(
         contentAlignment = Alignment.BottomCenter,
@@ -363,42 +339,21 @@ fun VoiceRecordingPreviewSection(
             )
     ) {
         if (isStopped) {
-            var progress by remember(currentFile?.absolutePath.orEmpty()) {
-                mutableFloatStateOf(0f)
-            }
-            var isPlaying by remember(currentFile?.absolutePath.orEmpty()) {
-                mutableStateOf(false)
-            }
-
-            LaunchedEffect(isPlaying) {
-                while (isPlaying) {
-                    progress = player.currentPosition / 1000.0f
-                    delay(1000)
-                }
-            }
+            val progress by playerState::progress
+            val isPlaying by playerState::isPlaying
 
             VoicePlayerComponent(
-                duration = player.duration / 1000,
+                duration = playerState.duration / 1000,
                 progress = progress,
                 onProgressChanged = {
-                    progress = it
-                    player.seekTo((it * 1000).toInt())
+                    playerState.seekTo(it)
                 },
                 isPlaying = isPlaying,
                 onPlayingChanged = {
-                    if (currentFile == null || !currentFile.exists()) {
-                        Toast.makeText(
-                            context,
-                            R.string.mgs_general_error_playing_file,
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    if (!isPlaying) {
+                        playerState.startPlaying()
                     } else {
-                        if (!isPlaying) {
-                            player.start()
-                        } else {
-                            player.pause()
-                        }
-                        isPlaying = !isPlaying
+                        playerState.stopPlaying()
                     }
                 }
             )

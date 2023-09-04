@@ -1,7 +1,8 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.record
 
+import android.app.Application
 import android.media.MediaPlayer
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -16,9 +17,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VoiceRecordingViewModel @Inject constructor(
-    val recorder: Recorder
-) : ViewModel() {
-    val mediaPlayer = MediaPlayer()
+    val recorder: Recorder,
+    application: Application
+) : AndroidViewModel(application) {
+    private val mediaPlayer = MediaPlayer()
+    val playerState = VoicePlayerState(mediaPlayer, application)
 
     private val _timer = MutableStateFlow(0)
     val timer: StateFlow<Int> = _timer.asStateFlow()
@@ -46,5 +49,11 @@ class VoiceRecordingViewModel @Inject constructor(
         timerJob?.cancel()
         timerJob = null
         _timer.value = 0
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        resetTimer()
+        playerState.clear()
     }
 }
