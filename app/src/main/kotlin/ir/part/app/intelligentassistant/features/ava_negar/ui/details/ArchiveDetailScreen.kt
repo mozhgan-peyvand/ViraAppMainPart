@@ -1,7 +1,6 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.details
 
 import android.media.MediaPlayer
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -37,6 +36,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,11 +53,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -70,7 +72,7 @@ import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.RenameFile
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToTXTFile
 import ir.part.app.intelligentassistant.utils.common.orZero
-import ir.part.app.intelligentassistant.utils.ui.formatAsDuration
+import ir.part.app.intelligentassistant.utils.ui.formatDuration
 import ir.part.app.intelligentassistant.utils.ui.sharePdf
 import ir.part.app.intelligentassistant.utils.ui.shareTXT
 import ir.part.app.intelligentassistant.utils.ui.shareText
@@ -82,7 +84,6 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Container_H
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
 import ir.part.app.intelligentassistant.R as AIResource
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -95,7 +96,6 @@ fun AvaNegarArchiveDetailScreen(
 ) {
     viewModel.setItemId(itemId.orZero())
     val context = LocalContext.current
-    val archive = viewModel.archiveFile.collectAsStateWithLifecycle()
     val keyboardController = LocalSoftwareKeyboardController.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState(0)
@@ -109,19 +109,6 @@ fun AvaNegarArchiveDetailScreen(
         }
     }
 
-    val mediaPlayer: MediaPlayer? =
-        remember(archive) {
-            viewModel.archiveFile.value?.filePath?.let {
-                MediaPlayer.create(
-                    context,
-                    Uri.fromFile(
-                        File(
-                            it
-                        )
-                    )
-                )
-            }
-        }
 
     val processItem = viewModel.archiveFile.collectAsStateWithLifecycle()
 
@@ -333,9 +320,15 @@ fun AvaNegarArchiveDetailScreen(
                 onTextChange = {
                     viewModel.addTextToList(it)
                 },
-                mediaPlayer = mediaPlayer ?: MediaPlayer(),
+                mediaPlayer = viewModel.mediaPlayer,
                 scrollState = scrollState,
-                scrollStateValue = scrollState.value
+                scrollStateValue = scrollState.value,
+                stopMediaPlayer = {
+                    viewModel.stopMediaPlayer()
+                },
+                startMediaPlayer = {
+                    viewModel.startMediaPlayer()
+                }
             )
         }
     }
@@ -495,12 +488,16 @@ fun AvaNegarProcessedArchiveDetailBody(
     onTextChange: (String) -> Unit,
     mediaPlayer: MediaPlayer,
     scrollState: ScrollState,
-    scrollStateValue: Int
+    scrollStateValue: Int,
+    startMediaPlayer: () -> Unit,
+    stopMediaPlayer: () -> Unit
 ) {
     Column(modifier = modifier.padding(paddingValues)) {
         PlayerBody(
             mediaPlayer = mediaPlayer,
-            scrollStateValue = scrollStateValue
+            scrollStateValue = scrollStateValue,
+            startMediaPlayer = startMediaPlayer,
+            stopMediaPlayer = stopMediaPlayer
         )
         TextField(
             value = text,
@@ -524,14 +521,16 @@ fun AvaNegarProcessedArchiveDetailBody(
 fun PlayerBody(
     modifier: Modifier = Modifier,
     mediaPlayer: MediaPlayer,
-    scrollStateValue: Int
+    scrollStateValue: Int,
+    startMediaPlayer: () -> Unit,
+    stopMediaPlayer: () -> Unit
 ) {
     val color =
         if (scrollStateValue > 0) Color_Surface_Container_High else MaterialTheme.colors.primaryVariant
     val isPlaying = remember {
         mutableStateOf(false)
     }
-    var progress by remember { mutableFloatStateOf(0f) }
+    var progress by rememberSaveable { mutableFloatStateOf(0f) }
 
     LaunchedEffect(key1 = Unit) {
         while (true) {
@@ -554,7 +553,7 @@ fun PlayerBody(
             horizontalArrangement = Arrangement.End
         ) {
             Text(
-                text = mediaPlayer.duration.formatAsDuration(),
+                text = formatDuration(mediaPlayer.duration.toLong()),
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.caption
             )
@@ -566,30 +565,32 @@ fun PlayerBody(
             )
         }
         Spacer(modifier = Modifier.size(12.dp))
-        Slider(
-            colors = SliderDefaults.colors(
-                activeTrackColor = Color_Primary_300,
-                inactiveTrackColor = Color_Surface_Container_High,
-                thumbColor = Color_White
-            ),
-            value = progress,
-            onValueChange = {
-                progress = it
-                mediaPlayer.seekTo((it * 1000).toInt())
-            },
-            valueRange = 0f..mediaPlayer.duration.toFloat() / 1000,
-            modifier = Modifier
-                .weight(4f)
-                .padding(end = 12.dp)
-        )
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) { // TODO: not working
+            Slider(
+                colors = SliderDefaults.colors(
+                    activeTrackColor = Color_Primary_300,
+                    inactiveTrackColor = Color_Surface_Container_High,
+                    thumbColor = Color_White
+                ),
+                value = progress,
+                onValueChange = {
+                    progress = it
+                    mediaPlayer.seekTo((it * 1000).toInt())
+                },
+                valueRange = 0f..mediaPlayer.duration.toFloat() / 1000,
+                modifier = Modifier
+                    .weight(4f)
+                    .padding(end = 12.dp)
+            )
+        }
         Spacer(modifier = Modifier.size(12.dp))
         IconButton(
             onClick = {
                 isPlaying.value = !isPlaying.value
                 if (isPlaying.value) {
-                    mediaPlayer.start()
+                    startMediaPlayer()
                 } else {
-                    mediaPlayer.pause()
+                    stopMediaPlayer()
                 }
             },
             modifier = Modifier.size(46.dp)
