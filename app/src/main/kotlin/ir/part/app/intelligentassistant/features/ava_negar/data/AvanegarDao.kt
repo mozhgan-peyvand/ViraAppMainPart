@@ -15,11 +15,14 @@ interface AvanegarDao {
     @Query("SELECT * FROM AvanegarProcessedFileEntity WHERE id=:id")
     fun getProcessedFileDetail(id: Int): Flow<AvanegarProcessedFileEntity?>
 
-    @Query("SELECT * FROM AvanegarTrackingFileEntity WHERE token=:token")
-    suspend fun getUnprocessedFileDetail(token: String): AvanegarTrackingFileEntity?
+    @Query("SELECT * FROM AvanegarTrackingFileEntity")
+    fun getTrackingFiles(): Flow<List<AvanegarTrackingFileEntity>>
 
     @Query("SELECT * FROM AvanegarTrackingFileEntity")
-    suspend fun getAllUnprocessedFiles(): List<AvanegarTrackingFileEntity>
+    suspend fun getTrackingFilesSync(): List<AvanegarTrackingFileEntity>
+
+    @Query("SELECT * FROM AvanegarTrackingFileEntity WHERE token=:token")
+    suspend fun getUnprocessedFileDetail(token: String): AvanegarTrackingFileEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUnprocessedFile(file: AvanegarTrackingFileEntity)

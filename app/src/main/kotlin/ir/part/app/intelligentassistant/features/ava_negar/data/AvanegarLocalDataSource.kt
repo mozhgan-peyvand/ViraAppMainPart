@@ -46,7 +46,9 @@ class AvanegarLocalDataSource @Inject constructor(
     suspend fun getUnprocessedFile(token: String) =
         dao.getUnprocessedFileDetail(token)
 
-    suspend fun getUnprocessedFiles() = dao.getAllUnprocessedFiles()
+    fun getTrackingFiles() = dao.getTrackingFiles()
+
+    suspend fun getTrackingFilesSync() = dao.getTrackingFilesSync()
 
     suspend fun insertUnprocessedFile(file: AvanegarTrackingFileEntity) =
         dao.insertUnprocessedFile(file)
