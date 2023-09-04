@@ -17,9 +17,9 @@ import java.io.File
 import javax.inject.Inject
 
 class AvanegarRepository @Inject constructor(
-        private val avanegarRemoteDataSource: AvanegarRemoteDataSource,
-        private val avanegarLocalDataSource: AvanegarLocalDataSource,
-        private val networkHandler: NetworkHandler
+    private val avanegarRemoteDataSource: AvanegarRemoteDataSource,
+    private val avanegarLocalDataSource: AvanegarLocalDataSource,
+    private val networkHandler: NetworkHandler
 ) {
 
     fun getArchiveFile(id: Int) =
@@ -27,6 +27,10 @@ class AvanegarRepository @Inject constructor(
 
     fun getAllArchiveFiles() =
         avanegarLocalDataSource.getAllArchiveFiles()
+
+    fun getTrackingFiles() = avanegarLocalDataSource.getTrackingFiles()
+
+    suspend fun getTrackingFilesSync() = avanegarLocalDataSource.getTrackingFilesSync()
 
     fun getSearch(title: String) =
         avanegarLocalDataSource.getSearchResult(title)
