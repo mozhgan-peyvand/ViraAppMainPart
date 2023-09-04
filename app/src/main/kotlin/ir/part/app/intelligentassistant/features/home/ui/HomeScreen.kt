@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +26,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,8 +36,11 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -48,7 +53,11 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Indigo_300
+import ir.part.app.intelligentassistant.utils.ui.theme.Indigo_300_2
+import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.utils.ui.theme.Light_blue_50
+import ir.part.app.intelligentassistant.utils.ui.theme.Light_green_300
+import ir.part.app.intelligentassistant.utils.ui.theme.Teal_200
 import ir.part.app.intelligentassistant.utils.ui.theme.labelMedium
 import ir.part.app.intelligentassistant.R as AIResource
 
@@ -95,21 +104,25 @@ private fun HomeBody(
             HomeItemScreen(
                 icon = AIResource.drawable.img_ava_sho,
                 title = AIResource.string.lbl_ava_sho,
+                textColor = Indigo_300,
                 description = AIResource.string.lbl_ava_sho_desc
             ) {},
             HomeItemScreen(
                 icon = AIResource.drawable.img_nevise_nama,
+                textColor = Indigo_300_2,
                 title = AIResource.string.lbl_nevise_nama,
                 description = AIResource.string.lbl_nevise_negar_desc
             ) {},
             HomeItemScreen(
                 icon = AIResource.drawable.img_vira_part,
                 title = AIResource.string.lbl_vira_part,
+                textColor = Light_green_300,
                 description = AIResource.string.lbl_vira_part_desc
             ) {},
             HomeItemScreen(
                 icon = AIResource.drawable.img_nevise_nama_2,
                 title = AIResource.string.lbl_nevise_nama,
+                textColor = Teal_200,
                 description = AIResource.string.lbl_nevise_nama_desc
             ) {}
         )
@@ -135,25 +148,29 @@ private fun HomeBody(
                 painter = painterResource(id = AIResource.drawable.ic_vira),
                 contentDescription = null
             )
+
+            Spacer(modifier = Modifier.size(8.dp))
+
             Text(
-                text = stringResource(id = AIResource.string.app_name),
-                modifier = Modifier.padding(start = 8.dp),
+                text = stringResource(id = AIResource.string.app_name_farsi),
                 style = MaterialTheme.typography.h6,
                 color = Color_Text_1
             )
         }
+
+        Spacer(modifier = Modifier.size(4.dp))
+
         Text(
             text = stringResource(id = AIResource.string.lbl_assistant),
-            modifier = Modifier.padding(top = 4.dp),
             style = MaterialTheme.typography.body2,
             color = Color_Text_2
         )
+
+        Spacer(modifier = Modifier.size(22.dp))
+
         Card(
             modifier = modifier
-                .padding(
-                    horizontal = 20.dp,
-                    vertical = 10.dp
-                )
+                .padding(horizontal = 16.dp)
                 .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             onClick = {
@@ -166,18 +183,15 @@ private fun HomeBody(
                     .padding(
                         top = 18.dp,
                         bottom = 18.dp,
-                        start = 30.dp,
-                        end = 18.dp
+                        start = 24.dp,
+                        end = 16.dp
                     ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
                     painter = painterResource(id = AIResource.drawable.img_voice),
-                    contentDescription = "",
-                    modifier = Modifier.size(
-                        width = 68.dp,
-                        height = 80.dp
-                    )
+                    contentDescription = null,
+                    modifier = Modifier.size(width = 68.dp, height = 80.dp)
                 )
                 Column(
                     modifier = Modifier
@@ -211,6 +225,7 @@ private fun HomeBody(
                 }
             }
         }
+
         LazyVerticalGrid(
             columns = GridCells.Adaptive(128.dp),
             contentPadding = PaddingValues(16.dp),
@@ -231,7 +246,7 @@ private fun HomeBody(
 fun HomeBodyItem(item: HomeItemScreen) {
     Box(
         modifier = Modifier
-            .aspectRatio(0.95f)
+            .aspectRatio(0.90f)
             .fillMaxSize()
             .background(Color.Transparent),
         contentAlignment = Alignment.TopCenter,
@@ -245,26 +260,31 @@ fun HomeBodyItem(item: HomeItemScreen) {
         ) {
             Column(
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(top = 32.dp, bottom = 8.dp)
             ) {
                 Text(
                     text = stringResource(id = item.title),
                     style = MaterialTheme.typography.subtitle1,
                     color = Color_Text_1
                 )
+
+                Spacer(modifier = Modifier.size(4.dp))
+
                 Text(
                     text = stringResource(id = item.description),
                     style = MaterialTheme.typography.labelMedium,
-                    color = Indigo_300
+                    color = item.textColor
                 )
+
+                Spacer(modifier = Modifier.size(16.dp))
 
                 Surface(
                     shape = CircleShape,
                     border = BorderStroke(
                         0.5.dp,
                         color = Color_Card_Stroke
-                    ),
-                    modifier = Modifier.padding(top = 16.dp)
+                    )
                 ) {
                     Text(
                         text = stringResource(id = AIResource.string.lbl_coming_soon),
@@ -280,6 +300,7 @@ fun HomeBodyItem(item: HomeItemScreen) {
                 }
             }
         }
+
         Image(
             painter = painterResource(id = item.icon),
             contentDescription = null,
@@ -287,5 +308,19 @@ fun HomeBodyItem(item: HomeItemScreen) {
                 .size(64.dp)
                 .shadow(4.dp)
         )
+    }
+}
+
+
+@Preview
+@Composable
+private fun HomeBodyPreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            HomeBody(
+                PaddingValues(0.dp),
+                {}
+            )
+        }
     }
 }

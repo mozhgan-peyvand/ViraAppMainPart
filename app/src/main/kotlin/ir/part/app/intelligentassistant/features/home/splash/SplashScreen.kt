@@ -60,8 +60,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val APP_DESCRIPTION_DURATION = 1700
-private const val DELAY_TO_SHOW_APP_DESCRIPTION = 1400
-private const val APP_NAME_ANIMATION_DURATION = 300
+private const val DELAY_TO_SHOW_APP_DESCRIPTION = 1300
+private const val APP_NAME_ANIMATION_DURATION = 200
 private const val DELAY_TO_NAVIGATE = 200L
 
 @Composable
@@ -116,7 +116,7 @@ fun SplashScreen(
     }
 
     val colorList = listOf(Color_BG, Light_blue_50_2)
-    val brush = remember(progress) {
+    val brush = remember(progress.value) {
         object : ShaderBrush() {
             override fun createShader(size: Size): Shader {
                 val widthOffset = size.width * progress.value
@@ -189,7 +189,7 @@ fun SplashScreen(
         ) {
 
             Text(
-                text = stringResource(id = R.string.app_name),
+                text = stringResource(id = R.string.app_name_farsi),
                 style = MaterialTheme.typography.h2,
                 fontSize = 40.sp,
                 color = animateColorBlueGrayOrWhite

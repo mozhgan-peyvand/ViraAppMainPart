@@ -1,23 +1,19 @@
 package ir.part.app.intelligentassistant.features.home.splash
 
-import android.content.SharedPreferences
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.features.ava_negar.data.DataStoreRepository
 import ir.part.app.intelligentassistant.features.ava_negar.data.PreferencesKey.mainOnBoardingKey
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SplashViewModel @Inject constructor(
-    private val repository: DataStoreRepository,
-    private val sharedPreferences: SharedPreferences
-    ) : ViewModel() {
+    private val repository: DataStoreRepository
+) : ViewModel() {
 
     var shouldNavigate = mutableStateOf(false)
         private set

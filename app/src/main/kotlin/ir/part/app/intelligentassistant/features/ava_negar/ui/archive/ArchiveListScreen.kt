@@ -106,6 +106,7 @@ import ir.part.app.intelligentassistant.utils.ui.sharePdf
 import ir.part.app.intelligentassistant.utils.ui.shareTXT
 import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.showMessage
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Bottom_Sheet
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red_800
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
@@ -290,7 +291,8 @@ fun AvaNegarArchiveListScreen(
     ) { innerPadding ->
         ModalBottomSheetLayout(
             sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
-            sheetBackgroundColor = Color.Black,
+            sheetBackgroundColor = Color_BG_Bottom_Sheet,
+            scrimColor = Color.Black.copy(alpha = 0.5f),
             sheetState = if (isAnyBottomSheetOtherThanUpdate) modalBottomSheetState
             else modalBottomSheetStateUpdate,
             sheetContent = {
@@ -615,7 +617,7 @@ fun AvaNegarArchiveListScreen(
 
                 if (isFabExpanded) {
                     Surface(
-                        color = MaterialTheme.colors.background.copy(alpha = 0.5f),
+                        color = Color.Black.copy(alpha = 0.5f),
                         modifier = Modifier
                             .fillMaxSize()
                             .pointerInput(Unit) { isFabExpanded = false },
@@ -628,6 +630,7 @@ fun AvaNegarArchiveListScreen(
                         isFabExpanded = !isFabExpanded
                     },
                     selectFile = {
+                        isFabExpanded = false
                         snackbarHostState.currentSnackbarData?.dismiss()
                         setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
                         coroutineScope.launch {
@@ -639,6 +642,7 @@ fun AvaNegarArchiveListScreen(
                         }
                     },
                     openRecordingScreen = {
+                        isFabExpanded = false
                         snackbarHostState.currentSnackbarData?.dismiss()
 
                         // PermissionCheck Duplicate 2

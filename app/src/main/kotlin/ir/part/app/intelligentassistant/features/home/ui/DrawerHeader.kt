@@ -60,7 +60,7 @@ private fun DrawerHeaderBody(
                 shape = CircleShape, color = Color_BG
             ) {}
             Column(modifier = modifier.padding(5.dp)) {
-                Text(text = stringResource(id = AIResource.string.app_name))
+                Text(text = stringResource(id = AIResource.string.app_name_farsi))
                 Text(text = stringResource(id = AIResource.string.lbl_assistant_smart_voice))
             }
         }
