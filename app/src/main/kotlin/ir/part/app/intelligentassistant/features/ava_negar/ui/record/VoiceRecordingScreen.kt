@@ -33,8 +33,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,12 +83,24 @@ fun AvaNegarVoiceRecordingScreen(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    var bottomSheetContentType by remember {
+    var bottomSheetContentType by rememberSaveable(
+        saver = Saver(
+            save = { it.value.name },
+            restore = { name ->
+                mutableStateOf(VoiceRecordingBottomSheetType.values().first { it.name == name })
+            }
+        )
+    ) {
         mutableStateOf(VoiceRecordingBottomSheetType.BackConfirm)
     }
     val coroutineScope = rememberCoroutineScope()
 
-    var state by remember { mutableStateOf<VoiceRecordingViewState>(VoiceRecordingViewState.Idle) }
+    var state by rememberSaveable(
+        saver = Saver(
+            save = { it.value.serialize() },
+            restore = { mutableStateOf(VoiceRecordingViewState.deserialize(it)) }
+        )
+    ) { mutableStateOf<VoiceRecordingViewState>(VoiceRecordingViewState.Idle) }
     val timer by viewModel.timer.collectAsState()
 
     val recorder by viewModel::recorder
