@@ -77,6 +77,7 @@ import ir.part.app.intelligentassistant.utils.ui.sharePdf
 import ir.part.app.intelligentassistant.utils.ui.shareTXT
 import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.showMessage
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Bottom_Sheet
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Solid_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
@@ -128,7 +129,8 @@ fun AvaNegarArchiveDetailScreen(
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
-        sheetBackgroundColor = Color.Black,
+        sheetBackgroundColor = Color_BG_Bottom_Sheet,
+        scrimColor = Color.Black.copy(alpha = 0.5f),
         sheetContent = {
             when (selectedSheet) {
 

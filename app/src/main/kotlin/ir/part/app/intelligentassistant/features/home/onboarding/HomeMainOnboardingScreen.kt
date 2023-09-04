@@ -95,7 +95,7 @@ fun HomeMainOnboardingScreen(
             Spacer(modifier = Modifier.size(8.dp))
 
             Text(
-                text = stringResource(id = R.string.app_name),
+                text = stringResource(id = R.string.app_name_farsi),
                 style = MaterialTheme.typography.h4,
                 color = Color_White
             )
