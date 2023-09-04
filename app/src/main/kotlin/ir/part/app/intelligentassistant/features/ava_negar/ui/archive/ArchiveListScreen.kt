@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -97,6 +96,7 @@ import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantE
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToTXTFile
 import ir.part.app.intelligentassistant.utils.common.file.filename
+import ir.part.app.intelligentassistant.utils.ui.Constants
 import ir.part.app.intelligentassistant.utils.ui.UiError
 import ir.part.app.intelligentassistant.utils.ui.UiIdle
 import ir.part.app.intelligentassistant.utils.ui.isPermissionDeniedPermanently
@@ -171,6 +171,8 @@ fun AvaNegarArchiveListScreen(
     intent.type = "audio/*"
     val mimetypes = arrayOf("audio/mpeg")
     intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes)
+
+    val updateIntent = Intent(Intent.ACTION_VIEW, Uri.parse(Constants.CAFEBAZAAR_LINK))
 
     val launchOpenFile = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -350,9 +352,7 @@ fun AvaNegarArchiveListScreen(
                     ArchiveBottomSheetType.Update -> {
                         ForceUpdateScreen(
                             onUpdateClick = {
-                                //TODO should download update from Bazar or Google play store
-                                Toast.makeText(context, "Will Update", Toast.LENGTH_SHORT)
-                                    .show()
+                                ContextCompat.startActivity(context, updateIntent, null)
                             }
                         )
                     }
