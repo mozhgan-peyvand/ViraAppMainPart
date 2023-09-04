@@ -570,7 +570,7 @@ fun PlayerBody(
             )
         }
         Spacer(modifier = Modifier.size(12.dp))
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) { // TODO: not working
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) { // TODO: not working
             Slider(
                 colors = SliderDefaults.colors(
                     activeTrackColor = Color_Primary_300,
