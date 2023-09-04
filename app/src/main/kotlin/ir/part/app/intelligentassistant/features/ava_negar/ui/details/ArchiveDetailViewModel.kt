@@ -1,12 +1,16 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.details
 
+import android.app.Application
+import android.content.Context
+import android.media.MediaPlayer
+import android.net.Uri
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,19 +21,23 @@ import ir.part.app.intelligentassistant.utils.common.orZero
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 private const val UNDO_REDO_LIMIT = 50
 
 @HiltViewModel
 class ArchiveDetailViewModel @Inject constructor(
-        private val repository: AvanegarRepository,
-        savedStateHandle: SavedStateHandle
-) : ViewModel() {
+    private val repository: AvanegarRepository,
+    savedStateHandle: SavedStateHandle,
+    application: Application
+) : AndroidViewModel(application) { // TODO: remove application
 
     private val _processItemId =
         mutableIntStateOf(savedStateHandle.get<Int>("id").orZero())
     val processItemId: IntState = _processItemId.asIntState()
+
+    var mediaPlayer: MediaPlayer = MediaPlayer()
 
 
     private val _archiveFile =
@@ -41,6 +49,24 @@ class ArchiveDetailViewModel @Inject constructor(
 
     private var _textBody = mutableStateOf("")
     var textBody = _textBody
+    private fun initializeMediaPlayer(
+        context: Context,
+        filePath: String
+    ) {
+        mediaPlayer.stop()
+        mediaPlayer.reset()
+        mediaPlayer.setDataSource(context, Uri.fromFile(File(filePath)))
+        mediaPlayer.prepare()
+    }
+
+    fun startMediaPlayer() {
+        mediaPlayer.start()
+    }
+
+    fun stopMediaPlayer() {
+        mediaPlayer.pause()
+//        mediaPlayer.prepare()
+    }
 
     init {
         viewModelScope.launch {
@@ -51,6 +77,12 @@ class ArchiveDetailViewModel @Inject constructor(
                 it?.toAvanegarProcessedFileView()?.text?.let { text ->
                     _textBody.value = text
                     textList[0] = text
+                }
+                it?.filePath?.let { filepath ->
+                    initializeMediaPlayer(
+                        application.applicationContext,
+                        filepath
+                    )
                 }
             }
         }
@@ -104,5 +136,11 @@ class ArchiveDetailViewModel @Inject constructor(
         ProcessLifecycleOwner.get().lifecycleScope.launch {
             repository.editText(textBody.value, _processItemId.intValue)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        mediaPlayer.stop()
+        mediaPlayer.release()
     }
 }
