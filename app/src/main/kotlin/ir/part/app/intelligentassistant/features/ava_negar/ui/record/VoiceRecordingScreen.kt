@@ -45,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -484,7 +483,6 @@ fun VoiceRecordingHintSection(
     }
 }
 
-// TODO: implement record animation
 @Composable
 fun VoiceRecordingControlsSection(
     isRecording: Boolean,
@@ -528,18 +526,11 @@ fun VoiceRecordingControlsSection(
             }
         }
 
-        Box(
-            modifier = Modifier.then(
-                if (isRecording) Modifier else Modifier.clickable { startRecord() }
-            )
-        ) {
-            Icon(
-                painterResource(R.drawable.img_recording_step_0),
-                contentDescription = if (isRecording) null else stringResource(R.string.desc_start_recording),
-                tint = if (isRecording) Color_Red else Color.Unspecified,
-                modifier = Modifier.size(184.dp)
-            )
-        }
+        RecordingAnimation(
+            isRecording = isRecording,
+            onRecordClick = { startRecord() },
+            modifier = Modifier.size(170.dp)
+        )
 
         if (isRecording || hasPaused || isStopped) {
             Surface(
