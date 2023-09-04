@@ -4,7 +4,6 @@ import android.media.MediaPlayer
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,6 +30,7 @@ import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberModalBottomSheetState
@@ -50,7 +50,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -79,9 +78,13 @@ import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.showMessage
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Bottom_Sheet
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Solid_2
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_OutLine
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Container_High
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -624,51 +627,68 @@ fun MenuDetailsScreenBottomSheet(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp, horizontal = 15.dp)
+            .padding(vertical = 16.dp)
     ) {
-        MenuDetailsScreenBottomSheetBody(
-            title = stringResource(id = AIResource.string.lbl_change_file_name),
-            icon = painterResource(
-                id = AIResource.drawable.icon_documents
-            )
+        TextButton(
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 12.dp),
+            contentPadding = PaddingValues(12.dp),
+            onClick = onRenameAction
         ) {
-            onRenameAction()
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    painter = painterResource(id = AIResource.drawable.icon_documents),
+                    contentDescription = null,
+                    tint = Color_Text_1
+                )
+
+                Spacer(modifier = Modifier.size(12.dp))
+
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_change_file_name),
+                    style = MaterialTheme.typography.subtitle1,
+                    color = Color_Text_3
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.size(12.dp))
+
         Divider(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(1.dp), color = Color.LightGray
+                .height(1.dp),
+            color = Color_OutLine
         )
-        MenuDetailsScreenBottomSheetBody(
-            title = stringResource(id = AIResource.string.lbl_btn_delete_file),
-            icon = painterResource(
-                id = AIResource.drawable.icon_trash_delete
-            )
-        ) {
-            onRemoveFileAction()
-        }
-    }
-}
 
-@Composable
-fun MenuDetailsScreenBottomSheetBody(
-    modifier: Modifier = Modifier,
-    title: String,
-    icon: Painter,
-    onItemClick: () -> Unit
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(10.dp)
-            .clickable {
-                onItemClick()
+        Spacer(modifier = Modifier.size(12.dp))
+
+        TextButton(
+            modifier = modifier.padding(start = 8.dp, end = 8.dp, bottom = 12.dp),
+            contentPadding = PaddingValues(12.dp),
+            onClick = onRemoveFileAction
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Icon(
+                    painter = painterResource(id = AIResource.drawable.icon_trash_delete),
+                    contentDescription = null,
+                    tint = Color_Red
+                )
+
+                Spacer(modifier = Modifier.size(12.dp))
+
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_btn_delete_file),
+                    style = MaterialTheme.typography.subtitle1,
+                    color = Color_Red
+                )
             }
-    ) {
-        Image(
-            painter = icon,
-            contentDescription = null
-        )
-        Text(text = title)
+        }
     }
 }
