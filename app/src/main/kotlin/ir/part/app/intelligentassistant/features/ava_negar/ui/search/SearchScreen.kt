@@ -22,9 +22,13 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -54,10 +58,16 @@ fun AvaNegarSearchScreen(
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val searchResult by viewModel.getSearchResult.collectAsStateWithLifecycle()
     val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(focusRequester) {
+        focusRequester.requestFocus()
+    }
 
     AvaNegarSearchBody(
         searchText = searchText,
         searchResult = searchResult,
+        focusRequester = focusRequester,
         arrowForwardAction = {
             navHostController.popBackStack()
         },
@@ -76,6 +86,7 @@ private fun AvaNegarSearchBody(
     modifier: Modifier = Modifier,
     searchText: String,
     searchResult: List<AvanegarProcessedFileView>,
+    focusRequester: FocusRequester,
     arrowForwardAction: () -> Unit,
     onValueChangeAction: (String) -> Unit,
     clearState: () -> Unit, isSearch: Boolean
@@ -96,6 +107,7 @@ private fun AvaNegarSearchBody(
     ) {
         SearchToolbar(
             searchText = searchText,
+            focusRequester = focusRequester,
             arrowForwardAction = arrowForwardAction,
             onValueChangeAction = onValueChangeAction,
             clearState = clearState
@@ -139,6 +151,7 @@ private fun AvaNegarSearchBody(
 @Composable
 private fun SearchToolbar(
     searchText: String,
+    focusRequester: FocusRequester,
     arrowForwardAction: () -> Unit,
     onValueChangeAction: (String) -> Unit,
     clearState: () -> Unit
@@ -164,6 +177,7 @@ private fun SearchToolbar(
             textStyle = MaterialTheme.typography.body2,
             modifier = Modifier
                 .weight(1f)
+                .focusRequester(focusRequester)
                 .border(
                     1.dp,
                     shape = RoundedCornerShape(10.dp),
@@ -204,6 +218,6 @@ private fun SearchToolbar(
                 textColor = Color_Text_1,
                 placeholderColor = Color_Text_3
             ),
-            )
+        )
     }
 }

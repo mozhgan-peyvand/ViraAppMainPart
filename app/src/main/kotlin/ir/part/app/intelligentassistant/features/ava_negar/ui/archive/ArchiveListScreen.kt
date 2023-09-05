@@ -265,6 +265,24 @@ fun AvaNegarArchiveListScreen(
         }
     }
 
+    val shouldShowKeyBoard = rememberSaveable { mutableStateOf(false) }
+    val shouldShowKeyBoardUploadingName = rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(modalBottomSheetState.targetValue) {
+
+        if (modalBottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
+            if (selectedSheet.name == ArchiveBottomSheetType.Rename.name)
+                shouldShowKeyBoard.value = true
+
+            if (selectedSheet.name == ArchiveBottomSheetType.RenameUploading.name)
+                shouldShowKeyBoardUploadingName.value = true
+
+        } else {
+            shouldShowKeyBoard.value = false
+            shouldShowKeyBoardUploadingName.value = false
+        }
+    }
+
     LaunchedEffect(archiveViewModel.aiEvent.value) {
         if (archiveViewModel.aiEvent.value == IntelligentAssistantEvent.TokenExpired) {
             setSelectedSheet(ArchiveBottomSheetType.Update)
@@ -340,6 +358,7 @@ fun AvaNegarArchiveListScreen(
                     ArchiveBottomSheetType.RenameUploading -> {
                         RenameFileBottomSheetContent(
                             fileName.value.orEmpty(),
+                            shouldShowKeyBoard = shouldShowKeyBoardUploadingName.value,
                             renameAction = {
                                 fileName.value = it
                                 archiveViewModel.addFileToUploadingQueue(it, fileUri.value)
@@ -362,6 +381,7 @@ fun AvaNegarArchiveListScreen(
                     ArchiveBottomSheetType.Rename -> {
                         RenameFile(
                             fileName = fileName.value.orEmpty(),
+                            shouldShowKeyBoard = shouldShowKeyBoard.value,
                             onValueChange = { fileName.value = it },
                             reNameAction = {
                                 archiveViewModel.updateTitle(

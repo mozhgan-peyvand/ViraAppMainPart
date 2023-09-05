@@ -30,6 +30,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -110,6 +111,18 @@ fun AvaNegarVoiceRecordingScreen(
         playerState.tryInitWith(recorder.currentFile)
     }
 
+    val shouldShowKeyBoard = rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(bottomSheetState.targetValue) {
+
+        if (bottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
+            if (bottomSheetContentType.name == VoiceRecordingBottomSheetType.ConvertToTextConfirmation.name)
+                shouldShowKeyBoard.value = true
+        } else {
+            shouldShowKeyBoard.value = false
+        }
+    }
+
     BackHandler(state != VoiceRecordingViewState.Idle) {
         // BackHandler: Duplicate 1
         handleBackClick(
@@ -165,6 +178,7 @@ fun AvaNegarVoiceRecordingScreen(
                 VoiceRecordingBottomSheetType.ConvertToTextConfirmation -> {
                     RenameFileBottomSheetContent(
                         fileName = "",
+                        shouldShowKeyBoard = shouldShowKeyBoard.value,
                         renameAction = { name ->
                             navController.previousBackStackEntry
                                 ?.savedStateHandle

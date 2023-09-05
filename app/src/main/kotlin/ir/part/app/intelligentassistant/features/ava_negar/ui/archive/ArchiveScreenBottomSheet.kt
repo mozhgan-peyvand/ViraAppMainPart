@@ -23,6 +23,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,8 +31,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -274,11 +278,22 @@ fun BottomSheetDetailItemBody(
 @Composable
 fun RenameFileBottomSheetContent(
     fileName: String,
+    shouldShowKeyBoard: Boolean,
     renameAction: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
     var name by remember(fileName) { mutableStateOf(fileName) }
+
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+
+    LaunchedEffect(shouldShowKeyBoard) {
+        if (shouldShowKeyBoard)
+            focusRequester.requestFocus()
+        else
+            focusManager.clearFocus()
+    }
 
     Column(
         modifier = modifier
@@ -302,6 +317,7 @@ fun RenameFileBottomSheetContent(
             modifier
                 .fillMaxWidth()
                 .padding(bottom = 10.dp)
+                .focusRequester(focusRequester)
                 .border(
                     1.dp,
                     shape = RoundedCornerShape(10.dp),
@@ -342,9 +358,21 @@ fun RenameFileBottomSheetContent(
 fun RenameFile(
     fileName: String,
     onValueChange: (String) -> Unit,
+    shouldShowKeyBoard: Boolean,
     reNameAction: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+
+    LaunchedEffect(shouldShowKeyBoard) {
+        if (shouldShowKeyBoard)
+            focusRequester.requestFocus()
+        else
+            focusManager.clearFocus()
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -390,7 +418,9 @@ fun RenameFile(
                     singleLine = true,
                     onValueChange = { onValueChange(it) },
                     textStyle = MaterialTheme.typography.body1.copy(color = Color_Text_2),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
                 )
             }
         }
