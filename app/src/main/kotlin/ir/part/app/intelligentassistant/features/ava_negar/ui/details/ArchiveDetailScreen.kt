@@ -41,6 +41,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -58,6 +59,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -87,6 +89,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import ir.part.app.intelligentassistant.R as AIResource
 
@@ -374,6 +377,8 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
 
         Text(
             text = title,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.subtitle2,
             color = Color_White
@@ -535,12 +540,20 @@ fun PlayerBody(
     val isPlaying = remember {
         mutableStateOf(false)
     }
+    var remainingTime by rememberSaveable { mutableLongStateOf(0) }
     var progress by rememberSaveable { mutableFloatStateOf(0f) }
 
     LaunchedEffect(key1 = Unit) {
-        while (true) {
+        remainingTime = mediaPlayer.duration.toLong()
+        while (isActive) {
             if (mediaPlayer.isPlaying) {
                 progress = mediaPlayer.currentPosition.toFloat() / 1000
+                remainingTime =
+                    (mediaPlayer.duration - mediaPlayer.currentPosition).toLong()
+                mediaPlayer.setOnCompletionListener {
+                    isPlaying.value = false
+                    progress = 0f
+                }
             }
             delay(1000)
         }
@@ -558,7 +571,7 @@ fun PlayerBody(
             horizontalArrangement = Arrangement.End
         ) {
             Text(
-                text = formatDuration(mediaPlayer.duration.toLong()),
+                text = formatDuration(remainingTime),
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.caption
             )
