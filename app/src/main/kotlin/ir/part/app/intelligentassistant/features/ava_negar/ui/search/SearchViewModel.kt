@@ -44,7 +44,7 @@ class SearchViewModel @Inject constructor(
                 delay(1000)
                 _isSearching.value = false
                 searchResult.filter {
-                    it.title.contains(text)
+                    it.title.contains(text, ignoreCase = true)
                 }
             }
         }.stateIn(
