@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -108,9 +110,9 @@ private fun HomeBody(
                 description = AIResource.string.lbl_ava_sho_desc
             ) {},
             HomeItemScreen(
-                icon = AIResource.drawable.img_nevise_nama,
+                icon = AIResource.drawable.img_nevise_negar,
                 textColor = Indigo_300_2,
-                title = AIResource.string.lbl_nevise_nama,
+                title = AIResource.string.lbl_nevise_negar,
                 description = AIResource.string.lbl_nevise_negar_desc
             ) {},
             HomeItemScreen(
@@ -120,7 +122,7 @@ private fun HomeBody(
                 description = AIResource.string.lbl_vira_part_desc
             ) {},
             HomeItemScreen(
-                icon = AIResource.drawable.img_nevise_nama_2,
+                icon = AIResource.drawable.img_nevise_nama,
                 title = AIResource.string.lbl_nevise_nama,
                 textColor = Teal_200,
                 description = AIResource.string.lbl_nevise_nama_desc
@@ -135,7 +137,8 @@ private fun HomeBody(
             .paint(
                 painterResource(id = AIResource.drawable.bg_pattern),
                 contentScale = ContentScale.Crop
-            ),
+            )
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
