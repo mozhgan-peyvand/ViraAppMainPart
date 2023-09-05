@@ -1,6 +1,9 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.details
 
+import android.app.Activity
 import android.media.MediaPlayer
+import android.view.WindowManager
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -53,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -88,6 +92,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Container_H
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -107,8 +112,11 @@ fun AvaNegarArchiveDetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState(0)
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
+    val focusManager = LocalFocusManager.current
 
     var isConverting by rememberSaveable { mutableStateOf(false) }
+
+    val shouldShowKeyBoard = rememberSaveable { mutableStateOf(false) }
 
     DisposableEffect(context) {
         onDispose {
@@ -132,12 +140,38 @@ fun AvaNegarArchiveDetailScreen(
         mutableStateOf(ArchiveDetailBottomSheetType.Menu)
     }
 
+    BackHandler {
+        if (bottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
+            coroutineScope.launch(IO) {
+                bottomSheetState.hide()
+            }
+        } else {
+            focusManager.clearFocus()
+            navController.navigateUp()
+        }
+    }
+
+    LaunchedEffect(bottomSheetState.targetValue) {
+
+        if (bottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
+            if (selectedSheet.name == ArchiveDetailBottomSheetType.Rename.name) {
+                (context as Activity).window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+                shouldShowKeyBoard.value = true
+            }
+        } else {
+            (context as Activity).window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+            shouldShowKeyBoard.value = false
+        }
+    }
+
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
         sheetBackgroundColor = Color_BG_Bottom_Sheet,
         scrimColor = Color.Black.copy(alpha = 0.5f),
         sheetContent = {
+            //to close keyboard before opening bottomSheet
+            focusManager.clearFocus()
             when (selectedSheet) {
 
                 ArchiveDetailBottomSheetType.Menu -> {
@@ -192,6 +226,7 @@ fun AvaNegarArchiveDetailScreen(
                         onValueChange = {
                             fileName.value = it
                         },
+                        shouldShowKeyBoard = shouldShowKeyBoard.value,
                         reNameAction = {
                             coroutineScope.launch {
                                 bottomSheetState.hide()
