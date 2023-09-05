@@ -1,6 +1,7 @@
 package ir.part.app.intelligentassistant
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -14,9 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection.Rtl
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import ir.part.app.intelligentassistant.utils.ui.navigation.AppNavigation
+import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 
 @AndroidEntryPoint
@@ -26,6 +29,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val navController = rememberNavController()
+            if (navController.currentBackStackEntryAsState().value?.destination?.route ==
+                ScreenRoutes.AvaNegarArchiveList.route
+            ) {
+                window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            } else {
+                window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+            }
             IntelligentAssistantTheme {
                 CompositionLocalProvider(
                     LocalLayoutDirection provides Rtl,
