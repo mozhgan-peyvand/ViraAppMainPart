@@ -3,6 +3,7 @@ package ir.part.app.intelligentassistant.features.home.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +38,7 @@ import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,8 +48,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.features.home.HomeItemScreen
+import ir.part.app.intelligentassistant.utils.ui.Constants.CAFEBAZAAR_LINK
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
+import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.theme.Blue_Grey_900
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Bottom_Sheet
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
@@ -59,6 +65,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Light_blue_50
 import ir.part.app.intelligentassistant.utils.ui.theme.Light_green_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Teal_200
 import ir.part.app.intelligentassistant.utils.ui.theme.labelMedium
+import kotlinx.coroutines.launch
 import ir.part.app.intelligentassistant.R as AIResource
 
 @Composable
@@ -67,7 +74,14 @@ fun HomeScreen(
     navController: NavHostController
 ) {
 
-    LaunchedEffect(homeViewModel.onboardingHasBeenShown.value, homeViewModel.shouldNavigate.value) {
+    val coroutineScope = rememberCoroutineScope()
+    val scaffoldState = rememberScaffoldState()
+    val context = LocalContext.current
+
+    LaunchedEffect(
+        homeViewModel.onboardingHasBeenShown.value,
+        homeViewModel.shouldNavigate.value
+    ) {
 
         if (homeViewModel.shouldNavigate.value) {
             if (!homeViewModel.onboardingHasBeenShown.value)
@@ -79,9 +93,36 @@ fun HomeScreen(
         }
     }
 
-    val scaffoldState = rememberScaffoldState()
     Scaffold(
-        scaffoldState = scaffoldState
+        scaffoldState = scaffoldState,
+        topBar = {
+            HomeAppBar {
+                coroutineScope.launch {
+                    scaffoldState.drawerState.open()
+                }
+            }
+        },
+        drawerContent = {
+            DrawerHeader(
+                aboutUsOnClick = {
+                    navController.navigate(ScreenRoutes.AboutUs.route)
+                    coroutineScope.launch {
+                        scaffoldState.drawerState.close()
+                    }
+                },
+                inviteFriendOnclick = {
+                    shareText(context, CAFEBAZAAR_LINK)
+                    coroutineScope.launch {
+                        scaffoldState.drawerState.close()
+                    }
+                }
+            )
+        },
+        drawerBackgroundColor = Color_BG_Bottom_Sheet,
+        drawerScrimColor = Color.Transparent,
+        drawerElevation = 0.dp,
+        drawerShape = RoundedCornerShape(0.dp),
+        drawerGesturesEnabled = scaffoldState.drawerState.isOpen
     ) { innerPadding ->
         HomeBody(
             paddingValues = innerPadding,
@@ -90,6 +131,49 @@ fun HomeScreen(
                 homeViewModel.navigate()
             }
         )
+    }
+}
+
+@Composable
+fun HomeAppBar(openDrawer: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, top = 20.dp, bottom = 22.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column {
+            Row() {
+                Image(
+                    painter = painterResource(id = AIResource.drawable.ic_vira),
+                    contentDescription = null
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = stringResource(id = AIResource.string.app_name_farsi),
+                    style = MaterialTheme.typography.h6,
+                    color = Color_Text_1
+                )
+            }
+            Spacer(modifier = Modifier.size(4.dp))
+            Text(
+                text = stringResource(id = AIResource.string.lbl_assistant),
+                style = MaterialTheme.typography.body2,
+                color = Color_Text_2
+            )
+
+            Spacer(modifier = Modifier.size(22.dp))
+        }
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .clickable { openDrawer() }) {
+            Image(
+                painter = painterResource(id = AIResource.drawable.ic_menu),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
+            )
+        }
     }
 }
 
@@ -138,37 +222,6 @@ private fun HomeBody(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = AIResource.drawable.ic_vira),
-                contentDescription = null
-            )
-
-            Spacer(modifier = Modifier.size(8.dp))
-
-            Text(
-                text = stringResource(id = AIResource.string.app_name_farsi),
-                style = MaterialTheme.typography.h6,
-                color = Color_Text_1
-            )
-        }
-
-        Spacer(modifier = Modifier.size(4.dp))
-
-        Text(
-            text = stringResource(id = AIResource.string.lbl_assistant),
-            style = MaterialTheme.typography.body2,
-            color = Color_Text_2
-        )
-
-        Spacer(modifier = Modifier.size(22.dp))
-
         Card(
             modifier = modifier
                 .padding(horizontal = 16.dp)
