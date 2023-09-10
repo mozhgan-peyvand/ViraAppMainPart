@@ -1017,7 +1017,10 @@ private fun Fabs(
     ) {
         Column {
 
-            AnimatedVisibility(visible = isFabExpanded) {
+            AnimatedVisibility(
+                visible = isFabExpanded,
+                modifier = Modifier.clip(CircleShape)
+            ) {
 
                 FloatingActionButton(
                     backgroundColor = MaterialTheme.colors.primary,
@@ -1035,8 +1038,7 @@ private fun Fabs(
 
             FloatingActionButton(
                 backgroundColor = if (isFabExpanded) Color_White else MaterialTheme.colors.primary,
-                modifier = Modifier
-                    .clip(CircleShape),
+                modifier = Modifier.clip(CircleShape),
                 onClick = onMainFabClick
             ) {
                 Icon(
@@ -1046,7 +1048,10 @@ private fun Fabs(
                 )
             }
         }
-        AnimatedVisibility(visible = isFabExpanded) {
+        AnimatedVisibility(
+            visible = isFabExpanded,
+            modifier = Modifier.clip(CircleShape)
+        ) {
 
             FloatingActionButton(
                 backgroundColor = MaterialTheme.colors.primary,
