@@ -50,7 +50,6 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
-import ir.part.app.intelligentassistant.utils.ui.theme.Blue_Grey_800_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
@@ -88,18 +87,14 @@ fun SplashScreen(
         isAppNameVisible = true
     }
 
-    var shouldChangeTextsColor by rememberSaveable {
-        mutableStateOf(false)
-    }
-
     val animateColorBlueGrayOrBlueLight by animateColorAsState(
-        targetValue = if (shouldChangeTextsColor) Blue_Grey_800_2 else Light_blue_50_2,
+        targetValue = Light_blue_50_2,
         animationSpec = tween(easing = EaseIn),
         label = ""
     )
 
     val animateColorBlueGrayOrWhite by animateColorAsState(
-        targetValue = if (shouldChangeTextsColor) Blue_Grey_800_2 else Color_White,
+        targetValue = Color_White,
         animationSpec = tween(easing = EaseIn),
         label = ""
     )
@@ -152,8 +147,7 @@ fun SplashScreen(
 
     LaunchedEffect(lottieProgress) {
         launch(IO) {
-            if (lottieProgress > 0.60385f) {
-                shouldChangeTextsColor = true
+            if (lottieProgress == 1f) {
 
                 delay(DELAY_TO_NAVIGATE)
                 viewModel.navigateToMainOnboarding()
@@ -176,7 +170,7 @@ fun SplashScreen(
             composition = composition,
             progress = lottieProgress,
             modifier = Modifier
-                .size(81.dp)
+                .size(94.dp)
                 .padding(bottom = 6.dp),
         )
 
@@ -198,8 +192,7 @@ fun SplashScreen(
 
         Text(
             text = stringResource(id = R.string.lbl_assistant),
-            style = if (!shouldChangeTextsColor) MaterialTheme.typography.body1.copy(brush = brush)
-            else MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.body1.copy(brush = brush),
             color = animateColorBlueGrayOrBlueLight
         )
     }
