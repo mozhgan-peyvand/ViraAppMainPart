@@ -18,6 +18,7 @@ import ir.part.app.intelligentassistant.features.ava_negar.data.AvanegarReposito
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.toAvanegarProcessedFileView
 import ir.part.app.intelligentassistant.utils.common.orZero
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -49,6 +50,10 @@ class ArchiveDetailViewModel @Inject constructor(
 
     private var _textBody = mutableStateOf("")
     var textBody = _textBody
+
+    var jobConverting: Job? = null
+    var fileToShare: File? = null
+
     private fun initializeMediaPlayer(
         context: Context,
         filePath: String

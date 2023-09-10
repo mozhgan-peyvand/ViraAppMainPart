@@ -97,6 +97,8 @@ class ArchiveViewModel @Inject constructor(
     private var numberOfRequest = NUMBER_OF_REQUEST
 
     private var job: Job? = null
+    var jobConverting: Job? = null
+    var fileToShare: File? = null
 
     //placed these variables in viewModel to save from configuration change,
     // can not make these, rememberSaveable because these are dataClass
