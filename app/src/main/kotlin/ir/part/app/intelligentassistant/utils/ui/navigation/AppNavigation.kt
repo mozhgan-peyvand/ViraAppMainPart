@@ -11,6 +11,7 @@ import ir.part.app.intelligentassistant.features.ava_negar.ui.details.AvaNegarAr
 import ir.part.app.intelligentassistant.features.ava_negar.ui.onboarding.AvaNegarOnboardingScreen
 import ir.part.app.intelligentassistant.features.ava_negar.ui.record.AvaNegarVoiceRecordingScreen
 import ir.part.app.intelligentassistant.features.ava_negar.ui.search.AvaNegarSearchScreen
+import ir.part.app.intelligentassistant.features.home.about_us.AboutUsScreen
 import ir.part.app.intelligentassistant.features.home.onboarding.HomeMainOnboardingScreen
 import ir.part.app.intelligentassistant.features.home.onboarding.HomeOnboardingScreen
 import ir.part.app.intelligentassistant.features.home.splash.SplashScreen
@@ -33,6 +34,9 @@ fun AppNavigation(navController: NavHostController) {
         }
         composable(route = ScreenRoutes.Home.route) {
             HomeScreen(navController = navController)
+        }
+        composable(route = ScreenRoutes.AboutUs.route) {
+            AboutUsScreen(navController = navController)
         }
         composable(route = ScreenRoutes.AvaNegarOnboarding.route) {
             AvaNegarOnboardingScreen(navController = navController)
