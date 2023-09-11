@@ -26,7 +26,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -42,6 +41,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_On_Surface_Variant
@@ -78,10 +78,7 @@ fun AvaNegarOnboardingScreen(
         horizontalAlignment = Alignment.End,
         modifier = Modifier
             .fillMaxSize()
-            .paint(
-                painter = painterResource(id = R.drawable.bg_pattern),
-                contentScale = ContentScale.Crop
-            )
+            .background(Color_BG)
     ) {
 
         Row(modifier = Modifier.weight(0.08f)) {

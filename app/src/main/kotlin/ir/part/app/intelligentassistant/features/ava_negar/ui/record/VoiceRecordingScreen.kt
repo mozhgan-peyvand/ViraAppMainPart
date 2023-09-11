@@ -2,7 +2,6 @@ package ir.part.app.intelligentassistant.features.ava_negar.ui.record
 
 import android.os.SystemClock
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -61,7 +60,6 @@ import ir.part.app.intelligentassistant.utils.ui.hide
 import ir.part.app.intelligentassistant.utils.ui.hideAndShow
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_On_Surface_Variant
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
@@ -556,10 +554,7 @@ fun VoicePlayerComponent(
     onPlayingChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(0.5.dp, Color_Card_Stroke),
-    ) {
+    Surface(shape = MaterialTheme.shapes.medium) {
         Row(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,

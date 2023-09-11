@@ -1,6 +1,5 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
@@ -49,7 +47,7 @@ fun ArchiveUploadingFileElementGrid(
 ) {
     Card(
         backgroundColor = Color_Card,
-        border = BorderStroke(0.5.dp, Color_Card_Stroke),
+        elevation = 0.dp,
         modifier = Modifier.height(156.dp),
         onClick = { onItemClick(archiveUploadingFileView) }
     ) {
