@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -21,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
@@ -42,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -52,9 +55,11 @@ import ir.part.app.intelligentassistant.utils.ui.Constants.CAFEBAZAAR_LINK
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.theme.Blue_Grey_900
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Bottom_Sheet
+import ir.part.app.intelligentassistant.utils.ui.theme.Blue_gray_900
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_On_Surface_Variant
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_OutLine
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
@@ -118,7 +123,7 @@ fun HomeScreen(
                 }
             )
         },
-        drawerBackgroundColor = Color_BG_Bottom_Sheet,
+        drawerBackgroundColor = Blue_gray_900,
         drawerScrimColor = Color.Transparent,
         drawerElevation = 0.dp,
         drawerShape = RoundedCornerShape(0.dp),
@@ -142,32 +147,35 @@ fun HomeAppBar(openDrawer: () -> Unit) {
             .padding(start = 16.dp, top = 20.dp, bottom = 22.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column {
-            Row() {
-                Image(
-                    painter = painterResource(id = AIResource.drawable.ic_vira),
-                    contentDescription = null
-                )
-                Spacer(modifier = Modifier.size(8.dp))
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = AIResource.drawable.ic_vira),
+                contentDescription = null,
+                modifier = Modifier.size(width = 40.dp, height = 42.dp)
+            )
+            Column(modifier = Modifier.padding(start = 8.dp)) {
                 Text(
                     text = stringResource(id = AIResource.string.app_name_farsi),
                     style = MaterialTheme.typography.h6,
-                    color = Color_Text_1
+                    color = Color_Text_1,
+                    modifier = Modifier.padding(top = 0.dp)
+                )
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_assistant),
+                    style = MaterialTheme.typography.body2,
+                    color = Color_Text_2,
+                    modifier = Modifier.padding(top = 0.dp)
                 )
             }
-            Spacer(modifier = Modifier.size(4.dp))
-            Text(
-                text = stringResource(id = AIResource.string.lbl_assistant),
-                style = MaterialTheme.typography.body2,
-                color = Color_Text_2
-            )
-
-            Spacer(modifier = Modifier.size(22.dp))
         }
         Row(
             modifier = Modifier
-                .align(Alignment.TopStart)
-                .clickable { openDrawer() }) {
+                .align(Alignment.CenterStart)
+                .clickable { openDrawer() },
+        ) {
             Image(
                 painter = painterResource(id = AIResource.drawable.ic_menu),
                 contentDescription = null,
@@ -267,7 +275,7 @@ private fun HomeBody(
                     modifier = Modifier
                         .clip(CircleShape)
                         .size(48.dp)
-                        .background(Blue_Grey_900),
+                        .background(Color_On_Surface_Variant),
                     contentAlignment = Alignment.Center,
                 ) {
                     Image(
@@ -276,6 +284,38 @@ private fun HomeBody(
                     )
                 }
             }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    top = 24.dp,
+                    bottom = 16.dp,
+                    start = 16.dp,
+                    end = 16.dp
+                ),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Divider(
+                Modifier
+                    .weight(1f)
+                    .height(1.dp),
+                color = Color_OutLine
+            )
+            Text(
+                text = stringResource(id = AIResource.string.coming_soon_vira),
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.subtitle2,
+                color = Color_Text_2, textAlign = TextAlign.Center
+            )
+            Divider(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(1.dp),
+                color = Color_OutLine
+            )
         }
 
         LazyVerticalGrid(
