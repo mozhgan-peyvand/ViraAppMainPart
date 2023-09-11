@@ -143,7 +143,7 @@ fun AvaNegarArchiveListScreen(
 
     val fileUri = rememberSaveable { mutableStateOf<Uri?>(null) }
 
-    var isGrid by rememberSaveable { mutableStateOf(true) }
+    val isGrid by archiveViewModel.isGrid.collectAsStateWithLifecycle()
 
     val (selectedSheet, setSelectedSheet) = rememberSaveable {
         mutableStateOf(
@@ -170,6 +170,8 @@ fun AvaNegarArchiveListScreen(
     val uploadingFileState by archiveViewModel.isUploading.collectAsStateWithLifecycle(
         UploadingFileStatus.Idle
     )
+
+    val isThereAnyTrackingOrUploading by archiveViewModel.isThereAnyTrackingOrUploading.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
@@ -617,7 +619,7 @@ fun AvaNegarArchiveListScreen(
                         .padding(top = 8.dp),
                         onBackClick = { navHostController.navigateUp() },
                         isGrid = isGrid,
-                        onChangeListTypeClick = { isGrid = !isGrid },
+                        onChangeListTypeClick = { archiveViewModel.saveListType(!isGrid) },
                         onSearchClick = {
                             navHostController.navigate(
                                 ScreenRoutes.AvaNegarSearch.route
@@ -625,7 +627,10 @@ fun AvaNegarArchiveListScreen(
                         })
 
                     if (
-                        (!archiveViewModel.isNetworkAvailable.value && archiveViewModel.allArchiveFiles.value.isNotEmpty()) ||
+                        (!archiveViewModel.isNetworkAvailable.value &&
+                                archiveViewModel.allArchiveFiles.value.isNotEmpty() &&
+                                isThereAnyTrackingOrUploading
+                                ) ||
                         uiViewState is UiError
                     )
                         ErrorBanner(

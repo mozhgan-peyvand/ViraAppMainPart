@@ -330,9 +330,16 @@ fun AvaNegarArchiveDetailScreen(
                 ArchiveDetailBottomSheetType.Share -> {
                     BottomSheetShareDetailItem(
                         isConverting = isConvertingPdf || isConvertingTxt,
-                        onPdfClick = { isConvertingPdf = true },
-                        onTextClick = { isConvertingTxt = true },
+                        onPdfClick = {
+                            viewModel.saveEditedText()
+                            isConvertingPdf = true
+                        },
+                        onTextClick = {
+                            viewModel.saveEditedText()
+                            isConvertingTxt = true
+                        },
                         onOnlyTextClick = {
+                            viewModel.saveEditedText()
                             shareText(
                                 context = context,
                                 text = processItem.value?.text.orEmpty()
