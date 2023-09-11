@@ -21,13 +21,14 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Inverse
 @Composable
 fun SnackBarWithPaddingBottom(
     snackbarHostState: SnackbarHostState,
-    isFabExpanded: Boolean
+    shouldShowOverBottomSheet: Boolean,
+    paddingValue: Float
 ) {
     SnackbarHost(
         hostState = snackbarHostState,
         modifier = Modifier
             .padding(horizontal = 20.dp)
-            .bottomAlignSnackBar(isFabExpanded),
+            .bottomAlignSnackBar(shouldShowOverBottomSheet, paddingValue),
         snackbar = {
             Column(
                 modifier = Modifier
@@ -73,11 +74,12 @@ fun SnackBar(snackbarHostState: SnackbarHostState) {
 
 //todo move it to its correct place
 fun Modifier.bottomAlignSnackBar(
-    isFabExpanded: Boolean
+    implementPadding: Boolean,
+    paddingValue: Float
 ) = layout { measurable, constraints ->
     val placeable = measurable.measure(constraints)
     layout(constraints.maxWidth, constraints.maxHeight) {
-        val marginFromBottom = if (isFabExpanded) 600f else 370f
+        val marginFromBottom = if (implementPadding) paddingValue else 370f
         placeable.place(0, (constraints.maxHeight - marginFromBottom).toInt(), 10f)
     }
 }

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -89,6 +90,7 @@ import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.Avan
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarTrackingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus
+import ir.part.app.intelligentassistant.features.ava_negar.ui.details.TIME_INTERVAL
 import ir.part.app.intelligentassistant.features.ava_negar.ui.record.RecordFileResult
 import ir.part.app.intelligentassistant.features.ava_negar.ui.record.RecordFileResult.Companion.FILE_NAME
 import ir.part.app.intelligentassistant.features.ava_negar.ui.update.ForceUpdateScreen
@@ -113,7 +115,11 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import ir.part.app.intelligentassistant.R as AIResource
 
@@ -129,7 +135,10 @@ fun AvaNegarArchiveListScreen(
 
     val localClipBoardManager = LocalClipboardManager.current
 
-    var isConverting by rememberSaveable { mutableStateOf(false) }
+    var isConvertingPdf by rememberSaveable { mutableStateOf(false) }
+    var isConvertingTxt by rememberSaveable { mutableStateOf(false) }
+    var shouldSharePdf by rememberSaveable { mutableStateOf(false) }
+    var shouldShareTxt by rememberSaveable { mutableStateOf(false) }
 
     val fileName = rememberSaveable { mutableStateOf<String?>("") }
 
@@ -149,7 +158,8 @@ fun AvaNegarArchiveListScreen(
 
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
+        skipHalfExpanded = true,
+        confirmValueChange = { !isConvertingPdf && !isConvertingTxt }
     )
 
     val modalBottomSheetStateUpdate = rememberModalBottomSheetState(
@@ -246,6 +256,8 @@ fun AvaNegarArchiveListScreen(
         }
     }
 
+    var backPressedInterval: Long = 0
+
     navHostController.currentBackStackEntry
         ?.savedStateHandle?.remove<RecordFileResult>(FILE_NAME)?.let {
             archiveViewModel.addFileToUploadingQueue(it.title, Uri.fromFile(File(it.filepath)))
@@ -260,7 +272,33 @@ fun AvaNegarArchiveListScreen(
             isFabExpanded = false
         if (modalBottomSheetState.isVisible) {
             coroutineScope.launch {
-                modalBottomSheetState.hide()
+                if (modalBottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
+                    coroutineScope.launch(IO) {
+                        if (!isConvertingPdf && !isConvertingTxt)
+                            modalBottomSheetState.hide()
+                        else {
+                            if (backPressedInterval + TIME_INTERVAL < System.currentTimeMillis()) {
+                                withContext(Main) {
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.msg_back_again_to_cancel_converting),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+
+                                backPressedInterval = System.currentTimeMillis()
+                            } else {
+                                withContext(Main) {
+                                    isConvertingPdf = false
+                                    isConvertingTxt = false
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    navHostController.navigateUp()
+                }
             }
         }
     }
@@ -290,6 +328,63 @@ fun AvaNegarArchiveListScreen(
         }
     }
 
+    LaunchedEffect(isConvertingPdf) {
+        if (isConvertingPdf) {
+
+            archiveViewModel.jobConverting?.cancel()
+            archiveViewModel.jobConverting = coroutineScope.launch(IO) {
+                archiveViewModel.fileToShare = convertTextToPdf(
+                    context = context,
+                    text = archiveViewModel.processItem?.text.orEmpty(),
+                    fileName = fileName.value.orEmpty()
+                )
+
+                shouldSharePdf = true
+                isConvertingPdf = false
+            }
+
+        } else archiveViewModel.jobConverting?.cancel()
+    }
+
+    LaunchedEffect(isConvertingTxt) {
+        if (isConvertingTxt) {
+
+            archiveViewModel.jobConverting?.cancel()
+            archiveViewModel.jobConverting = coroutineScope.launch(IO) {
+                archiveViewModel.fileToShare = convertTextToTXTFile(
+                    context = context,
+                    text = archiveViewModel.processItem?.text.orEmpty(),
+                    fileName = fileName.value.orEmpty()
+                )
+
+                shouldShareTxt = true
+                isConvertingTxt = false
+
+            }
+
+        } else archiveViewModel.jobConverting?.cancel()
+    }
+
+    LaunchedEffect(shouldSharePdf) {
+        if (shouldSharePdf) {
+            modalBottomSheetState.hide()
+            archiveViewModel.fileToShare?.let {
+                sharePdf(context = context, file = it)
+                shouldSharePdf = false
+            }
+        }
+    }
+
+    LaunchedEffect(shouldShareTxt) {
+        if (shouldShareTxt) {
+            modalBottomSheetState.hide()
+            archiveViewModel.fileToShare?.let {
+                shareTXT(context = context, file = it)
+                shouldShareTxt = false
+            }
+        }
+    }
+
     Scaffold(
         backgroundColor = if (archiveViewModel.allArchiveFiles.value.isEmpty())
             MaterialTheme.colors.background
@@ -304,7 +399,7 @@ fun AvaNegarArchiveListScreen(
             Modifier,
         scaffoldState = scaffoldState,
         snackbarHost = {
-            SnackBarWithPaddingBottom(it, isFabExpanded)
+            SnackBarWithPaddingBottom(it, isFabExpanded, 600f)
         },
     ) { innerPadding ->
         ModalBottomSheetLayout(
@@ -453,43 +548,9 @@ fun AvaNegarArchiveListScreen(
 
                     ArchiveBottomSheetType.Share -> {
                         BottomSheetShareDetailItem(
-                            isConverting = isConverting,
-                            onPdfClick = {
-                                coroutineScope.launch {
-                                    isConverting = true
-
-                                    val pdfFile = convertTextToPdf(
-                                        fileName.value.orEmpty(),
-                                        text = archiveViewModel.processItem?.text.orEmpty(),
-                                        context
-                                    )
-                                    isConverting = false
-
-                                    modalBottomSheetState.hide()
-
-                                    pdfFile?.let {
-                                        sharePdf(context = context, file = it)
-                                    }
-                                }
-                            },
-                            onTextClick = {
-                                coroutineScope.launch {
-                                    isConverting = true
-
-                                    val file = convertTextToTXTFile(
-                                        context = context,
-                                        text = archiveViewModel.processItem?.text.orEmpty(),
-                                        fileName = fileName.value.orEmpty()
-                                    )
-
-                                    isConverting = false
-                                    modalBottomSheetState.hide()
-
-                                    file?.let {
-                                        shareTXT(context = context, file = it)
-                                    }
-                                }
-                            },
+                            isConverting = isConvertingPdf || isConvertingTxt,
+                            onPdfClick = { isConvertingPdf = true },
+                            onTextClick = { isConvertingTxt = true },
                             onOnlyTextClick = {
                                 shareText(
                                     context = context,
