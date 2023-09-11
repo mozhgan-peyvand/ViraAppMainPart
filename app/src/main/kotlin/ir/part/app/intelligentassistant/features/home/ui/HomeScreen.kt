@@ -36,10 +36,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -54,8 +52,9 @@ import ir.part.app.intelligentassistant.features.home.HomeItemScreen
 import ir.part.app.intelligentassistant.utils.ui.Constants.CAFEBAZAAR_LINK
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import ir.part.app.intelligentassistant.utils.ui.shareText
-import ir.part.app.intelligentassistant.utils.ui.theme.Blue_Grey_900
+import ir.part.app.intelligentassistant.utils.ui.theme.Blue_Grey_900_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Blue_gray_900
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_On_Surface_Variant
@@ -131,7 +130,7 @@ fun HomeScreen(
     ) { innerPadding ->
         HomeBody(
             paddingValues = innerPadding,
-            onAvaneagrClick = {
+            onAvanegarClick = {
                 // navigate to ava negar
                 homeViewModel.navigate()
             }
@@ -188,7 +187,7 @@ fun HomeAppBar(openDrawer: () -> Unit) {
 @Composable
 private fun HomeBody(
     paddingValues: PaddingValues,
-    onAvaneagrClick: () -> Unit,
+    onAvanegarClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val homeItem = remember {
@@ -224,19 +223,17 @@ private fun HomeBody(
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .paint(
-                painterResource(id = AIResource.drawable.bg_pattern),
-                contentScale = ContentScale.Crop
-            ),
+            .background(Color_BG),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Card(
             modifier = modifier
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth(),
+            elevation = 0.dp,
             shape = RoundedCornerShape(16.dp),
             onClick = {
-                onAvaneagrClick()
+                onAvanegarClick()
             }
         ) {
             Row(
@@ -347,7 +344,7 @@ fun HomeBodyItem(item: HomeItemScreen) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 32.dp),
-            border = BorderStroke(0.5.dp, color = Color_Card_Stroke),
+            elevation = 0.dp,
             backgroundColor = Color_Card
         ) {
             Column(
@@ -381,7 +378,7 @@ fun HomeBodyItem(item: HomeItemScreen) {
                     Text(
                         text = stringResource(id = AIResource.string.lbl_coming_soon),
                         modifier = Modifier
-                            .background(Blue_Grey_900)
+                            .background(Blue_Grey_900_2)
                             .padding(
                                 horizontal = 17.dp,
                                 vertical = 10.dp

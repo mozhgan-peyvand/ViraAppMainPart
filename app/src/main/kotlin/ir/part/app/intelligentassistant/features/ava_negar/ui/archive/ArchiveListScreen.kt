@@ -59,7 +59,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -108,6 +107,7 @@ import ir.part.app.intelligentassistant.utils.ui.sharePdf
 import ir.part.app.intelligentassistant.utils.ui.shareTXT
 import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.showMessage
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Bottom_Sheet
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red_800
@@ -115,7 +115,6 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
@@ -386,17 +385,8 @@ fun AvaNegarArchiveListScreen(
     }
 
     Scaffold(
-        backgroundColor = if (archiveViewModel.allArchiveFiles.value.isEmpty())
-            MaterialTheme.colors.background
-        else
-            Color.Transparent,
-        modifier = if (archiveViewModel.allArchiveFiles.value.isNotEmpty())
-            Modifier.paint(
-                painter = painterResource(id = R.drawable.bg_pattern),
-                contentScale = ContentScale.Crop
-            )
-        else
-            Modifier,
+        backgroundColor = MaterialTheme.colors.background,
+        modifier = Modifier.background(Color_BG),
         scaffoldState = scaffoldState,
         snackbarHost = {
             SnackBarWithPaddingBottom(it, isFabExpanded, 600f)

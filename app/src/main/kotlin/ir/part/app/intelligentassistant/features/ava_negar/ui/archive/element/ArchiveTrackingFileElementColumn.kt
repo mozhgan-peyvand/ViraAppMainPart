@@ -1,6 +1,5 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,7 +27,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarTrackingFileView
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
@@ -41,8 +39,8 @@ fun ArchiveTrackingFileElementsColumn(
     onMenuClick: (AvanegarTrackingFileView) -> Unit
 ) {
     Card(
-        border = BorderStroke(0.5.dp, Color_Card_Stroke),
         modifier = Modifier.height(108.dp),
+        elevation = 0.dp,
         onClick = { onItemClick(archiveTrackingView.token) }
     ) {
         Column(

@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
@@ -42,10 +41,11 @@ fun ArchiveProcessedFileElementGrid(
 ) {
     Card(
         backgroundColor = Color_Card,
-        border = BorderStroke(
-            0.5.dp,
-            if (archiveViewProcessed.isSeen) Color_Card_Stroke else MaterialTheme.colors.primary
-        ),
+        elevation = 0.dp,
+        border = if (archiveViewProcessed.isSeen)
+            BorderStroke(0.dp, Color_Card)
+        else
+            BorderStroke(0.5.dp, MaterialTheme.colors.primary),
         modifier = Modifier.height(156.dp),
         onClick = {
             onItemClick(archiveViewProcessed.id)
