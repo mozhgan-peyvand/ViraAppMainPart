@@ -2,6 +2,7 @@ package ir.part.app.intelligentassistant.features.home.onboarding
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -98,14 +99,19 @@ fun HomeOnboardingScreen(
             )
         }
 
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.weight(0.6f)
-        ) { position ->
-            MainOnBoardingItemBody(
-                modifier = Modifier.fillMaxSize(),
-                onBoardingItem = pages[position]
-            )
+        //disable ripple effect
+        CompositionLocalProvider(
+            LocalOverscrollConfiguration provides null
+        ) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(0.6f)
+            ) { position ->
+                MainOnBoardingItemBody(
+                    modifier = Modifier.fillMaxSize(),
+                    onBoardingItem = pages[position]
+                )
+            }
         }
 
         HorizontalPagerIndicator(

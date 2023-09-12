@@ -59,6 +59,7 @@ import javax.inject.Inject
 
 private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
 private const val NUMBER_OF_REQUEST = 3
+private const val IS_GRID_AVANEGAR_ARCHIVE_LIST_KEY = "isGridPrefKey_AvanegarArchiveList"
 
 @HiltViewModel
 class ArchiveViewModel @Inject constructor(
@@ -85,6 +86,12 @@ class ArchiveViewModel @Inject constructor(
     private var uploadingFileQueue = CopyOnWriteArrayList<AvanegarUploadingFileView>()
     private var indexOfItemThatShouldBeDownloaded = 0
 
+    var isThereAnyTrackingOrUploading = MutableStateFlow(false)
+        private set
+
+    var isGrid = MutableStateFlow(true)
+        private set
+
     //TODO set appropriate name
     var isSavingFile = false
         private set
@@ -106,6 +113,10 @@ class ArchiveViewModel @Inject constructor(
     var processItem by mutableStateOf<AvanegarProcessedFileView?>(null)
 
     init {
+        viewModelScope.launch {
+            isGrid.value = sharedPref.getBoolean(IS_GRID_AVANEGAR_ARCHIVE_LIST_KEY, true)
+        }
+
         viewModelScope.launch {
             networkStatusTracker.networkStatus.collect { isNetworkAvailable ->
                 when (isNetworkAvailable) {
@@ -133,6 +144,8 @@ class ArchiveViewModel @Inject constructor(
                 val processedList = avanegarArchiveFile.processed
                 val trackingList = avanegarArchiveFile.tracking
                 val uploadingList = avanegarArchiveFile.uploading
+                isThereAnyTrackingOrUploading.value =
+                    trackingList.isNotEmpty() || uploadingList.isNotEmpty()
                 if (uploadingFileQueue.isEmpty()) uploadingFileQueue = CopyOnWriteArrayList(
                     uploadingList.map { it.toAvanegarUploadingFileView() }.reversed()
                 )
@@ -173,6 +186,15 @@ class ArchiveViewModel @Inject constructor(
                         )
                     }
                 }
+            }
+        }
+    }
+
+    fun saveListType(value: Boolean) {
+        viewModelScope.launch {
+            isGrid.emit(value)
+            sharedPref.edit {
+                this.putBoolean(IS_GRID_AVANEGAR_ARCHIVE_LIST_KEY, value)
             }
         }
     }
