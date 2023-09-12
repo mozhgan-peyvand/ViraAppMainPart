@@ -125,7 +125,7 @@ fun AvaNegarArchiveDetailScreen(
 
     var shouldSharePdf by rememberSaveable { mutableStateOf(false) }
     var shouldShareTxt by rememberSaveable { mutableStateOf(false) }
-    val shouldShowKeyBoard = rememberSaveable { mutableStateOf(false) }
+    var shouldShowKeyBoard by rememberSaveable { mutableStateOf(false) }
 
     val processItem = viewModel.archiveFile.collectAsStateWithLifecycle()
 
@@ -233,16 +233,16 @@ fun AvaNegarArchiveDetailScreen(
         }
     }
 
-    LaunchedEffect(bottomSheetState.targetValue) {
+    LaunchedEffect(bottomSheetState.currentValue) {
 
-        if (bottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
+        if (bottomSheetState.isVisible) {
             if (selectedSheet.name == ArchiveDetailBottomSheetType.Rename.name) {
                 (context as Activity).window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-                shouldShowKeyBoard.value = true
+                shouldShowKeyBoard = true
             }
         } else {
             (context as Activity).window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
-            shouldShowKeyBoard.value = false
+            shouldShowKeyBoard = false
         }
     }
 
@@ -259,11 +259,11 @@ fun AvaNegarArchiveDetailScreen(
         sheetBackgroundColor = Color_BG_Bottom_Sheet,
         scrimColor = Color.Black.copy(alpha = 0.5f),
         sheetContent = {
-            //to close keyboard before opening bottomSheet
-            focusManager.clearFocus()
             when (selectedSheet) {
 
                 ArchiveDetailBottomSheetType.Menu -> {
+                    //to close keyboard before opening bottomSheet
+                    focusManager.clearFocus()
                     MenuDetailsScreenBottomSheet(
                         onRenameAction = {
                             setSelectedSheet(ArchiveDetailBottomSheetType.Rename)
@@ -310,12 +310,11 @@ fun AvaNegarArchiveDetailScreen(
 
                 ArchiveDetailBottomSheetType.Rename -> {
                     RenameFile(
-                        fileName = fileName.value
-                            ?: viewModel.archiveFile.value?.title ?: "",
+                        fileName = fileName.value ?: processItem.value?.title.orEmpty(),
                         onValueChange = {
                             fileName.value = it
                         },
-                        shouldShowKeyBoard = shouldShowKeyBoard.value,
+                        shouldShowKeyBoard = shouldShowKeyBoard,
                         reNameAction = {
                             coroutineScope.launch {
                                 bottomSheetState.hide()

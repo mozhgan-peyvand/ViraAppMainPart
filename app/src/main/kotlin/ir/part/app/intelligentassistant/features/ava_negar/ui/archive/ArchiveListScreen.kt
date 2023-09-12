@@ -307,9 +307,9 @@ fun AvaNegarArchiveListScreen(
     val shouldShowKeyBoard = rememberSaveable { mutableStateOf(false) }
     val shouldShowKeyBoardUploadingName = rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(modalBottomSheetState.targetValue) {
+    LaunchedEffect(modalBottomSheetState.currentValue) {
 
-        if (modalBottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
+        if (modalBottomSheetState.isVisible) {
             if (selectedSheet.name == ArchiveBottomSheetType.Rename.name)
                 shouldShowKeyBoard.value = true
 
