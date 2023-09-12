@@ -4,11 +4,12 @@ plugins {
     id 'dagger.hilt.android.plugin'
     id 'org.jetbrains.kotlin.kapt'
     id 'kotlin-parcelize'
+    id 'com.google.devtools.ksp'
 }
 
 android {
     namespace 'ir.part.app.intelligentassistant'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "ir.part.app.intelligentassistant"
@@ -86,7 +87,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.7'
+        kotlinCompilerExtensionVersion '1.5.2'
     }
     packagingOptions {
         resources {
@@ -101,48 +102,48 @@ dependencies {
     implementation "androidx.core:core-splashscreen:1.0.1"
 
     // lifecycle
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
-    implementation "androidx.lifecycle:lifecycle-runtime-compose:2.6.1"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1"
-    implementation "androidx.lifecycle:lifecycle-process:2.6.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:2.6.2"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2"
+    implementation "androidx.lifecycle:lifecycle-process:2.6.2"
 
     // compose
     implementation 'androidx.activity:activity-compose:1.7.2'
-    implementation 'androidx.compose.ui:ui:1.5.0-beta01'
-    implementation 'androidx.compose.ui:ui-graphics:1.5.0-beta01'
-    implementation 'androidx.compose.ui:ui-tooling-preview:1.5.0-beta01'
-    implementation "androidx.compose.foundation:foundation:1.5.0-beta01"
-    implementation 'androidx.compose.material:material:1.5.0-alpha03'
-    implementation "androidx.compose.runtime:runtime:1.5.0-beta02"
-    debugImplementation 'androidx.compose.ui:ui-tooling:1.5.0-beta01'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest:1.5.0-beta01'
-    implementation "androidx.compose.compiler:compiler:1.4.7"
+    implementation 'androidx.compose.ui:ui:1.5.0'
+    implementation 'androidx.compose.ui:ui-graphics:1.5.0'
+    implementation 'androidx.compose.ui:ui-tooling-preview:1.5.0'
+    implementation "androidx.compose.foundation:foundation:1.5.0"
+    implementation 'androidx.compose.material:material:1.5.0'
+    implementation "androidx.compose.runtime:runtime:1.5.0"
+    debugImplementation 'androidx.compose.ui:ui-tooling:1.5.0'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest:1.5.0'
+    implementation "androidx.compose.compiler:compiler:1.5.2"
 
     // accompanist
-    implementation "com.google.accompanist:accompanist-navigation-material:0.31.1-alpha"
-    implementation "com.google.accompanist:accompanist-permissions:0.31.1-alpha"
+    implementation "com.google.accompanist:accompanist-navigation-material:0.32.0"
+    implementation "com.google.accompanist:accompanist-permissions:0.32.0"
 
 
     // pager and indicators -accompanist
-    implementation "com.google.accompanist:accompanist-pager:0.31.1-alpha"
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.31.1-alpha"
+    implementation "com.google.accompanist:accompanist-pager:0.32.0"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.32.0"
 
     //dataStore Preferences
     implementation "androidx.datastore:datastore-preferences:1.0.0"
 
     // hilt
-    implementation "com.google.dagger:hilt-android:2.46.1"
-    kapt "com.google.dagger:hilt-android-compiler:2.46.1"
+    implementation "com.google.dagger:hilt-android:2.48"
+    kapt "com.google.dagger:hilt-android-compiler:2.48"
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
 
     // coroutine
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
 
     // Room
-    implementation 'androidx.room:room-runtime:2.5.2'
-    kapt 'androidx.room:room-compiler:2.5.2'
-    implementation 'androidx.room:room-ktx:2.5.2'
+    implementation 'androidx.room:room-runtime:2.6.0-beta01'
+    ksp 'androidx.room:room-compiler:2.6.0-beta01'
+    implementation 'androidx.room:room-ktx:2.6.0-beta01'
 
     // Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
@@ -151,18 +152,18 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.11.0'
 
     // Moshi Kotlin
-    kapt 'com.squareup.moshi:moshi-kotlin-codegen:1.14.0' // TODO: use ksp
-    implementation 'com.squareup.moshi:moshi:1.14.0'
+    ksp 'com.squareup.moshi:moshi-kotlin-codegen:1.15.0'
+    implementation 'com.squareup.moshi:moshi:1.15.0'
 
     // Util
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
     // Date
-    implementation 'com.github.samanzamani:PersianDate:1.5.0'
+    implementation 'com.github.samanzamani:PersianDate:1.6.1'
 
     //iText for pdf
     implementation 'com.itextpdf:itextpdf:5.5.13.1'
-    implementation "com.airbnb.android:lottie-compose:4.0.0"
+    implementation "com.airbnb.android:lottie-compose:6.1.0"
 
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.27'
 
