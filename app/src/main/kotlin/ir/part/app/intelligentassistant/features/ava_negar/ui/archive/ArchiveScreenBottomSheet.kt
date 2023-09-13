@@ -185,7 +185,7 @@ fun BottomSheetShareDetailItem(
                 iterations = LottieConstants.IterateForever,
                 modifier = Modifier
                     .padding(vertical = 80.dp)
-                    .size(48.dp)
+                    .size(100.dp)
             )
         }
     } else {
