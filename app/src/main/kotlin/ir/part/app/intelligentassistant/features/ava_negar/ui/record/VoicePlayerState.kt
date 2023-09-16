@@ -2,6 +2,8 @@ package ir.part.app.intelligentassistant.features.ava_negar.ui.record
 
 import android.app.Application
 import android.media.MediaPlayer
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -11,6 +13,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.common.ifFailure
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -103,11 +106,4 @@ class VoicePlayerState(
         mediaPlayer.stop()
         mediaPlayer.release()
     }
-}
-
-fun <T> Result<T>.ifFailure(block: () -> Unit): Result<T> {
-    if (isFailure) {
-        block()
-    }
-    return this
 }

@@ -1,4 +1,4 @@
-package ir.part.app.intelligentassistant.features.ava_negar.ui.record
+package ir.part.app.intelligentassistant.features.ava_negar.ui.record.sheets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,12 +32,12 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 
-
 @Composable
-fun BackToArchiveListConfirmationBottomSheet(
-    actionConvertFile: () -> Unit,
-    actionDeleteFile: () -> Unit
+fun StartAgainBottomSheet(
+    actionCancel: () -> Unit,
+    actionStartAgain: () -> Unit
 ) {
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -50,7 +50,7 @@ fun BackToArchiveListConfirmationBottomSheet(
                 .padding(top = 20.dp, start = 20.dp, end = 20.dp),
             style = MaterialTheme.typography.h6,
             color = Color_Text_1,
-            text = stringResource(id = R.string.lbl_back)
+            text = stringResource(id = R.string.lbl_start_again)
         )
 
         Spacer(
@@ -65,7 +65,7 @@ fun BackToArchiveListConfirmationBottomSheet(
                 .padding(horizontal = 20.dp),
             style = MaterialTheme.typography.body1,
             color = Color_Text_2,
-            text = stringResource(id = R.string.msg_if_click_back_file_will_be_deleted)
+            text = stringResource(id = R.string.msg_if_start_again_file_will_be_deleted)
         )
 
         Spacer(
@@ -82,11 +82,10 @@ fun BackToArchiveListConfirmationBottomSheet(
         ) {
 
             TextButton(
-
                 contentPadding = PaddingValues(vertical = 14.dp),
                 onClick = {
                     safeClick {
-                        actionConvertFile()
+                        actionStartAgain()
                     }
                 },
                 modifier = Modifier.weight(1f),
@@ -95,7 +94,7 @@ fun BackToArchiveListConfirmationBottomSheet(
                 ),
             ) {
                 Text(
-                    text = stringResource(id = R.string.lbl_convert_to_text),
+                    text = stringResource(id = R.string.lbl_start_again),
                     style = MaterialTheme.typography.button,
                     color = Color_Primary_300,
                 )
@@ -105,7 +104,7 @@ fun BackToArchiveListConfirmationBottomSheet(
                 contentPadding = PaddingValues(vertical = 14.dp),
                 onClick = {
                     safeClick {
-                        actionDeleteFile()
+                        actionCancel()
                     }
                 },
                 modifier = Modifier.weight(1f),
@@ -114,7 +113,7 @@ fun BackToArchiveListConfirmationBottomSheet(
                 ),
             ) {
                 Text(
-                    text = stringResource(id = R.string.lbl_delete_file),
+                    text = stringResource(id = R.string.lbl_cancel),
                     style = MaterialTheme.typography.button,
                     color = Color_Red
                 )
@@ -126,10 +125,10 @@ fun BackToArchiveListConfirmationBottomSheet(
 
 @Preview
 @Composable
-fun BottomSheetContentBackToRecordingScreenPreview() {
+fun BottomSheetContentBottomSheetContentStartAgainPreview() {
     IntelligentAssistantTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            BackToArchiveListConfirmationBottomSheet(
+            StartAgainBottomSheet(
                 {},
                 {}
             )

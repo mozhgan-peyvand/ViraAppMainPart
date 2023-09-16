@@ -1,6 +1,7 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.record
 
 import android.os.SystemClock
+import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,24 +45,34 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ComponentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.RenameFileContentBottomSheet
 import ir.part.app.intelligentassistant.features.ava_negar.ui.record.RecordFileResult.Companion.FILE_NAME
+import ir.part.app.intelligentassistant.features.ava_negar.ui.record.sheets.BackToArchiveListConfirmationBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.record.sheets.MicrophoneNotAvailableBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.record.sheets.StartAgainBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.record.sheets.VoiceRecordingBottomSheetType
+import ir.part.app.intelligentassistant.features.ava_negar.ui.record.widgets.RecordingAnimation
+import ir.part.app.intelligentassistant.features.ava_negar.ui.record.widgets.TextWithIcon
+import ir.part.app.intelligentassistant.utils.ui.OnLifecycleEvent
 import ir.part.app.intelligentassistant.utils.ui.formatAsDuration
 import ir.part.app.intelligentassistant.utils.ui.hide
 import ir.part.app.intelligentassistant.utils.ui.hideAndShow
 import ir.part.app.intelligentassistant.utils.ui.safeClick
-import ir.part.app.intelligentassistant.utils.ui.safeClickable
+import ir.part.app.intelligentassistant.utils.ui.showText
+import ir.part.app.intelligentassistant.utils.ui.theme.Blue_gray_900
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_On_Surface_Variant
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
@@ -71,6 +83,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import kotlinx.coroutines.CoroutineScope
 import pl.droidsonroids.gif.GifDrawable
 import pl.droidsonroids.gif.GifImageView
+import timber.log.Timber
 
 // check for audio permission here!
 @Composable
@@ -78,6 +91,8 @@ fun AvaNegarVoiceRecordingScreen(
     navController: NavHostController,
     viewModel: VoiceRecordingViewModel = hiltViewModel()
 ) {
+
+    val context = LocalContext.current
 
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -111,6 +126,50 @@ fun AvaNegarVoiceRecordingScreen(
     }
 
     val shouldShowKeyBoard = rememberSaveable { mutableStateOf(false) }
+
+    OnLifecycleEvent(
+        onPause = onPause@{
+            if (state is VoiceRecordingViewState.Recording) {
+                // Pause: Duplicate 1
+                if (recorder.isPauseResumeSupported()) {
+                    pausePlayback(
+                        recorder = recorder,
+                        onSuccess = {
+                            viewModel.pauseTimer()
+                            state = VoiceRecordingViewState.Paused
+                        },
+                        onFailure = {
+                            context.showText(R.string.msg_general_recorder_pause_error)
+                        }
+                    )
+                } else {
+                    stopPlayback(
+                        recorder = recorder,
+                        onSuccess = {
+                            viewModel.pauseTimer()
+                            state = VoiceRecordingViewState.Stopped
+                        },
+                        onFailure = {
+                            context.showText(R.string.msg_general_recorder_stop_error)
+                        }
+                    )
+                }
+                return@onPause
+            }
+            if (state is VoiceRecordingViewState.Stopped) {
+                if (playerState.isPlaying) {
+                    playerState.stopPlaying()
+                }
+            }
+        }
+    )
+
+    DisposableEffect(Unit) {
+        (context as ComponentActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        onDispose {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
 
     LaunchedEffect(bottomSheetState.targetValue) {
 
@@ -163,22 +222,31 @@ fun AvaNegarVoiceRecordingScreen(
                         },
                         actionStartAgain = {
                             playerState.reset()
-                            bottomSheetState.hide(coroutineScope)
                             recorder.removeCurrentRecording()
-                            // RecordStart: Duplicate1
-                            recorder.start("rec_${System.currentTimeMillis()}_${SystemClock.elapsedRealtime()}")
-                            viewModel.resetTimer()
-                            viewModel.startTimer()
-                            state = VoiceRecordingViewState.Recording(false)
+                            bottomSheetState.hide(coroutineScope)
+                            startPlayback(
+                                recorder = recorder,
+                                onSuccess = {
+                                    viewModel.resetTimer()
+                                    viewModel.startTimer()
+                                    state = VoiceRecordingViewState.Recording(false)
+                                },
+                                onFailure = {
+                                    bottomSheetContentType =
+                                        VoiceRecordingBottomSheetType.MicrophoneIsBeingUsedAlready
+                                    bottomSheetState.hideAndShow(coroutineScope)
+                                }
+                            )
                         }
                     )
                 }
 
                 VoiceRecordingBottomSheetType.ConvertToTextConfirmation -> {
                     RenameFileContentBottomSheet(
-                        fileName = "",
+                        fileName = viewModel.getCurrentDefaultName(),
                         shouldShowKeyBoard = shouldShowKeyBoard.value,
                         renameAction = { name ->
+                            viewModel.updateCurrentDefaultName()
                             navController.previousBackStackEntry
                                 ?.savedStateHandle
                                 ?.set(
@@ -191,6 +259,14 @@ fun AvaNegarVoiceRecordingScreen(
                                     }
                                 )
                             navController.popBackStack()
+                        }
+                    )
+                }
+
+                VoiceRecordingBottomSheetType.MicrophoneIsBeingUsedAlready -> {
+                    MicrophoneNotAvailableBottomSheet(
+                        onDismissClick = {
+                            bottomSheetState.hide(coroutineScope)
                         }
                     )
                 }
@@ -236,37 +312,75 @@ fun AvaNegarVoiceRecordingScreen(
                 isStopped = isStopped,
                 isRecording = isRecording,
                 hasPaused = hasPaused,
+                isPauseSupported = recorder.isPauseResumeSupported(),
                 timer = timer,
                 playerState = playerState,
-                startRecord = {
+                startRecord = start@{
                     if (state is VoiceRecordingViewState.Stopped) {
                         bottomSheetContentType =
                             VoiceRecordingBottomSheetType.StartAgainConfirmation
                         bottomSheetState.hideAndShow(coroutineScope)
-                    } else {
-                        if (state is VoiceRecordingViewState.Paused) {
-                            recorder.resume()
-                        } else {
-                            // TODO: handle return value
-                            // What if we don't have record permission
-                            // RecordStart: Duplicate2
-                            recorder.start("rec_${System.currentTimeMillis()}_${SystemClock.elapsedRealtime()}")
-                        }
+                        return@start
+                    }
+
+                    if (state is VoiceRecordingViewState.Paused) {
+                        recorder.resume()
                         viewModel.startTimer()
-                        state = VoiceRecordingViewState.Recording(
-                            hasPaused = state is VoiceRecordingViewState.Paused
+                        state = VoiceRecordingViewState.Recording(hasPaused = true)
+                    } else {
+                        // What if we don't have record permission
+                        startPlayback(
+                            recorder = recorder,
+                            onSuccess = {
+                                viewModel.startTimer()
+                                state = VoiceRecordingViewState.Recording(hasPaused = false)
+                            },
+                            onFailure = {
+                                bottomSheetContentType =
+                                    VoiceRecordingBottomSheetType.MicrophoneIsBeingUsedAlready
+                                bottomSheetState.hideAndShow(coroutineScope)
+                            }
                         )
+
                     }
                 },
                 pauseRecord = {
-                    viewModel.pauseTimer()
-                    recorder.pause()
-                    state = VoiceRecordingViewState.Paused
+                    // Pause: Duplicate 2
+                    if (recorder.isPauseResumeSupported()) {
+                        pausePlayback(
+                            recorder = recorder,
+                            onSuccess = {
+                                viewModel.pauseTimer()
+                                state = VoiceRecordingViewState.Paused
+                            },
+                            onFailure = {
+                                context.showText(R.string.msg_general_recorder_pause_error)
+                            }
+                        )
+                    } else {
+                        stopPlayback(
+                            recorder = recorder,
+                            onSuccess = {
+                                viewModel.pauseTimer()
+                                state = VoiceRecordingViewState.Stopped
+                            },
+                            onFailure = {
+                                context.showText(R.string.msg_general_recorder_stop_error)
+                            }
+                        )
+                    }
                 },
                 stopRecord = {
-                    viewModel.pauseTimer()
-                    recorder.stop()
-                    state = VoiceRecordingViewState.Stopped
+                    stopPlayback(
+                        recorder = recorder,
+                        onSuccess = {
+                            viewModel.pauseTimer()
+                            state = VoiceRecordingViewState.Stopped
+                        },
+                        onFailure = {
+                            context.showText(R.string.msg_general_recorder_stop_error)
+                        }
+                    )
                 },
                 convertToText = {
                     bottomSheetContentType = VoiceRecordingBottomSheetType.ConvertToTextConfirmation
@@ -289,11 +403,13 @@ fun VoiceRecordingTopAppBar(
             .fillMaxWidth()
             .padding(8.dp),
     ) {
-        IconButton(onClick = {
-            safeClick {
-                onBackClick()
+        IconButton(
+            onClick = {
+                safeClick {
+                    onBackClick()
+                }
             }
-        }) {
+        ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_forward),
                 contentDescription = null,
@@ -312,6 +428,7 @@ fun VoiceRecordingBody(
     isRecording: Boolean,
     hasPaused: Boolean,
     isStopped: Boolean,
+    isPauseSupported: Boolean,
     timer: Int,
     playerState: VoicePlayerState,
     startRecord: () -> Unit,
@@ -326,7 +443,7 @@ fun VoiceRecordingBody(
             isRecording = isRecording,
             isStopped = isStopped,
             playerState = playerState,
-            modifier = Modifier.weight(2.5f)
+            modifier = Modifier.weight(1.75f)
         )
         VoiceRecordingHintSection(
             isRecording = isRecording,
@@ -339,6 +456,7 @@ fun VoiceRecordingBody(
             isRecording = isRecording,
             hasPaused = hasPaused,
             isStopped = isStopped,
+            isPauseSupported = isPauseSupported,
             startRecord = startRecord,
             pauseRecord = pauseRecord,
             stopRecord = stopRecord,
@@ -362,7 +480,9 @@ fun VoiceRecordingPreviewSection(
             .fillMaxWidth()
             .then(
                 if (isStopped) Modifier.padding(
-                    bottom = 54.dp, start = 16.dp, end = 16.dp
+                    bottom = 54.dp,
+                    start = 16.dp,
+                    end = 16.dp
                 ) else Modifier.clip(CircleShape)
             )
     ) {
@@ -435,32 +555,38 @@ fun VoiceRecordingHintSection(
                 text = R.string.lbl_press_to_convert_to_text,
                 icon = R.drawable.ic_repeat
             )
-        } else if (!isRecording) {
-            if (hasPaused) {
+        } else {
+            if (isRecording || hasPaused) {
                 Text(
-                    text = stringResource(id = R.string.lbl_recording_paused),
+                    text = stringResource(
+                        id =
+                        if (hasPaused) R.string.lbl_recording_paused
+                        else R.string.lbl_recording_in_progress
+                    ),
                     style = MaterialTheme.typography.subtitle2
                 )
                 Spacer(modifier = Modifier.size(12.dp))
-            }
-            TextWithIcon(
-                text = if (hasPaused) R.string.lbl_press_to_continue_recording else R.string.lbl_press_to_start_recording,
-                icon = R.drawable.ic_mic_2
-            )
-        } else {
-            Text(
-                text = stringResource(id = R.string.lbl_recording_in_progress),
-                style = MaterialTheme.typography.subtitle2
-            )
-            Spacer(modifier = Modifier.size(12.dp))
-            Row {
-                CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.body2) {
-                    Text(text = "02:00:00", color = Color_Red)
-                    Spacer(modifier = Modifier.size(4.dp))
-                    Text(text = "/")
-                    Spacer(modifier = Modifier.size(4.dp))
-                    Text(time.formatAsDuration(true))
+                Row {
+                    val body2Font = MaterialTheme.typography.body2.copy(
+                        fontFamily = FontFamily(
+                            Font(R.font.bahij_helvetica_neue_vira_edition_roman)
+                        )
+                    )
+                    CompositionLocalProvider(LocalTextStyle provides body2Font) {
+                        Text(text = "02:00:00", color = Color_Red)
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text(text = "/")
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text(time.formatAsDuration(true))
+                    }
                 }
+            }
+            if (!isRecording) {
+                Spacer(modifier = Modifier.size(12.dp))
+                TextWithIcon(
+                    text = if (hasPaused) R.string.lbl_press_to_continue_recording else R.string.lbl_press_to_start_recording,
+                    icon = R.drawable.ic_mic_2
+                )
             }
         }
     }
@@ -471,6 +597,7 @@ fun VoiceRecordingControlsSection(
     isRecording: Boolean,
     hasPaused: Boolean,
     isStopped: Boolean,
+    isPauseSupported: Boolean,
     startRecord: () -> Unit,
     stopRecord: () -> Unit,
     pauseRecord: () -> Unit,
@@ -489,23 +616,23 @@ fun VoiceRecordingControlsSection(
                     safeClick {
                         onConvertClick()
                     }
-                }, enabled = isStopped
+                },
+                enabled = isStopped,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape),
             ) {
                 Surface(
-                    modifier = Modifier.size(48.dp),
-                    color = Color_Card, // TODO: use the new bottomSheet color
-                    shape = CircleShape
+                    color = Blue_gray_900,
+                    shape = CircleShape,
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            painter = painterResource(
-                                id = R.drawable.ic_repeat
-                            ),
+                            painter = painterResource(id = R.drawable.ic_repeat),
                             contentDescription = stringResource(R.string.desc_convert_to_text),
                             tint = if (isStopped) Color_Primary_200 else Color_On_Surface_Variant,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .align(Alignment.Center)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
@@ -514,36 +641,44 @@ fun VoiceRecordingControlsSection(
 
         RecordingAnimation(
             isRecording = isRecording,
-            onRecordClick = { startRecord() },
+            onRecordClick = {
+                if (isRecording) pauseRecord() else startRecord()
+            },
             modifier = Modifier.size(170.dp)
         )
 
         if (isRecording || hasPaused || isStopped) {
-            Surface(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .then(if (isStopped) Modifier
-                    else Modifier.safeClickable {
-                        if (isRecording) pauseRecord() else stopRecord()
-                    }),
-                color = Color_Card, // TODO: use the new bottomSheet color
-                shape = CircleShape,
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Icon(
-                        painter = painterResource(
-                            id = if (isRecording) R.drawable.ic_pause_circle else R.drawable.ic_stop_circled
-                        ),
-                        contentDescription = if (isRecording) stringResource(R.string.desc_pause_recording)
-                        else if (!isStopped) stringResource(R.string.desc_stop_recording)
-                        else null,
-                        tint = if (isStopped) Color_On_Surface_Variant else Color_Primary_200,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .align(Alignment.Center)
-                    )
+            val iconSize = 48.dp
+            if (isPauseSupported) {
+                IconButton(
+                    onClick = {
+                        safeClick {
+                            stopRecord()
+                        }
+                    },
+                    enabled = !isRecording && hasPaused,
+                    modifier = Modifier
+                        .size(iconSize)
+                        .clip(CircleShape),
+                ) {
+                    Surface(
+                        color = Blue_gray_900,
+                        shape = CircleShape,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_stop),
+                                contentDescription = stringResource(R.string.desc_stop_recording),
+                                tint = if (!isRecording && hasPaused) Color_Primary_200 else Color_On_Surface_Variant,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
                 }
+            } else {
+                // this is here so in android version < 7 layout does not break
+                Box(modifier = Modifier.size(iconSize))
             }
         }
     }
@@ -592,7 +727,8 @@ fun VoicePlayerComponent(
                     safeClick {
                         onPlayingChanged(!isPlaying)
                     }
-                }, modifier = Modifier.size(46.dp)
+                },
+                modifier = Modifier.size(46.dp)
             ) {
                 if (isPlaying) {
                     Image(
@@ -641,9 +777,51 @@ private fun handleBackClick(
     }
 }
 
+private fun startPlayback(
+    recorder: Recorder,
+    onSuccess: () -> Unit,
+    onFailure: () -> Unit
+) {
+    val name = "rec_${System.currentTimeMillis()}_${SystemClock.elapsedRealtime()}"
+    val started = recorder.start(name)
+    if (started) {
+        Timber.tag(Recorder.TAG).d("success for: $name")
+        onSuccess()
+    } else {
+        Timber.tag(Recorder.TAG).d("failure for: $name")
+        onFailure()
+    }
+}
+
+private fun pausePlayback(
+    recorder: Recorder,
+    onSuccess: () -> Unit,
+    onFailure: () -> Unit
+) {
+    val isSuccess = recorder.pause()
+    if (isSuccess) {
+        onSuccess()
+    } else {
+        onFailure()
+    }
+}
+
+private fun stopPlayback(
+    recorder: Recorder,
+    onSuccess: () -> Unit,
+    onFailure: () -> Unit
+) {
+    val isSuccess = recorder.stop()
+    if (isSuccess) {
+        onSuccess()
+    } else {
+        onFailure()
+    }
+}
+
 @Composable
 @Preview(showBackground = true)
-fun Preview() {
+private fun AvaNegarVoiceRecordingScreenPreview() {
     IntelligentAssistantTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             AvaNegarVoiceRecordingScreen(rememberNavController())

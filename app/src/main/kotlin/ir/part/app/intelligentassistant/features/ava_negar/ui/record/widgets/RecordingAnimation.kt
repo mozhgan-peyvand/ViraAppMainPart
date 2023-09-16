@@ -1,4 +1,4 @@
-package ir.part.app.intelligentassistant.features.ava_negar.ui.record
+package ir.part.app.intelligentassistant.features.ava_negar.ui.record.widgets
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.AnimationVector2D
@@ -12,6 +12,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
@@ -69,17 +71,13 @@ fun RecordingAnimation(
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier.then(
-            if (!isRecording) {
-                Modifier.safeClickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = { onRecordClick() }
-                )
-            } else {
-                Modifier
-            }
-        )
+        modifier = modifier
+            .clip(CircleShape)
+            .safeClickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = { onRecordClick() }
+            )
     ) {
         AnimatedVisibility(
             visible = isRecording,

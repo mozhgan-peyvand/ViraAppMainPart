@@ -784,29 +784,39 @@ fun AvaNegarArchiveListScreen(
                         isFabExpanded = false
                         snackbarHostState.currentSnackbarData?.dismiss()
 
-                        // PermissionCheck Duplicate 2
-                        if (
-                            ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.RECORD_AUDIO
-                            ) == PackageManager.PERMISSION_GRANTED
-                        ) {
-                            gotoRecordAudioScreen(navHostController)
-                        } else {
-                            // needs improvement, just need to save if permission is alreadyRequested
-                            // and everytime check shouldShow
-                            if (archiveViewModel.hasDeniedPermissionPermanently(Manifest.permission.RECORD_AUDIO)) {
-                                setSelectedSheet(ArchiveBottomSheetType.AudioAccessPermissionDenied)
-                                coroutineScope.launch {
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    } else {
-                                        modalBottomSheetState.hide()
-                                    }
-                                }
+                        if (context.packageManager.hasSystemFeature(PackageManager.FEATURE_MICROPHONE)) {
+                            // PermissionCheck Duplicate 2
+                            if (
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.RECORD_AUDIO
+                                ) == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                gotoRecordAudioScreen(navHostController)
                             } else {
-                                recordAudioPermLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                // needs improvement, just need to save if permission is alreadyRequested
+                                // and everytime check shouldShow
+                                if (archiveViewModel.hasDeniedPermissionPermanently(Manifest.permission.RECORD_AUDIO)) {
+                                    setSelectedSheet(ArchiveBottomSheetType.AudioAccessPermissionDenied)
+                                    coroutineScope.launch {
+                                        if (!modalBottomSheetState.isVisible) {
+                                            modalBottomSheetState.show()
+                                        } else {
+                                            modalBottomSheetState.hide()
+                                        }
+                                    }
+                                } else {
+                                    recordAudioPermLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                }
                             }
+                        } else {
+                            showMessage(
+                                snackbarHostState,
+                                coroutineScope,
+                                context.getString(
+                                    AIResource.string.msg_no_microphone_found_on_phone
+                                )
+                            )
                         }
 
                     }

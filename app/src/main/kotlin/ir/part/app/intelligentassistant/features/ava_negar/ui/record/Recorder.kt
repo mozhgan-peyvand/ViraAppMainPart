@@ -5,6 +5,8 @@ import android.media.MediaRecorder
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import dagger.hilt.android.qualifiers.ApplicationContext
+import ir.part.app.intelligentassistant.utils.common.ifFailure
+import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.atomic.AtomicReference
@@ -16,6 +18,7 @@ class Recorder @Inject constructor(
 
     companion object {
         private const val SAMPLE_RATE = 44100
+        const val TAG = "RecorderTAG"
     }
 
     private fun getFile(filename: String): File {
@@ -45,7 +48,7 @@ class Recorder @Inject constructor(
 
     fun start(name: String): Boolean {
         mediaRecorder = createMediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setAudioSource(MediaRecorder.AudioSource.CAMCORDER)
             setAudioSamplingRate(SAMPLE_RATE)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setOutputFile(
@@ -59,38 +62,51 @@ class Recorder @Inject constructor(
         return kotlin.runCatching {
             mediaRecorder?.prepare()
             mediaRecorder?.start()
-
+        }.ifFailure {
+            Timber.tag(TAG).d(it)
         }.isSuccess
     }
 
-    fun pause() {
-        val recorder = mediaRecorder ?: return
-        if (VERSION.SDK_INT >= VERSION_CODES.N) {
-            recorder.pause()
-        }
+    fun pause(): Boolean {
+        return kotlin.runCatching {
+            val recorder = mediaRecorder ?: return false
+            if (isPauseResumeSupported()) {
+                recorder.pause()
+            }
+        }.ifFailure {
+            Timber.tag(TAG).d(it)
+        }.isSuccess
     }
 
-    fun resume() {
-        val recorder = mediaRecorder ?: return
-        if (VERSION.SDK_INT >= VERSION_CODES.N) {
-            recorder.resume()
-        }
+    fun resume(): Boolean {
+        return kotlin.runCatching {
+            val recorder = mediaRecorder ?: return false
+            if (isPauseResumeSupported()) {
+                recorder.resume()
+            }
+        }.ifFailure {
+            Timber.tag(TAG).d(it)
+        }.isSuccess
     }
 
-    fun stop() {
-        val recorder = mediaRecorder ?: return
-        recorder.stop()
-        recorder.reset()
-        recorder.release()
-        mediaRecorder = null
+    fun stop(): Boolean {
+        return kotlin.runCatching {
+            val recorder = mediaRecorder ?: return false
+            recorder.stop()
+            recorder.reset()
+            recorder.release()
+            mediaRecorder = null
+        }.ifFailure {
+            Timber.tag(TAG).d(it)
+        }.isSuccess
     }
 
-    fun removeCurrentRecording() {
-        val file = _currentFile.get() ?: return
-        val deleted = file.delete()
+    fun removeCurrentRecording(): Boolean {
+        val file = _currentFile.get() ?: return false
+        return file.delete()
     }
 
-    fun supportsPauseResume(): Boolean {
+    fun isPauseResumeSupported(): Boolean {
         return VERSION.SDK_INT >= VERSION_CODES.N
     }
 }
