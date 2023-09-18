@@ -2,6 +2,8 @@ package ir.part.app.intelligentassistant.utils.ui.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
@@ -22,7 +24,8 @@ import ir.part.app.intelligentassistant.features.home.onboarding.HomeOnboardingS
 import ir.part.app.intelligentassistant.features.home.splash.SplashScreen
 import ir.part.app.intelligentassistant.features.home.ui.HomeScreen
 
-private const val ANIMATION_NAVIGATION_DURATION = 300
+private const val ANIMATION_NAVIGATION_DURATION_SLIDE = 300
+private const val ANIMATION_NAVIGATION_DURATION_FADE = 600
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -30,16 +33,32 @@ fun AppNavigation(navController: NavHostController) {
         navController = navController,
         startDestination = ScreenRoutes.SplashScreen.route
     ) {
-        navigateWithSlideAnimation(route = ScreenRoutes.SplashScreen.route) {
+        composable(
+            route = ScreenRoutes.SplashScreen.route,
+            enterTransition = {
+                fadeIn(animationSpec = tween(ANIMATION_NAVIGATION_DURATION_FADE))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(ANIMATION_NAVIGATION_DURATION_FADE))
+            },
+            popEnterTransition = {
+                fadeIn(animationSpec = tween(ANIMATION_NAVIGATION_DURATION_FADE))
+            },
+            popExitTransition = {
+                fadeOut(animationSpec = tween(ANIMATION_NAVIGATION_DURATION_FADE))
+            }
+        ) {
             SplashScreen(navController = navController)
         }
-        navigateWithSlideAnimation(route = ScreenRoutes.HomeMainOnboardingScreen.route) {
+        navigateWithSlideAnimationAndFadeInEnter(
+            route = ScreenRoutes.HomeMainOnboardingScreen.route
+        ) {
             HomeMainOnboardingScreen(navController = navController)
         }
         navigateWithSlideAnimation(route = ScreenRoutes.HomeOnboardingScreen.route) {
             HomeOnboardingScreen(navController = navController)
         }
-        navigateWithSlideAnimation(route = ScreenRoutes.Home.route) {
+        navigateWithSlideAnimationAndFadeInEnter(route = ScreenRoutes.Home.route) {
             HomeScreen(navController = navController)
         }
         navigateWithSlideAnimation(route = ScreenRoutes.AboutUs.route) {
@@ -83,25 +102,57 @@ private fun NavGraphBuilder.navigateWithSlideAnimation(
         enterTransition = {
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
-                animationSpec = tween(ANIMATION_NAVIGATION_DURATION)
+                animationSpec = tween(ANIMATION_NAVIGATION_DURATION_SLIDE)
             )
         },
         exitTransition = {
             slideOutOfContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
-                animationSpec = tween(ANIMATION_NAVIGATION_DURATION)
+                animationSpec = tween(ANIMATION_NAVIGATION_DURATION_SLIDE)
             )
         },
         popEnterTransition = {
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
-                animationSpec = tween(ANIMATION_NAVIGATION_DURATION)
+                animationSpec = tween(ANIMATION_NAVIGATION_DURATION_SLIDE)
             )
         },
         popExitTransition = {
             slideOutOfContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
-                animationSpec = tween(ANIMATION_NAVIGATION_DURATION)
+                animationSpec = tween(ANIMATION_NAVIGATION_DURATION_SLIDE)
+            )
+        }
+    ) {
+        content(it)
+    }
+}
+
+private fun NavGraphBuilder.navigateWithSlideAnimationAndFadeInEnter(
+    route: String,
+    content: @Composable (NavBackStackEntry) -> Unit
+) {
+    composable(
+        route = route,
+        enterTransition = {
+            fadeIn(animationSpec = tween(ANIMATION_NAVIGATION_DURATION_FADE))
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
+                animationSpec = tween(ANIMATION_NAVIGATION_DURATION_SLIDE)
+            )
+        },
+        popEnterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+                animationSpec = tween(ANIMATION_NAVIGATION_DURATION_SLIDE)
+            )
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+                animationSpec = tween(ANIMATION_NAVIGATION_DURATION_SLIDE)
             )
         }
     ) {
