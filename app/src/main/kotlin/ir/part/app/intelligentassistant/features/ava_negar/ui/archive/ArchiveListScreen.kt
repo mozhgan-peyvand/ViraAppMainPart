@@ -426,15 +426,16 @@ fun AvaNegarArchiveListScreen(
                             } else if (archiveViewModel.hasDeniedPermissionPermanently(permission)) {
                                 // needs improvement, just need to save if permission is alreadyRequested
                                 // and everytime check shouldShow
-                                navigateToAppSettings(activity = context as Activity)
 
-                                showMessage(
-                                    snackbarHostState,
-                                    coroutineScope,
-                                    context.getString(
-                                        AIResource.string.msg_access_file_permission_manually
-                                    )
-                                )
+                                setSelectedSheet(ArchiveBottomSheetType.FileAccessPermissionDenied)
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                    if (!modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.show()
+                                    } else {
+                                        modalBottomSheetState.hide()
+                                    }
+                                }
                             } else {
                                 // Asking for permission
                                 chooseAudioPermLauncher.launch(permission)
@@ -600,8 +601,35 @@ fun AvaNegarArchiveListScreen(
                                         modalBottomSheetState.hide()
                                     }
                                 }
+                            })
+                    }
+
+                    ArchiveBottomSheetType.AudioAccessPermissionDenied -> {
+                        AccessDeniedToOpenMicrophoneBottomSheet(
+                            cancelAction = {
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            },
+                            submitAction = {
+                                navigateToAppSettings(activity = context as Activity)
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            })
+                    }
+
+                    ArchiveBottomSheetType.FileAccessPermissionDenied -> {
+                        AccessDeniedToOpenFileBottomSheet(cancelAction = {
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
                             }
-                        )
+                        }, submitAction = {
+                            navigateToAppSettings(activity = context as Activity)
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                            }
+                        })
                     }
 
                 }
@@ -733,15 +761,14 @@ fun AvaNegarArchiveListScreen(
                             // needs improvement, just need to save if permission is alreadyRequested
                             // and everytime check shouldShow
                             if (archiveViewModel.hasDeniedPermissionPermanently(Manifest.permission.RECORD_AUDIO)) {
-                                navigateToAppSettings(activity = context as Activity)
-
-                                showMessage(
-                                    snackbarHostState,
-                                    coroutineScope,
-                                    context.getString(
-                                        AIResource.string.msg_record_audio_permission_manually
-                                    )
-                                )
+                                setSelectedSheet(ArchiveBottomSheetType.AudioAccessPermissionDenied)
+                                coroutineScope.launch {
+                                    if (!modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.show()
+                                    } else {
+                                        modalBottomSheetState.hide()
+                                    }
+                                }
                             } else {
                                 recordAudioPermLauncher.launch(Manifest.permission.RECORD_AUDIO)
                             }
