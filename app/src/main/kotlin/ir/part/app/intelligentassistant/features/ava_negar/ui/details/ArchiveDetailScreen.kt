@@ -73,9 +73,9 @@ import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.features.ava_negar.ui.SnackBar
 import ir.part.app.intelligentassistant.features.ava_negar.ui.SnackBarWithPaddingBottom
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.BottomSheetShareDetailItem
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.DeleteFileItemConfirmationBottomSheet
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.RenameFile
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.ShareDetailItemBottomSheet
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToTXTFile
 import ir.part.app.intelligentassistant.utils.common.orZero
@@ -291,7 +291,7 @@ fun AvaNegarArchiveDetailScreen(
                 }
 
                 ArchiveDetailBottomSheetType.Delete -> {
-                    DeleteFileItemConfirmationBottomSheet(
+                    FileItemConfirmationDeleteBottomSheet(
                         deleteAction = {
                             coroutineScope.launch {
                                 bottomSheetState.hide()
@@ -309,7 +309,7 @@ fun AvaNegarArchiveDetailScreen(
                 }
 
                 ArchiveDetailBottomSheetType.Rename -> {
-                    RenameFile(
+                    RenameFileBottomSheet(
                         fileName = fileName.value ?: processItem.value?.title.orEmpty(),
                         onValueChange = {
                             fileName.value = it
@@ -327,7 +327,7 @@ fun AvaNegarArchiveDetailScreen(
                 }
 
                 ArchiveDetailBottomSheetType.Share -> {
-                    BottomSheetShareDetailItem(
+                    ShareDetailItemBottomSheet(
                         isConverting = isConvertingPdf || isConvertingTxt,
                         onPdfClick = {
                             viewModel.saveEditedText()
