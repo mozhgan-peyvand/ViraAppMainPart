@@ -89,6 +89,14 @@ import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.Avan
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarTrackingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.UploadingFileStatus
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenMicrophoneBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.ChooseFileContentBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.DetailItemBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.RenameFileContentBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.ShareDetailItemBottomSheet
 import ir.part.app.intelligentassistant.features.ava_negar.ui.details.TIME_INTERVAL
 import ir.part.app.intelligentassistant.features.ava_negar.ui.record.RecordFileResult
 import ir.part.app.intelligentassistant.features.ava_negar.ui.record.RecordFileResult.Companion.FILE_NAME
@@ -403,7 +411,7 @@ fun AvaNegarArchiveListScreen(
             sheetContent = {
                 when (selectedSheet) {
                     ArchiveBottomSheetType.ChooseFile -> {
-                        ChooseFileBottomSheetContent(onOpenFile = {
+                        ChooseFileContentBottomSheet(onOpenFile = {
                             coroutineScope.launch {
                                 if (!modalBottomSheetState.isVisible) {
                                     modalBottomSheetState.show()
@@ -444,7 +452,7 @@ fun AvaNegarArchiveListScreen(
                     }
 
                     ArchiveBottomSheetType.RenameUploading -> {
-                        RenameFileBottomSheetContent(
+                        RenameFileContentBottomSheet(
                             fileName.value.orEmpty(),
                             shouldShowKeyBoard = shouldShowKeyBoardUploadingName.value,
                             renameAction = {
@@ -467,7 +475,7 @@ fun AvaNegarArchiveListScreen(
                     }
 
                     ArchiveBottomSheetType.Rename -> {
-                        RenameFile(
+                        RenameFileBottomSheet(
                             fileName = fileName.value.orEmpty(),
                             shouldShowKeyBoard = shouldShowKeyBoard.value,
                             onValueChange = { fileName.value = it },
@@ -484,7 +492,7 @@ fun AvaNegarArchiveListScreen(
                     }
 
                     ArchiveBottomSheetType.Detail -> {
-                        BottomSheetDetailItem(
+                        DetailItemBottomSheet(
                             text = archiveViewModel.processItem?.title.orEmpty(),
                             copyItemAction = {
                                 localClipBoardManager.setText(
@@ -540,7 +548,7 @@ fun AvaNegarArchiveListScreen(
                     }
 
                     ArchiveBottomSheetType.Share -> {
-                        BottomSheetShareDetailItem(
+                        ShareDetailItemBottomSheet(
                             isConverting = isConvertingPdf || isConvertingTxt,
                             onPdfClick = { isConvertingPdf = true },
                             onTextClick = { isConvertingTxt = true },
@@ -557,7 +565,7 @@ fun AvaNegarArchiveListScreen(
                     }
 
                     ArchiveBottomSheetType.DeleteConfirmation -> {
-                        DeleteFileItemConfirmationBottomSheet(
+                        FileItemConfirmationDeleteBottomSheet(
                             deleteAction = {
 
                                 when (val file = archiveViewModel.archiveViewItem) {

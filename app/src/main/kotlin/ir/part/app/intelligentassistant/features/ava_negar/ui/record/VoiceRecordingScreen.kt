@@ -53,7 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import ir.part.app.intelligentassistant.R
-import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.RenameFileBottomSheetContent
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.RenameFileContentBottomSheet
 import ir.part.app.intelligentassistant.features.ava_negar.ui.record.RecordFileResult.Companion.FILE_NAME
 import ir.part.app.intelligentassistant.utils.ui.formatAsDuration
 import ir.part.app.intelligentassistant.utils.ui.hide
@@ -174,7 +174,7 @@ fun AvaNegarVoiceRecordingScreen(
                 }
 
                 VoiceRecordingBottomSheetType.ConvertToTextConfirmation -> {
-                    RenameFileBottomSheetContent(
+                    RenameFileContentBottomSheet(
                         fileName = "",
                         shouldShowKeyBoard = shouldShowKeyBoard.value,
                         renameAction = { name ->
