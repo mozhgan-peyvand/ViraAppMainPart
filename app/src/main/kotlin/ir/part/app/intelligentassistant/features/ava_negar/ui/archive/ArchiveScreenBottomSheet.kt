@@ -47,6 +47,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_OutLine
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red_Opacity_15
@@ -379,7 +380,9 @@ fun RenameFile(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp, top = 16.dp),
+            .padding(
+                start = 20.dp, end = 20.dp, bottom = 20.dp, top = 16.dp
+            ),
     ) {
         Text(
             text = stringResource(id = AIResource.string.lbl_change_name),
@@ -571,6 +574,148 @@ fun DeleteFileItemConfirmationBottomSheet(
                 Text(
                     text = stringResource(id = AIResource.string.lbl_btn_delete),
                     style = MaterialTheme.typography.button
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AccessDeniedToOpenFileBottomSheet(
+    modifier: Modifier = Modifier,
+    cancelAction: () -> Unit,
+    submitAction: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = AIResource.drawable.ic_file),
+                contentDescription = null,
+                Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = stringResource(id = AIResource.string.lbl_access_file),
+                style = MaterialTheme.typography.h6,
+                color = Color_Text_1
+            )
+        }
+        Text(
+            text = stringResource(id = AIResource.string.lbl_vira_need_to_file_permission),
+            Modifier.padding(top = 16.dp),
+            color = Color_Text_2
+        )
+        Text(
+            text = stringResource(id = AIResource.string.lbl_enable_permission_manually),
+            color = Color_Text_2
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 28.dp)
+        ) {
+            Button(
+                onClick = submitAction,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 16.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_setting),
+                    style = MaterialTheme.typography.button,
+                    color = Color_Text_1
+                )
+            }
+            Button(
+                onClick = cancelAction,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color_Primary_Opacity_15,
+                    contentColor = Color_Primary_200
+                )
+            ) {
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_cancel),
+                    style = MaterialTheme.typography.button,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AccessDeniedToOpenMicrophoneBottomSheet(
+    modifier: Modifier = Modifier,
+    cancelAction: () -> Unit,
+    submitAction: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = AIResource.drawable.ic_record_audio),
+                contentDescription = null,
+                Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = stringResource(id = AIResource.string.lbl_access_microphone),
+                style = MaterialTheme.typography.h6,
+                color = Color_Text_1
+            )
+        }
+        Text(
+            text = stringResource(id = AIResource.string.lbl_vira_need_to_file_permission),
+            Modifier.padding(top = 16.dp),
+            color = Color_Text_2
+        )
+        Text(
+            text = stringResource(id = AIResource.string.lbl_explain_vira_need_microphone_permission),
+            color = Color_Text_2
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 28.dp)
+        ) {
+            Button(
+                onClick = submitAction,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 16.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_setting),
+                    style = MaterialTheme.typography.button,
+                    color = Color_Text_1
+                )
+            }
+            Button(
+                onClick = cancelAction,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color_Primary_Opacity_15,
+                    contentColor = Color_Primary_200
+                )
+            ) {
+                Text(
+                    text = stringResource(id = AIResource.string.lbl_cancel),
+                    style = MaterialTheme.typography.button,
                 )
             }
         }
