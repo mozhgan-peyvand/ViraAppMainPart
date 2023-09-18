@@ -12,6 +12,12 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -59,7 +65,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.LinearGradientShader
+import androidx.compose.ui.graphics.Shader
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -115,8 +128,10 @@ import ir.part.app.intelligentassistant.utils.ui.sharePdf
 import ir.part.app.intelligentassistant.utils.ui.shareTXT
 import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.showMessage
+import ir.part.app.intelligentassistant.utils.ui.theme.BLue_a200_Opacity_40
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Bottom_Sheet
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red_800
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
@@ -129,6 +144,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import ir.part.app.intelligentassistant.R as AIResource
+
+const val TRACKING_FILE_ANIMATION_DURATION_Column = 1300
+const val TRACKING_FILE_ANIMATION_DURATION_Grid = 1500
 
 @Composable
 fun AvaNegarArchiveListScreen(
@@ -271,6 +289,51 @@ fun AvaNegarArchiveListScreen(
         ?.savedStateHandle?.remove<RecordFileResult>(FILE_NAME)?.let {
             archiveViewModel.addFileToUploadingQueue(it.title, Uri.fromFile(File(it.filepath)))
         }
+
+    // region trackingFileAnimation
+    val infiniteTransition = rememberInfiniteTransition(label = "")
+
+    val offsetGrid by infiniteTransition.animateFloat(
+        initialValue = 0.01f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = TRACKING_FILE_ANIMATION_DURATION_Grid,
+                easing = EaseInOut
+            ),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = ""
+    )
+
+    val offsetColumn by infiniteTransition.animateFloat(
+        initialValue = 0.01f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = TRACKING_FILE_ANIMATION_DURATION_Column,
+                easing = EaseInOut
+            ),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = ""
+    )
+
+    val brush = remember(if (isGrid) offsetGrid else offsetColumn) {
+        object : ShaderBrush() {
+            override fun createShader(size: Size): Shader {
+                val widthOffset = size.width * if (isGrid) offsetGrid else offsetColumn
+                val heightOffset = size.height
+                return LinearGradientShader(
+                    colors = listOf(BLue_a200_Opacity_40, Color_Card),
+                    from = Offset(widthOffset, heightOffset),
+                    to = Offset(widthOffset + size.width, size.height),
+                    tileMode = TileMode.Mirror
+                )
+            }
+        }
+    }
+    //endregion
 
     BackHandler(modalBottomSheetStateUpdate.isVisible) {
         //we want to disable back
@@ -683,6 +746,7 @@ fun AvaNegarArchiveListScreen(
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                         isErrorState = uiViewState is UiError,
                         isGrid = isGrid,
+                        brush = brush,
                         onTryAgainCLick = { archiveViewModel.startUploading(it) },
                         onMenuClick = { item ->
                             when (item) {
@@ -856,6 +920,7 @@ private fun ArchiveBody(
     isErrorState: Boolean,
     isUploading: Boolean,
     isGrid: Boolean,
+    brush: Brush,
     onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (Int) -> Unit
@@ -871,6 +936,7 @@ private fun ArchiveBody(
             isUploading = isUploading,
             isErrorState = isErrorState,
             isGrid = isGrid,
+            brush = brush,
             onTryAgainCLick = { onTryAgainCLick(it) },
             onMenuClick = { onMenuClick(it) },
             onItemClick = { onItemClick(it) }
@@ -979,6 +1045,7 @@ private fun ArchiveList(
     isUploading: Boolean,
     isErrorState: Boolean,
     isGrid: Boolean,
+    brush: Brush,
     onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (Int) -> Unit
@@ -1022,6 +1089,7 @@ private fun ArchiveList(
                         ArchiveTrackingFileElementGrid(
                             archiveTrackingView = it,
                             isNetworkAvailable = isNetworkAvailable,
+                            brush = brush,
                             onItemClick = {},
                             onMenuClick = { item -> onMenuClick(item) }
                         )
@@ -1070,6 +1138,7 @@ private fun ArchiveList(
                             onItemClick = {
 
                             },
+                            brush = brush,
                             onMenuClick = { item -> onMenuClick(item) }
                         )
                     }

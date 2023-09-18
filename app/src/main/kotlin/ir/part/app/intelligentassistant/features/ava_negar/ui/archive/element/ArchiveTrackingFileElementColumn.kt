@@ -1,5 +1,7 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Card
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -17,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -35,13 +38,16 @@ import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 fun ArchiveTrackingFileElementsColumn(
     archiveTrackingView: AvanegarTrackingFileView,
     isNetworkAvailable: Boolean,
+    brush: Brush,
     onItemClick: (String) -> Unit,
     onMenuClick: (AvanegarTrackingFileView) -> Unit
 ) {
-    Card(
-        modifier = Modifier.height(108.dp),
-        elevation = 0.dp,
-        onClick = { onItemClick(archiveTrackingView.token) }
+
+    Column(
+        modifier = Modifier
+            .height(108.dp)
+            .background(brush, RoundedCornerShape(16.dp))
+            .clickable { onItemClick(archiveTrackingView.token) },
     ) {
         Column(
             modifier = Modifier
@@ -107,6 +113,7 @@ fun ArchiveTrackingFileElementsColumn(
     }
 }
 
+
 @Preview
 @Composable
 private fun ArchiveTrackingFileElementsColumnPreview() {
@@ -119,6 +126,7 @@ private fun ArchiveTrackingFileElementsColumnPreview() {
                     title = "عنوان",
                     createdAt = "Sasasasa",
                 ),
+                brush = Brush.horizontalGradient(),
                 isNetworkAvailable = true,
                 onItemClick = {},
                 onMenuClick = {},
