@@ -7,6 +7,7 @@ data class AvanegarUploadingFileView(
     override val title: String,
     val filePath: String,
     val createdAt: Long,
+    val fileDuration: Long,
     val uploadedPercent: Float,
     val isUploadingFinished: Boolean,
 ) : ArchiveView
@@ -16,6 +17,7 @@ fun AvanegarUploadingFileEntity.toAvanegarUploadingFileView() = AvanegarUploadin
     title = title,
     filePath = filePath,
     createdAt = createdAt,
+    fileDuration = fileDuration,
     uploadedPercent = 0f, //it's default and initial value
     isUploadingFinished = false, //it's default and initial value
 )

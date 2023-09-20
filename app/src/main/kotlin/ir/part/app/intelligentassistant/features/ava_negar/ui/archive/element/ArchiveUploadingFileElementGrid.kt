@@ -168,11 +168,12 @@ private fun ArchiveUploadingFileElementGridPreview() {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             ArchiveUploadingFileElementGrid(
                 archiveUploadingFileView = AvanegarUploadingFileView(
-                    id = "sasas",
+                    id = "id",
                     title = "عنوان",
-                    filePath = "sasasasas",
+                    filePath = "filePath",
                     createdAt = 5456465L,
                     uploadedPercent = 30f,
+                    fileDuration = 0,
                     isUploadingFinished = false,
                 ),
                 isUploading = false,

@@ -10,4 +10,5 @@ data class AvanegarUploadingFileEntity(
     val createdAt: Long,
     val filePath: String,
     val title: String,
+    val fileDuration: Long
 )
