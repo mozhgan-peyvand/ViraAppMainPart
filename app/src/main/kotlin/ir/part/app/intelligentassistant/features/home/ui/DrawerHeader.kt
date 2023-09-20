@@ -75,7 +75,7 @@ private fun DrawerHeaderBody(
             onItemClick = { inviteFriendOnclick() }
         )
         DrawerBody(
-            title = stringResource(id = AIResource.string.lbl_about_us),
+            title = stringResource(id = AIResource.string.lbl_about_vira),
             onItemClick = { aboutUsOnClick() }
         )
     }
