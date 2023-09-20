@@ -36,32 +36,33 @@ class AvanegarRepository @Inject constructor(
         avanegarLocalDataSource.getSearchResult(title)
 
     suspend fun audioToTextBelowSixtySecond(
+        id: String,
         title: String,
         file: File,
         listener: UploadProgressCallback
-    ): AppResult<Boolean> {
+    ): AppResult<String> {
 
-        val time = PersianDate().time
         return if (networkHandler.hasNetworkConnection()) {
             val result = avanegarRemoteDataSource.audioToTextBelowSixtySecond(
-                multiPartFile = file.toMultiPart(title + time.toString(), listener),
+                multiPartFile = file.toMultiPart(id, listener),
                 language = "fa".asPlainTextRequestBody
             ).toAppResult()
 
             when (result) {
                 is Success -> {
+                    avanegarLocalDataSource.deleteUploadingFile(id)
                     avanegarLocalDataSource.insertProcessedFile(
                         AvanegarProcessedFileEntity(
                             id = 0,
                             title = title,
                             text = result.data,
-                            createdAt = time, // TODO: improve
+                            createdAt = PersianDate().time,
                             filePath = file.absolutePath,
                             isSeen = false
                         )
                     )
 
-                    Success(true)
+                    Success(id)
                 }
 
                 is Error -> Error(result.error)

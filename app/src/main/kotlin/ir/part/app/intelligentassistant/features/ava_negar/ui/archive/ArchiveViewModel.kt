@@ -1,7 +1,9 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.archive
 
 import android.content.SharedPreferences
+import android.media.MediaMetadataRetriever
 import android.net.Uri
+import androidx.annotation.WorkerThread
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -29,6 +31,7 @@ import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantE
 import ir.part.app.intelligentassistant.utils.common.event.IntelligentAssistantEventPublisher
 import ir.part.app.intelligentassistant.utils.common.file.FileCache
 import ir.part.app.intelligentassistant.utils.common.file.UploadProgressCallback
+import ir.part.app.intelligentassistant.utils.common.orZero
 import ir.part.app.intelligentassistant.utils.data.NetworkStatus
 import ir.part.app.intelligentassistant.utils.data.NetworkStatusTracker
 import ir.part.app.intelligentassistant.utils.data.api_result.AppResult
@@ -60,6 +63,7 @@ import javax.inject.Inject
 private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
 private const val NUMBER_OF_REQUEST = 3
 private const val IS_GRID_AVANEGAR_ARCHIVE_LIST_KEY = "isGridPrefKey_AvanegarArchiveList"
+private const val SIXTY_SECOND = 60000
 
 @HiltViewModel
 class ArchiveViewModel @Inject constructor(
@@ -112,7 +116,13 @@ class ArchiveViewModel @Inject constructor(
     var archiveViewItem by mutableStateOf<ArchiveView?>(null)
     var processItem by mutableStateOf<AvanegarProcessedFileView?>(null)
 
+    private lateinit var retriever: MediaMetadataRetriever
+
     init {
+        kotlin.runCatching {
+            retriever = MediaMetadataRetriever()
+        }
+
         viewModelScope.launch {
             isGrid.value = sharedPref.getBoolean(IS_GRID_AVANEGAR_ARCHIVE_LIST_KEY, true)
         }
@@ -172,18 +182,25 @@ class ArchiveViewModel @Inject constructor(
                     _uiViewStat.emit(UiLoading)
                     _isUploading.value = Uploading
 
-                    //TODO should calculate audio file duration
                     indexOfItemThatShouldBeDownloaded.run {
-                        if (this == 0) audioToTextAboveSixtySecond(
-                            uploadingFileQueue.first().title,
-                            uploadingFileQueue.first().filePath,
-                            createProgressListener()
-                        )
-                        else audioToTextAboveSixtySecond(
-                            uploadingFileQueue[this].title,
-                            uploadingFileQueue[this].filePath,
-                            createProgressListener()
-                        )
+                        val title = uploadingFileQueue[this].title
+                        val filePath = uploadingFileQueue[this].filePath
+                        val fileDuration = uploadingFileQueue[this].fileDuration
+
+                        //0L means that file duration was is null
+                        if (fileDuration < SIXTY_SECOND && fileDuration != 0L) {
+                            audioToTextBelowSixtySecond(
+                                title,
+                                filePath,
+                                createProgressListener()
+                            )
+                        } else {
+                            audioToTextAboveSixtySecond(
+                                title,
+                                filePath,
+                                createProgressListener()
+                            )
+                        }
                     }
                 }
             }
@@ -216,12 +233,15 @@ class ArchiveViewModel @Inject constructor(
             if (!absolutePath.isNullOrBlank()) {
                 val createdAt = PersianDate().time
                 val id = title + absolutePath
+                val fileDuration = getFileDuration(absolutePath)
+
                 uploadingFileQueue.add(
                     AvanegarUploadingFileView(
                         id = id,
                         title = title,
                         filePath = absolutePath,
                         createdAt = createdAt,
+                        fileDuration = fileDuration,
                         uploadedPercent = 0f, //it will not store in db
                         isUploadingFinished = false, //it will not store in db
                     )
@@ -232,13 +252,18 @@ class ArchiveViewModel @Inject constructor(
                     title = title,
                     filePath = absolutePath,
                     createdAt = createdAt,
+                    fileDuration = fileDuration
                 )
 
                 if (uploadingFileQueue.isNotEmpty() && _isUploading.value != Uploading) {
                     _uiViewStat.emit(UiLoading)
 
                     _isUploading.value = Uploading
-                    audioToTextAboveSixtySecond(title, absolutePath, createProgressListener())
+
+                    if (fileDuration < SIXTY_SECOND && fileDuration != 0L)
+                        audioToTextBelowSixtySecond(title, absolutePath, createProgressListener())
+                    else
+                        audioToTextAboveSixtySecond(title, absolutePath, createProgressListener())
                 }
 
             } else _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile()))
@@ -275,6 +300,7 @@ class ArchiveViewModel @Inject constructor(
 
             val file = File(filePath)
             val result = repository.audioToTextBelowSixtySecond(
+                id = title + filePath,
                 title = title,
                 file = file,
                 listener = listener
@@ -325,16 +351,30 @@ class ArchiveViewModel @Inject constructor(
         id: String,
         title: String,
         filePath: String,
-        createdAt: Long
+        createdAt: Long,
+        fileDuration: Long
     ) {
         repository.insertUploadingFile(
             AvanegarUploadingFileEntity(
                 id = id,
                 title = title,
                 filePath = filePath,
-                createdAt = createdAt
+                createdAt = createdAt,
+                fileDuration = fileDuration
             )
         )
+    }
+
+    @WorkerThread
+    private fun getFileDuration(filePath: String): Long {
+        if (!this::retriever.isInitialized) return 0L
+
+        return kotlin.runCatching {
+            retriever.setDataSource(filePath)
+            val time: String? =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            time?.toLong()
+        }.getOrNull().orZero()
     }
 
     fun cancelDownload() {
@@ -464,5 +504,12 @@ class ArchiveViewModel @Inject constructor(
 
     private fun permissionDeniedPrefKey(permission: String): String {
         return "deniedPermission_$permission"
+    }
+
+    override fun onCleared() {
+        kotlin.runCatching {
+            if (this::retriever.isInitialized)
+                retriever.release()
+        }
     }
 }

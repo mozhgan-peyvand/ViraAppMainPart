@@ -165,11 +165,12 @@ private fun ArchiveUploadingFileElementColumn() {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             ArchiveUploadingFileElementColumn(
                 archiveUploadingFileView = AvanegarUploadingFileView(
-                    id = "sasas",
+                    id = "id",
                     title = "عنوان",
-                    filePath = "sasasasas",
+                    filePath = "filePath",
                     createdAt = 5456465L,
                     uploadedPercent = 30f,
+                    fileDuration = 0,
                     isUploadingFinished = false,
                 ),
                 isUploading = false,

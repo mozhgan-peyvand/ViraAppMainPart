@@ -51,19 +51,19 @@ interface AvanegarDao {
     @Query(
         """
         SELECT * FROM (
-            SELECT 0 AS id,'' AS uploadingId, title, '' AS text, createdAt, filePath, token, 0 AS isSeen
+            SELECT 0 AS id,'' AS uploadingId, title, 0 AS fileDuration, '' AS text, createdAt, filePath, token, 0 AS isSeen
             FROM AvanegarTrackingFileEntity
             ORDER BY createdAt DESC
         )
         UNION ALL
         SELECT * FROM (
-            SELECT id,'' AS uploadingId, title, text, createdAt, filePath, '' AS token, isSeen
+            SELECT id,'' AS uploadingId, title, 0 AS fileDuration, text, createdAt, filePath, '' AS token, isSeen
             FROM AvanegarProcessedFileEntity
             ORDER BY createdAt DESC
         )
         UNION ALL
         SELECT * FROM (
-            SELECT 0 AS id, id AS uploadingId, title, '' AS text, createdAt, filePath,  '' AS token,  0 AS isSeen
+            SELECT 0 AS id, id AS uploadingId, title, fileDuration,'' AS text, createdAt, filePath,  '' AS token,  0 AS isSeen
             FROM AvanegarUploadingFileEntity
             ORDER BY createdAt DESC
         )
