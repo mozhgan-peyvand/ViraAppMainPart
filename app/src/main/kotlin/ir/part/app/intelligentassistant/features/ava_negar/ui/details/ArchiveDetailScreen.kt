@@ -202,7 +202,7 @@ fun AvaNegarArchiveDetailScreen(
                 viewModel.fileToShare = convertTextToTXTFile(
                     context = context,
                     text = processItem.value?.text.orEmpty(),
-                    fileName = fileName.value.orEmpty()
+                    fileName = viewModel.archiveFile.value?.title.orEmpty()
                 )
 
                 shouldShareTxt = true
