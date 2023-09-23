@@ -290,51 +290,6 @@ fun AvaNegarArchiveListScreen(
             archiveViewModel.addFileToUploadingQueue(it.title, Uri.fromFile(File(it.filepath)))
         }
 
-    // region trackingFileAnimation
-    val infiniteTransition = rememberInfiniteTransition(label = "")
-
-    val offsetGrid by infiniteTransition.animateFloat(
-        initialValue = 0.01f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = TRACKING_FILE_ANIMATION_DURATION_Grid,
-                easing = EaseInOut
-            ),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = ""
-    )
-
-    val offsetColumn by infiniteTransition.animateFloat(
-        initialValue = 0.01f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = TRACKING_FILE_ANIMATION_DURATION_Column,
-                easing = EaseInOut
-            ),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = ""
-    )
-
-    val brush = remember(if (isGrid) offsetGrid else offsetColumn) {
-        object : ShaderBrush() {
-            override fun createShader(size: Size): Shader {
-                val widthOffset = size.width * if (isGrid) offsetGrid else offsetColumn
-                val heightOffset = size.height
-                return LinearGradientShader(
-                    colors = listOf(BLue_a200_Opacity_40, Color_Card),
-                    from = Offset(widthOffset, heightOffset),
-                    to = Offset(widthOffset + size.width, size.height),
-                    tileMode = TileMode.Mirror
-                )
-            }
-        }
-    }
-    //endregion
-
     BackHandler(modalBottomSheetStateUpdate.isVisible) {
         //we want to disable back
     }
@@ -746,7 +701,7 @@ fun AvaNegarArchiveListScreen(
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                         isErrorState = uiViewState is UiError,
                         isGrid = isGrid,
-                        brush = brush,
+                        brush = if (isGrid) gridBrush() else columnBrush(),
                         onTryAgainCLick = { archiveViewModel.startUploading(it) },
                         onMenuClick = { item ->
                             when (item) {
@@ -1256,6 +1211,73 @@ private fun ArchiveEmptyBodyPreview() {
     }
 }
 
+@Composable
+private fun gridBrush(): Brush {
+    val infiniteTransition = rememberInfiniteTransition(label = "")
+
+    val offset by infiniteTransition.animateFloat(
+        initialValue = 0.01f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = TRACKING_FILE_ANIMATION_DURATION_Grid,
+                easing = EaseInOut
+            ),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = ""
+    )
+
+    return remember(offset) {
+        object : ShaderBrush() {
+            override fun createShader(size: Size): Shader {
+                val widthOffset = size.width * offset
+                val heightOffset = size.height
+                return LinearGradientShader(
+                    colors = listOf(BLue_a200_Opacity_40, Color_Card),
+                    from = Offset(widthOffset, heightOffset),
+                    to = Offset(widthOffset + size.width, size.height),
+                    tileMode = TileMode.Mirror
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun columnBrush(): Brush {
+    val infiniteTransition = rememberInfiniteTransition(label = "")
+
+    val offset by infiniteTransition.animateFloat(
+        initialValue = 0.01f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = TRACKING_FILE_ANIMATION_DURATION_Column,
+                easing = EaseInOut
+            ),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = ""
+    )
+
+    return remember(offset) {
+        object : ShaderBrush() {
+            override fun createShader(size: Size): Shader {
+                val widthOffset = size.width * offset
+                val heightOffset = size.height
+                return LinearGradientShader(
+                    colors = listOf(BLue_a200_Opacity_40, Color_Card),
+                    from = Offset(widthOffset, heightOffset),
+                    to = Offset(widthOffset + size.width, size.height),
+                    tileMode = TileMode.Mirror
+                )
+            }
+        }
+    }
+}
+
 private fun gotoRecordAudioScreen(navHostController: NavHostController) {
     navHostController.navigate(ScreenRoutes.AvaNegarVoiceRecording.route)
 }
+
