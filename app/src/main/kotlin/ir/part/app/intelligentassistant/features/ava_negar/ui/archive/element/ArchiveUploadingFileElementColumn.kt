@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
@@ -46,15 +47,20 @@ fun ArchiveUploadingFileElementColumn(
     onMenuClick: (AvanegarUploadingFileView) -> Unit,
     onItemClick: (AvanegarUploadingFileView) -> Unit
 ) {
-    Card(
-        backgroundColor = Color_Card,
+    Card(backgroundColor = Color_Card,
         elevation = 0.dp,
         modifier = Modifier.height(108.dp),
-        onClick = { onItemClick(archiveUploadingFileView) }
-    ) {
+        onClick = {
+            safeClick {
+                onItemClick(archiveUploadingFileView)
+            }
+        }) {
         Column(
             modifier = Modifier
-                .padding(start = 8.dp, bottom = if (!isErrorState) 16.dp else 8.dp)
+                .padding(
+                    start = 8.dp,
+                    bottom = if (!isErrorState) 16.dp else 8.dp
+                )
                 .fillMaxWidth()
         ) {
             Row(
@@ -74,7 +80,13 @@ fun ArchiveUploadingFileElementColumn(
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                IconButton(onClick = { onMenuClick(archiveUploadingFileView) }) {
+                IconButton(onClick = {
+                    safeClick {
+                        onMenuClick(
+                            archiveUploadingFileView
+                        )
+                    }
+                }) {
                     Icon(
                         modifier = Modifier.padding(12.dp),
                         painter = painterResource(id = R.drawable.ic_dots_menu),

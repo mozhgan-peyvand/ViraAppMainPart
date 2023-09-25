@@ -42,6 +42,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
@@ -95,7 +96,9 @@ fun AvaNegarOnboardingScreen(
                             color = Color_Card_Stroke,
                         ),
                     onClick = {
-                        viewModel.navigateArchiveListScreen()
+                        safeClick {
+                            viewModel.navigateArchiveListScreen()
+                        }
                     }
                 ) {
                     Text(
@@ -208,7 +211,11 @@ private fun FinishButton(
             Button(
                 contentPadding = PaddingValues(vertical = 14.dp),
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { onClick() }
+                onClick = {
+                    safeClick {
+                        onClick()
+                    }
+                }
             ) {
                 Text(
                     text = stringResource(id = R.string.lbl_start),

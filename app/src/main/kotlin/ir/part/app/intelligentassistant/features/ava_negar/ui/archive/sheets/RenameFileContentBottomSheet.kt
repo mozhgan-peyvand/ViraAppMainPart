@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 
@@ -97,7 +98,9 @@ fun RenameFileContentBottomSheet(
             modifier = Modifier
                 .fillMaxWidth(),
             onClick = {
-                renameAction(name)
+                safeClick {
+                    renameAction(name)
+                }
             },
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.primary,

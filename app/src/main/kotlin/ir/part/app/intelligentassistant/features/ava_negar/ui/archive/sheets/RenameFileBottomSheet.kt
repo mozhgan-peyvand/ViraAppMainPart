@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
@@ -59,7 +60,12 @@ fun RenameFileBottomSheet(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp, top = 16.dp),
+            .padding(
+                start = 20.dp,
+                end = 20.dp,
+                bottom = 20.dp,
+                top = 16.dp
+            ),
     ) {
         Text(
             text = stringResource(id = R.string.lbl_change_name),
@@ -116,7 +122,11 @@ fun RenameFileBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 6.dp),
-            onClick = reNameAction,
+            onClick = {
+                safeClick {
+                    reNameAction()
+                }
+            },
             shape = RoundedCornerShape(8.dp),
         ) {
             Text(

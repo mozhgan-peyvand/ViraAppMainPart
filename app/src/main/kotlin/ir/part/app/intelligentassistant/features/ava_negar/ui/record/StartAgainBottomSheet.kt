@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,6 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
@@ -83,7 +83,11 @@ fun StartAgainBottomSheet(
 
             TextButton(
                 contentPadding = PaddingValues(vertical = 14.dp),
-                onClick = actionStartAgain,
+                onClick = {
+                    safeClick {
+                        actionStartAgain()
+                    }
+                },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color_Primary_Opacity_15
@@ -98,7 +102,11 @@ fun StartAgainBottomSheet(
 
             TextButton(
                 contentPadding = PaddingValues(vertical = 14.dp),
-                onClick = actionCancel,
+                onClick = {
+                    safeClick {
+                        actionCancel()
+                    }
+                },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color_Red_Opacity_15

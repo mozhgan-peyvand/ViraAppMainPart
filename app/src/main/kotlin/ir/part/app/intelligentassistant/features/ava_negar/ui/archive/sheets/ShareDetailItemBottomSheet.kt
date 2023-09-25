@@ -1,6 +1,5 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,6 +28,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.ui.safeClickable
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_OutLine
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
@@ -122,7 +122,9 @@ private fun ShareItem(
 ) {
     Column(modifier = modifier
         .fillMaxWidth()
-        .clickable { onShareItemClick() }) {
+        .safeClickable {
+            onShareItemClick()
+        }) {
         Row(
             modifier = Modifier.padding(
                 vertical = 12.dp,

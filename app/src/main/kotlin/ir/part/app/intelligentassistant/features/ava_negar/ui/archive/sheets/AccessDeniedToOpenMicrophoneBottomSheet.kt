@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
@@ -68,7 +69,11 @@ fun AccessDeniedToOpenMicrophoneBottomSheet(
                 .padding(top = 28.dp)
         ) {
             Button(
-                onClick = submitAction,
+                onClick = {
+                    safeClick {
+                        submitAction()
+                    }
+                },
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 16.dp),
@@ -81,7 +86,11 @@ fun AccessDeniedToOpenMicrophoneBottomSheet(
                 )
             }
             Button(
-                onClick = cancelAction,
+                onClick = {
+                    safeClick {
+                        cancelAction()
+                    }
+                },
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
