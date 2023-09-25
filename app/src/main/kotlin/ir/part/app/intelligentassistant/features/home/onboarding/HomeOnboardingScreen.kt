@@ -1,10 +1,10 @@
 package ir.part.app.intelligentassistant.features.home.onboarding
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -74,21 +75,20 @@ fun HomeOnboardingScreen(
 
     Column(
         horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.Center,
         modifier = Modifier
             .fillMaxSize()
             .background(Color_BG)
+            .padding(bottom = 16.dp)
     ) {
 
         TextButton(
             contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
+            border = BorderStroke(width = 1.dp, color = Color_Card_Stroke),
+            shape = RoundedCornerShape(32.dp),
             modifier = Modifier
                 .padding(top = 12.dp, end = 20.dp)
-                .background(Color_Card, RoundedCornerShape(32.dp))
-                .border(
-                    width = 1.dp,
-                    shape = RoundedCornerShape(32.dp),
-                    color = Color_Card_Stroke,
-                ),
+                .background(Color_Card, RoundedCornerShape(32.dp)),
             onClick = {
                 safeClick {
                     viewModel.navigateToMainOnboarding()
@@ -102,7 +102,8 @@ fun HomeOnboardingScreen(
             )
         }
 
-        //disable ripple effect
+        Spacer(modifier = Modifier.height(40.dp))
+
         CompositionLocalProvider(
             LocalOverscrollConfiguration provides null
         ) {
@@ -117,6 +118,8 @@ fun HomeOnboardingScreen(
             }
         }
 
+        Spacer(modifier = Modifier.size(8.dp))
+
         HorizontalPagerIndicator(
             pagerState = pagerState,
             pageCount = 2,
@@ -128,12 +131,13 @@ fun HomeOnboardingScreen(
         FinishButton(
             modifier = Modifier
                 .padding(horizontal = 28.dp)
-                .weight(0.2f),
+                .weight(0.1f),
             pagerState = pagerState,
             onClick = {
                 viewModel.navigateToMainOnboarding()
             }
         )
+
     }
 }
 
@@ -151,11 +155,11 @@ private fun MainOnBoardingItemBody(
         Image(
             painter = painterResource(id = onBoardingItem.image),
             contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .padding(bottom = 24.dp, top = 39.dp)
-                .weight(0.6f)
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.weight(0.45f)
         )
+
+        Spacer(modifier = Modifier.size(24.dp))
 
         Column(
             modifier = modifier
@@ -192,7 +196,6 @@ private fun FinishButton(
 ) {
     Row(
         modifier = modifier
-            .padding(start = 20.dp, end = 20.dp, bottom = 58.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.End

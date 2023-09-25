@@ -1,10 +1,10 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.onboarding
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -51,6 +52,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.AutoTextSize
 
 @Composable
 fun AvaNegarOnboardingScreen(
@@ -78,23 +80,22 @@ fun AvaNegarOnboardingScreen(
 
     Column(
         horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.Center,
         modifier = Modifier
             .fillMaxSize()
             .background(Color_BG)
+            .padding(bottom = 16.dp)
     ) {
 
-        Row(modifier = Modifier.weight(0.08f)) {
+        Row(modifier = Modifier.weight(0.1f)) {
             AnimatedVisibility(pagerState.currentPage != 2) {
                 TextButton(
                     contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
+                    border = BorderStroke(width = 1.dp, color = Color_Card_Stroke),
+                    shape = RoundedCornerShape(32.dp),
                     modifier = Modifier
                         .padding(top = 12.dp, end = 20.dp)
-                        .background(Color_Card, RoundedCornerShape(32.dp))
-                        .border(
-                            width = 1.dp,
-                            shape = RoundedCornerShape(32.dp),
-                            color = Color_Card_Stroke,
-                        ),
+                        .background(Color_Card, RoundedCornerShape(32.dp)),
                     onClick = {
                         safeClick {
                             viewModel.navigateArchiveListScreen()
@@ -110,7 +111,8 @@ fun AvaNegarOnboardingScreen(
             }
         }
 
-        //disable ripple effect
+        Spacer(modifier = Modifier.height(40.dp))
+
         CompositionLocalProvider(
             LocalOverscrollConfiguration provides null
         ) {
@@ -124,7 +126,9 @@ fun AvaNegarOnboardingScreen(
                 )
             }
         }
-        
+
+        Spacer(modifier = Modifier.size(8.dp))
+
         HorizontalPagerIndicator(
             pagerState = pagerState,
             pageCount = 3,
@@ -136,7 +140,7 @@ fun AvaNegarOnboardingScreen(
         FinishButton(
             modifier = Modifier
                 .padding(horizontal = 28.dp)
-                .weight(0.2f),
+                .weight(0.1f),
             pagerState = pagerState,
             onClick = {
                 viewModel.navigateArchiveListScreen()
@@ -159,11 +163,11 @@ private fun MainOnBoardingItemBody(
         Image(
             painter = painterResource(id = onBoardingItem.image),
             contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .padding(bottom = 24.dp, top = 39.dp)
-                .weight(0.5f)
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.weight(0.45f)
         )
+
+        Spacer(modifier = Modifier.size(24.dp))
 
         Column(
             modifier = modifier
@@ -182,11 +186,12 @@ private fun MainOnBoardingItemBody(
 
             Spacer(modifier = Modifier.size(16.dp))
 
-            Text(
+            AutoTextSize(
                 text = onBoardingItem.description,
                 style = MaterialTheme.typography.body1,
                 color = Color_Text_2,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                textScale = 0.9f,
             )
         }
     }
@@ -200,7 +205,7 @@ private fun FinishButton(
 ) {
     Row(
         modifier = modifier
-            .padding(start = 20.dp, end = 20.dp, bottom = 58.dp)
+            .padding(start = 20.dp, end = 20.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.End

@@ -55,6 +55,7 @@ fun FileItemConfirmationDeleteBottomSheet(
         Row(modifier = Modifier.fillMaxWidth()) {
             Button(
                 contentPadding = PaddingValues(14.dp),
+                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
                 modifier = Modifier
                     .weight(1f),
                 onClick = {
@@ -79,6 +80,7 @@ fun FileItemConfirmationDeleteBottomSheet(
 
             Button(
                 contentPadding = PaddingValues(14.dp),
+                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),

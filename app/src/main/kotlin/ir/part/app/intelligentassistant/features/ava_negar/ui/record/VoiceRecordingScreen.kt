@@ -522,6 +522,7 @@ fun VoiceRecordingControlsSection(
             Surface(
                 modifier = Modifier
                     .size(48.dp)
+                    .clip(CircleShape)
                     .then(if (isStopped) Modifier
                     else Modifier.safeClickable {
                         if (isRecording) pauseRecord() else stopRecord()
