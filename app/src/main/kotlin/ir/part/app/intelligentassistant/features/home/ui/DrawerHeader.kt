@@ -1,7 +1,6 @@
 package ir.part.app.intelligentassistant.features.home.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import ir.part.app.intelligentassistant.utils.ui.safeClickable
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.R as AIResource
@@ -97,7 +97,9 @@ fun DrawerBody(
                 end = 16.dp,
                 start = 24.dp
             )
-            .clickable { onItemClick() },
+            .safeClickable {
+                onItemClick()
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(

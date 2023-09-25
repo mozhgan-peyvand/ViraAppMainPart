@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
@@ -50,7 +51,9 @@ fun ArchiveProcessedFileElementColumn(
             BorderStroke(0.5.dp, MaterialTheme.colors.primary),
         modifier = Modifier.height(108.dp),
         onClick = {
-            onItemClick(archiveViewProcessed.id)
+            safeClick {
+                onItemClick(archiveViewProcessed.id)
+            }
         }
     ) {
         Column(
@@ -72,7 +75,13 @@ fun ArchiveProcessedFileElementColumn(
                     text = archiveViewProcessed.title
                 )
                 IconButton(
-                    onClick = { onMenuClick(archiveViewProcessed) }
+                    onClick = {
+                        safeClick {
+                            onMenuClick(
+                                archiveViewProcessed
+                            )
+                        }
+                    }
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_dots_menu),

@@ -80,6 +80,7 @@ import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToTXTFile
 import ir.part.app.intelligentassistant.utils.common.orZero
 import ir.part.app.intelligentassistant.utils.ui.formatDuration
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.sharePdf
 import ir.part.app.intelligentassistant.utils.ui.shareTXT
 import ir.part.app.intelligentassistant.utils.ui.shareText
@@ -462,9 +463,11 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
-            onClick = { onBackAction() }
-        ) {
+        IconButton(onClick = {
+            safeClick {
+                onBackAction()
+            }
+        }) {
             Icon(
                 modifier = Modifier.padding(8.dp),
                 painter = painterResource(id = AIResource.drawable.ic_arrow_forward),
@@ -485,9 +488,11 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
 
         Spacer(modifier = Modifier.size(8.dp))
 
-        IconButton(
-            enabled = isRedoEnabled,
-            onClick = { onRedoClick() }) {
+        IconButton(enabled = isRedoEnabled, onClick = {
+            safeClick {
+                onRedoClick()
+            }
+        }) {
             Icon(
                 modifier = Modifier.padding(12.dp),
                 painter = painterResource(id = AIResource.drawable.ic_redo),
@@ -495,9 +500,11 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
             )
         }
 
-        IconButton(
-            enabled = isUndoEnabled,
-            onClick = { onUndoClick() }) {
+        IconButton(enabled = isUndoEnabled, onClick = {
+            safeClick {
+                onUndoClick()
+            }
+        }) {
             Icon(
                 modifier = Modifier.padding(12.dp),
                 painter = painterResource(id = AIResource.drawable.ic_undo),
@@ -505,9 +512,11 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
             )
         }
 
-        IconButton(
-            onClick = { onMenuAction() }
-        ) {
+        IconButton(onClick = {
+            safeClick {
+                onMenuAction()
+            }
+        }) {
             Icon(
                 modifier = Modifier.padding(12.dp),
                 painter = painterResource(id = AIResource.drawable.ic_dots_menu),
@@ -534,7 +543,11 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
             contentPadding = PaddingValues(
                 top = 14.dp, bottom = 14.dp, start = 19.dp, end = 23.dp
             ),
-            onClick = { onCopyOnClick() },
+            onClick = {
+                safeClick {
+                    onCopyOnClick()
+                }
+            },
             colors = ButtonDefaults.buttonColors(
                 contentColor = Color_Primary_300,
                 backgroundColor = Color_Primary_Opacity_15
@@ -564,7 +577,11 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
             contentPadding = PaddingValues(
                 top = 14.dp, bottom = 14.dp, start = 19.dp, end = 23.dp
             ),
-            onClick = { onShareClick() },
+            onClick = {
+                safeClick {
+                    onShareClick()
+                }
+            },
             colors = ButtonDefaults.buttonColors(
                 contentColor = Color_Primary_300,
                 backgroundColor = Color_Primary_Opacity_15
@@ -703,11 +720,13 @@ fun PlayerBody(
         Spacer(modifier = Modifier.size(12.dp))
         IconButton(
             onClick = {
-                isPlaying.value = !isPlaying.value
-                if (isPlaying.value) {
-                    startMediaPlayer()
-                } else {
-                    stopMediaPlayer()
+                safeClick {
+                    isPlaying.value = !isPlaying.value
+                    if (isPlaying.value) {
+                        startMediaPlayer()
+                    } else {
+                        stopMediaPlayer()
+                    }
                 }
             },
             modifier = Modifier.size(46.dp)
@@ -741,11 +760,13 @@ fun MenuDetailsScreenBottomSheet(
             .fillMaxWidth()
             .padding(vertical = 16.dp)
     ) {
-        TextButton(
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 12.dp),
-            contentPadding = PaddingValues(12.dp),
-            onClick = onRenameAction
-        ) {
+        TextButton(modifier = Modifier.padding(
+            start = 8.dp, end = 8.dp, top = 12.dp
+        ), contentPadding = PaddingValues(12.dp), onClick = {
+            safeClick {
+                onRenameAction()
+            }
+        }) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -777,11 +798,13 @@ fun MenuDetailsScreenBottomSheet(
 
         Spacer(modifier = Modifier.size(12.dp))
 
-        TextButton(
-            modifier = modifier.padding(start = 8.dp, end = 8.dp, bottom = 12.dp),
-            contentPadding = PaddingValues(12.dp),
-            onClick = onRemoveFileAction
-        ) {
+        TextButton(modifier = modifier.padding(
+            start = 8.dp, end = 8.dp, bottom = 12.dp
+        ), contentPadding = PaddingValues(12.dp), onClick = {
+            safeClick {
+                onRemoveFileAction()
+            }
+        }) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier

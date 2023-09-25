@@ -3,7 +3,6 @@ package ir.part.app.intelligentassistant.features.ava_negar.ui.record
 import android.os.SystemClock
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,6 +57,8 @@ import ir.part.app.intelligentassistant.features.ava_negar.ui.record.RecordFileR
 import ir.part.app.intelligentassistant.utils.ui.formatAsDuration
 import ir.part.app.intelligentassistant.utils.ui.hide
 import ir.part.app.intelligentassistant.utils.ui.hideAndShow
+import ir.part.app.intelligentassistant.utils.ui.safeClick
+import ir.part.app.intelligentassistant.utils.ui.safeClickable
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_On_Surface_Variant
@@ -288,7 +289,11 @@ fun VoiceRecordingTopAppBar(
             .fillMaxWidth()
             .padding(8.dp),
     ) {
-        IconButton(onClick = onBackClick) {
+        IconButton(onClick = {
+            safeClick {
+                onBackClick()
+            }
+        }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_forward),
                 contentDescription = null,
@@ -357,9 +362,7 @@ fun VoiceRecordingPreviewSection(
             .fillMaxWidth()
             .then(
                 if (isStopped) Modifier.padding(
-                    bottom = 54.dp,
-                    start = 16.dp,
-                    end = 16.dp
+                    bottom = 54.dp, start = 16.dp, end = 16.dp
                 ) else Modifier.clip(CircleShape)
             )
     ) {
@@ -482,8 +485,11 @@ fun VoiceRecordingControlsSection(
     ) {
         if (isRecording || hasPaused || isStopped) {
             IconButton(
-                onClick = { onConvertClick() },
-                enabled = isStopped
+                onClick = {
+                    safeClick {
+                        onConvertClick()
+                    }
+                }, enabled = isStopped
             ) {
                 Surface(
                     modifier = Modifier.size(48.dp),
@@ -516,12 +522,10 @@ fun VoiceRecordingControlsSection(
             Surface(
                 modifier = Modifier
                     .size(48.dp)
-                    .then(
-                        if (isStopped) Modifier
-                        else Modifier.clickable {
-                            if (isRecording) pauseRecord() else stopRecord()
-                        }
-                    ),
+                    .then(if (isStopped) Modifier
+                    else Modifier.safeClickable {
+                        if (isRecording) pauseRecord() else stopRecord()
+                    }),
                 color = Color_Card, // TODO: use the new bottomSheet color
                 shape = CircleShape,
             ) {
@@ -583,8 +587,11 @@ fun VoicePlayerComponent(
             }
             Spacer(modifier = Modifier.size(12.dp))
             IconButton(
-                onClick = { onPlayingChanged(!isPlaying) },
-                modifier = Modifier.size(46.dp)
+                onClick = {
+                    safeClick {
+                        onPlayingChanged(!isPlaying)
+                    }
+                }, modifier = Modifier.size(46.dp)
             ) {
                 if (isPlaying) {
                     Image(

@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
@@ -49,9 +50,17 @@ fun DeleteBottomSheet(
         Spacer(modifier = Modifier.size(24.dp))
 
         TextButton(
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+            modifier = Modifier.padding(
+                start = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp
+            ),
             contentPadding = PaddingValues(12.dp),
-            onClick = onDelete
+            onClick = {
+                safeClick {
+                    onDelete()
+                }
+            }
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,

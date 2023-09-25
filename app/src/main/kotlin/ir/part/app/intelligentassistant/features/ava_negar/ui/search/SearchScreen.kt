@@ -43,6 +43,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementGrid
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
@@ -164,7 +165,9 @@ private fun SearchToolbar(
             ), verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = {
-            arrowForwardAction()
+            safeClick {
+                arrowForwardAction()
+            }
         }) {
             Icon(
                 painter = painterResource(id = AIResource.drawable.ic_arrow_right),
@@ -199,7 +202,9 @@ private fun SearchToolbar(
             },
             trailingIcon = {
                 IconButton(onClick = {
-                    clearState()
+                    safeClick {
+                        clearState()
+                    }
                 }) {
                     Icon(
                         painter = painterResource(id = AIResource.drawable.ic_clear),

@@ -1,6 +1,5 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.ui.safeClickable
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_OutLine
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
@@ -117,7 +117,7 @@ private fun ArchiveItemBodyBottomSheet(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp, horizontal = 8.dp)
-            .clickable { onItemClick() },
+            .safeClickable { onItemClick() },
         verticalAlignment = Alignment.CenterVertically
 
     ) {

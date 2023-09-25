@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
@@ -49,7 +50,11 @@ fun ArchiveUploadingFileElementGrid(
         backgroundColor = Color_Card,
         elevation = 0.dp,
         modifier = Modifier.height(156.dp),
-        onClick = { onItemClick(archiveUploadingFileView) }
+        onClick = {
+            safeClick {
+                onItemClick(archiveUploadingFileView)
+            }
+        }
     ) {
         Column(
             modifier = Modifier
@@ -74,7 +79,13 @@ fun ArchiveUploadingFileElementGrid(
                 Spacer(modifier = Modifier.width(4.dp))
 
                 IconButton(
-                    onClick = { onMenuClick(archiveUploadingFileView) }
+                    onClick = {
+                        safeClick {
+                            onMenuClick(
+                                archiveUploadingFileView
+                            )
+                        }
+                    }
                 ) {
                     Icon(
                         modifier = Modifier.padding(12.dp),

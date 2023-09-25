@@ -37,6 +37,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import ir.part.app.intelligentassistant.BuildConfig
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_OutLine
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
@@ -90,8 +91,9 @@ fun AboutUsScreen(
 
             Text(
                 text = buildString {
-                    append(stringResource(id = R.string.lbl_version))
-                        .append(BuildConfig.VERSION_NAME)
+                    append(stringResource(id = R.string.lbl_version)).append(
+                        BuildConfig.VERSION_NAME
+                    )
                 },
                 color = Color_Primary_200,
                 style = MaterialTheme.typography.body2,
@@ -104,7 +106,11 @@ fun AboutUsScreen(
                 text = stringResource(id = R.string.desc_about_us),
                 color = Color_Text_2,
                 style = MaterialTheme.typography.body1,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 18.dp)
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 18.dp
+                )
             )
 
             Spacer(modifier = Modifier.size(16.dp))
@@ -113,16 +119,16 @@ fun AboutUsScreen(
                 border = BorderStroke(1.dp, Color_OutLine),
                 shape = RoundedCornerShape(12.dp),
                 contentPadding = PaddingValues(
-                    top = 8.dp,
-                    bottom = 8.dp,
-                    start = 20.dp,
-                    end = 16.dp
+                    top = 8.dp, bottom = 8.dp, start = 20.dp, end = 16.dp
                 ),
                 onClick = {
-                    kotlin.runCatching {
-                        val intent = Intent(Intent.ACTION_SENDTO)
-                        intent.data = Uri.parse("mailto:${context.getString(R.string.lbl_email)}")
-                        context.startActivity(intent)
+                    safeClick {
+                        kotlin.runCatching {
+                            val intent = Intent(Intent.ACTION_SENDTO)
+                            intent.data =
+                                Uri.parse("mailto:${context.getString(R.string.lbl_email)}")
+                            context.startActivity(intent)
+                        }
                     }
                 },
                 modifier = Modifier.padding(bottom = 16.dp),
@@ -147,8 +153,7 @@ fun AboutUsScreen(
 
 @Composable
 fun AboutUsTopAppBar(
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onBackClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -156,7 +161,11 @@ fun AboutUsTopAppBar(
             .fillMaxWidth()
             .padding(8.dp),
     ) {
-        IconButton(onClick = onBackClick) {
+        IconButton(onClick = {
+            safeClick {
+                onBackClick()
+            }
+        }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_forward),
                 contentDescription = null,

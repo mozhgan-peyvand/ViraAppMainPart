@@ -3,7 +3,6 @@ package ir.part.app.intelligentassistant.features.home.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +50,8 @@ import androidx.navigation.NavHostController
 import ir.part.app.intelligentassistant.features.home.HomeItemScreen
 import ir.part.app.intelligentassistant.utils.ui.Constants.CAFEBAZAAR_LINK
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
+import ir.part.app.intelligentassistant.utils.ui.safeClick
+import ir.part.app.intelligentassistant.utils.ui.safeClickable
 import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.theme.Blue_Grey_900_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Blue_gray_900
@@ -173,7 +174,9 @@ fun HomeAppBar(openDrawer: () -> Unit) {
         Row(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .clickable { openDrawer() },
+                .safeClickable {
+                    openDrawer()
+                },
         ) {
             Image(
                 painter = painterResource(id = AIResource.drawable.ic_menu),
@@ -233,7 +236,9 @@ private fun HomeBody(
             elevation = 0.dp,
             shape = RoundedCornerShape(16.dp),
             onClick = {
-                onAvanegarClick()
+                safeClick {
+                    onAvanegarClick()
+                }
             }
         ) {
             Row(

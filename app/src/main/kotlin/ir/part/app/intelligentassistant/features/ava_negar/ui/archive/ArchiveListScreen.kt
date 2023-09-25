@@ -124,6 +124,7 @@ import ir.part.app.intelligentassistant.utils.ui.UiIdle
 import ir.part.app.intelligentassistant.utils.ui.isPermissionDeniedPermanently
 import ir.part.app.intelligentassistant.utils.ui.navigateToAppSettings
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.sharePdf
 import ir.part.app.intelligentassistant.utils.ui.shareTXT
 import ir.part.app.intelligentassistant.utils.ui.shareText
@@ -673,8 +674,13 @@ fun AvaNegarArchiveListScreen(
                         .padding(top = 8.dp),
                         onBackClick = { navHostController.navigateUp() },
                         isGrid = isGrid,
-                        onChangeListTypeClick = { archiveViewModel.saveListType(!isGrid) },
+                        onChangeListTypeClick = {
+                            archiveViewModel.saveListType(
+                                !isGrid
+                            )
+                        },
                         onSearchClick = {
+
                             navHostController.navigate(
                                 ScreenRoutes.AvaNegarSearch.route
                             )
@@ -823,7 +829,11 @@ private fun ArchiveAppBar(
         verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        IconButton(onClick = onBackClick) {
+        IconButton(onClick = {
+            safeClick {
+                onBackClick()
+            }
+        }) {
             Icon(
                 modifier = Modifier.padding(12.dp),
                 painter = painterResource(id = AIResource.drawable.ic_arrow_forward),
@@ -843,7 +853,11 @@ private fun ArchiveAppBar(
 
         Spacer(modifier = Modifier.size(8.dp))
 
-        IconButton(onClick = onChangeListTypeClick) {
+        IconButton(onClick = {
+            safeClick {
+                onChangeListTypeClick()
+            }
+        }) {
             Icon(
                 modifier = Modifier.padding(12.dp),
                 painter = painterResource(
@@ -857,7 +871,11 @@ private fun ArchiveAppBar(
             )
         }
 
-        IconButton(onClick = onSearchClick) {
+        IconButton(onClick = {
+            safeClick {
+                onSearchClick()
+            }
+        }) {
             Icon(
                 modifier = Modifier.padding(12.dp),
                 painter = painterResource(id = AIResource.drawable.ic_search),
@@ -1142,7 +1160,11 @@ private fun Fabs(
                     modifier = Modifier
                         .clip(CircleShape)
                         .padding(bottom = 18.dp),
-                    onClick = selectFile
+                    onClick = {
+                        safeClick {
+                            selectFile()
+                        }
+                    }
                 ) {
                     Icon(
                         painter = painterResource(id = AIResource.drawable.ic_upload),
@@ -1154,7 +1176,11 @@ private fun Fabs(
             FloatingActionButton(
                 backgroundColor = if (isFabExpanded) Color_White else MaterialTheme.colors.primary,
                 modifier = Modifier.clip(CircleShape),
-                onClick = onMainFabClick
+                onClick = {
+                    safeClick {
+                        onMainFabClick()
+                    }
+                }
             ) {
                 Icon(
                     tint = if (isFabExpanded) MaterialTheme.colors.primary else Color_White,
@@ -1174,7 +1200,9 @@ private fun Fabs(
                     .clip(CircleShape)
                     .padding(bottom = 8.dp, start = 8.dp),
                 onClick = {
-                    openRecordingScreen()
+                    safeClick {
+                        openRecordingScreen()
+                    }
                 }) {
                 Icon(
                     painter = painterResource(id = AIResource.drawable.ic_mic),

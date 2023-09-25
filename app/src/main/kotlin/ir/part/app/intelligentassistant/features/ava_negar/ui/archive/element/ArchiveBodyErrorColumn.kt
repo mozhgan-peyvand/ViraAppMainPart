@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
@@ -55,9 +56,16 @@ fun ArchiveBodyErrorColumn(
                     backgroundColor = Color_Primary_Opacity_15
                 ),
                 contentPadding = PaddingValues(
-                    start = 28.dp, end = 26.dp, top = 10.dp, bottom = 10.dp
+                    start = 28.dp,
+                    end = 26.dp,
+                    top = 10.dp,
+                    bottom = 10.dp
                 ),
-                onClick = { onTryAgainClick() }
+                onClick = {
+                    safeClick {
+                        onTryAgainClick()
+                    }
+                }
             ) {
                 Row(
                     verticalAlignment = CenterVertically
