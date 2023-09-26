@@ -84,7 +84,7 @@ fun RenameFileContentBottomSheet(
         )
         TextField(
             value = textValue,
-            onValueChange = { it: TextFieldValue ->
+            onValueChange = {
                 textValue = it
             },
             modifier = modifier

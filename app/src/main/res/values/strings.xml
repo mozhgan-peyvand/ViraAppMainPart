@@ -50,7 +50,7 @@
     <string name="lbl_need_to_access_to_record_audio_permission">شما نیازمند دسترسی به ضبط صدا هستید.</string>
     <string name="msg_access_file_permission_manually">شما نیازمند دسترسی به فایل ها هستید. باید بصورت دستی، اجاره دسترسی به فایل ها را بدهید.</string>
     <string name="msg_record_audio_permission_manually">شما نیازمند دسترسی به ضبط صدا هستید. باید بصورت دستی، اجاره دسترسی به ضبط صدا را بدهید.</string>
-    <string name="msg_no_microphone_found_on_phone">دستگاه شما، شامل میکروفون که برای این ویژگی نیاز است نمی‌باشد.</string>
+    <string name="msg_no_microphone_found_on_phone">دستگاه شما، شامل میکروفون که برای این ویژگی نیاز است، نمی‌باشد.</string>
 
     <string name="lbl_search_in_archive">برای جستجو در آرشیو بنویسید…</string>
 

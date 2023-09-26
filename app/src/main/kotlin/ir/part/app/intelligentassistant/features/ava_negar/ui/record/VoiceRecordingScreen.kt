@@ -559,8 +559,7 @@ fun VoiceRecordingHintSection(
             if (isRecording || hasPaused) {
                 Text(
                     text = stringResource(
-                        id =
-                        if (hasPaused) R.string.lbl_recording_paused
+                        id = if (hasPaused) R.string.lbl_recording_paused
                         else R.string.lbl_recording_in_progress
                     ),
                     style = MaterialTheme.typography.subtitle2
