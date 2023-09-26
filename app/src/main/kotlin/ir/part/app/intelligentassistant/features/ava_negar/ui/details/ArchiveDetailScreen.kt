@@ -320,10 +320,12 @@ fun AvaNegarArchiveDetailScreen(
                             coroutineScope.launch {
                                 bottomSheetState.hide()
                             }
-                            viewModel.updateTitle(
-                                title = fileName.value,
-                                id = viewModel.processItemId.intValue
-                            )
+                            fileName.value?.let {
+                                viewModel.updateTitle(
+                                    title = it,
+                                    id = viewModel.processItemId.intValue
+                                )
+                            }
                         })
                 }
 

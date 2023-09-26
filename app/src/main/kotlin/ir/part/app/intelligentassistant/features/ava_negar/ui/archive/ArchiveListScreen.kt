@@ -499,10 +499,12 @@ fun AvaNegarArchiveListScreen(
                             shouldShowKeyBoard = shouldShowKeyBoard.value,
                             onValueChange = { fileName.value = it },
                             reNameAction = {
-                                archiveViewModel.updateTitle(
-                                    title = fileName.value.orEmpty(),
-                                    id = archiveViewModel.processItem?.id
-                                )
+                                fileName.value?.let {
+                                    archiveViewModel.updateTitle(
+                                        title = it,
+                                        id = archiveViewModel.processItem?.id
+                                    )
+                                }
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
                                 }
