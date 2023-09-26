@@ -1,10 +1,14 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.record
 
 import android.app.Application
+import android.content.SharedPreferences
 import android.media.MediaPlayer
+import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ir.part.app.intelligentassistant.R
+import ir.part.app.intelligentassistant.utils.common.safeGetInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -17,6 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VoiceRecordingViewModel @Inject constructor(
+    private val prefs: SharedPreferences,
     val recorder: Recorder,
     application: Application
 ) : AndroidViewModel(application) {
@@ -51,9 +56,29 @@ class VoiceRecordingViewModel @Inject constructor(
         _timer.value = 0
     }
 
+    fun getCurrentDefaultName(): String {
+        return getApplication<Application>().getString(
+            R.string.lbl_default_recorded_title,
+            prefs.safeGetInt(KEY_DEFAULT_NAME_COUNTER, 1)
+        )
+    }
+
+    fun updateCurrentDefaultName() {
+        prefs.edit {
+            putInt(
+                KEY_DEFAULT_NAME_COUNTER,
+                prefs.safeGetInt(KEY_DEFAULT_NAME_COUNTER, 1) + 1
+            )
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         resetTimer()
         playerState.clear()
+    }
+
+    companion object {
+        private const val KEY_DEFAULT_NAME_COUNTER = "defaultNameCounter"
     }
 }

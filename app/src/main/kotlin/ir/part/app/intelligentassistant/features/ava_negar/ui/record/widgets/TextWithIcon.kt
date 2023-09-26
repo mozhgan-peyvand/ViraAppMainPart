@@ -1,4 +1,4 @@
-package ir.part.app.intelligentassistant.features.ava_negar.ui.record
+package ir.part.app.intelligentassistant.features.ava_negar.ui.record.widgets
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes

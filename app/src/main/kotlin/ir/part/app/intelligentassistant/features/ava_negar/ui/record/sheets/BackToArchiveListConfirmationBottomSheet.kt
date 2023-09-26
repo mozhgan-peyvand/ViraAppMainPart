@@ -1,4 +1,4 @@
-package ir.part.app.intelligentassistant.features.ava_negar.ui.record
+package ir.part.app.intelligentassistant.features.ava_negar.ui.record.sheets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,12 +32,12 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 
-@Composable
-fun StartAgainBottomSheet(
-    actionCancel: () -> Unit,
-    actionStartAgain: () -> Unit
-) {
 
+@Composable
+fun BackToArchiveListConfirmationBottomSheet(
+    actionConvertFile: () -> Unit,
+    actionDeleteFile: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -50,7 +50,7 @@ fun StartAgainBottomSheet(
                 .padding(top = 20.dp, start = 20.dp, end = 20.dp),
             style = MaterialTheme.typography.h6,
             color = Color_Text_1,
-            text = stringResource(id = R.string.lbl_start_again)
+            text = stringResource(id = R.string.lbl_back)
         )
 
         Spacer(
@@ -65,7 +65,7 @@ fun StartAgainBottomSheet(
                 .padding(horizontal = 20.dp),
             style = MaterialTheme.typography.body1,
             color = Color_Text_2,
-            text = stringResource(id = R.string.msg_if_start_again_file_will_be_deleted)
+            text = stringResource(id = R.string.msg_if_click_back_file_will_be_deleted)
         )
 
         Spacer(
@@ -82,10 +82,11 @@ fun StartAgainBottomSheet(
         ) {
 
             TextButton(
+
                 contentPadding = PaddingValues(vertical = 14.dp),
                 onClick = {
                     safeClick {
-                        actionStartAgain()
+                        actionConvertFile()
                     }
                 },
                 modifier = Modifier.weight(1f),
@@ -94,7 +95,7 @@ fun StartAgainBottomSheet(
                 ),
             ) {
                 Text(
-                    text = stringResource(id = R.string.lbl_start_again),
+                    text = stringResource(id = R.string.lbl_convert_to_text),
                     style = MaterialTheme.typography.button,
                     color = Color_Primary_300,
                 )
@@ -104,7 +105,7 @@ fun StartAgainBottomSheet(
                 contentPadding = PaddingValues(vertical = 14.dp),
                 onClick = {
                     safeClick {
-                        actionCancel()
+                        actionDeleteFile()
                     }
                 },
                 modifier = Modifier.weight(1f),
@@ -113,7 +114,7 @@ fun StartAgainBottomSheet(
                 ),
             ) {
                 Text(
-                    text = stringResource(id = R.string.lbl_cancel),
+                    text = stringResource(id = R.string.lbl_delete_file),
                     style = MaterialTheme.typography.button,
                     color = Color_Red
                 )
@@ -125,10 +126,10 @@ fun StartAgainBottomSheet(
 
 @Preview
 @Composable
-fun BottomSheetContentBottomSheetContentStartAgainPreview() {
+private fun BackToArchiveListConfirmationBottomSheet() {
     IntelligentAssistantTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            StartAgainBottomSheet(
+            BackToArchiveListConfirmationBottomSheet(
                 {},
                 {}
             )

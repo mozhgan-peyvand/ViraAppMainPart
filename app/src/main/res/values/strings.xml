@@ -50,6 +50,7 @@
     <string name="lbl_need_to_access_to_record_audio_permission">شما نیازمند دسترسی به ضبط صدا هستید.</string>
     <string name="msg_access_file_permission_manually">شما نیازمند دسترسی به فایل ها هستید. باید بصورت دستی، اجاره دسترسی به فایل ها را بدهید.</string>
     <string name="msg_record_audio_permission_manually">شما نیازمند دسترسی به ضبط صدا هستید. باید بصورت دستی، اجاره دسترسی به ضبط صدا را بدهید.</string>
+    <string name="msg_no_microphone_found_on_phone">دستگاه شما، شامل میکروفون که برای این ویژگی نیاز است نمی‌باشد.</string>
 
     <string name="lbl_search_in_archive">برای جستجو در آرشیو بنویسید…</string>
 
@@ -172,4 +173,11 @@
     <string name="lbl_explain_vira_need_microphone_permission"> ویرا برای استفاده از میکروفون نیاز به تایید دسترسی دارد </string>
     <string name="lbl_version">v &#160;</string>
     <string name="lbl_email">info@ivira.ai</string>
+    <string name="lbl_default_recorded_title">متن %d</string>
+    <string name="lbl_microphone">میکروفون</string>
+    <string name="lbl_microphone_is_being_used">میکروفون دستگاه توسط اپلیکیشن Record در حال استفاده است. برای ادامه باید این برنامه را ببندید.</string>
+    <string name="lbl_understood">متوجه شدم</string>
+    <string name="msg_general_recorder_pause_error">مشکلی در توقف ضبط رخ داد.</string>
+    <string name="msg_general_recorder_start_error">مشکلی در شروع ضبط رخ داد.</string>
+    <string name="msg_general_recorder_stop_error">مشکلی در پایان ضبط رخ داد.</string>
 </resources>

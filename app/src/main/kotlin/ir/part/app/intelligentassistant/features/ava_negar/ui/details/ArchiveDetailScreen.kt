@@ -79,6 +79,7 @@ import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.Sha
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToTXTFile
 import ir.part.app.intelligentassistant.utils.common.orZero
+import ir.part.app.intelligentassistant.utils.ui.OnLifecycleEvent
 import ir.part.app.intelligentassistant.utils.ui.formatDuration
 import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.sharePdf
@@ -655,11 +656,20 @@ fun PlayerBody(
 ) {
     val color =
         if (scrollStateValue > 0) Color_Surface_Container_High else MaterialTheme.colors.primaryVariant
-    val isPlaying = remember {
+    val isPlaying = rememberSaveable() {
         mutableStateOf(false)
     }
     var remainingTime by rememberSaveable { mutableLongStateOf(0) }
     var progress by rememberSaveable { mutableFloatStateOf(0f) }
+
+    OnLifecycleEvent(
+        onPause = {
+            isPlaying.value = !isPlaying.value
+            if (!isPlaying.value) {
+                stopMediaPlayer()
+            }
+        }
+    )
 
     LaunchedEffect(key1 = Unit) {
         while (isActive) {
