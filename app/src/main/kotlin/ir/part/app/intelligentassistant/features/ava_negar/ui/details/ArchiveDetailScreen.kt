@@ -662,8 +662,10 @@ fun PlayerBody(
     var progress by rememberSaveable { mutableFloatStateOf(0f) }
 
     LaunchedEffect(key1 = Unit) {
-        remainingTime = mediaPlayer.duration.toLong()
         while (isActive) {
+            mediaPlayer.setOnPreparedListener {
+                remainingTime = mediaPlayer.duration.toLong()
+            }
             if (mediaPlayer.isPlaying) {
                 progress = mediaPlayer.currentPosition.toFloat() / 1000
                 remainingTime =
@@ -671,6 +673,7 @@ fun PlayerBody(
                 mediaPlayer.setOnCompletionListener {
                     isPlaying.value = false
                     progress = 0f
+                    remainingTime = mediaPlayer.duration.toLong()
                 }
             }
             delay(1000)
