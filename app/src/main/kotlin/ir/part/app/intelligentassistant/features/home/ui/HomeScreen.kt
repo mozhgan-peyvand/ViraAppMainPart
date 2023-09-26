@@ -62,12 +62,8 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_OutLine
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
-import ir.part.app.intelligentassistant.utils.ui.theme.Indigo_300
-import ir.part.app.intelligentassistant.utils.ui.theme.Indigo_300_2
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.utils.ui.theme.Light_blue_50
-import ir.part.app.intelligentassistant.utils.ui.theme.Light_green_300
-import ir.part.app.intelligentassistant.utils.ui.theme.Teal_200
 import ir.part.app.intelligentassistant.utils.ui.theme.labelMedium
 import kotlinx.coroutines.launch
 import ir.part.app.intelligentassistant.R as AIResource
@@ -192,34 +188,7 @@ private fun HomeBody(
     onAvanegarClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val homeItem = remember {
-        mutableListOf(
-            HomeItemScreen(
-                icon = AIResource.drawable.img_ava_sho,
-                title = AIResource.string.lbl_ava_sho,
-                textColor = Indigo_300,
-                description = AIResource.string.lbl_ava_sho_desc
-            ) {},
-            HomeItemScreen(
-                icon = AIResource.drawable.img_nevise_negar,
-                textColor = Indigo_300_2,
-                title = AIResource.string.lbl_nevise_negar,
-                description = AIResource.string.lbl_nevise_negar_desc
-            ) {},
-            HomeItemScreen(
-                icon = AIResource.drawable.img_vira_part,
-                title = AIResource.string.lbl_vira_part,
-                textColor = Light_green_300,
-                description = AIResource.string.lbl_vira_part_desc
-            ) {},
-            HomeItemScreen(
-                icon = AIResource.drawable.img_nevise_nama,
-                title = AIResource.string.lbl_nevise_nama,
-                textColor = Teal_200,
-                description = AIResource.string.lbl_nevise_nama_desc
-            ) {}
-        )
-    }
+    val homeItem = remember { HomeItemScreen.items }
 
     Column(
         modifier = modifier
@@ -325,12 +294,9 @@ private fun HomeBody(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(
-                items = homeItem,
-            ) { item ->
+            items(homeItem) { item ->
                 HomeBodyItem(item = item)
             }
-
         }
     }
 }
