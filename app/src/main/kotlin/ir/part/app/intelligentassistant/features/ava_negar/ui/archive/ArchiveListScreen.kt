@@ -1000,7 +1000,7 @@ private fun ArchiveEmptyBody(
 
             Image(
                 modifier = Modifier.fillMaxHeight(),
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.FillHeight,
                 painter = painterResource(id = AIResource.drawable.ic_arrow),
                 contentDescription = null
             )
@@ -1213,7 +1213,7 @@ private fun Fabs(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFF070707)
 @Composable
 private fun ArchiveBodyErrorPreview() {
     IntelligentAssistantTheme {
@@ -1229,7 +1229,7 @@ private fun ArchiveBodyErrorPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFF070707)
 @Composable
 private fun ArchiveEmptyBodyPreview() {
     IntelligentAssistantTheme {

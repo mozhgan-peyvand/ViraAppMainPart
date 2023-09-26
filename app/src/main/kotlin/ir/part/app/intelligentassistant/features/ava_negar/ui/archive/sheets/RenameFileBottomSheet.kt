@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -107,6 +108,7 @@ fun RenameFileBottomSheet(
                     value = fileName,
                     singleLine = true,
                     onValueChange = { onValueChange(it) },
+                    cursorBrush = SolidColor(MaterialTheme.colors.primary),
                     textStyle = MaterialTheme.typography.body1.copy(color = Color_Text_2),
                     modifier = Modifier
                         .fillMaxWidth()

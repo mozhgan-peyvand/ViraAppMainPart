@@ -35,7 +35,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -398,9 +397,7 @@ fun HomeBodyItem(item: HomeItemScreen) {
         Image(
             painter = painterResource(id = item.icon),
             contentDescription = null,
-            modifier = Modifier
-                .size(64.dp)
-                .shadow(4.dp)
+            modifier = Modifier.size(64.dp)
         )
     }
 }
