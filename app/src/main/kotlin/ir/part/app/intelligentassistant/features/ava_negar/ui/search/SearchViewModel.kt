@@ -1,11 +1,16 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.search
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.part.app.intelligentassistant.features.ava_negar.data.AvanegarRepository
+import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.ArchiveView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.toAvanegarProcessedFileView
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +21,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,6 +29,10 @@ class SearchViewModel @Inject constructor(
     private val repository: AvanegarRepository
 ) : ViewModel() {
 
+    //placed these variables in viewModel to save from configuration change,
+    // can not make these, rememberSaveable because these are dataClass
+    var archiveViewItem by mutableStateOf<ArchiveView?>(null)
+    var processItem by mutableStateOf<AvanegarProcessedFileView?>(null)
 
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
@@ -53,12 +63,23 @@ class SearchViewModel @Inject constructor(
             _getSearchResult.value
         )
 
+    var jobConverting: Job? = null
+    var fileToShare: File? = null
+
     fun onSearchTextChange(text: String) {
         _searchText.value = text
     }
 
     init {
         getSearch(searchText.value)
+    }
+
+    fun updateTitle(title: String?, id: Int?) = viewModelScope.launch {
+        repository.updateTitle(title = title, id = id)
+    }
+
+    fun removeProcessedFile(id: Int?) = viewModelScope.launch {
+        repository.deleteProcessFile(id)
     }
 
     private fun getSearch(title: String) = viewModelScope.launch {
