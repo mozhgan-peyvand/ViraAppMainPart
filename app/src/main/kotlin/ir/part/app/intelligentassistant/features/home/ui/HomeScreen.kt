@@ -24,15 +24,20 @@ import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +52,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.features.home.HomeItemScreen
 import ir.part.app.intelligentassistant.utils.ui.Constants.CAFEBAZAAR_LINK
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
@@ -55,6 +61,7 @@ import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.theme.Blue_Grey_900_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Blue_gray_900
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Bottom_Sheet
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card_Stroke
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_On_Surface_Variant
@@ -77,6 +84,15 @@ fun HomeScreen(
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
     val context = LocalContext.current
+
+    val modalBottomSheetState =
+        rememberModalBottomSheetState(
+            initialValue = ModalBottomSheetValue.Hidden,
+            skipHalfExpanded = true,
+        )
+    val (sheetSelected, setSelectedSheet) = rememberSaveable {
+        mutableStateOf(HomeItemBottomSheetType.AvaSho)
+    }
 
     LaunchedEffect(
         homeViewModel.onboardingHasBeenShown.value,
@@ -124,13 +140,127 @@ fun HomeScreen(
         drawerShape = RoundedCornerShape(0.dp),
         drawerGesturesEnabled = scaffoldState.drawerState.isOpen
     ) { innerPadding ->
-        HomeBody(
-            paddingValues = innerPadding,
-            onAvanegarClick = {
-                // navigate to ava negar
-                homeViewModel.navigate()
-            }
-        )
+        ModalBottomSheetLayout(
+            sheetState = modalBottomSheetState,
+            sheetShape = RoundedCornerShape(
+                topEnd = 16.dp,
+                topStart = 16.dp
+            ),
+            sheetBackgroundColor = Color_BG_Bottom_Sheet,
+            scrimColor = Color.Black.copy(alpha = 0.5f),
+            sheetContent = {
+                when (sheetSelected) {
+                    HomeItemBottomSheetType.AvaSho -> {
+                        HomeItemBottomSheet(iconRes = painterResource(id = R.drawable.img_ava_sho),
+                            title = stringResource(id = R.string.lbl_ava_sho),
+                            textBody = stringResource(id = R.string.avasho_item_bottomsheet_explain),
+                            action = {
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        )
+                    }
+
+                    HomeItemBottomSheetType.NeviseNama -> {
+                        HomeItemBottomSheet(iconRes = painterResource(id = R.drawable.img_nevise_nama),
+                            title = stringResource(id = R.string.lbl_nevise_nama),
+                            textBody = stringResource(id = R.string.nevise_nama_item_bottomsheet_explain),
+                            action = {
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        )
+
+                    }
+
+                    HomeItemBottomSheetType.NeviseNegar -> {
+
+                        HomeItemBottomSheet(iconRes = painterResource(id = R.drawable.img_nevise_negar),
+                            title = stringResource(id = R.string.lbl_nevise_negar),
+                            textBody = stringResource(id = R.string.nevise_negar_item_bottomsheet_explain),
+                            action = {
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        )
+                    }
+
+                    HomeItemBottomSheetType.ViraSiar -> {
+                        HomeItemBottomSheet(iconRes = painterResource(id = R.drawable.img_virasiar),
+                            title = stringResource(id = R.string.lbl_virasiar),
+                            textBody = stringResource(id = R.string.vira_sayar_item_bottomsheet_explain),
+                            action = {
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        )
+                    }
+                }
+            }) {
+            HomeBody(
+                paddingValues = innerPadding,
+                onAvanegarClick = {
+                    // navigate to ava negar
+                    homeViewModel.navigate()
+                },
+                onItemClick = { homeItem ->
+                    when (homeItem) {
+                        HomeItemBottomSheetType.AvaSho -> {
+                            setSelectedSheet(HomeItemBottomSheetType.AvaSho)
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
+                                } else {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        }
+
+                        HomeItemBottomSheetType.NeviseNegar -> {
+                            setSelectedSheet(HomeItemBottomSheetType.NeviseNegar)
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
+                                } else {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        }
+
+                        HomeItemBottomSheetType.ViraSiar -> {
+                            setSelectedSheet(HomeItemBottomSheetType.ViraSiar)
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
+                                } else {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        }
+
+                        HomeItemBottomSheetType.NeviseNama -> {
+                            setSelectedSheet(HomeItemBottomSheetType.NeviseNama)
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
+                                } else {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        }
+                    }
+
+                }
+            )
+        }
     }
 }
 
@@ -165,7 +295,8 @@ fun HomeAppBar(openDrawer: () -> Unit) {
 private fun HomeBody(
     paddingValues: PaddingValues,
     onAvanegarClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onItemClick: (HomeItemBottomSheetType) -> Unit
 ) {
     val homeItem = remember { HomeItemScreen.items }
 
@@ -274,14 +405,19 @@ private fun HomeBody(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(homeItem) { item ->
-                HomeBodyItem(item = item)
+                HomeBodyItem(
+                    item = item,
+                    onItemClick = { onItemClick(item.homeItemType) })
             }
         }
     }
 }
 
 @Composable
-fun HomeBodyItem(item: HomeItemScreen) {
+fun HomeBodyItem(
+    item: HomeItemScreen,
+    onItemClick: (HomeItemBottomSheetType) -> Unit
+) {
     Box(
         modifier = Modifier
             .aspectRatio(0.90f)
@@ -293,6 +429,11 @@ fun HomeBodyItem(item: HomeItemScreen) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 32.dp),
+            onClick = {
+                safeClick {
+                    onItemClick(item.homeItemType)
+                }
+            },
             elevation = 0.dp,
             backgroundColor = Color_Card
         ) {
@@ -354,7 +495,7 @@ private fun HomeBodyPreview() {
     IntelligentAssistantTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             HomeBody(
-                PaddingValues(0.dp),
+                PaddingValues(0.dp), onAvanegarClick = {}, onItemClick =
                 {}
             )
         }

@@ -180,4 +180,10 @@
     <string name="msg_general_recorder_pause_error">مشکلی در توقف ضبط رخ داد.</string>
     <string name="msg_general_recorder_start_error">مشکلی در شروع ضبط رخ داد.</string>
     <string name="msg_general_recorder_stop_error">مشکلی در پایان ضبط رخ داد.</string>
+    <string name="nevise_negar_item_bottomsheet_explain">سرویس نویسه نگار با قابلیت استخراج متن از تصویر و فایل pdf، در نسخه های بعد فعال خواهد شد.</string>
+    <string name="avasho_item_bottomsheet_explain">سرویس آواشو با قابلیت تبدیل متن به گفتار با لحن طبیعی انسان، در نسخه های بعد فعال خواهد شد.</string>
+    <string name="vira_sayar_item_bottomsheet_explain">سرویس ویراسیار با قابلیت ویرایش هوشمند متون فارسی، در نسخه های بعد فعال خواهد شد.</string>
+    <string name="nevise_nama_item_bottomsheet_explain">سرویس نویسه نما با قابلیت تولید تصویر از توضیح متنی، در نسخه های بعد فعال خواهد شد.</string>
+
+
 </resources>
