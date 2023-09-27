@@ -85,17 +85,10 @@ fun HomeMainOnboardingScreen(
         ) {
 
             Image(
-                painter = painterResource(id = R.drawable.ic_logo_onboarding),
+                painter = painterResource(id = R.drawable.ic_app_logo_name),
                 contentDescription = null,
-                contentScale = ContentScale.Crop
-            )
-
-            Spacer(modifier = Modifier.size(8.dp))
-
-            Text(
-                text = stringResource(id = R.string.app_name_farsi),
-                style = MaterialTheme.typography.h4,
-                color = Color_White
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(141.dp)
             )
 
             Spacer(modifier = Modifier.size(18.dp))
@@ -172,7 +165,7 @@ private fun SwipeForDismiss(
     }
 }
 
-@Preview
+@Preview(showBackground = true, backgroundColor = 0xFF070707)
 @Composable
 private fun HomeMainOnboardingScreenPreview() {
     IntelligentAssistantTheme {
