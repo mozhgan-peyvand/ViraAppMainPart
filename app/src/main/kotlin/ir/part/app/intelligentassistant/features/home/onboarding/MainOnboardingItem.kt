@@ -11,13 +11,13 @@ sealed class MainOnboardingItem(
     val description: String
 ) {
     data class First(private val context: Context) : MainOnboardingItem(
-        image = AiResource.drawable.img_main_onboarding_horn,
+        image = AiResource.drawable.img_mic_text,
         title = AiResource.string.lbl_avanegar_service,
         description = context.getString(AiResource.string.lbl_avanegar_service_details)
     )
 
     data class Second(private val context: Context) : MainOnboardingItem(
-        image = AiResource.drawable.img_main_onboarding_lamp,
+        image = AiResource.drawable.img_ai_tools,
         title = AiResource.string.lbl_soon_in_vira,
         description = buildString {
             append(

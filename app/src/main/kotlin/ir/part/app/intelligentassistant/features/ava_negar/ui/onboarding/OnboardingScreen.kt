@@ -120,7 +120,7 @@ fun AvaNegarOnboardingScreen(
                 state = pagerState,
                 modifier = Modifier.weight(0.6f)
             ) { position ->
-                MainOnBoardingItemBody(
+                AvaNegarOnBoardingItemBody(
                     modifier = Modifier.fillMaxSize(),
                     onBoardingItem = pages[position]
                 )
@@ -150,7 +150,7 @@ fun AvaNegarOnboardingScreen(
 }
 
 @Composable
-private fun MainOnBoardingItemBody(
+private fun AvaNegarOnBoardingItemBody(
     modifier: Modifier = Modifier,
     onBoardingItem: OnboardingItem
 ) {
@@ -160,12 +160,21 @@ private fun MainOnBoardingItemBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Image(
-            painter = painterResource(id = onBoardingItem.image),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.weight(0.45f)
-        )
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.45f)
+        ) {
+
+            Image(
+                painter = painterResource(id = onBoardingItem.image),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(width = 286.dp, height = 253.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.size(24.dp))
 
@@ -238,6 +247,17 @@ private fun AvaNegarOnboardingScreenPreview() {
     IntelligentAssistantTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             AvaNegarOnboardingScreen(rememberNavController())
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun AvaNegarOnBoardingItemBodyPreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            val context = LocalContext.current
+            AvaNegarOnBoardingItemBody(onBoardingItem = OnboardingItem.First(context))
         }
     }
 }

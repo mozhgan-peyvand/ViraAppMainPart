@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
+import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
@@ -282,10 +283,11 @@ fun HomeAppBar(openDrawer: () -> Unit) {
             onClick = { safeClick(openDrawer) },
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
-            Image(
+            Icon(
                 painter = painterResource(id = AIResource.drawable.ic_menu),
                 contentDescription = null,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(40.dp),
+                tint = Color_Text_2
             )
         }
     }

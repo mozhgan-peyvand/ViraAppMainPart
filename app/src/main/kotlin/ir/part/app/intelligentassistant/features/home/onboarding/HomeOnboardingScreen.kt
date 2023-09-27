@@ -152,12 +152,21 @@ private fun MainOnBoardingItemBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Image(
-            painter = painterResource(id = onBoardingItem.image),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.weight(0.45f)
-        )
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.45f)
+        ) {
+
+            Image(
+                painter = painterResource(id = onBoardingItem.image),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(width = 286.dp, height = 253.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.size(24.dp))
 
@@ -228,6 +237,19 @@ private fun HomeOnboardingScreenPreview() {
     IntelligentAssistantTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             HomeOnboardingScreen(rememberNavController())
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun MainOnBoardingItemBodyPreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            val context = LocalContext.current
+            MainOnBoardingItemBody(
+                onBoardingItem = MainOnboardingItem.First(context)
+            )
         }
     }
 }
