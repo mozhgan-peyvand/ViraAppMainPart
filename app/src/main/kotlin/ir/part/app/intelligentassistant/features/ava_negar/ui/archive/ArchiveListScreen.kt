@@ -152,7 +152,7 @@ const val TRACKING_FILE_ANIMATION_DURATION_Grid = 1500
 @Composable
 fun AvaNegarArchiveListScreen(
     navHostController: NavHostController,
-    archiveViewModel: ArchiveViewModel = hiltViewModel()
+    archiveListViewModel: ArchiveListViewModel = hiltViewModel()
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -170,7 +170,7 @@ fun AvaNegarArchiveListScreen(
 
     val fileUri = rememberSaveable { mutableStateOf<Uri?>(null) }
 
-    val isGrid by archiveViewModel.isGrid.collectAsStateWithLifecycle()
+    val isGrid by archiveListViewModel.isGrid.collectAsStateWithLifecycle()
 
     val (selectedSheet, setSelectedSheet) = rememberSaveable {
         mutableStateOf(
@@ -194,16 +194,16 @@ fun AvaNegarArchiveListScreen(
         confirmValueChange = { false }
     )
 
-    val uploadingFileState by archiveViewModel.isUploading.collectAsStateWithLifecycle(
+    val uploadingFileState by archiveListViewModel.isUploading.collectAsStateWithLifecycle(
         UploadingFileStatus.Idle
     )
 
-    val isThereAnyTrackingOrUploading by archiveViewModel.isThereAnyTrackingOrUploading.collectAsStateWithLifecycle()
+    val isThereAnyTrackingOrUploading by archiveListViewModel.isThereAnyTrackingOrUploading.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
 
-    val uiViewState by archiveViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
+    val uiViewState by archiveListViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
 
     val intent = Intent()
     intent.action = Intent.ACTION_GET_CONTENT
@@ -246,7 +246,7 @@ fun AvaNegarArchiveListScreen(
                 Manifest.permission.READ_EXTERNAL_STORAGE
             }
 
-            archiveViewModel.putDeniedPermissionToSharedPref(
+            archiveListViewModel.putDeniedPermissionToSharedPref(
                 permission = permission,
                 deniedPermanently = isPermissionDeniedPermanently(
                     activity = context as Activity,
@@ -268,7 +268,7 @@ fun AvaNegarArchiveListScreen(
         if (isGranted) {
             gotoRecordAudioScreen(navHostController)
         } else {
-            archiveViewModel.putDeniedPermissionToSharedPref(
+            archiveListViewModel.putDeniedPermissionToSharedPref(
                 permission = Manifest.permission.RECORD_AUDIO,
                 deniedPermanently = isPermissionDeniedPermanently(
                     activity = context as Activity,
@@ -288,7 +288,7 @@ fun AvaNegarArchiveListScreen(
 
     navHostController.currentBackStackEntry
         ?.savedStateHandle?.remove<RecordFileResult>(FILE_NAME)?.let {
-            archiveViewModel.addFileToUploadingQueue(it.title, Uri.fromFile(File(it.filepath)))
+            archiveListViewModel.addFileToUploadingQueue(it.title, Uri.fromFile(File(it.filepath)))
         }
 
     BackHandler(modalBottomSheetStateUpdate.isVisible) {
@@ -349,8 +349,8 @@ fun AvaNegarArchiveListScreen(
         }
     }
 
-    LaunchedEffect(archiveViewModel.aiEvent.value) {
-        if (archiveViewModel.aiEvent.value == IntelligentAssistantEvent.TokenExpired) {
+    LaunchedEffect(archiveListViewModel.aiEvent.value) {
+        if (archiveListViewModel.aiEvent.value == IntelligentAssistantEvent.TokenExpired) {
             setSelectedSheet(ArchiveBottomSheetType.Update)
             modalBottomSheetStateUpdate.show()
         }
@@ -359,11 +359,11 @@ fun AvaNegarArchiveListScreen(
     LaunchedEffect(isConvertingPdf) {
         if (isConvertingPdf) {
 
-            archiveViewModel.jobConverting?.cancel()
-            archiveViewModel.jobConverting = coroutineScope.launch(IO) {
-                archiveViewModel.fileToShare = convertTextToPdf(
+            archiveListViewModel.jobConverting?.cancel()
+            archiveListViewModel.jobConverting = coroutineScope.launch(IO) {
+                archiveListViewModel.fileToShare = convertTextToPdf(
                     context = context,
-                    text = archiveViewModel.processItem?.text.orEmpty(),
+                    text = archiveListViewModel.processItem?.text.orEmpty(),
                     fileName = fileName.value.orEmpty()
                 )
 
@@ -371,17 +371,17 @@ fun AvaNegarArchiveListScreen(
                 isConvertingPdf = false
             }
 
-        } else archiveViewModel.jobConverting?.cancel()
+        } else archiveListViewModel.jobConverting?.cancel()
     }
 
     LaunchedEffect(isConvertingTxt) {
         if (isConvertingTxt) {
 
-            archiveViewModel.jobConverting?.cancel()
-            archiveViewModel.jobConverting = coroutineScope.launch(IO) {
-                archiveViewModel.fileToShare = convertTextToTXTFile(
+            archiveListViewModel.jobConverting?.cancel()
+            archiveListViewModel.jobConverting = coroutineScope.launch(IO) {
+                archiveListViewModel.fileToShare = convertTextToTXTFile(
                     context = context,
-                    text = archiveViewModel.processItem?.text.orEmpty(),
+                    text = archiveListViewModel.processItem?.text.orEmpty(),
                     fileName = fileName.value.orEmpty()
                 )
 
@@ -390,13 +390,13 @@ fun AvaNegarArchiveListScreen(
 
             }
 
-        } else archiveViewModel.jobConverting?.cancel()
+        } else archiveListViewModel.jobConverting?.cancel()
     }
 
     LaunchedEffect(shouldSharePdf) {
         if (shouldSharePdf) {
             modalBottomSheetState.hide()
-            archiveViewModel.fileToShare?.let {
+            archiveListViewModel.fileToShare?.let {
                 sharePdf(context = context, file = it)
                 shouldSharePdf = false
             }
@@ -406,7 +406,7 @@ fun AvaNegarArchiveListScreen(
     LaunchedEffect(shouldShareTxt) {
         if (shouldShareTxt) {
             modalBottomSheetState.hide()
-            archiveViewModel.fileToShare?.let {
+            archiveListViewModel.fileToShare?.let {
                 shareTXT(context = context, file = it)
                 shouldShareTxt = false
             }
@@ -450,7 +450,7 @@ fun AvaNegarArchiveListScreen(
                                 ) == PackageManager.PERMISSION_GRANTED
                             ) {
                                 launchOpenFile.launch(intent)
-                            } else if (archiveViewModel.hasDeniedPermissionPermanently(permission)) {
+                            } else if (archiveListViewModel.hasDeniedPermissionPermanently(permission)) {
                                 // needs improvement, just need to save if permission is alreadyRequested
                                 // and everytime check shouldShow
 
@@ -476,7 +476,7 @@ fun AvaNegarArchiveListScreen(
                             shouldShowKeyBoard = shouldShowKeyBoardUploadingName.value,
                             renameAction = {
                                 fileName.value = it
-                                archiveViewModel.addFileToUploadingQueue(it, fileUri.value)
+                                archiveListViewModel.addFileToUploadingQueue(it, fileUri.value)
                                 isFabExpanded = false
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
@@ -500,9 +500,9 @@ fun AvaNegarArchiveListScreen(
                             onValueChange = { fileName.value = it },
                             reNameAction = {
                                 fileName.value?.let {
-                                    archiveViewModel.updateTitle(
+                                    archiveListViewModel.updateTitle(
                                         title = it,
-                                        id = archiveViewModel.processItem?.id
+                                        id = archiveListViewModel.processItem?.id
                                     )
                                 }
                                 coroutineScope.launch {
@@ -514,11 +514,11 @@ fun AvaNegarArchiveListScreen(
 
                     ArchiveBottomSheetType.Detail -> {
                         DetailItemBottomSheet(
-                            text = archiveViewModel.processItem?.title.orEmpty(),
+                            text = archiveListViewModel.processItem?.title.orEmpty(),
                             copyItemAction = {
                                 localClipBoardManager.setText(
                                     AnnotatedString(
-                                        archiveViewModel.processItem?.text.orEmpty()
+                                        archiveListViewModel.processItem?.text.orEmpty()
                                     )
                                 )
                                 coroutineScope.launch {
@@ -576,7 +576,7 @@ fun AvaNegarArchiveListScreen(
                             onOnlyTextClick = {
                                 shareText(
                                     context = context,
-                                    text = archiveViewModel.processItem?.text.orEmpty()
+                                    text = archiveListViewModel.processItem?.text.orEmpty()
                                 )
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
@@ -589,20 +589,20 @@ fun AvaNegarArchiveListScreen(
                         FileItemConfirmationDeleteBottomSheet(
                             deleteAction = {
 
-                                when (val file = archiveViewModel.archiveViewItem) {
+                                when (val file = archiveListViewModel.archiveViewItem) {
                                     is AvanegarTrackingFileView ->
-                                        archiveViewModel.removeTrackingFile(file.token)
+                                        archiveListViewModel.removeTrackingFile(file.token)
 
                                     is AvanegarUploadingFileView ->
-                                        archiveViewModel.removeUploadingFile(file.id)
+                                        archiveListViewModel.removeUploadingFile(file.id)
 
                                     is AvanegarProcessedFileView ->
-                                        archiveViewModel.removeProcessedFile(archiveViewModel.processItem?.id)
+                                        archiveListViewModel.removeProcessedFile(archiveListViewModel.processItem?.id)
 
                                 }
 
                                 File(
-                                    archiveViewModel.processItem?.filePath.orEmpty()
+                                    archiveListViewModel.processItem?.filePath.orEmpty()
                                 ).delete()
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
@@ -613,13 +613,13 @@ fun AvaNegarArchiveListScreen(
                                     modalBottomSheetState.hide()
                                 }
                             },
-                            fileName = archiveViewModel.processItem?.title.orEmpty()
+                            fileName = archiveListViewModel.processItem?.title.orEmpty()
                         )
                     }
 
                     ArchiveBottomSheetType.Delete -> {
                         DeleteBottomSheet(
-                            fileName = archiveViewModel.archiveViewItem?.title.orEmpty(),
+                            fileName = archiveListViewModel.archiveViewItem?.title.orEmpty(),
                             onDelete = {
                                 setSelectedSheet(ArchiveBottomSheetType.DeleteConfirmation)
                                 coroutineScope.launch {
@@ -677,7 +677,7 @@ fun AvaNegarArchiveListScreen(
                         onBackClick = { navHostController.navigateUp() },
                         isGrid = isGrid,
                         onChangeListTypeClick = {
-                            archiveViewModel.saveListType(
+                            archiveListViewModel.saveListType(
                                 !isGrid
                             )
                         },
@@ -689,8 +689,8 @@ fun AvaNegarArchiveListScreen(
                         })
 
                     if (
-                        (!archiveViewModel.isNetworkAvailable.value &&
-                                archiveViewModel.allArchiveFiles.value.isNotEmpty() &&
+                        (!archiveListViewModel.isNetworkAvailable.value &&
+                                archiveListViewModel.allArchiveFiles.value.isNotEmpty() &&
                                 isThereAnyTrackingOrUploading
                                 ) ||
                         uiViewState is UiError
@@ -704,13 +704,13 @@ fun AvaNegarArchiveListScreen(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth(),
-                        archiveViewList = archiveViewModel.allArchiveFiles.value,
-                        isNetworkAvailable = archiveViewModel.isNetworkAvailable.value,
+                        archiveViewList = archiveListViewModel.allArchiveFiles.value,
+                        isNetworkAvailable = archiveListViewModel.isNetworkAvailable.value,
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                         isErrorState = uiViewState is UiError,
                         isGrid = isGrid,
                         brush = if (isGrid) gridBrush() else columnBrush(),
-                        onTryAgainCLick = { archiveViewModel.startUploading(it) },
+                        onTryAgainCLick = { archiveListViewModel.startUploading(it) },
                         onMenuClick = { item ->
                             when (item) {
                                 is AvanegarProcessedFileView -> {
@@ -722,8 +722,8 @@ fun AvaNegarArchiveListScreen(
                                             modalBottomSheetState.hide()
                                         }
                                     }
-                                    archiveViewModel.archiveViewItem = item
-                                    archiveViewModel.processItem = item
+                                    archiveListViewModel.archiveViewItem = item
+                                    archiveListViewModel.processItem = item
                                     fileName.value = item.title
                                 }
 
@@ -736,7 +736,7 @@ fun AvaNegarArchiveListScreen(
                                             modalBottomSheetState.hide()
                                         }
                                     }
-                                    archiveViewModel.archiveViewItem = item
+                                    archiveListViewModel.archiveViewItem = item
                                     fileName.value = item.title
                                 }
                             }
@@ -796,7 +796,7 @@ fun AvaNegarArchiveListScreen(
                             } else {
                                 // needs improvement, just need to save if permission is alreadyRequested
                                 // and everytime check shouldShow
-                                if (archiveViewModel.hasDeniedPermissionPermanently(Manifest.permission.RECORD_AUDIO)) {
+                                if (archiveListViewModel.hasDeniedPermissionPermanently(Manifest.permission.RECORD_AUDIO)) {
                                     setSelectedSheet(ArchiveBottomSheetType.AudioAccessPermissionDenied)
                                     coroutineScope.launch {
                                         if (!modalBottomSheetState.isVisible) {

@@ -66,7 +66,7 @@ private const val IS_GRID_AVANEGAR_ARCHIVE_LIST_KEY = "isGridPrefKey_AvanegarArc
 private const val SIXTY_SECOND = 60000
 
 @HiltViewModel
-class ArchiveViewModel @Inject constructor(
+class ArchiveListViewModel @Inject constructor(
     private val repository: AvanegarRepository,
     private val fileCache: FileCache,
     private val aiEventPublisher: IntelligentAssistantEventPublisher,
