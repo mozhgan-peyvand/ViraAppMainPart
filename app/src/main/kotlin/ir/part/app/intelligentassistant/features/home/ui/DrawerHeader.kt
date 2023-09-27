@@ -1,5 +1,6 @@
 package ir.part.app.intelligentassistant.features.home.ui
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +24,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.utils.ui.safeClickable
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.R as AIResource
 
@@ -64,18 +67,21 @@ private fun DrawerHeaderBody(
                 contentDescription = null
             )
             Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                text = stringResource(id = AIResource.string.app_name_farsi),
-                style = MaterialTheme.typography.h6,
-                color = Color_Text_1
+
+            Image(
+                painter = painterResource(id = AIResource.drawable.ic_app_name),
+                contentDescription = null
             )
+
         }
         DrawerBody(
             title = stringResource(id = AIResource.string.lbl_invite_friends),
+            icon = AIResource.drawable.ic_envelope,
             onItemClick = { inviteFriendOnclick() }
         )
         DrawerBody(
             title = stringResource(id = AIResource.string.lbl_about_vira),
+            icon = AIResource.drawable.ic_info,
             onItemClick = { aboutUsOnClick() }
         )
     }
@@ -86,26 +92,31 @@ private fun DrawerHeaderBody(
 fun DrawerBody(
     modifier: Modifier = Modifier,
     title: String,
+    @DrawableRes icon: Int,
     onItemClick: () -> Unit
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                top = 12.dp,
-                bottom = 12.dp,
-                end = 16.dp,
-                start = 24.dp
-            )
+            .padding(top = 12.dp, bottom = 12.dp, end = 16.dp, start = 24.dp)
             .safeClickable {
                 onItemClick()
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = null,
+            tint = Color_Text_3
+        )
+
+        Spacer(modifier = Modifier.size(12.dp))
+
         Text(
             text = title,
             modifier = Modifier.weight(3f),
-            style = MaterialTheme.typography.subtitle1
+            style = MaterialTheme.typography.subtitle1,
+            color = Color_Text_1
         )
         Image(
             painter = painterResource(id = AIResource.drawable.ic_next),
@@ -114,7 +125,7 @@ fun DrawerBody(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFF070707)
 @Composable
 private fun DrawerLayoutPreview() {
     IntelligentAssistantTheme {

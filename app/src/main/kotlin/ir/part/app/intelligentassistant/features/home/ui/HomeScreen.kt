@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
@@ -50,7 +51,6 @@ import ir.part.app.intelligentassistant.features.home.HomeItemScreen
 import ir.part.app.intelligentassistant.utils.ui.Constants.CAFEBAZAAR_LINK
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import ir.part.app.intelligentassistant.utils.ui.safeClick
-import ir.part.app.intelligentassistant.utils.ui.safeClickable
 import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.theme.Blue_Grey_900_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Blue_gray_900
@@ -142,36 +142,15 @@ fun HomeAppBar(openDrawer: () -> Unit) {
             .padding(start = 16.dp, top = 20.dp, bottom = 22.dp),
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = AIResource.drawable.ic_vira),
-                contentDescription = null,
-                modifier = Modifier.size(width = 40.dp, height = 42.dp)
-            )
-            Column(modifier = Modifier.padding(start = 8.dp)) {
-                Text(
-                    text = stringResource(id = AIResource.string.app_name_farsi),
-                    style = MaterialTheme.typography.h6,
-                    color = Color_Text_1,
-                    modifier = Modifier.padding(top = 0.dp)
-                )
-                Text(
-                    text = stringResource(id = AIResource.string.lbl_assistant),
-                    style = MaterialTheme.typography.body2,
-                    color = Color_Text_2,
-                    modifier = Modifier.padding(top = 0.dp)
-                )
-            }
-        }
-        Row(
+        Image(
+            painter = painterResource(id = AIResource.drawable.ic_app_log_name_description),
+            contentDescription = null,
             modifier = Modifier
-                .align(Alignment.CenterStart)
-                .safeClickable {
-                    openDrawer()
-                },
+        )
+
+        IconButton(
+            onClick = { safeClick(openDrawer) },
+            modifier = Modifier.align(Alignment.CenterStart)
         ) {
             Image(
                 painter = painterResource(id = AIResource.drawable.ic_menu),
@@ -378,6 +357,16 @@ private fun HomeBodyPreview() {
                 PaddingValues(0.dp),
                 {}
             )
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF070707)
+@Composable
+private fun HomeAppBarPreview() {
+    IntelligentAssistantTheme {
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            HomeAppBar {}
         }
     }
 }
