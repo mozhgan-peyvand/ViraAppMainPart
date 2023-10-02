@@ -128,7 +128,16 @@ fun HomeScreen(
                     }
                 },
                 inviteFriendOnclick = {
-                    shareText(context, CAFEBAZAAR_LINK)
+                    shareText(
+                        context,
+                        buildString {
+                            append(context.getString(R.string.lbl_introduce_text))
+                            append("\n")
+                            append(context.getString(R.string.lbl_download))
+                            append("\n")
+                            append(CAFEBAZAAR_LINK)
+                        }
+                    )
                     coroutineScope.launch {
                         scaffoldState.drawerState.close()
                     }
