@@ -198,7 +198,10 @@ fun AvaNegarArchiveListScreen(
         UploadingFileStatus.Idle
     )
 
+    val archiveFiles by archiveListViewModel.allArchiveFiles.collectAsStateWithLifecycle(listOf())
     val isThereAnyTrackingOrUploading by archiveListViewModel.isThereAnyTrackingOrUploading.collectAsStateWithLifecycle()
+
+    val isNetworkAvailable by archiveListViewModel.isNetworkAvailable.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
@@ -450,7 +453,10 @@ fun AvaNegarArchiveListScreen(
                                 ) == PackageManager.PERMISSION_GRANTED
                             ) {
                                 launchOpenFile.launch(intent)
-                            } else if (archiveListViewModel.hasDeniedPermissionPermanently(permission)) {
+                            } else if (archiveListViewModel.hasDeniedPermissionPermanently(
+                                    permission
+                                )
+                            ) {
                                 // needs improvement, just need to save if permission is alreadyRequested
                                 // and everytime check shouldShow
 
@@ -597,7 +603,9 @@ fun AvaNegarArchiveListScreen(
                                         archiveListViewModel.removeUploadingFile(file.id)
 
                                     is AvanegarProcessedFileView ->
-                                        archiveListViewModel.removeProcessedFile(archiveListViewModel.processItem?.id)
+                                        archiveListViewModel.removeProcessedFile(
+                                            archiveListViewModel.processItem?.id
+                                        )
 
                                 }
 
@@ -689,10 +697,9 @@ fun AvaNegarArchiveListScreen(
                         })
 
                     if (
-                        (!archiveListViewModel.isNetworkAvailable.value &&
-                                archiveListViewModel.allArchiveFiles.value.isNotEmpty() &&
-                                isThereAnyTrackingOrUploading
-                                ) ||
+                        (!isNetworkAvailable &&
+                                archiveFiles.isNotEmpty() &&
+                                isThereAnyTrackingOrUploading) ||
                         uiViewState is UiError
                     )
                         ErrorBanner(
@@ -704,8 +711,8 @@ fun AvaNegarArchiveListScreen(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth(),
-                        archiveViewList = archiveListViewModel.allArchiveFiles.value,
-                        isNetworkAvailable = archiveListViewModel.isNetworkAvailable.value,
+                        archiveViewList = archiveFiles,
+                        isNetworkAvailable = isNetworkAvailable,
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                         isErrorState = uiViewState is UiError,
                         isGrid = isGrid,
