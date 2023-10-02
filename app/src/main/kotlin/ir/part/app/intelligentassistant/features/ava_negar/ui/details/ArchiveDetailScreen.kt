@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -23,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -34,7 +32,6 @@ import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberModalBottomSheetState
@@ -76,6 +73,7 @@ import ir.part.app.intelligentassistant.features.ava_negar.ui.SnackBarWithPaddin
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.sheets.ShareDetailItemBottomSheet
+import ir.part.app.intelligentassistant.features.ava_negar.ui.details.sheets.MenuDetailsScreenBottomSheet
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToPdf
 import ir.part.app.intelligentassistant.utils.common.file.convertTextToTXTFile
 import ir.part.app.intelligentassistant.utils.common.orZero
@@ -88,13 +86,9 @@ import ir.part.app.intelligentassistant.utils.ui.shareText
 import ir.part.app.intelligentassistant.utils.ui.showMessage
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Bottom_Sheet
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Solid_2
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_OutLine
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Container_High
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
@@ -354,8 +348,6 @@ fun AvaNegarArchiveDetailScreen(
                     )
                 }
             }
-
-
         }) {
         Scaffold(
             modifier = modifier.fillMaxSize(),
@@ -656,7 +648,7 @@ fun PlayerBody(
 ) {
     val color =
         if (scrollStateValue > 0) Color_Surface_Container_High else MaterialTheme.colors.primaryVariant
-    val isPlaying = rememberSaveable() {
+    val isPlaying = rememberSaveable {
         mutableStateOf(false)
     }
     var remainingTime by rememberSaveable { mutableLongStateOf(0) }
@@ -757,86 +749,6 @@ fun PlayerBody(
                     painter = painterResource(id = R.drawable.ic_play),
                     contentDescription = stringResource(id = R.string.desc_start_playing),
                     modifier = modifier.fillMaxSize()
-                )
-            }
-        }
-    }
-}
-
-
-@Composable
-fun MenuDetailsScreenBottomSheet(
-    modifier: Modifier = Modifier,
-    onRenameAction: () -> Unit,
-    onRemoveFileAction: () -> Unit
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp)
-    ) {
-        TextButton(modifier = Modifier.padding(
-            start = 8.dp, end = 8.dp, top = 12.dp
-        ), contentPadding = PaddingValues(12.dp), onClick = {
-            safeClick {
-                onRenameAction()
-            }
-        }) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    painter = painterResource(id = AIResource.drawable.icon_documents),
-                    contentDescription = null,
-                    tint = Color_Text_1
-                )
-
-                Spacer(modifier = Modifier.size(12.dp))
-
-                Text(
-                    text = stringResource(id = AIResource.string.lbl_change_file_name),
-                    style = MaterialTheme.typography.subtitle1,
-                    color = Color_Text_3
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.size(12.dp))
-
-        Divider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp),
-            color = Color_OutLine
-        )
-
-        Spacer(modifier = Modifier.size(12.dp))
-
-        TextButton(modifier = modifier.padding(
-            start = 8.dp, end = 8.dp, bottom = 12.dp
-        ), contentPadding = PaddingValues(12.dp), onClick = {
-            safeClick {
-                onRemoveFileAction()
-            }
-        }) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Icon(
-                    painter = painterResource(id = AIResource.drawable.icon_trash_delete),
-                    contentDescription = null,
-                    tint = Color_Red
-                )
-
-                Spacer(modifier = Modifier.size(12.dp))
-
-                Text(
-                    text = stringResource(id = AIResource.string.lbl_btn_delete_file),
-                    style = MaterialTheme.typography.subtitle1,
-                    color = Color_Red
                 )
             }
         }
