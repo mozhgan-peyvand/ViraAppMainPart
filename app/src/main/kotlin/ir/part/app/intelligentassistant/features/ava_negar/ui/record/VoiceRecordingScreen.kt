@@ -72,7 +72,7 @@ import ir.part.app.intelligentassistant.utils.ui.hideAndShow
 import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.showText
 import ir.part.app.intelligentassistant.utils.ui.theme.Blue_gray_900
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
+import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG_Bottom_Sheet
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_On_Surface_Variant
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
@@ -275,7 +275,7 @@ fun AvaNegarVoiceRecordingScreen(
         sheetState = bottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         scrimColor = MaterialTheme.colors.background.copy(alpha = 0.5f),
-        sheetBackgroundColor = Color_BG
+        sheetBackgroundColor = Color_BG_Bottom_Sheet,
     ) {
         Column {
             VoiceRecordingTopAppBar(

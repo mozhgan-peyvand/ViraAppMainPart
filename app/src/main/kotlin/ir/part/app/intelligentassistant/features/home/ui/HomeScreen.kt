@@ -259,7 +259,8 @@ fun HomeScreen(
                         }
                     }
 
-                }
+                },
+                modifier = Modifier.padding(top = 8.dp)
             )
         }
     }
@@ -371,12 +372,7 @@ private fun HomeBody(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(
-                    top = 24.dp,
-                    bottom = 16.dp,
-                    start = 16.dp,
-                    end = 16.dp
-                ),
+                .padding(top = 24.dp, bottom = 12.dp, start = 16.dp, end = 16.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -402,9 +398,10 @@ private fun HomeBody(
 
         LazyVerticalGrid(
             columns = GridCells.Adaptive(128.dp),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(8.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(horizontal = 8.dp)
         ) {
             items(homeItem) { item ->
                 HomeBodyItem(
@@ -424,7 +421,8 @@ fun HomeBodyItem(
         modifier = Modifier
             .aspectRatio(0.90f)
             .fillMaxSize()
-            .background(Color.Transparent),
+            .background(Color.Transparent)
+            .padding(top = 4.dp),
         contentAlignment = Alignment.TopCenter,
     ) {
         Card(

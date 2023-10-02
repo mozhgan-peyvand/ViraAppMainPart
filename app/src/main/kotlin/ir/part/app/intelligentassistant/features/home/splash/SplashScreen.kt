@@ -8,6 +8,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,11 +34,11 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -48,7 +49,6 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.utils.ui.theme.Light_blue_50_2
 import kotlinx.coroutines.Dispatchers.IO
@@ -57,7 +57,7 @@ import kotlinx.coroutines.launch
 
 private const val APP_DESCRIPTION_DURATION = 1700
 private const val DELAY_TO_SHOW_APP_DESCRIPTION = 1300
-private const val APP_NAME_ANIMATION_DURATION = 200
+private const val APP_NAME_ANIMATION_DURATION = 500
 private const val DELAY_TO_NAVIGATE = 200L
 
 @Composable
@@ -86,12 +86,6 @@ fun SplashScreen(
 
     val animateColorBlueGrayOrBlueLight by animateColorAsState(
         targetValue = Light_blue_50_2,
-        animationSpec = tween(easing = EaseIn),
-        label = ""
-    )
-
-    val animateColorBlueGrayOrWhite by animateColorAsState(
-        targetValue = Color_White,
         animationSpec = tween(easing = EaseIn),
         label = ""
     )
@@ -175,11 +169,9 @@ fun SplashScreen(
             )
         ) {
 
-            Text(
-                text = stringResource(id = R.string.app_name_farsi),
-                style = MaterialTheme.typography.h2,
-                fontSize = 40.sp,
-                color = animateColorBlueGrayOrWhite
+            Image(
+                painter = painterResource(id = R.drawable.ic_app_name),
+                contentDescription = null,
             )
         }
 

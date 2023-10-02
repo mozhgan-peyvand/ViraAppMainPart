@@ -1,6 +1,5 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.archive
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,7 +20,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.safeClick
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 
@@ -31,11 +29,7 @@ fun DeleteBottomSheet(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Color_Card)
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = fileName,
             maxLines = 1,

@@ -1,6 +1,5 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.record.sheets
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,7 +22,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.safeClick
-import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
@@ -38,11 +36,7 @@ fun StartAgainBottomSheet(
     actionStartAgain: () -> Unit
 ) {
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color_Card)
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
 
         Text(
             modifier = Modifier

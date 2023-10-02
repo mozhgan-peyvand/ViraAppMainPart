@@ -83,6 +83,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.labelMedium
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -122,7 +123,7 @@ fun AvaNegarSearchScreen(
 
     val (selectedSheet, setSelectedSheet) = rememberSaveable {
         mutableStateOf(
-            SearchBottomSheetType.Rename
+            SearchBottomSheetType.Delete
         )
     }
 
@@ -131,35 +132,31 @@ fun AvaNegarSearchScreen(
     BackHandler(modalBottomSheetState.isVisible) {
 
         if (modalBottomSheetState.isVisible) {
-            coroutineScope.launch {
-                if (modalBottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
-                    coroutineScope.launch(Dispatchers.IO) {
-                        if (!isConvertingPdf && !isConvertingTxt)
-                            modalBottomSheetState.hide()
-                        else {
-                            if (backPressedInterval + TIME_INTERVAL < System.currentTimeMillis()) {
-                                withContext(Dispatchers.Main) {
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.msg_back_again_to_cancel_converting),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+            coroutineScope.launch(IO) {
+                if (!isConvertingPdf && !isConvertingTxt)
+                    modalBottomSheetState.hide()
+                else {
+                    if (backPressedInterval + TIME_INTERVAL < System.currentTimeMillis()) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.msg_back_again_to_cancel_converting),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
 
-                                backPressedInterval = System.currentTimeMillis()
-                            } else {
-                                withContext(Dispatchers.Main) {
-                                    isConvertingPdf = false
-                                    isConvertingTxt = false
-                                    modalBottomSheetState.hide()
-                                }
-                            }
+                        backPressedInterval = System.currentTimeMillis()
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            isConvertingPdf = false
+                            isConvertingTxt = false
+                            modalBottomSheetState.hide()
                         }
                     }
-                } else {
-                    navHostController.navigateUp()
                 }
             }
+        } else {
+            navHostController.navigateUp()
         }
     }
 
@@ -181,7 +178,7 @@ fun AvaNegarSearchScreen(
         if (isConvertingPdf) {
 
             viewModel.jobConverting?.cancel()
-            viewModel.jobConverting = coroutineScope.launch(Dispatchers.IO) {
+            viewModel.jobConverting = coroutineScope.launch(IO) {
                 viewModel.fileToShare = convertTextToPdf(
                     context = context,
                     text = viewModel.processItem?.text.orEmpty(),
@@ -199,7 +196,7 @@ fun AvaNegarSearchScreen(
         if (isConvertingTxt) {
 
             viewModel.jobConverting?.cancel()
-            viewModel.jobConverting = coroutineScope.launch(Dispatchers.IO) {
+            viewModel.jobConverting = coroutineScope.launch(IO) {
                 viewModel.fileToShare = convertTextToTXTFile(
                     context = context,
                     text = viewModel.processItem?.text.orEmpty(),
