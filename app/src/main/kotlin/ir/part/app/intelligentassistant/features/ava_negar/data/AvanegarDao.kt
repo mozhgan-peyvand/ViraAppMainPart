@@ -10,6 +10,10 @@ import ir.part.app.intelligentassistant.features.ava_negar.data.entity.AvanegarT
 import ir.part.app.intelligentassistant.features.ava_negar.data.entity.AvanegarUploadingFileEntity
 import kotlinx.coroutines.flow.Flow
 
+const val TRACKING_ITEM = "tracking"
+const val UPLOADING_ITEM = "uploading"
+const val PROCESSED_ITEM = "processed"
+
 @Dao
 interface AvanegarDao {
     @Query("SELECT * FROM AvanegarProcessedFileEntity WHERE id=:id")
@@ -51,21 +55,21 @@ interface AvanegarDao {
     @Query(
         """
         SELECT * FROM (
-            SELECT 0 AS id,'' AS uploadingId, title, 0 AS fileDuration, '' AS text, createdAt, filePath, token, 0 AS isSeen
+            SELECT 0 AS id,'' AS uploadingId, title, 0 AS fileDuration, '' AS text, createdAt, filePath, token, 0 AS isSeen, 'tracking' as archiveType
             FROM AvanegarTrackingFileEntity
             ORDER BY createdAt DESC
         )
-        UNION ALL
+        UNION
         SELECT * FROM (
-            SELECT id,'' AS uploadingId, title, 0 AS fileDuration, text, createdAt, filePath, '' AS token, isSeen
+            SELECT id,'' AS uploadingId, title, 0 AS fileDuration, text, createdAt, filePath, '' AS token, isSeen, 'processed' as archiveType
             FROM AvanegarProcessedFileEntity
             ORDER BY createdAt DESC
         )
-        UNION ALL
+        UNION
         SELECT * FROM (
-            SELECT 0 AS id, id AS uploadingId, title, fileDuration,'' AS text, createdAt, filePath,  '' AS token,  0 AS isSeen
+            SELECT 0 AS id, id AS uploadingId, title, fileDuration,'' AS text, createdAt, filePath,  '' AS token,  0 AS isSeen, 'uploading' as archiveType
             FROM AvanegarUploadingFileEntity
-            ORDER BY createdAt DESC
+            ORDER BY ROWID ASC
         )
     """
     )

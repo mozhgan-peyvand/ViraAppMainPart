@@ -14,6 +14,7 @@ import androidx.core.net.toFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ir.part.app.intelligentassistant.features.ava_negar.data.AvanegarArchiveFilesEntity
 import ir.part.app.intelligentassistant.features.ava_negar.data.AvanegarRepository
 import ir.part.app.intelligentassistant.features.ava_negar.data.entity.AvanegarUploadingFileEntity
 import ir.part.app.intelligentassistant.features.ava_negar.ui.archive.model.ArchiveView
@@ -45,19 +46,25 @@ import ir.part.app.intelligentassistant.utils.ui.UiStatus
 import ir.part.app.intelligentassistant.utils.ui.UiSuccess
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import saman.zamani.persiandate.PersianDate
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 
 private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
@@ -81,14 +88,21 @@ class ArchiveListViewModel @Inject constructor(
     private val _aiEvent: MutableState<IntelligentAssistantEvent?> = mutableStateOf(null)
     val aiEvent: State<IntelligentAssistantEvent?> = _aiEvent
 
-    private val _allArchiveFiles: MutableState<List<ArchiveView>> = mutableStateOf(listOf())
-    val allArchiveFiles: State<List<ArchiveView>> = _allArchiveFiles
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val isNetworkAvailable = networkStatusTracker.networkStatus.mapLatest {
+        it is NetworkStatus.Available
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = false
+    )
 
-    private val _isNetworkAvailable = mutableStateOf(false)
-    val isNetworkAvailable: State<Boolean> = _isNetworkAvailable
+    private val _isUploading: MutableStateFlow<UploadingFileStatus> = MutableStateFlow(Idle)
+    val isUploading: StateFlow<UploadingFileStatus> = _isUploading.asStateFlow()
 
-    private var uploadingFileQueue = CopyOnWriteArrayList<AvanegarUploadingFileView>()
     private var indexOfItemThatShouldBeDownloaded = 0
+
+    private val uploadPercent = MutableStateFlow(0f)
 
     var isThereAnyTrackingOrUploading = MutableStateFlow(false)
         private set
@@ -99,9 +113,6 @@ class ArchiveListViewModel @Inject constructor(
     //TODO set appropriate name
     var isSavingFile = false
         private set
-
-    private val _isUploading: MutableStateFlow<UploadingFileStatus> = MutableStateFlow(Idle)
-    val isUploading: StateFlow<UploadingFileStatus> = _isUploading.asStateFlow()
 
     private var files: MutableMap<Uri, File> = ConcurrentHashMap()
 
@@ -116,6 +127,71 @@ class ArchiveListViewModel @Inject constructor(
     var archiveViewItem by mutableStateOf<ArchiveView?>(null)
     var processItem by mutableStateOf<AvanegarProcessedFileView?>(null)
 
+    val allArchiveFiles = combine(
+        networkStatusTracker.networkStatus,
+        _isUploading,
+        uploadPercent,
+        repository.getAllArchiveFiles()
+    ) { networkStatus: NetworkStatus, uploadingFileStatus: UploadingFileStatus, uploadPercent: Float, avanegarArchiveFilesEntity: AvanegarArchiveFilesEntity ->
+
+        if (networkStatus is NetworkStatus.Unavailable) {
+            job?.cancel()
+            resetUploadProcess()
+            resetIndexOfItemThatShouldBeDownloaded()
+        } else {
+            val uploadingList = avanegarArchiveFilesEntity.uploading
+            // region uploadingFileStatus
+            if (uploadingFileStatus != Uploading && uploadingFileStatus != IsNotUploading && uploadingFileStatus != FailureUpload && uploadingList.isNotEmpty()) {
+
+                startUploading()
+                _uiViewStat.emit(UiLoading)
+                _isUploading.value = Uploading
+
+
+                indexOfItemThatShouldBeDownloaded.run {
+                    val title = uploadingList[this].title
+                    val filePath = uploadingList[this].filePath
+                    val fileDuration = uploadingList[this].fileDuration
+
+                    //0L means that file duration was is null
+                    if (fileDuration < SIXTY_SECOND && fileDuration != 0L) {
+                        audioToTextBelowSixtySecond(
+                            title,
+                            filePath,
+                            createProgressListener()
+                        )
+                    } else {
+                        audioToTextAboveSixtySecond(
+                            title,
+                            filePath,
+                            createProgressListener()
+                        )
+                    }
+                }
+            }
+            //endregion
+
+        }
+
+
+        //region archiveView
+        val processedList = avanegarArchiveFilesEntity.processed
+        val trackingList = avanegarArchiveFilesEntity.tracking
+        val uploadingList = avanegarArchiveFilesEntity.uploading
+
+        isThereAnyTrackingOrUploading.value =
+            trackingList.isNotEmpty() || uploadingList.isNotEmpty()
+
+        //endregion
+        val title = if (uploadingList.isNotEmpty()) uploadingList[0].title else ""
+        uploadingList.map { it.toAvanegarUploadingFileView(uploadPercent, title) } +
+                trackingList.map { it.toAvanegarTrackingFileView() } +
+                processedList.map { it.toAvanegarProcessedFileView() }
+
+
+    }.distinctUntilChanged()
+
+
     private lateinit var retriever: MediaMetadataRetriever
 
     init {
@@ -128,81 +204,8 @@ class ArchiveListViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            networkStatusTracker.networkStatus.collect { isNetworkAvailable ->
-                when (isNetworkAvailable) {
-                    NetworkStatus.Available -> {
-                        _isNetworkAvailable.value = true
-
-                        if (_isUploading.value != Uploading && uploadingFileQueue.isNotEmpty()) {
-                            startUploading()
-                        }
-                    }
-
-                    NetworkStatus.Unavailable -> {
-
-                        job?.cancel()
-                        resetUploadProcess()
-                        resetIndexOfItemThatShouldBeDownloaded()
-                        _isNetworkAvailable.value = false
-                    }
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            repository.getAllArchiveFiles().collect { avanegarArchiveFile ->
-                val processedList = avanegarArchiveFile.processed
-                val trackingList = avanegarArchiveFile.tracking
-                val uploadingList = avanegarArchiveFile.uploading
-                isThereAnyTrackingOrUploading.value =
-                    trackingList.isNotEmpty() || uploadingList.isNotEmpty()
-                if (uploadingFileQueue.isEmpty()) uploadingFileQueue = CopyOnWriteArrayList(
-                    uploadingList.map { it.toAvanegarUploadingFileView() }.reversed()
-                )
-                _allArchiveFiles.value =
-                    uploadingList.map { it.toAvanegarUploadingFileView() } +
-                            trackingList.map { it.toAvanegarTrackingFileView() } +
-                            processedList.map { it.toAvanegarProcessedFileView() }
-
-                if (_isUploading.value != Uploading)
-                    startUploading()
-            }
-        }
-
-        viewModelScope.launch {
             aiEventPublisher.events.collect {
                 _aiEvent.value = it
-            }
-        }
-
-        viewModelScope.launch {
-            _isUploading.collect {
-
-                if (it != Uploading && it != FailureUpload && uploadingFileQueue.isNotEmpty()) {
-                    _uiViewStat.emit(UiLoading)
-                    _isUploading.value = Uploading
-
-                    indexOfItemThatShouldBeDownloaded.run {
-                        val title = uploadingFileQueue[this].title
-                        val filePath = uploadingFileQueue[this].filePath
-                        val fileDuration = uploadingFileQueue[this].fileDuration
-
-                        //0L means that file duration was is null
-                        if (fileDuration < SIXTY_SECOND && fileDuration != 0L) {
-                            audioToTextBelowSixtySecond(
-                                title,
-                                filePath,
-                                createProgressListener()
-                            )
-                        } else {
-                            audioToTextAboveSixtySecond(
-                                title,
-                                filePath,
-                                createProgressListener()
-                            )
-                        }
-                    }
-                }
             }
         }
     }
@@ -218,7 +221,6 @@ class ArchiveListViewModel @Inject constructor(
 
     fun addFileToUploadingQueue(title: String, uri: Uri?) {
         viewModelScope.launch(IO) {
-
             if (uri == null) {
                 _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile()))
                 return@launch
@@ -230,43 +232,23 @@ class ArchiveListViewModel @Inject constructor(
                 createFileFromUri(uri)?.absolutePath
             }
 
-            if (!absolutePath.isNullOrBlank()) {
-                val createdAt = PersianDate().time
-                val id = title + absolutePath
-                val fileDuration = getFileDuration(absolutePath)
+            if (absolutePath.isNullOrBlank()) {
+                _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile()))
+                return@launch
+            }
 
-                uploadingFileQueue.add(
-                    AvanegarUploadingFileView(
-                        id = id,
-                        title = title,
-                        filePath = absolutePath,
-                        createdAt = createdAt,
-                        fileDuration = fileDuration,
-                        uploadedPercent = 0f, //it will not store in db
-                        isUploadingFinished = false, //it will not store in db
-                    )
-                )
+            val createdAt = PersianDate().time
+            val id = title + absolutePath
+            val fileDuration = getFileDuration(absolutePath)
 
-                insertUploadingFileToDatabase(
-                    id = id,
-                    title = title,
-                    filePath = absolutePath,
-                    createdAt = createdAt,
-                    fileDuration = fileDuration
-                )
+            insertUploadingFileToDatabase(
+                id = id,
+                title = title,
+                filePath = absolutePath,
+                createdAt = createdAt,
+                fileDuration = fileDuration
+            )
 
-                if (uploadingFileQueue.isNotEmpty() && _isUploading.value != Uploading) {
-                    _uiViewStat.emit(UiLoading)
-
-                    _isUploading.value = Uploading
-
-                    if (fileDuration < SIXTY_SECOND && fileDuration != 0L)
-                        audioToTextBelowSixtySecond(title, absolutePath, createProgressListener())
-                    else
-                        audioToTextAboveSixtySecond(title, absolutePath, createProgressListener())
-                }
-
-            } else _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile()))
         }
     }
 
@@ -423,11 +405,17 @@ class ArchiveListViewModel @Inject constructor(
         return sharedPref.getBoolean(permissionDeniedPrefKey(permission), false)
     }
 
-    fun startUploading(avanegarUploadingFile: AvanegarUploadingFileView? = null) {
+    fun startUploading(
+        avanegarUploadingFile: AvanegarUploadingFileView? = null,
+        uploadingList: List<AvanegarUploadingFileView>? = null
+    ) {
         //to make sure that it does not return -1
         indexOfItemThatShouldBeDownloaded = if (avanegarUploadingFile != null &&
-            uploadingFileQueue.contains(avanegarUploadingFile)
-        ) uploadingFileQueue.indexOf(avanegarUploadingFile)
+            uploadingList != null &&
+            uploadingList.contains(
+                avanegarUploadingFile
+            )
+        ) uploadingList.indexOf(avanegarUploadingFile)
         else 0
 
         _isUploading.value = IsNotUploading
@@ -440,29 +428,14 @@ class ArchiveListViewModel @Inject constructor(
             totalBytes: Long,
             isDone: Boolean
         ) {
-            _allArchiveFiles.value = _allArchiveFiles.value.map {
-                when (it) {
-                    is AvanegarUploadingFileView -> {
-                        if (id != it.id) it
-                        else {
-                            it.copy(
-                                uploadedPercent = (bytesUploaded.toDouble() / totalBytes).toFloat()
-                            )
-                        }
-                    }
-
-                    else -> it
-                }
+            uploadPercent.update {
+                (bytesUploaded.toDouble() / totalBytes).toFloat()
             }
         }
     }
 
     private fun resetUploadProcess() {
-        _allArchiveFiles.value = _allArchiveFiles.value.map {
-            if (it is AvanegarUploadingFileView) {
-                it.copy(uploadedPercent = 0f)
-            } else it
-        }
+        uploadPercent.update { 0f }
     }
 
     private fun resetIndexOfItemThatShouldBeDownloaded() {
@@ -479,8 +452,6 @@ class ArchiveListViewModel @Inject constructor(
                 numberOfRequest = NUMBER_OF_REQUEST
                 _uiViewStat.emit(UiSuccess)
                 changeUploadFileToIdle()
-                uploadingFileQueue =
-                    CopyOnWriteArrayList(uploadingFileQueue.filter { it.id != result.data })
                 _isUploading.value = Idle
 
                 onSuccess?.let {

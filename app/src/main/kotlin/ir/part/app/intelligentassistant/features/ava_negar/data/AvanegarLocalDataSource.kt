@@ -21,18 +21,24 @@ class AvanegarLocalDataSource @Inject constructor(
         }
     }.flowOn(IO)
 
-    fun getAllArchiveFiles() = dao.getArchiveFiles().map {
+    fun getAllArchiveFiles() = dao.getArchiveFiles().map first@{ archives ->
         val tracking = mutableListOf<AvanegarTrackingFileEntity>()
         val processed = mutableListOf<AvanegarProcessedFileEntity>()
         val uploading = mutableListOf<AvanegarUploadingFileEntity>()
 
-        it.forEach { archive ->
-            if (archive.token.isNotBlank()) {
-                tracking.add(archive.toAvanegarTrackingFileEntity())
-            } else if (archive.token.isBlank() && archive.text.isBlank()) {
-                uploading.add(archive.toAvanegarUploadingFileEntity())
-            } else {
-                processed.add(archive.toAvanegarProcessedFileEntity())
+        archives.forEach { archive ->
+            when (archive.archiveType) {
+                TRACKING_ITEM -> {
+                    tracking.add(archive.toAvanegarTrackingFileEntity())
+                }
+
+                UPLOADING_ITEM -> {
+                    uploading.add(archive.toAvanegarUploadingFileEntity())
+                }
+
+                PROCESSED_ITEM -> {
+                    processed.add(archive.toAvanegarProcessedFileEntity())
+                }
             }
         }
 
@@ -50,14 +56,16 @@ class AvanegarLocalDataSource @Inject constructor(
 
     suspend fun getTrackingFilesSync() = dao.getTrackingFilesSync()
 
-    suspend fun insertUnprocessedFile(file: AvanegarTrackingFileEntity) =
+    suspend fun insertUnprocessedFile(file: AvanegarTrackingFileEntity) {
         dao.insertUnprocessedFile(file)
+    }
 
     suspend fun insertProcessedFile(file: AvanegarProcessedFileEntity) =
         dao.insertProcessedFile(file)
 
-    suspend fun insertUploadingFile(file: AvanegarUploadingFileEntity) =
+    suspend fun insertUploadingFile(file: AvanegarUploadingFileEntity) {
         dao.insertUploadingFile(file)
+    }
 
     suspend fun deleteUnprocessedFile(token: String) =
         dao.deleteUnprocessedFile(token)

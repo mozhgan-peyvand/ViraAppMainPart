@@ -9,7 +9,8 @@ data class AvanegarArchiveUnionEntity(
     val filePath: String,
     val token: String,
     val fileDuration: Long,
-    val isSeen: Boolean
+    val isSeen: Boolean,
+    val archiveType: String
 ) {
     fun toAvanegarTrackingFileEntity() = AvanegarTrackingFileEntity(
         token = token,
