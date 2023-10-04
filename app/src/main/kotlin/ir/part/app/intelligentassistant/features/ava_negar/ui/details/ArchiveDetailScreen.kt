@@ -96,7 +96,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ir.part.app.intelligentassistant.R as AIResource
 
 const val TIME_INTERVAL = 2000
 
@@ -411,7 +410,7 @@ fun AvaNegarArchiveDetailScreen(
                         showMessage(
                             snackbarHostState,
                             coroutineScope,
-                            context.getString(AIResource.string.lbl_text_save_in_clipboard)
+                            context.getString(R.string.lbl_text_save_in_clipboard)
                         )
                     }
                 )
@@ -465,8 +464,8 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
         }) {
             Icon(
                 modifier = Modifier.padding(8.dp),
-                painter = painterResource(id = AIResource.drawable.ic_arrow_forward),
-                contentDescription = stringResource(id = AIResource.string.desc_back)
+                painter = painterResource(id = R.drawable.ic_arrow_forward),
+                contentDescription = stringResource(id = R.string.desc_back)
             )
         }
 
@@ -490,8 +489,8 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
         }) {
             Icon(
                 modifier = Modifier.padding(12.dp),
-                painter = painterResource(id = AIResource.drawable.ic_redo),
-                contentDescription = stringResource(id = AIResource.string.desc_redo)
+                painter = painterResource(id = R.drawable.ic_redo),
+                contentDescription = stringResource(id = R.string.desc_redo)
             )
         }
 
@@ -502,8 +501,8 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
         }) {
             Icon(
                 modifier = Modifier.padding(12.dp),
-                painter = painterResource(id = AIResource.drawable.ic_undo),
-                contentDescription = stringResource(id = AIResource.string.desc_undo)
+                painter = painterResource(id = R.drawable.ic_undo),
+                contentDescription = stringResource(id = R.string.desc_undo)
             )
         }
 
@@ -514,8 +513,8 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
         }) {
             Icon(
                 modifier = Modifier.padding(12.dp),
-                painter = painterResource(id = AIResource.drawable.ic_dots_menu),
-                contentDescription = stringResource(id = AIResource.string.desc_menu)
+                painter = painterResource(id = R.drawable.ic_dots_menu),
+                contentDescription = stringResource(id = R.string.desc_menu)
             )
         }
     }
@@ -553,12 +552,12 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    painter = painterResource(id = AIResource.drawable.ic_copy),
-                    contentDescription = stringResource(id = AIResource.string.desc_copy),
+                    painter = painterResource(id = R.drawable.ic_copy),
+                    contentDescription = stringResource(id = R.string.desc_copy),
                     modifier.padding(end = 8.dp)
                 )
                 Text(
-                    text = stringResource(id = AIResource.string.lbl_btn_copy_text),
+                    text = stringResource(id = R.string.lbl_btn_copy_text),
                     style = MaterialTheme.typography.button,
                     color = Color_Primary_300
                 )
@@ -587,12 +586,12 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    painter = painterResource(id = AIResource.drawable.ic_share),
-                    contentDescription = stringResource(id = AIResource.string.desc_share),
+                    painter = painterResource(id = R.drawable.ic_share),
+                    contentDescription = stringResource(id = R.string.desc_share),
                     modifier.padding(end = 8.dp)
                 )
                 Text(
-                    text = stringResource(id = AIResource.string.lbl_btn_share_text),
+                    text = stringResource(id = R.string.lbl_btn_share_text),
                     style = MaterialTheme.typography.button,
                     color = Color_Primary_300
                 )

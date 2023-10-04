@@ -2,7 +2,7 @@ package ir.part.app.intelligentassistant.features.home.onboarding
 
 import android.content.Context
 import androidx.annotation.DrawableRes
-import ir.part.app.intelligentassistant.R as AiResource
+import ir.part.app.intelligentassistant.R
 
 sealed class MainOnboardingItem(
     @DrawableRes
@@ -11,18 +11,18 @@ sealed class MainOnboardingItem(
     val description: String
 ) {
     data class First(private val context: Context) : MainOnboardingItem(
-        image = AiResource.drawable.img_mic_text,
-        title = AiResource.string.lbl_avanegar_service,
-        description = context.getString(AiResource.string.lbl_avanegar_service_details)
+        image = R.drawable.img_mic_text,
+        title = R.string.lbl_avanegar_service,
+        description = context.getString(R.string.lbl_avanegar_service_details)
     )
 
     data class Second(private val context: Context) : MainOnboardingItem(
-        image = AiResource.drawable.img_ai_tools,
-        title = AiResource.string.lbl_soon_in_vira,
+        image = R.drawable.img_ai_tools,
+        title = R.string.lbl_soon_in_vira,
         description = buildString {
             append(
                 context.getString(
-                    AiResource.string.lbl_soon_in_vira_description_first
+                    R.string.lbl_soon_in_vira_description_first
                 ).addBullet()
             )
 
@@ -30,7 +30,7 @@ sealed class MainOnboardingItem(
 
             append(
                 context.getString(
-                    AiResource.string.lbl_soon_in_vira_description_second
+                    R.string.lbl_soon_in_vira_description_second
                 ).addBullet()
             )
 
@@ -38,7 +38,7 @@ sealed class MainOnboardingItem(
 
             append(
                 context.getString(
-                    AiResource.string.lbl_soon_in_vira_description_third
+                    R.string.lbl_soon_in_vira_description_third
                 ).addBullet()
             )
 
@@ -46,7 +46,7 @@ sealed class MainOnboardingItem(
 
             append(
                 context.getString(
-                    AiResource.string.lbl_soon_in_vira_description_fourth
+                    R.string.lbl_soon_in_vira_description_fourth
                 ).addBullet()
             )
         }

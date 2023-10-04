@@ -87,7 +87,6 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import ir.part.app.intelligentassistant.R as AIResource
 
 
 @Composable
@@ -283,7 +282,7 @@ fun AvaNegarSearchScreen(
                                 showMessage(
                                     snackbarHostState,
                                     coroutineScope,
-                                    context.getString(AIResource.string.lbl_text_save_in_clipboard)
+                                    context.getString(R.string.lbl_text_save_in_clipboard)
                                 )
                             },
                             shareItemAction = {
@@ -435,7 +434,7 @@ private fun AvaNegarSearchBody(
 ) {
     val composition by rememberLottieComposition(
         LottieCompositionSpec
-            .RawRes(AIResource.raw.lottie_loading)
+            .RawRes(R.raw.lottie_loading)
     )
     val progress by animateLottieCompositionAsState(
         composition,
@@ -512,8 +511,8 @@ private fun SearchToolbar(
             }
         }) {
             Icon(
-                painter = painterResource(id = AIResource.drawable.ic_arrow_right),
-                contentDescription = stringResource(id = AIResource.string.desc_forward),
+                painter = painterResource(id = R.drawable.ic_arrow_right),
+                contentDescription = stringResource(id = R.string.desc_forward),
                 modifier = Modifier.padding(12.dp)
             )
         }
@@ -531,14 +530,14 @@ private fun SearchToolbar(
             onValueChange = { onValueChangeAction(it) },
             placeholder = {
                 Text(
-                    text = stringResource(id = AIResource.string.lbl_search_in_archive),
+                    text = stringResource(id = R.string.lbl_search_in_archive),
                     style = MaterialTheme.typography.labelMedium
                 )
             },
             leadingIcon = {
                 Image(
-                    painterResource(id = AIResource.drawable.ic_search_n),
-                    contentDescription = stringResource(id = AIResource.string.desc_share),
+                    painterResource(id = R.drawable.ic_search_n),
+                    contentDescription = stringResource(id = R.string.desc_share),
                     modifier = Modifier.padding(10.dp)
                 )
             },
@@ -549,8 +548,8 @@ private fun SearchToolbar(
                     }
                 }) {
                     Icon(
-                        painter = painterResource(id = AIResource.drawable.ic_clear),
-                        contentDescription = stringResource(id = AIResource.string.desc_clear),
+                        painter = painterResource(id = R.drawable.ic_clear),
+                        contentDescription = stringResource(id = R.string.desc_clear),
                         modifier = Modifier.padding(12.dp)
                     )
                 }

@@ -22,11 +22,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.safeClickable
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
-import ir.part.app.intelligentassistant.R as AIResource
 
 
 @Composable
@@ -63,25 +63,25 @@ private fun DrawerHeaderBody(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = painterResource(id = AIResource.drawable.ic_vira),
+                painter = painterResource(id = R.drawable.ic_vira),
                 contentDescription = null
             )
             Spacer(modifier = Modifier.size(8.dp))
 
             Image(
-                painter = painterResource(id = AIResource.drawable.ic_app_name),
+                painter = painterResource(id = R.drawable.ic_app_name),
                 contentDescription = null
             )
 
         }
         DrawerBody(
-            title = stringResource(id = AIResource.string.lbl_invite_friends),
-            icon = AIResource.drawable.ic_envelope,
+            title = stringResource(id = R.string.lbl_invite_friends),
+            icon = R.drawable.ic_envelope,
             onItemClick = { inviteFriendOnclick() }
         )
         DrawerBody(
-            title = stringResource(id = AIResource.string.lbl_about_vira),
-            icon = AIResource.drawable.ic_info,
+            title = stringResource(id = R.string.lbl_about_vira),
+            icon = R.drawable.ic_info,
             onItemClick = { aboutUsOnClick() }
         )
     }
@@ -119,7 +119,7 @@ fun DrawerBody(
             color = Color_Text_1
         )
         Image(
-            painter = painterResource(id = AIResource.drawable.ic_next),
+            painter = painterResource(id = R.drawable.ic_next),
             contentDescription = null,
         )
     }

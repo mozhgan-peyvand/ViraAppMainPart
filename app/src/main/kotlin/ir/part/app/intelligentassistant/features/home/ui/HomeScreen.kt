@@ -74,7 +74,6 @@ import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.utils.ui.theme.Light_blue_50
 import ir.part.app.intelligentassistant.utils.ui.theme.labelMedium
 import kotlinx.coroutines.launch
-import ir.part.app.intelligentassistant.R as AIResource
 
 @Composable
 fun HomeScreen(
@@ -284,7 +283,7 @@ fun HomeAppBar(openDrawer: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Image(
-            painter = painterResource(id = AIResource.drawable.ic_app_log_name_description),
+            painter = painterResource(id = R.drawable.ic_app_log_name_description),
             contentDescription = null,
             modifier = Modifier
         )
@@ -294,7 +293,7 @@ fun HomeAppBar(openDrawer: () -> Unit) {
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
             Icon(
-                painter = painterResource(id = AIResource.drawable.ic_menu),
+                painter = painterResource(id = R.drawable.ic_menu),
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
                 tint = Color_Text_2
@@ -343,7 +342,7 @@ private fun HomeBody(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    painter = painterResource(id = AIResource.drawable.img_voice),
+                    painter = painterResource(id = R.drawable.img_voice),
                     contentDescription = null,
                     modifier = Modifier.size(width = 68.dp, height = 80.dp)
                 )
@@ -353,12 +352,12 @@ private fun HomeBody(
                         .padding(start = 8.dp)
                 ) {
                     Text(
-                        text = stringResource(id = AIResource.string.lbl_ava_negar),
+                        text = stringResource(id = R.string.lbl_ava_negar),
                         style = MaterialTheme.typography.h6,
                         color = Color_Text_1
                     )
                     Text(
-                        text = stringResource(id = AIResource.string.lbl_ava_negar_desc),
+                        text = stringResource(id = R.string.lbl_ava_negar_desc),
                         color = Light_blue_50,
                         style = MaterialTheme.typography.labelMedium
                     )
@@ -371,7 +370,7 @@ private fun HomeBody(
                     contentAlignment = Alignment.Center,
                 ) {
                     Image(
-                        painter = painterResource(id = AIResource.drawable.ic_arrow_crooked),
+                        painter = painterResource(id = R.drawable.ic_arrow_crooked),
                         contentDescription = "ic_arrow"
                     )
                 }
@@ -392,7 +391,7 @@ private fun HomeBody(
                 color = Color_OutLine
             )
             Text(
-                text = stringResource(id = AIResource.string.coming_soon_vira),
+                text = stringResource(id = R.string.coming_soon_vira),
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.subtitle2,
                 color = Color_Text_2, textAlign = TextAlign.Center
@@ -475,7 +474,7 @@ fun HomeBodyItem(
                     )
                 ) {
                     Text(
-                        text = stringResource(id = AIResource.string.lbl_coming_soon),
+                        text = stringResource(id = R.string.lbl_coming_soon),
                         modifier = Modifier
                             .background(Blue_Grey_900_2)
                             .padding(

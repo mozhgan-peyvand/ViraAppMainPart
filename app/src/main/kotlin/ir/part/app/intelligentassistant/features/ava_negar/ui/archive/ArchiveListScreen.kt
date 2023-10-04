@@ -144,7 +144,6 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import ir.part.app.intelligentassistant.R as AIResource
 
 const val TRACKING_FILE_ANIMATION_DURATION_Column = 1300
 const val TRACKING_FILE_ANIMATION_DURATION_Grid = 1500
@@ -260,7 +259,7 @@ fun AvaNegarArchiveListScreen(
             showMessage(
                 snackbarHostState,
                 coroutineScope,
-                context.getString(AIResource.string.lbl_need_to_access_file_permission)
+                context.getString(R.string.lbl_need_to_access_file_permission)
             )
         }
     }
@@ -282,7 +281,7 @@ fun AvaNegarArchiveListScreen(
             showMessage(
                 snackbarHostState,
                 coroutineScope,
-                context.getString(AIResource.string.lbl_need_to_access_to_record_audio_permission)
+                context.getString(R.string.lbl_need_to_access_to_record_audio_permission)
             )
         }
     }
@@ -534,7 +533,7 @@ fun AvaNegarArchiveListScreen(
                                 showMessage(
                                     snackbarHostState,
                                     coroutineScope,
-                                    context.getString(AIResource.string.lbl_text_save_in_clipboard)
+                                    context.getString(R.string.lbl_text_save_in_clipboard)
                                 )
                             },
                             shareItemAction = {
@@ -821,7 +820,7 @@ fun AvaNegarArchiveListScreen(
                                 snackbarHostState,
                                 coroutineScope,
                                 context.getString(
-                                    AIResource.string.msg_no_microphone_found_on_phone
+                                    R.string.msg_no_microphone_found_on_phone
                                 )
                             )
                         }
@@ -855,15 +854,15 @@ private fun ArchiveAppBar(
         }) {
             Icon(
                 modifier = Modifier.padding(12.dp),
-                painter = painterResource(id = AIResource.drawable.ic_arrow_forward),
-                contentDescription = stringResource(id = AIResource.string.desc_back)
+                painter = painterResource(id = R.drawable.ic_arrow_forward),
+                contentDescription = stringResource(id = R.string.desc_back)
             )
         }
 
         Spacer(modifier = Modifier.size(8.dp))
 
         Text(
-            text = stringResource(id = AIResource.string.lbl_ava_negar),
+            text = stringResource(id = R.string.lbl_ava_negar),
             style = MaterialTheme.typography.subtitle2,
             color = MaterialTheme.colors.onSurface,
             modifier = Modifier.weight(1f),
@@ -880,12 +879,12 @@ private fun ArchiveAppBar(
             Icon(
                 modifier = Modifier.padding(12.dp),
                 painter = painterResource(
-                    id = if (isGrid) AIResource.drawable.ic_list_column
-                    else AIResource.drawable.ic_list_grid
+                    id = if (isGrid) R.drawable.ic_list_column
+                    else R.drawable.ic_list_grid
                 ),
                 contentDescription = stringResource(
-                    id = if (isGrid) AIResource.string.desc_grid
-                    else AIResource.string.desc_column
+                    id = if (isGrid) R.string.desc_grid
+                    else R.string.desc_column
                 )
             )
         }
@@ -897,8 +896,8 @@ private fun ArchiveAppBar(
         }) {
             Icon(
                 modifier = Modifier.padding(12.dp),
-                painter = painterResource(id = AIResource.drawable.ic_search),
-                contentDescription = stringResource(id = AIResource.string.desc_search)
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = stringResource(id = R.string.desc_search)
             )
         }
     }
@@ -982,14 +981,14 @@ private fun ArchiveEmptyBody(
                 modifier = Modifier
                     .size(200.dp)
                     .align(Alignment.CenterHorizontally),
-                painter = painterResource(id = AIResource.drawable.img_main_page),
+                painter = painterResource(id = R.drawable.img_main_page),
                 contentDescription = null
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = stringResource(id = AIResource.string.lbl_dont_have_file),
+                text = stringResource(id = R.string.lbl_dont_have_file),
                 style = MaterialTheme.typography.subtitle1,
                 color = Color_Text_1,
                 modifier = Modifier
@@ -999,7 +998,7 @@ private fun ArchiveEmptyBody(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = stringResource(id = AIResource.string.lbl_make_your_first_file),
+                text = stringResource(id = R.string.lbl_make_your_first_file),
                 style = MaterialTheme.typography.caption,
                 color = Color_Text_3,
                 modifier = Modifier
@@ -1020,7 +1019,7 @@ private fun ArchiveEmptyBody(
             Image(
                 modifier = Modifier.fillMaxHeight(),
                 contentScale = ContentScale.FillHeight,
-                painter = painterResource(id = AIResource.drawable.ic_arrow),
+                painter = painterResource(id = R.drawable.ic_arrow),
                 contentDescription = null
             )
         }
@@ -1186,8 +1185,8 @@ private fun Fabs(
                     }
                 ) {
                     Icon(
-                        painter = painterResource(id = AIResource.drawable.ic_upload),
-                        contentDescription = stringResource(id = AIResource.string.desc_upload)
+                        painter = painterResource(id = R.drawable.ic_upload),
+                        contentDescription = stringResource(id = R.string.desc_upload)
                     )
                 }
             }
@@ -1203,8 +1202,8 @@ private fun Fabs(
             ) {
                 Icon(
                     tint = if (isFabExpanded) MaterialTheme.colors.primary else Color_White,
-                    painter = painterResource(id = if (isFabExpanded) AIResource.drawable.ic_close else AIResource.drawable.ic_add),
-                    contentDescription = stringResource(id = AIResource.string.desc_menu_upload_and_record)
+                    painter = painterResource(id = if (isFabExpanded) R.drawable.ic_close else R.drawable.ic_add),
+                    contentDescription = stringResource(id = R.string.desc_menu_upload_and_record)
                 )
             }
         }
@@ -1224,8 +1223,8 @@ private fun Fabs(
                     }
                 }) {
                 Icon(
-                    painter = painterResource(id = AIResource.drawable.ic_mic),
-                    contentDescription = stringResource(id = AIResource.string.desc_record)
+                    painter = painterResource(id = R.drawable.ic_mic),
+                    contentDescription = stringResource(id = R.string.desc_record)
                 )
             }
         }
