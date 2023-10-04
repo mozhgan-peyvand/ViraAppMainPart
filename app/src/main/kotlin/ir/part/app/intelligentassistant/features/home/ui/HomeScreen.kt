@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
-import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
@@ -44,7 +43,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,6 +70,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.utils.ui.theme.Light_blue_50
 import ir.part.app.intelligentassistant.utils.ui.theme.labelMedium
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 import kotlinx.coroutines.launch
 
@@ -295,8 +294,8 @@ fun HomeAppBar(openDrawer: () -> Unit) {
             onClick = { safeClick(openDrawer) },
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_menu),
+            ViraIcon(
+                drawable = R.drawable.ic_menu,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
                 tint = Color_Text_2

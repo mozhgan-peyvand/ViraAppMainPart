@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -17,7 +16,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,6 +26,7 @@ import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 
 @Composable
 fun ArchiveBodyErrorGrid(
@@ -77,8 +76,8 @@ fun ArchiveBodyErrorGrid(
 
                     Spacer(modifier = Modifier.size(8.dp))
 
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_retry),
+                    ViraIcon(
+                        drawable = R.drawable.ic_retry,
                         contentDescription = null,
                         tint = Color_Primary_300
                     )

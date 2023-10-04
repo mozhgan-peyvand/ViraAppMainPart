@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -20,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,6 +32,7 @@ import ir.part.app.intelligentassistant.utils.ui.safeClickable
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 
 @Composable
 fun ArchiveTrackingFileElementGrid(
@@ -83,9 +82,9 @@ fun ArchiveTrackingFileElementGrid(
                         }
                     }
                 ) {
-                    Icon(
+                    ViraIcon(
+                        drawable = R.drawable.ic_dots_menu,
                         modifier = Modifier.padding(12.dp),
-                        painter = painterResource(id = R.drawable.ic_dots_menu),
                         contentDescription = stringResource(id = R.string.desc_menu)
                     )
                 }

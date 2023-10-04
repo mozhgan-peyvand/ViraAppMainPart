@@ -16,7 +16,6 @@ import androidx.compose.material.DismissDirection
 import androidx.compose.material.DismissValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FractionalThreshold
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.Text
@@ -32,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
@@ -48,6 +46,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
 @Composable
@@ -146,11 +145,11 @@ private fun SwipeForDismiss(
                 backgroundColor = Color_Primary_300,
                 shape = RoundedCornerShape(32.dp)
             ) {
-                Icon(
-                    modifier = Modifier.padding(horizontal = 25.dp, vertical = 12.dp),
-                    painter = painterResource(id = R.drawable.ic_arrow_right),
+                ViraIcon(
+                    drawable = R.drawable.ic_arrow_right,
                     contentDescription = null,
-                    tint = Color_White
+                    tint = Color_White,
+                    modifier = Modifier.padding(horizontal = 25.dp, vertical = 12.dp)
                 )
             }
         },

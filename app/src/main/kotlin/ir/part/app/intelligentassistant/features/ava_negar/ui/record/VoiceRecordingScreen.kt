@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
@@ -42,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -79,6 +77,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Container_High
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 import kotlinx.coroutines.CoroutineScope
 import pl.droidsonroids.gif.GifDrawable
@@ -410,8 +409,8 @@ fun VoiceRecordingTopAppBar(
                 }
             }
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_arrow_forward),
+            ViraIcon(
+                drawable = R.drawable.ic_arrow_forward,
                 contentDescription = null,
                 modifier = Modifier.padding(12.dp)
             )
@@ -627,8 +626,8 @@ fun VoiceRecordingControlsSection(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_repeat),
+                        ViraIcon(
+                            drawable = R.drawable.ic_repeat,
                             contentDescription = stringResource(R.string.desc_convert_to_text),
                             tint = if (isStopped) Color_Primary_200 else Color_On_Surface_Variant,
                             modifier = Modifier.size(24.dp)
@@ -666,8 +665,8 @@ fun VoiceRecordingControlsSection(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_stop),
+                            ViraIcon(
+                                drawable = R.drawable.ic_stop,
                                 contentDescription = stringResource(R.string.desc_stop_recording),
                                 tint = if (!isRecording && hasPaused) Color_Primary_200 else Color_On_Surface_Variant,
                                 modifier = Modifier.size(24.dp)

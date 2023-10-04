@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -27,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
@@ -43,6 +41,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
 @Composable
@@ -141,8 +140,8 @@ fun AboutUsScreen(
 
                 Spacer(modifier = Modifier.size(10.dp))
 
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_email),
+                ViraIcon(
+                    drawable = R.drawable.ic_email,
                     contentDescription = null,
                     tint = Color_Primary_200
                 )
@@ -166,8 +165,8 @@ fun AboutUsTopAppBar(
                 onBackClick()
             }
         }) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_arrow_forward),
+            ViraIcon(
+                drawable = R.drawable.ic_arrow_forward,
                 contentDescription = null,
                 modifier = Modifier.padding(12.dp),
                 tint = Color_White

@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
@@ -56,7 +55,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -89,6 +87,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Container_High
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
@@ -462,9 +461,9 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
                 onBackAction()
             }
         }) {
-            Icon(
+            ViraIcon(
+                drawable = R.drawable.ic_arrow_forward,
                 modifier = Modifier.padding(8.dp),
-                painter = painterResource(id = R.drawable.ic_arrow_forward),
                 contentDescription = stringResource(id = R.string.desc_back)
             )
         }
@@ -487,10 +486,10 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
                 onRedoClick()
             }
         }) {
-            Icon(
-                modifier = Modifier.padding(12.dp),
-                painter = painterResource(id = R.drawable.ic_redo),
-                contentDescription = stringResource(id = R.string.desc_redo)
+            ViraIcon(
+                drawable = R.drawable.ic_redo,
+                contentDescription = stringResource(id = R.string.desc_redo),
+                modifier = Modifier.padding(12.dp)
             )
         }
 
@@ -499,10 +498,10 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
                 onUndoClick()
             }
         }) {
-            Icon(
-                modifier = Modifier.padding(12.dp),
-                painter = painterResource(id = R.drawable.ic_undo),
-                contentDescription = stringResource(id = R.string.desc_undo)
+            ViraIcon(
+                drawable = R.drawable.ic_undo,
+                contentDescription = stringResource(id = R.string.desc_undo),
+                modifier = Modifier.padding(12.dp)
             )
         }
 
@@ -511,10 +510,10 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
                 onMenuAction()
             }
         }) {
-            Icon(
-                modifier = Modifier.padding(12.dp),
-                painter = painterResource(id = R.drawable.ic_dots_menu),
-                contentDescription = stringResource(id = R.string.desc_menu)
+            ViraIcon(
+                drawable = R.drawable.ic_dots_menu,
+                contentDescription = stringResource(id = R.string.desc_menu),
+                modifier = Modifier.padding(12.dp)
             )
         }
     }

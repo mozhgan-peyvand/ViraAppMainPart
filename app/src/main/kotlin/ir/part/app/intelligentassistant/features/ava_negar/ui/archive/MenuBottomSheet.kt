@@ -7,14 +7,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -22,6 +20,7 @@ import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 
 @Composable
 fun DeleteBottomSheet(
@@ -61,8 +60,8 @@ fun DeleteBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_recycle_bin),
+                ViraIcon(
+                    drawable = R.drawable.ic_recycle_bin,
                     contentDescription = null,
                     tint = Color_Red
                 )

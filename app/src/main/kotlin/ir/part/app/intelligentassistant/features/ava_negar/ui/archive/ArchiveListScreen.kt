@@ -40,7 +40,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
@@ -77,7 +76,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -138,6 +136,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
@@ -852,9 +851,9 @@ private fun ArchiveAppBar(
                 onBackClick()
             }
         }) {
-            Icon(
+            ViraIcon(
+                drawable = R.drawable.ic_arrow_forward,
                 modifier = Modifier.padding(12.dp),
-                painter = painterResource(id = R.drawable.ic_arrow_forward),
                 contentDescription = stringResource(id = R.string.desc_back)
             )
         }
@@ -876,16 +875,14 @@ private fun ArchiveAppBar(
                 onChangeListTypeClick()
             }
         }) {
-            Icon(
-                modifier = Modifier.padding(12.dp),
-                painter = painterResource(
-                    id = if (isGrid) R.drawable.ic_list_column
-                    else R.drawable.ic_list_grid
-                ),
+            ViraIcon(
+                drawable = if (isGrid) R.drawable.ic_list_column
+                else R.drawable.ic_list_grid,
                 contentDescription = stringResource(
                     id = if (isGrid) R.string.desc_grid
                     else R.string.desc_column
-                )
+                ),
+                modifier = Modifier.padding(12.dp)
             )
         }
 
@@ -894,9 +891,9 @@ private fun ArchiveAppBar(
                 onSearchClick()
             }
         }) {
-            Icon(
+            ViraIcon(
+                drawable = R.drawable.ic_search,
                 modifier = Modifier.padding(12.dp),
-                painter = painterResource(id = R.drawable.ic_search),
                 contentDescription = stringResource(id = R.string.desc_search)
             )
         }
@@ -948,8 +945,8 @@ fun ErrorBanner(
             .padding(8.dp)
     ) {
 
-        Icon(
-            painter = painterResource(id = R.drawable.ic_failure_network),
+        ViraIcon(
+            drawable = R.drawable.ic_failure_network,
             contentDescription = null,
             tint = Color_Red
         )
@@ -1184,8 +1181,8 @@ private fun Fabs(
                         }
                     }
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_upload),
+                    ViraIcon(
+                        drawable = R.drawable.ic_upload,
                         contentDescription = stringResource(id = R.string.desc_upload)
                     )
                 }
@@ -1200,10 +1197,10 @@ private fun Fabs(
                     }
                 }
             ) {
-                Icon(
-                    tint = if (isFabExpanded) MaterialTheme.colors.primary else Color_White,
-                    painter = painterResource(id = if (isFabExpanded) R.drawable.ic_close else R.drawable.ic_add),
-                    contentDescription = stringResource(id = R.string.desc_menu_upload_and_record)
+                ViraIcon(
+                    drawable = if (isFabExpanded) R.drawable.ic_close else R.drawable.ic_add,
+                    contentDescription = stringResource(id = R.string.desc_menu_upload_and_record),
+                    tint = if (isFabExpanded) MaterialTheme.colors.primary else Color_White
                 )
             }
         }
@@ -1222,8 +1219,8 @@ private fun Fabs(
                         openRecordingScreen()
                     }
                 }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_mic),
+                ViraIcon(
+                    drawable = R.drawable.ic_mic,
                     contentDescription = stringResource(id = R.string.desc_record)
                 )
             }

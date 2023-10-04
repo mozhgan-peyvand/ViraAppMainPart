@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Card
-import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
@@ -21,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,6 +33,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 
 
 @Composable
@@ -87,9 +86,9 @@ fun ArchiveUploadingFileElementColumn(
                         )
                     }
                 }) {
-                    Icon(
+                    ViraIcon(
+                        drawable = R.drawable.ic_dots_menu,
                         modifier = Modifier.padding(12.dp),
-                        painter = painterResource(id = R.drawable.ic_dots_menu),
                         contentDescription = stringResource(id = R.string.desc_menu)
                     )
                 }
@@ -141,10 +140,10 @@ fun ArchiveUploadingFileElementColumn(
                             .fillMaxSize()
                             .padding(end = 8.dp)
                     ) {
-                        Icon(
-                            modifier = Modifier.padding(bottom = 4.dp),
-                            painter = painterResource(id = R.drawable.ic_in_uploading_queue),
+                        ViraIcon(
+                            drawable = R.drawable.ic_in_uploading_queue,
                             contentDescription = null,
+                            modifier = Modifier.padding(bottom = 4.dp),
                             tint = Color_Primary_300
                         )
 

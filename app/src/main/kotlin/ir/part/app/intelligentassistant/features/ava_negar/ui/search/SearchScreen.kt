@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
@@ -44,7 +43,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
@@ -81,6 +79,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.labelMedium
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
@@ -510,8 +509,8 @@ private fun SearchToolbar(
                 arrowForwardAction()
             }
         }) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_arrow_right),
+            ViraIcon(
+                drawable = R.drawable.ic_arrow_right,
                 contentDescription = stringResource(id = R.string.desc_forward),
                 modifier = Modifier.padding(12.dp)
             )
@@ -547,8 +546,8 @@ private fun SearchToolbar(
                         clearState()
                     }
                 }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_clear),
+                    ViraIcon(
+                        drawable = R.drawable.ic_clear,
                         contentDescription = stringResource(id = R.string.desc_clear),
                         modifier = Modifier.padding(12.dp)
                     )

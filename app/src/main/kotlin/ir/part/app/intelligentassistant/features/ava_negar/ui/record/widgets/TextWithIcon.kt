@@ -6,20 +6,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.sp
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 
 @Composable
 fun TextWithIcon(
@@ -51,8 +50,8 @@ fun TextWithIcon(
             )
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                Icon(
-                    painterResource(id = icon),
+                ViraIcon(
+                    drawable = icon,
                     contentDescription = null,
                     tint = iconTint,
                     modifier = Modifier.align(Alignment.Center).fillMaxSize(0.8f)
