@@ -2,7 +2,6 @@ package ir.part.app.intelligentassistant.features.home.onboarding
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,6 +50,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
 @Composable
 fun HomeOnboardingScreen(
@@ -160,8 +159,8 @@ private fun MainOnBoardingItemBody(
                 .weight(0.45f)
         ) {
 
-            Image(
-                painter = painterResource(id = onBoardingItem.image),
+            ViraImage(
+                drawable = onBoardingItem.image,
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(width = 286.dp, height = 253.dp)

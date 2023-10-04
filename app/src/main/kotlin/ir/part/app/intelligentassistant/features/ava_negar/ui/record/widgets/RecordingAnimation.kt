@@ -8,7 +8,6 @@ import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -24,11 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.utils.ui.safeClickable
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
 @Composable
 fun RecordingAnimation(
@@ -84,8 +83,8 @@ fun RecordingAnimation(
             enter = scaleIn(animationSpec = tween(500), initialScale = 0.6f),
             exit = scaleOut(animationSpec = tween(500), targetScale = 0.6f)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_outside_circle),
+            ViraImage(
+                drawable = R.drawable.ic_outside_circle,
                 contentDescription = null,
                 modifier = Modifier
                     .size(150.dp)
@@ -99,8 +98,8 @@ fun RecordingAnimation(
             enter = scaleIn(animationSpec = tween(100)),
             exit = scaleOut(animationSpec = tween(100))
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_inside_circle),
+            ViraImage(
+                drawable = R.drawable.ic_inside_circle,
                 contentDescription = null,
                 modifier = Modifier
                     .size(121.dp)
@@ -109,8 +108,8 @@ fun RecordingAnimation(
             )
         }
 
-        Image(
-            painter = painterResource(id = R.drawable.img_recording),
+        ViraImage(
+            drawable = R.drawable.img_recording,
             contentDescription = if (isRecording) null else stringResource(R.string.desc_start_recording),
             modifier = Modifier
                 .size(89.dp)

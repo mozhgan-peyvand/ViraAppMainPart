@@ -1,7 +1,6 @@
 package ir.part.app.intelligentassistant.features.home.onboarding
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,6 +48,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
 @Composable
 fun HomeMainOnboardingScreen(
@@ -84,8 +84,8 @@ fun HomeMainOnboardingScreen(
                 .weight(1f)
         ) {
 
-            Image(
-                painter = painterResource(id = R.drawable.ic_app_logo_name),
+            ViraImage(
+                drawable = R.drawable.ic_app_logo_name,
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(141.dp)

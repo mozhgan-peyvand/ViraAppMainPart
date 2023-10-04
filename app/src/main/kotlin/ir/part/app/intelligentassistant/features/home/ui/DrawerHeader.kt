@@ -1,7 +1,6 @@
 package ir.part.app.intelligentassistant.features.home.ui
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +26,7 @@ import ir.part.app.intelligentassistant.utils.ui.safeClickable
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
 
 @Composable
@@ -62,14 +62,14 @@ private fun DrawerHeaderBody(
                 ),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_vira),
+            ViraImage(
+                drawable = R.drawable.ic_vira,
                 contentDescription = null
             )
             Spacer(modifier = Modifier.size(8.dp))
 
-            Image(
-                painter = painterResource(id = R.drawable.ic_app_name),
+            ViraImage(
+                drawable = R.drawable.ic_app_name,
                 contentDescription = null
             )
 
@@ -118,8 +118,8 @@ fun DrawerBody(
             style = MaterialTheme.typography.subtitle1,
             color = Color_Text_1
         )
-        Image(
-            painter = painterResource(id = R.drawable.ic_next),
+        ViraImage(
+            drawable = R.drawable.ic_next,
             contentDescription = null,
         )
     }

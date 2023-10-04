@@ -1,5 +1,7 @@
 package ir.part.app.intelligentassistant.features.home
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
 import ir.part.app.intelligentassistant.R
 import ir.part.app.intelligentassistant.features.home.ui.HomeItemBottomSheetType
@@ -10,10 +12,10 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Teal_200
 
 
 data class HomeItemScreen(
-    val icon: Int,
-    val title: Int,
+    @DrawableRes val icon: Int,
+    @StringRes val title: Int,
     val textColor: Color,
-    val description: Int,
+    @StringRes val description: Int,
     val homeItemType: HomeItemBottomSheetType
 ) {
 

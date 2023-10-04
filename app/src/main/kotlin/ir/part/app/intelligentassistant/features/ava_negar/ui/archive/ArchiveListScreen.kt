@@ -18,7 +18,6 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -139,6 +138,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
@@ -976,13 +976,13 @@ private fun ArchiveEmptyBody(
             modifier = Modifier.weight(0.7f),
             verticalArrangement = Arrangement.Bottom,
         ) {
-            Image(
+            ViraImage(
+                drawable = R.drawable.img_main_page,
+                contentDescription = null,
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier
                     .size(200.dp)
-                    .align(Alignment.CenterHorizontally),
-                painter = painterResource(id = R.drawable.img_main_page),
-                contentDescription = null
+                    .align(Alignment.CenterHorizontally)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -1016,11 +1016,11 @@ private fun ArchiveEmptyBody(
         ) {
             Spacer(modifier = Modifier.width(80.dp))
 
-            Image(
+            ViraImage(
+                drawable = R.drawable.ic_arrow,
+                contentDescription = null,
                 modifier = Modifier.fillMaxHeight(),
-                contentScale = ContentScale.FillHeight,
-                painter = painterResource(id = R.drawable.ic_arrow),
-                contentDescription = null
+                contentScale = ContentScale.FillHeight
             )
         }
 

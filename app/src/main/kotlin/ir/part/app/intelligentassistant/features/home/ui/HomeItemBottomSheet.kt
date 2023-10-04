@@ -1,6 +1,6 @@
 package ir.part.app.intelligentassistant.features.home.ui
 
-import androidx.compose.foundation.Image
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +14,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.R
@@ -23,11 +22,12 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
 @Composable
 fun HomeItemBottomSheet(
     modifier: Modifier = Modifier,
-    iconRes: Painter,
+    @DrawableRes iconRes: Int,
     title: String,
     textBody: String,
     action: () -> Unit
@@ -41,8 +41,8 @@ fun HomeItemBottomSheet(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = iconRes,
+            ViraImage(
+                drawable = iconRes,
                 contentDescription = null,
                 modifier = Modifier
                     .size(32.dp)

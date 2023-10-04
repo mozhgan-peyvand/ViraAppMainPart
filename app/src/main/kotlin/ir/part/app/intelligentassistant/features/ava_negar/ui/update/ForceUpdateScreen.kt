@@ -1,6 +1,5 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.update
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
@@ -28,6 +26,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Card
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
 @Composable
 fun ForceUpdateScreen(
@@ -49,12 +48,12 @@ fun ForceUpdateScreen(
             text = stringResource(id = R.string.lbl_update)
         )
 
-        Image(
+        ViraImage(
+            drawable = R.drawable.img_update,
+            contentDescription = null,
             contentScale = ContentScale.FillWidth,
             modifier = Modifier
-                .size(200.dp),
-            painter = painterResource(id = R.drawable.img_update),
-            contentDescription = null
+                .size(200.dp)
         )
 
 

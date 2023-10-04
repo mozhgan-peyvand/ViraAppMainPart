@@ -1,6 +1,5 @@
 package ir.part.app.intelligentassistant.features.ava_negar.ui.record.sheets
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,7 +15,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
@@ -26,6 +24,7 @@ import ir.part.app.intelligentassistant.utils.ui.safeClick
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
 @Composable
 fun MicrophoneNotAvailableBottomSheet(
@@ -40,8 +39,8 @@ fun MicrophoneNotAvailableBottomSheet(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_record_audio),
+            ViraImage(
+                drawable = R.drawable.ic_record_audio,
                 contentDescription = null,
                 modifier = Modifier.padding(end = 8.dp)
             )

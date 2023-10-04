@@ -2,7 +2,6 @@ package ir.part.app.intelligentassistant.features.ava_negar.ui.search
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -82,6 +81,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.labelMedium
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
@@ -535,8 +535,8 @@ private fun SearchToolbar(
                 )
             },
             leadingIcon = {
-                Image(
-                    painterResource(id = R.drawable.ic_search_n),
+                ViraImage(
+                    drawable = R.drawable.ic_search_n,
                     contentDescription = stringResource(id = R.string.desc_share),
                     modifier = Modifier.padding(10.dp)
                 )

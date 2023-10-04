@@ -3,7 +3,6 @@ package ir.part.app.intelligentassistant.features.ava_negar.ui.record
 import android.os.SystemClock
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -80,6 +79,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Red
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Container_High
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 import kotlinx.coroutines.CoroutineScope
 import pl.droidsonroids.gif.GifDrawable
 import pl.droidsonroids.gif.GifImageView
@@ -730,14 +730,14 @@ fun VoicePlayerComponent(
                 modifier = Modifier.size(46.dp)
             ) {
                 if (isPlaying) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_pause),
+                    ViraImage(
+                        drawable = R.drawable.ic_pause,
                         contentDescription = stringResource(id = R.string.desc_stop_playing),
                         modifier = modifier.fillMaxSize()
                     )
                 } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_play),
+                    ViraImage(
+                        drawable = R.drawable.ic_play,
                         contentDescription = stringResource(id = R.string.desc_start_playing),
                         modifier = modifier.fillMaxSize()
                     )

@@ -3,7 +3,6 @@ package ir.part.app.intelligentassistant.features.home.about_us
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,6 +43,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_200
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
 @Composable
 fun AboutUsScreen(
@@ -71,19 +71,19 @@ fun AboutUsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            Image(
-                painter = painterResource(id = R.drawable.ic_blue_logo),
-                contentScale = ContentScale.FillBounds,
+            ViraImage(
+                drawable = R.drawable.ic_blue_logo,
                 contentDescription = null,
+                contentScale = ContentScale.FillBounds,
                 modifier = Modifier.size(81.dp)
             )
 
             Spacer(modifier = Modifier.size(12.dp))
 
-            Image(
-                painter = painterResource(id = R.drawable.ic_blue_vira),
-                contentScale = ContentScale.FillBounds,
+            ViraImage(
+                drawable = R.drawable.ic_blue_vira,
                 contentDescription = null,
+                contentScale = ContentScale.FillBounds,
                 modifier = Modifier.size(width = 135.dp, height = 40.dp)
             )
 

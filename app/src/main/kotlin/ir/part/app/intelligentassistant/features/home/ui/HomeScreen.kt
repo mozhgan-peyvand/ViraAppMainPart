@@ -1,7 +1,6 @@
 package ir.part.app.intelligentassistant.features.home.ui
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -73,6 +72,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.utils.ui.theme.Light_blue_50
 import ir.part.app.intelligentassistant.utils.ui.theme.labelMedium
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 import kotlinx.coroutines.launch
 
 @Composable
@@ -160,7 +160,8 @@ fun HomeScreen(
             sheetContent = {
                 when (sheetSelected) {
                     HomeItemBottomSheetType.AvaSho -> {
-                        HomeItemBottomSheet(iconRes = painterResource(id = R.drawable.img_ava_sho),
+                        HomeItemBottomSheet(
+                            iconRes = R.drawable.img_ava_sho,
                             title = stringResource(id = R.string.lbl_ava_sho),
                             textBody = stringResource(id = R.string.avasho_item_bottomsheet_explain),
                             action = {
@@ -172,7 +173,8 @@ fun HomeScreen(
                     }
 
                     HomeItemBottomSheetType.NeviseNama -> {
-                        HomeItemBottomSheet(iconRes = painterResource(id = R.drawable.img_nevise_nama),
+                        HomeItemBottomSheet(
+                            iconRes = R.drawable.img_nevise_nama,
                             title = stringResource(id = R.string.lbl_nevise_nama),
                             textBody = stringResource(id = R.string.nevise_nama_item_bottomsheet_explain),
                             action = {
@@ -186,7 +188,8 @@ fun HomeScreen(
 
                     HomeItemBottomSheetType.NeviseNegar -> {
 
-                        HomeItemBottomSheet(iconRes = painterResource(id = R.drawable.img_nevise_negar),
+                        HomeItemBottomSheet(
+                            iconRes = R.drawable.img_nevise_negar,
                             title = stringResource(id = R.string.lbl_nevise_negar),
                             textBody = stringResource(id = R.string.nevise_negar_item_bottomsheet_explain),
                             action = {
@@ -198,7 +201,8 @@ fun HomeScreen(
                     }
 
                     HomeItemBottomSheetType.ViraSiar -> {
-                        HomeItemBottomSheet(iconRes = painterResource(id = R.drawable.img_virasiar),
+                        HomeItemBottomSheet(
+                            iconRes = R.drawable.img_virasiar,
                             title = stringResource(id = R.string.lbl_virasiar),
                             textBody = stringResource(id = R.string.vira_sayar_item_bottomsheet_explain),
                             action = {
@@ -282,10 +286,9 @@ fun HomeAppBar(openDrawer: () -> Unit) {
             .padding(start = 16.dp, top = 20.dp, bottom = 22.dp),
         contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_app_log_name_description),
-            contentDescription = null,
-            modifier = Modifier
+        ViraImage(
+            drawable = R.drawable.ic_app_log_name_description,
+            contentDescription = null
         )
 
         IconButton(
@@ -341,8 +344,8 @@ private fun HomeBody(
                     ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.img_voice),
+                ViraImage(
+                    drawable = R.drawable.img_voice,
                     contentDescription = null,
                     modifier = Modifier.size(width = 68.dp, height = 80.dp)
                 )
@@ -369,8 +372,8 @@ private fun HomeBody(
                         .background(Color_On_Surface_Variant),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_arrow_crooked),
+                    ViraImage(
+                        drawable = R.drawable.ic_arrow_crooked,
                         contentDescription = "ic_arrow"
                     )
                 }
@@ -488,8 +491,8 @@ fun HomeBodyItem(
             }
         }
 
-        Image(
-            painter = painterResource(id = item.icon),
+        ViraImage(
+            drawable = item.icon,
             contentDescription = null,
             modifier = Modifier.size(64.dp)
         )

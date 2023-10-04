@@ -8,7 +8,6 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,7 +33,6 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
@@ -51,6 +49,7 @@ import ir.part.app.intelligentassistant.utils.ui.navigation.ScreenRoutes
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_BG
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.utils.ui.theme.Light_blue_50_2
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -169,8 +168,8 @@ fun SplashScreen(
             )
         ) {
 
-            Image(
-                painter = painterResource(id = R.drawable.ic_app_name),
+            ViraImage(
+                drawable = R.drawable.ic_app_name,
                 contentDescription = null,
             )
         }

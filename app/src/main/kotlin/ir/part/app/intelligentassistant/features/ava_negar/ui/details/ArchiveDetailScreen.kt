@@ -5,7 +5,6 @@ import android.media.MediaPlayer
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -90,6 +89,7 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Primary_Opacity_15
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Container_High
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_White
+import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.delay
@@ -551,10 +551,10 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_copy),
+                ViraImage(
+                    drawable = R.drawable.ic_copy,
                     contentDescription = stringResource(id = R.string.desc_copy),
-                    modifier.padding(end = 8.dp)
+                    modifier = modifier.padding(end = 8.dp)
                 )
                 Text(
                     text = stringResource(id = R.string.lbl_btn_copy_text),
@@ -585,10 +585,10 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_share),
+                ViraImage(
+                    drawable = R.drawable.ic_share,
                     contentDescription = stringResource(id = R.string.desc_share),
-                    modifier.padding(end = 8.dp)
+                    modifier = modifier.padding(end = 8.dp)
                 )
                 Text(
                     text = stringResource(id = R.string.lbl_btn_share_text),
@@ -738,14 +738,14 @@ fun PlayerBody(
             modifier = Modifier.size(46.dp)
         ) {
             if (isPlaying.value) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_pause),
+                ViraImage(
+                    drawable = R.drawable.ic_pause,
                     contentDescription = stringResource(id = R.string.desc_stop_playing),
                     modifier = modifier.fillMaxSize()
                 )
             } else {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_play),
+                ViraImage(
+                    drawable = R.drawable.ic_play,
                     contentDescription = stringResource(id = R.string.desc_start_playing),
                     modifier = modifier.fillMaxSize()
                 )
