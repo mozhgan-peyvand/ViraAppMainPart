@@ -87,7 +87,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-
 @Composable
 fun AvaNegarSearchScreen(
     viewModel: SearchViewModel = hiltViewModel(),
@@ -109,7 +108,7 @@ fun AvaNegarSearchScreen(
     var shouldSharePdf by rememberSaveable { mutableStateOf(false) }
     var shouldShareTxt by rememberSaveable { mutableStateOf(false) }
 
-    //default value is true because we want to open keyboard when the screen created
+    // default value is true because we want to open keyboard when the screen created
     val shouldShowKeyBoard = rememberSaveable { mutableStateOf(true) }
     val fileName = rememberSaveable { mutableStateOf("") }
 
@@ -128,12 +127,11 @@ fun AvaNegarSearchScreen(
     var backPressedInterval: Long = 0
 
     BackHandler(modalBottomSheetState.isVisible) {
-
         if (modalBottomSheetState.isVisible) {
             coroutineScope.launch(IO) {
-                if (!isConvertingPdf && !isConvertingTxt)
+                if (!isConvertingPdf && !isConvertingTxt) {
                     modalBottomSheetState.hide()
-                else {
+                } else {
                     if (backPressedInterval + TIME_INTERVAL < System.currentTimeMillis()) {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
@@ -163,10 +161,10 @@ fun AvaNegarSearchScreen(
     }
 
     LaunchedEffect(modalBottomSheetState.currentValue) {
-
         if (modalBottomSheetState.isVisible) {
-            if (selectedSheet.name == ArchiveBottomSheetType.Rename.name)
+            if (selectedSheet.name == ArchiveBottomSheetType.Rename.name) {
                 shouldShowKeyBoard.value = true
+            }
         } else {
             shouldShowKeyBoard.value = false
         }
@@ -174,7 +172,6 @@ fun AvaNegarSearchScreen(
 
     LaunchedEffect(isConvertingPdf) {
         if (isConvertingPdf) {
-
             viewModel.jobConverting?.cancel()
             viewModel.jobConverting = coroutineScope.launch(IO) {
                 viewModel.fileToShare = convertTextToPdf(
@@ -186,13 +183,13 @@ fun AvaNegarSearchScreen(
                 shouldSharePdf = true
                 isConvertingPdf = false
             }
-
-        } else viewModel.jobConverting?.cancel()
+        } else {
+            viewModel.jobConverting?.cancel()
+        }
     }
 
     LaunchedEffect(isConvertingTxt) {
         if (isConvertingTxt) {
-
             viewModel.jobConverting?.cancel()
             viewModel.jobConverting = coroutineScope.launch(IO) {
                 viewModel.fileToShare = convertTextToTXTFile(
@@ -203,10 +200,10 @@ fun AvaNegarSearchScreen(
 
                 shouldShareTxt = true
                 isConvertingTxt = false
-
             }
-
-        } else viewModel.jobConverting?.cancel()
+        } else {
+            viewModel.jobConverting?.cancel()
+        }
     }
 
     LaunchedEffect(shouldSharePdf) {
@@ -229,14 +226,13 @@ fun AvaNegarSearchScreen(
         }
     }
 
-
     Scaffold(
         backgroundColor = MaterialTheme.colors.background,
         modifier = Modifier.background(Color_BG),
         scaffoldState = scaffoldState,
         snackbarHost = {
             SnackBar(it)
-        },
+        }
     ) { innerPadding ->
 
         ModalBottomSheetLayout(
@@ -246,7 +242,6 @@ fun AvaNegarSearchScreen(
             sheetState = modalBottomSheetState,
             sheetContent = {
                 when (selectedSheet) {
-
                     SearchBottomSheetType.Rename -> {
                         RenameFileBottomSheet(
                             fileName = fileName.value,
@@ -304,7 +299,6 @@ fun AvaNegarSearchScreen(
                                     } else {
                                         modalBottomSheetState.hide()
                                     }
-
                                 }
                             },
                             deleteItemAction = {
@@ -317,7 +311,7 @@ fun AvaNegarSearchScreen(
                                         modalBottomSheetState.hide()
                                     }
                                 }
-                            },
+                            }
                         )
                     }
 
@@ -372,7 +366,8 @@ fun AvaNegarSearchScreen(
                                         modalBottomSheetState.hide()
                                     }
                                 }
-                            })
+                            }
+                        )
                     }
                 }
             }
@@ -415,8 +410,6 @@ fun AvaNegarSearchScreen(
             )
         }
     }
-
-
 }
 
 @Composable
@@ -427,7 +420,8 @@ private fun AvaNegarSearchBody(
     focusRequester: FocusRequester,
     arrowForwardAction: () -> Unit,
     onValueChangeAction: (String) -> Unit,
-    clearState: () -> Unit, isSearch: Boolean,
+    clearState: () -> Unit,
+    isSearch: Boolean,
     onMenuClick: (AvanegarProcessedFileView) -> Unit,
     onItemClick: (Int) -> Unit
 ) {
@@ -467,7 +461,7 @@ private fun AvaNegarSearchBody(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(
-                        items = searchResult,
+                        items = searchResult
                     ) { item ->
                         ArchiveProcessedFileElementGrid(
                             archiveViewProcessed = item,
@@ -501,8 +495,12 @@ private fun SearchToolbar(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                top = 8.dp, bottom = 8.dp, end = 16.dp, start = 8.dp
-            ), verticalAlignment = Alignment.CenterVertically
+                top = 8.dp,
+                bottom = 8.dp,
+                end = 16.dp,
+                start = 8.dp
+            ),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = {
             safeClick {
@@ -562,7 +560,7 @@ private fun SearchToolbar(
                 leadingIconColor = Color_White,
                 textColor = Color_Text_1,
                 placeholderColor = Color_Text_3
-            ),
+            )
         )
     }
 }

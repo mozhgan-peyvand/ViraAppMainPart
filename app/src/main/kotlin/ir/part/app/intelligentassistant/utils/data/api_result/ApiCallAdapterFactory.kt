@@ -33,7 +33,6 @@ class ApiResultCallAdapterFactory : CallAdapter.Factory() {
 private class ApiResultCallAdapter<R>(
     private val successType: Type
 ) : CallAdapter<R, Call<ApiResult<R>>> {
-
     override fun responseType(): Type = successType
 
     override fun adapt(call: Call<R>): Call<ApiResult<R>> {

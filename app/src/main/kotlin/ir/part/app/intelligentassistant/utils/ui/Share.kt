@@ -8,7 +8,6 @@ import ir.part.app.intelligentassistant.R
 import java.io.File
 
 fun sharePdf(context: Context, file: File) {
-
     val uri = FileProvider.getUriForFile(
         context,
         "${context.packageName}.provider",
@@ -37,7 +36,6 @@ fun sharePdf(context: Context, file: File) {
 }
 
 fun shareTXT(context: Context, file: File) {
-
     val uri = FileProvider.getUriForFile(
         context,
         "${context.packageName}.provider",

@@ -27,7 +27,6 @@ import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
-
 @Composable
 fun DrawerHeader(
     aboutUsOnClick: () -> Unit,
@@ -37,7 +36,6 @@ fun DrawerHeader(
         aboutUsOnClick = { aboutUsOnClick() },
         inviteFriendOnclick = { inviteFriendOnclick() }
     )
-
 }
 
 @Composable
@@ -71,7 +69,6 @@ private fun DrawerHeaderBody(
                 drawable = R.drawable.ic_app_name,
                 contentDescription = null
             )
-
         }
         DrawerBody(
             title = stringResource(id = R.string.lbl_invite_friends),
@@ -84,7 +81,6 @@ private fun DrawerHeaderBody(
             onItemClick = { aboutUsOnClick() }
         )
     }
-
 }
 
 @Composable
@@ -119,7 +115,7 @@ fun DrawerBody(
         )
         ViraImage(
             drawable = R.drawable.ic_next,
-            contentDescription = null,
+            contentDescription = null
         )
     }
 }
@@ -129,7 +125,7 @@ fun DrawerBody(
 private fun DrawerLayoutPreview() {
     IntelligentAssistantTheme {
         CompositionLocalProvider(
-            LocalLayoutDirection provides LayoutDirection.Rtl,
+            LocalLayoutDirection provides LayoutDirection.Rtl
         ) {
             DrawerHeader(aboutUsOnClick = {}, inviteFriendOnclick = {})
         }

@@ -5,7 +5,6 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 
-
 fun Uri.fileExtension(context: Context): String? {
     return MimeTypeMap.getSingleton()
         .getExtensionFromMimeType(context.contentResolver.getType(this))

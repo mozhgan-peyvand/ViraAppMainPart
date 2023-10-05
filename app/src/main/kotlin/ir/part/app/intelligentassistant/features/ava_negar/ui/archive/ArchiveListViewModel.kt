@@ -79,9 +79,8 @@ class ArchiveListViewModel @Inject constructor(
     private val aiEventPublisher: IntelligentAssistantEventPublisher,
     private val sharedPref: SharedPreferences,
     private val uiException: UiException,
-    networkStatusTracker: NetworkStatusTracker,
+    networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
-
     private val _uiViewStat = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewStat
 
@@ -110,7 +109,7 @@ class ArchiveListViewModel @Inject constructor(
     var isGrid = MutableStateFlow(true)
         private set
 
-    //TODO set appropriate name
+    // TODO set appropriate name
     var isSavingFile = false
         private set
 
@@ -122,7 +121,7 @@ class ArchiveListViewModel @Inject constructor(
     var jobConverting: Job? = null
     var fileToShare: File? = null
 
-    //placed these variables in viewModel to save from configuration change,
+    // placed these variables in viewModel to save from configuration change,
     // can not make these, rememberSaveable because these are dataClass
     var archiveViewItem by mutableStateOf<ArchiveView?>(null)
     var processItem by mutableStateOf<AvanegarProcessedFileView?>(null)
@@ -147,13 +146,12 @@ class ArchiveListViewModel @Inject constructor(
                 _uiViewStat.emit(UiLoading)
                 _isUploading.value = Uploading
 
-
                 indexOfItemThatShouldBeDownloaded.run {
                     val title = uploadingList[this].title
                     val filePath = uploadingList[this].filePath
                     val fileDuration = uploadingList[this].fileDuration
 
-                    //0L means that file duration was is null
+                    // 0L means that file duration was is null
                     if (fileDuration < SIXTY_SECOND && fileDuration != 0L) {
                         audioToTextBelowSixtySecond(
                             title,
@@ -169,12 +167,10 @@ class ArchiveListViewModel @Inject constructor(
                     }
                 }
             }
-            //endregion
-
+            // endregion
         }
 
-
-        //region archiveView
+        // region archiveView
         val processedList = avanegarArchiveFilesEntity.processed
         val trackingList = avanegarArchiveFilesEntity.tracking
         val uploadingList = avanegarArchiveFilesEntity.uploading
@@ -182,15 +178,12 @@ class ArchiveListViewModel @Inject constructor(
         isThereAnyTrackingOrUploading.value =
             trackingList.isNotEmpty() || uploadingList.isNotEmpty()
 
-        //endregion
+        // endregion
         val title = if (uploadingList.isNotEmpty()) uploadingList[0].title else ""
         uploadingList.map { it.toAvanegarUploadingFileView(uploadPercent, title) } +
-                trackingList.map { it.toAvanegarTrackingFileView() } +
-                processedList.map { it.toAvanegarProcessedFileView() }
-
-
+            trackingList.map { it.toAvanegarTrackingFileView() } +
+            processedList.map { it.toAvanegarProcessedFileView() }
     }.distinctUntilChanged()
-
 
     private lateinit var retriever: MediaMetadataRetriever
 
@@ -248,7 +241,6 @@ class ArchiveListViewModel @Inject constructor(
                 createdAt = createdAt,
                 fileDuration = fileDuration
             )
-
         }
     }
 
@@ -259,12 +251,12 @@ class ArchiveListViewModel @Inject constructor(
             withContext(Main) {
                 when (result) {
                     is Success -> {
-                        //TODO should not emit state
+                        // TODO should not emit state
                         _uiViewStat.emit(UiSuccess)
                     }
 
                     is Error -> {
-                        //TODO should not emit state
+                        // TODO should not emit state
                         _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
                     }
                 }
@@ -279,7 +271,6 @@ class ArchiveListViewModel @Inject constructor(
     ) {
         job?.cancel()
         job = viewModelScope.launch(IO) {
-
             val file = File(filePath)
             val result = repository.audioToTextBelowSixtySecond(
                 id = title + filePath,
@@ -299,7 +290,6 @@ class ArchiveListViewModel @Inject constructor(
     ) {
         job?.cancel()
         job = viewModelScope.launch(IO) {
-
             val file = File(filePath)
             val result = repository.audioToTextAboveSixtySecond(
                 id = title + filePath,
@@ -314,8 +304,7 @@ class ArchiveListViewModel @Inject constructor(
 
     private fun changeUploadFileToIdle() {
         viewModelScope.launch {
-
-            //fixme set the correct value
+            // fixme set the correct value
             delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
         }
     }
@@ -409,14 +398,17 @@ class ArchiveListViewModel @Inject constructor(
         avanegarUploadingFile: AvanegarUploadingFileView? = null,
         uploadingList: List<AvanegarUploadingFileView>? = null
     ) {
-        //to make sure that it does not return -1
+        // to make sure that it does not return -1
         indexOfItemThatShouldBeDownloaded = if (avanegarUploadingFile != null &&
             uploadingList != null &&
             uploadingList.contains(
                 avanegarUploadingFile
             )
-        ) uploadingList.indexOf(avanegarUploadingFile)
-        else 0
+        ) {
+            uploadingList.indexOf(avanegarUploadingFile)
+        } else {
+            0
+        }
 
         _isUploading.value = IsNotUploading
     }
@@ -479,8 +471,9 @@ class ArchiveListViewModel @Inject constructor(
 
     override fun onCleared() {
         kotlin.runCatching {
-            if (this::retriever.isInitialized)
+            if (this::retriever.isInitialized) {
                 retriever.release()
+            }
         }
     }
 }

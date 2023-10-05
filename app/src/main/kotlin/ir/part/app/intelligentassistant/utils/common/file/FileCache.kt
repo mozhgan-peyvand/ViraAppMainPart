@@ -12,12 +12,10 @@ import kotlin.coroutines.suspendCoroutine
 class FileCache @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-
     // content resolver
     private val contentResolver = context.contentResolver
 
     private val cacheLocation = context.cacheDir
-
 
     suspend fun cacheUri(uri: Uri): File? {
         return copyFromSource(uri)

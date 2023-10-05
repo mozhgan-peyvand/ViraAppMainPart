@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
 
             IntelligentAssistantTheme {
                 CompositionLocalProvider(
-                    LocalLayoutDirection provides Rtl,
+                    LocalLayoutDirection provides Rtl
                 ) {
                     Scaffold(
                         modifier = Modifier
@@ -44,7 +44,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-
         }
     }
 }

@@ -14,7 +14,6 @@ import javax.inject.Inject
 class HomeOnboardingViewModel @Inject constructor(
     private val repository: DataStoreRepository
 ) : ViewModel() {
-
     var shouldNavigate = mutableStateOf(false)
         private set
 

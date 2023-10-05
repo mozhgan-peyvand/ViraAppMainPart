@@ -94,11 +94,11 @@ fun ArchiveUploadingFileElementGrid(
                 }
             }
 
-            if (!isErrorState && isNetworkAvailable)
+            if (!isErrorState && isNetworkAvailable) {
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (archiveUploadingFileView.uploadedPercent > 0 && isUploading)
+                    if (archiveUploadingFileView.uploadedPercent > 0 && isUploading) {
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.Bottom
@@ -109,7 +109,6 @@ fun ArchiveUploadingFileElementGrid(
                                     .weight(1f)
                                     .padding(end = 8.dp)
                             ) {
-
                                 Text(
                                     modifier = Modifier.weight(1f),
                                     style = MaterialTheme.typography.caption,
@@ -134,32 +133,34 @@ fun ArchiveUploadingFileElementGrid(
                                     .fillMaxWidth()
                                     .height(8.dp)
                                     .padding(end = 8.dp),
-                                progress = archiveUploadingFileView.uploadedPercent,
+                                progress = archiveUploadingFileView.uploadedPercent
                             )
                         }
-                    else Row(
-                        verticalAlignment = Alignment.Bottom,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(end = 8.dp)
-                    ) {
-                        ViraIcon(
-                            drawable = R.drawable.ic_in_uploading_queue,
-                            contentDescription = null,
-                            modifier = Modifier.padding(bottom = 4.dp),
-                            tint = Color_Primary_300
-                        )
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(end = 8.dp)
+                        ) {
+                            ViraIcon(
+                                drawable = R.drawable.ic_in_uploading_queue,
+                                contentDescription = null,
+                                modifier = Modifier.padding(bottom = 4.dp),
+                                tint = Color_Primary_300
+                            )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
 
-                        Text(
-                            style = MaterialTheme.typography.caption,
-                            color = Color_Text_3,
-                            text = stringResource(id = R.string.lbl_waiting_for_upload)
-                        )
+                            Text(
+                                style = MaterialTheme.typography.caption,
+                                color = Color_Text_3,
+                                text = stringResource(id = R.string.lbl_waiting_for_upload)
+                            )
+                        }
                     }
                 }
-            else
+            } else {
                 ArchiveBodyErrorGrid(
                     isNetworkAvailable = isNetworkAvailable,
                     modifier = Modifier
@@ -167,6 +168,7 @@ fun ArchiveUploadingFileElementGrid(
                         .padding(end = 8.dp),
                     onTryAgainClick = { onTryAgainClick(archiveUploadingFileView) }
                 )
+            }
         }
     }
 }
@@ -184,17 +186,15 @@ private fun ArchiveUploadingFileElementGridPreview() {
                     createdAt = 5456465L,
                     uploadedPercent = 30f,
                     fileDuration = 0,
-                    isUploadingFinished = false,
+                    isUploadingFinished = false
                 ),
                 isUploading = false,
                 isNetworkAvailable = true,
                 isErrorState = false,
                 onTryAgainClick = {},
                 onMenuClick = {},
-                onItemClick = {},
+                onItemClick = {}
             )
         }
     }
 }
-
-

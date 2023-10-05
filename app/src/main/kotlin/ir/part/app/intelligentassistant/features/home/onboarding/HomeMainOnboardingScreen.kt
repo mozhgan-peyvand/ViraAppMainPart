@@ -51,9 +51,8 @@ import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 
 @Composable
 fun HomeMainOnboardingScreen(
-    navController: NavHostController,
+    navController: NavHostController
 ) {
-
     var shouldNavigate by rememberSaveable {
         mutableStateOf(false)
     }
@@ -74,7 +73,6 @@ fun HomeMainOnboardingScreen(
             .fillMaxSize()
             .background(Color_BG)
     ) {
-
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -82,7 +80,6 @@ fun HomeMainOnboardingScreen(
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-
             ViraImage(
                 drawable = R.drawable.ic_app_logo_name,
                 contentDescription = null,
@@ -105,9 +102,7 @@ fun HomeMainOnboardingScreen(
             shape = RoundedCornerShape(32.dp),
             modifier = Modifier.padding(bottom = 58.dp)
         ) {
-
             Row(verticalAlignment = Alignment.CenterVertically) {
-
                 Spacer(modifier = Modifier.size(12.dp))
 
                 Text(

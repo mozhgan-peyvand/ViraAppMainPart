@@ -61,7 +61,7 @@ fun HomeOnboardingScreen(
     val pagerState = rememberPagerState(pageCount = { 2 })
     val pages = listOf(
         MainOnboardingItem.First(context),
-        MainOnboardingItem.Second(context),
+        MainOnboardingItem.Second(context)
     )
 
     LaunchedEffect(viewModel.shouldNavigate.value) {
@@ -80,7 +80,6 @@ fun HomeOnboardingScreen(
             .background(Color_BG)
             .padding(bottom = 16.dp)
     ) {
-
         TextButton(
             contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
             border = BorderStroke(width = 1.dp, color = Color_Card_Stroke),
@@ -136,7 +135,6 @@ fun HomeOnboardingScreen(
                 viewModel.navigateToMainOnboarding()
             }
         )
-
     }
 }
 
@@ -150,7 +148,6 @@ private fun MainOnBoardingItemBody(
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -158,7 +155,6 @@ private fun MainOnBoardingItemBody(
                 .fillMaxWidth()
                 .weight(0.45f)
         ) {
-
             ViraImage(
                 drawable = onBoardingItem.image,
                 contentDescription = null,

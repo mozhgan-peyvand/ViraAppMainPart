@@ -46,15 +46,15 @@ fun RenameFileBottomSheet(
     reNameAction: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(shouldShowKeyBoard) {
-        if (shouldShowKeyBoard)
+        if (shouldShowKeyBoard) {
             focusRequester.requestFocus()
-        else
+        } else {
             focusManager.clearFocus()
+        }
     }
 
     Column(
@@ -65,7 +65,7 @@ fun RenameFileBottomSheet(
                 end = 20.dp,
                 bottom = 20.dp,
                 top = 16.dp
-            ),
+            )
     ) {
         Text(
             text = stringResource(id = R.string.lbl_change_name),
@@ -128,7 +128,7 @@ fun RenameFileBottomSheet(
                     reNameAction()
                 }
             },
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(8.dp)
         ) {
             Text(
                 text = stringResource(id = R.string.lbl_save),
@@ -148,7 +148,7 @@ private fun RenameFileBottomSheetPreview() {
                 fileName = "FileName",
                 onValueChange = {},
                 shouldShowKeyBoard = false,
-                reNameAction = {},
+                reNameAction = {}
             )
         }
     }

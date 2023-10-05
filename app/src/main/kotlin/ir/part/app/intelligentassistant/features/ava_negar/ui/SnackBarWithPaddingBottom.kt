@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_On_Surface_Inverse
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Surface_Inverse
 
-
 @Composable
 fun SnackBarWithPaddingBottom(
     snackbarHostState: SnackbarHostState,
@@ -72,7 +71,7 @@ fun SnackBar(snackbarHostState: SnackbarHostState) {
     )
 }
 
-//todo move it to its correct place
+// todo move it to its correct place
 fun Modifier.bottomAlignSnackBar(
     implementPadding: Boolean,
     paddingValue: Float

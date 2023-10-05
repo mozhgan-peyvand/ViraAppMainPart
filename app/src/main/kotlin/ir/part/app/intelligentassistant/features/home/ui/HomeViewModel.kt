@@ -13,7 +13,6 @@ import javax.inject.Inject
 class HomeViewModel @Inject() constructor(
     repository: DataStoreRepository
 ) : ViewModel() {
-
     var shouldNavigate = mutableStateOf(false)
 
     var onboardingHasBeenShown = mutableStateOf(false)

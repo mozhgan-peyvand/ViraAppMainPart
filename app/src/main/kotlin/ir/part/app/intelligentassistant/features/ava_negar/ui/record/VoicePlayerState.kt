@@ -2,8 +2,6 @@ package ir.part.app.intelligentassistant.features.ava_negar.ui.record
 
 import android.app.Application
 import android.media.MediaPlayer
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -25,7 +23,6 @@ class VoicePlayerState(
     private val mediaPlayer: MediaPlayer,
     private val application: Application
 ) {
-
     private var currentFile: File? = null
     private var playJob: Job? = null
     private val currentPosition: Int get() = mediaPlayer.currentPosition

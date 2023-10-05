@@ -13,15 +13,13 @@ import ir.part.app.intelligentassistant.utils.ui.ApiErrorCodes.TokenNotProvided
 import ir.part.app.intelligentassistant.utils.ui.ApiErrorCodes.UrlNotFound
 import javax.inject.Inject
 
-//TODO set appropriate error message
+// TODO set appropriate error message
 class UiException @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-
     fun getErrorMessage(appException: AppException): String {
         val defaultMessage = context.getString(R.string.msg_there_is_a_problem)
         val message: String = when (appException) {
-
             is IOException -> context.getString(R.string.msg_server_error)
             is NetworkConnectionException -> context.getString(R.string.msg_connection_error)
             is RemoteDataSourceException -> {

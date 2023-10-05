@@ -74,7 +74,7 @@ fun SplashScreen(
         restartOnPlay = true,
         clipSpec = null,
         speed = 1f,
-        iterations = 1,
+        iterations = 1
     )
 
     var isAppNameVisible by rememberSaveable { mutableStateOf(false) }
@@ -118,7 +118,7 @@ fun SplashScreen(
 
     LaunchedEffect(
         viewModel.shouldNavigate.value,
-        viewModel.hasOnboardingShown.value,
+        viewModel.hasOnboardingShown.value
     ) {
         if (viewModel.shouldNavigate.value) {
             if (viewModel.hasOnboardingShown.value) {
@@ -138,7 +138,6 @@ fun SplashScreen(
     LaunchedEffect(lottieProgress) {
         launch(IO) {
             if (lottieProgress == 1f) {
-
                 delay(DELAY_TO_NAVIGATE)
                 viewModel.navigateToMainOnboarding()
             }
@@ -157,7 +156,7 @@ fun SplashScreen(
             progress = lottieProgress,
             modifier = Modifier
                 .size(94.dp)
-                .padding(bottom = 6.dp),
+                .padding(bottom = 6.dp)
         )
 
         AnimatedVisibility(
@@ -167,10 +166,9 @@ fun SplashScreen(
                 animationSpec = tween(APP_NAME_ANIMATION_DURATION)
             )
         ) {
-
             ViraImage(
                 drawable = R.drawable.ic_app_name,
-                contentDescription = null,
+                contentDescription = null
             )
         }
 

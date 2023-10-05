@@ -15,9 +15,8 @@ fun AvanegarTrackingFileEntity.toAvanegarTrackingFileView() = AvanegarTrackingFi
     token = token,
     filePath = filePath,
     title = title,
-    createdAt = convertDate(createdAt),
+    createdAt = convertDate(createdAt)
 )
-
 
 fun convertDate(date: Long): String {
     return try {

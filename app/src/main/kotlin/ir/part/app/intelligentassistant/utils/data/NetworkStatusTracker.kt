@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 
 class NetworkStatusTracker @Inject constructor(@ApplicationContext context: Context) {
-
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 

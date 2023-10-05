@@ -5,5 +5,5 @@ enum class ApiErrorCodes(val value: String) {
     TokenNotProvided("tokenNotProvided"),
     InvalidToken("invalidToken"),
     UrlNotFound("invalidToken"),
-    VPNConnectedError("VPNConnectedError"),
+    VPNConnectedError("VPNConnectedError")
 }

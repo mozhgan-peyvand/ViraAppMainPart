@@ -21,7 +21,6 @@ class AvanegarRepository @Inject constructor(
     private val avanegarLocalDataSource: AvanegarLocalDataSource,
     private val networkHandler: NetworkHandler
 ) {
-
     fun getArchiveFile(id: Int) =
         avanegarLocalDataSource.getArchiveFile(id)
 
@@ -41,7 +40,6 @@ class AvanegarRepository @Inject constructor(
         file: File,
         listener: UploadProgressCallback
     ): AppResult<String> {
-
         return if (networkHandler.hasNetworkConnection()) {
             val result = avanegarRemoteDataSource.audioToTextBelowSixtySecond(
                 multiPartFile = file.toMultiPart(id, listener),
@@ -67,7 +65,9 @@ class AvanegarRepository @Inject constructor(
 
                 is Error -> Error(result.error)
             }
-        } else Error(AppException.NetworkConnectionException())
+        } else {
+            Error(AppException.NetworkConnectionException())
+        }
     }
 
     suspend fun audioToTextAboveSixtySecond(
@@ -76,9 +76,7 @@ class AvanegarRepository @Inject constructor(
         file: File,
         listener: UploadProgressCallback
     ): AppResult<String> {
-
         return if (networkHandler.hasNetworkConnection()) {
-
             val result = avanegarRemoteDataSource.audioToTextAboveSixtySecond(
                 multiPartFile = file.toMultiPart(id, listener),
                 language = "fa".asPlainTextRequestBody
@@ -92,7 +90,7 @@ class AvanegarRepository @Inject constructor(
                             token = result.data,
                             filePath = file.absolutePath,
                             title = title,
-                            createdAt = PersianDate().time, // TODO: improve
+                            createdAt = PersianDate().time // TODO: improve
                         )
                     )
                     Success(id)
@@ -100,13 +98,13 @@ class AvanegarRepository @Inject constructor(
 
                 is Error -> Error(result.error)
             }
-        } else Error(AppException.NetworkConnectionException())
+        } else {
+            Error(AppException.NetworkConnectionException())
+        }
     }
 
     suspend fun trackLargeFileResult(fileToken: String): AppResult<Boolean> {
-
         return if (networkHandler.hasNetworkConnection()) {
-
             val result = avanegarRemoteDataSource.trackLargeFileResult(
                 fileToken = fileToken
             ).toAppResult()
@@ -133,8 +131,9 @@ class AvanegarRepository @Inject constructor(
 
                 is Error -> Error(result.error)
             }
-
-        } else Error(AppException.NetworkConnectionException())
+        } else {
+            Error(AppException.NetworkConnectionException())
+        }
     }
 
     suspend fun deleteProcessFile(id: Int?) =

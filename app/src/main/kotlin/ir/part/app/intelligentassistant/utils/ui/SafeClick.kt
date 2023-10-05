@@ -55,7 +55,7 @@ fun Modifier.safeClickable(
         enabled = enabled,
         onClickLabel = onClickLabel,
         onClick = { safeClick { onClick() } },
-        role = role,
+        role = role
     )
 }
 

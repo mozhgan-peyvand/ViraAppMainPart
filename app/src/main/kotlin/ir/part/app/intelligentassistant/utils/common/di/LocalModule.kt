@@ -15,7 +15,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object LocalModule {
-
     @Provides
     fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
         return context.getSharedPreferences("IntelligentAssistant", Context.MODE_PRIVATE)
@@ -23,7 +22,9 @@ object LocalModule {
 
     @Singleton
     @Provides
-    fun provideIntelligentAssistantDb(@ApplicationContext context: Context): IntelligentAssistantDb {
+    fun provideIntelligentAssistantDb(
+        @ApplicationContext context: Context
+    ): IntelligentAssistantDb {
         return Room
             .databaseBuilder(
                 context,

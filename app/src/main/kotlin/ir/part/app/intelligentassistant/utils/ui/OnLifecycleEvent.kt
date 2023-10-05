@@ -13,7 +13,7 @@ fun OnLifecycleEvent(
     onStart: () -> Unit = {},
     onResume: () -> Unit = {},
     onPause: () -> Unit = {},
-    onStop: () -> Unit = {},
+    onStop: () -> Unit = {}
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -43,4 +43,3 @@ fun OnLifecycleEvent(
         }
     }
 }
-

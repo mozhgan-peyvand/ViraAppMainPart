@@ -10,7 +10,6 @@ import javax.inject.Inject
 class AvanegarRemoteDataSource @Inject constructor(
     private val avanegarService: AvanegarService
 ) {
-
     suspend fun audioToTextBelowSixtySecond(
         multiPartFile: MultipartBody.Part,
         language: RequestBody
@@ -42,10 +41,10 @@ class AvanegarRemoteDataSource @Inject constructor(
     }
 
     suspend fun trackLargeFileResult(
-        fileToken: String,
+        fileToken: String
     ): ApiResult<String> {
         val result = avanegarService.trackLargeFileResult(
-            fileToken = fileToken,
+            fileToken = fileToken
         )
 
         return when (result) {

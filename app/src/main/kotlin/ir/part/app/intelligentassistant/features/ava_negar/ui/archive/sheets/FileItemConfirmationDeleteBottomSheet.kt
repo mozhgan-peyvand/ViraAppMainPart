@@ -113,7 +113,7 @@ private fun FileItemConfirmationDeleteBottomSheetPreview() {
                 modifier = Modifier,
                 deleteAction = {},
                 cancelAction = {},
-                fileName = "FileName",
+                fileName = "FileName"
             )
         }
     }

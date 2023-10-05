@@ -39,7 +39,6 @@ fun ArchiveBodyErrorGrid(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
-
         ErrorMessage(
             isNetworkAvailable = isNetworkAvailable,
             textAlign = TextAlign.Center

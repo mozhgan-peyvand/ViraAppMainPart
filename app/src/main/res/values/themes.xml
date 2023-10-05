@@ -3,7 +3,7 @@
 
     <style name="Theme.IntelligentAssistant.Splash" parent="@style/Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splash_background</item>
-<!--        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_empty_splash</item>-->
+        <!--        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_empty_splash</item>-->
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_empty_splash</item>
 
         <!-- Set the theme of the Activity that directly follows your splash screen. -->

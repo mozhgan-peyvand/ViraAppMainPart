@@ -15,15 +15,15 @@ class HeaderInterceptor @Inject constructor(
     private val aiEventPublisher: IntelligentAssistantEventPublisher
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-
         val request = chain.request()
         val requestBuilder = request.newBuilder()
 
-        if (request.header("gateway-token") == null)
+        if (request.header("gateway-token") == null) {
             requestBuilder.addHeader(
                 "gateway-token",
                 TOKEN
             )
+        }
 
         val response = chain.proceed(requestBuilder.build())
 

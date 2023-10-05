@@ -48,7 +48,8 @@ fun MenuDetailsScreenBottomSheet(
                 safeClick {
                     onRenameAction()
                 }
-            }) {
+            }
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -85,7 +86,8 @@ fun MenuDetailsScreenBottomSheet(
             contentPadding = PaddingValues(12.dp),
             onClick = {
                 safeClick { onRemoveFileAction() }
-            }) {
+            }
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()

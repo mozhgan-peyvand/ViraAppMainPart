@@ -17,13 +17,15 @@ sealed interface VoiceRecordingViewState {
 
     companion object {
         fun deserialize(str: String): VoiceRecordingViewState {
-            return if (str == "idle") Idle
-            else if (str == "paused") Paused
-            else if (str == "stopped") Stopped
-            else {
+            return if (str == "idle") {
+                Idle
+            } else if (str == "paused") {
+                Paused
+            } else if (str == "stopped") {
+                Stopped
+            } else {
                 Recording(str.replace("recording:", "").toBoolean())
             }
-
         }
     }
 }

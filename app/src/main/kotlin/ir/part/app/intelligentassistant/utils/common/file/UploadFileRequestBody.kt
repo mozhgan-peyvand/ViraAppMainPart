@@ -27,7 +27,6 @@ class UploadFileRequestBody(
     override fun contentLength(): Long = file.length()
 
     override fun writeTo(sink: BufferedSink) {
-
         val total = file.length()
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
         var uploaded = 0L
@@ -41,7 +40,7 @@ class UploadFileRequestBody(
                         uploaded,
                         total,
 
-                        //fixme, what if total size is 0
+                        // fixme, what if total size is 0
                         total == uploaded
                     )
                 }
@@ -54,7 +53,5 @@ class UploadFileRequestBody(
 
     companion object {
         private const val DEFAULT_BUFFER_SIZE = 2048
-
     }
-
 }

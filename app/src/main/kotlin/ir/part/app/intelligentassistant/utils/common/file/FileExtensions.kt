@@ -22,7 +22,6 @@ import java.io.FileOutputStream
 import java.io.FileWriter
 import java.io.IOException
 
-
 fun File.toMultiPart(partName: String): MultipartBody.Part {
     return MultipartBody.Part.createFormData(
         partName,
@@ -59,22 +58,20 @@ private fun readFileFromRawFolder(
 suspend fun convertTextToPdf(
     fileName: String,
     text: String,
-    context: Context,
+    context: Context
 ): File? = withContext(IO) {
-
     val document = Document()
 
     val outputFile = File(context.filesDir, "$fileName.pdf")
 
     try {
-
         if (outputFile.exists()) deleteFile(context, fileName, "pdf")
 
         PdfWriter.getInstance(document, FileOutputStream(outputFile.absolutePath))
         document.open()
 
-        //todo read font from font
-        //todo set appropriate font
+        // todo read font from font
+        // todo set appropriate font
         val fontPath = readFileFromRawFolder(
             context,
             "iran_yekan_regular.ttf",
@@ -106,13 +103,11 @@ suspend fun convertTextToPdf(
     }
 }
 
-
 suspend fun convertTextToTXTFile(
     context: Context,
     fileName: String,
-    text: String,
+    text: String
 ): File? = withContext(IO) {
-
     val outputFile = File(context.filesDir, "$fileName.txt")
 
     try {

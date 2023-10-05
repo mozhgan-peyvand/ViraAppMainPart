@@ -73,9 +73,12 @@ fun AppNavigation(navController: NavHostController) {
         navigateWithSlideAnimation(
             route = ScreenRoutes.AvaNegarArchiveDetail.route.plus(
                 "/{id}"
-            ), arguments = listOf(navArgument("id") {
-                type = NavType.IntType
-            })
+            ),
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                }
+            )
         ) { backStackEntry ->
             AvaNegarArchiveDetailScreen(
                 navController = navController,

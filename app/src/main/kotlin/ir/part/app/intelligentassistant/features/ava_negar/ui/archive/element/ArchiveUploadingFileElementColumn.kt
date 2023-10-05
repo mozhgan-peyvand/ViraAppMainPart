@@ -35,7 +35,6 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 
-
 @Composable
 fun ArchiveUploadingFileElementColumn(
     archiveUploadingFileView: AvanegarUploadingFileView,
@@ -46,14 +45,16 @@ fun ArchiveUploadingFileElementColumn(
     onMenuClick: (AvanegarUploadingFileView) -> Unit,
     onItemClick: (AvanegarUploadingFileView) -> Unit
 ) {
-    Card(backgroundColor = Color_Card,
+    Card(
+        backgroundColor = Color_Card,
         elevation = 0.dp,
         modifier = Modifier.height(108.dp),
         onClick = {
             safeClick {
                 onItemClick(archiveUploadingFileView)
             }
-        }) {
+        }
+    ) {
         Column(
             modifier = Modifier
                 .padding(
@@ -94,11 +95,11 @@ fun ArchiveUploadingFileElementColumn(
                 }
             }
 
-            if (!isErrorState && isNetworkAvailable)
+            if (!isErrorState && isNetworkAvailable) {
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (archiveUploadingFileView.uploadedPercent > 0 && isUploading)
+                    if (archiveUploadingFileView.uploadedPercent > 0 && isUploading) {
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.Bottom
@@ -109,7 +110,6 @@ fun ArchiveUploadingFileElementColumn(
                                     .weight(1f)
                                     .padding(end = 8.dp)
                             ) {
-
                                 Text(
                                     modifier = Modifier.weight(1f),
                                     style = MaterialTheme.typography.caption,
@@ -131,33 +131,34 @@ fun ArchiveUploadingFileElementColumn(
                                     .fillMaxWidth()
                                     .height(8.dp)
                                     .padding(end = 8.dp),
-                                progress = archiveUploadingFileView.uploadedPercent,
+                                progress = archiveUploadingFileView.uploadedPercent
                             )
                         }
-                    else Row(
-                        verticalAlignment = Alignment.Bottom,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(end = 8.dp)
-                    ) {
-                        ViraIcon(
-                            drawable = R.drawable.ic_in_uploading_queue,
-                            contentDescription = null,
-                            modifier = Modifier.padding(bottom = 4.dp),
-                            tint = Color_Primary_300
-                        )
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(end = 8.dp)
+                        ) {
+                            ViraIcon(
+                                drawable = R.drawable.ic_in_uploading_queue,
+                                contentDescription = null,
+                                modifier = Modifier.padding(bottom = 4.dp),
+                                tint = Color_Primary_300
+                            )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
 
-                        Text(
-                            style = MaterialTheme.typography.caption,
-                            color = Color_Text_3,
-                            text = stringResource(id = R.string.lbl_waiting_for_upload)
-                        )
+                            Text(
+                                style = MaterialTheme.typography.caption,
+                                color = Color_Text_3,
+                                text = stringResource(id = R.string.lbl_waiting_for_upload)
+                            )
+                        }
                     }
-
                 }
-            else
+            } else {
                 ArchiveBodyErrorColumn(
                     isNetworkAvailable = isNetworkAvailable,
                     modifier = Modifier
@@ -165,6 +166,7 @@ fun ArchiveUploadingFileElementColumn(
                         .padding(end = 8.dp),
                     onTryAgainClick = { onTryAgainClick(archiveUploadingFileView) }
                 )
+            }
         }
     }
 }
@@ -182,17 +184,15 @@ private fun ArchiveUploadingFileElementColumn() {
                     createdAt = 5456465L,
                     uploadedPercent = 30f,
                     fileDuration = 0,
-                    isUploadingFinished = false,
+                    isUploadingFinished = false
                 ),
                 isUploading = false,
                 isNetworkAvailable = true,
                 isErrorState = false,
                 onTryAgainClick = {},
                 onMenuClick = {},
-                onItemClick = {},
+                onItemClick = {}
             )
         }
     }
 }
-
-

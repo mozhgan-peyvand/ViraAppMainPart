@@ -9,7 +9,7 @@ data class AvanegarUploadingFileView(
     val createdAt: Long,
     val fileDuration: Long,
     val uploadedPercent: Float,
-    val isUploadingFinished: Boolean,
+    val isUploadingFinished: Boolean
 ) : ArchiveView
 
 fun AvanegarUploadingFileEntity.toAvanegarUploadingFileView(
@@ -21,6 +21,6 @@ fun AvanegarUploadingFileEntity.toAvanegarUploadingFileView(
     filePath = filePath,
     createdAt = createdAt,
     fileDuration = fileDuration,
-    uploadedPercent = if (aaaaa == title) uploadedPercent else 0f, //it's default and initial value
-    isUploadingFinished = false, //it's default and initial value
+    uploadedPercent = if (aaaaa == title) uploadedPercent else 0f, // it's default and initial value
+    isUploadingFinished = false // it's default and initial value
 )

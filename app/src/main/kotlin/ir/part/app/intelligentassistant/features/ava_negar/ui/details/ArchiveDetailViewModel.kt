@@ -40,7 +40,6 @@ class ArchiveDetailViewModel @Inject constructor(
 
     var mediaPlayer: MediaPlayer = MediaPlayer()
 
-
     private val _archiveFile =
         MutableStateFlow<AvanegarProcessedFileView?>(null)
     val archiveFile = _archiveFile.asStateFlow()
@@ -70,7 +69,7 @@ class ArchiveDetailViewModel @Inject constructor(
 
     fun stopMediaPlayer() {
         mediaPlayer.pause()
-//        mediaPlayer.prepare()
+        //        mediaPlayer.prepare()
     }
 
     init {
@@ -106,8 +105,9 @@ class ArchiveDetailViewModel @Inject constructor(
     }
 
     fun addTextToList(value: String) {
-        if (textList.size >= UNDO_REDO_LIMIT)
+        if (textList.size >= UNDO_REDO_LIMIT) {
             textList.removeAt(0)
+        }
         textList.add(value)
         _textBody.value = (value)
         currentIndex.intValue = textList.size - 1
@@ -117,7 +117,6 @@ class ArchiveDetailViewModel @Inject constructor(
         if (currentIndex.intValue > 0) {
             currentIndex.intValue -= 1
             _textBody.value = textList[currentIndex.intValue]
-
         }
     }
 
@@ -131,7 +130,6 @@ class ArchiveDetailViewModel @Inject constructor(
     fun canRedo(): Boolean {
         return textList.size - 1 > currentIndex.intValue
     }
-
 
     fun canUndo(): Boolean {
         return currentIndex.intValue > 0

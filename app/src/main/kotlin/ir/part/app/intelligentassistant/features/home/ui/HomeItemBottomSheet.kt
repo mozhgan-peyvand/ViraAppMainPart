@@ -65,15 +65,16 @@ fun HomeItemBottomSheet(
                 .fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = Color_Primary_Opacity_15,
-                contentColor = Color_Primary_200,
-            ), shape = RoundedCornerShape(8.dp),
+                contentColor = Color_Primary_200
+            ),
+            shape = RoundedCornerShape(8.dp),
             elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
             onClick = {
                 safeClick {
                     action()
                 }
-
-            }) {
+            }
+        ) {
             Text(
                 text = stringResource(id = R.string.lbl_understood),
                 style = MaterialTheme.typography.button

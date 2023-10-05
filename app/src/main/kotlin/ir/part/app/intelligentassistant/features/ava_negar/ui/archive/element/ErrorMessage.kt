@@ -24,8 +24,11 @@ fun ErrorMessage(
         modifier = modifier,
         textAlign = textAlign,
         text = stringResource(
-            id = if (isNetworkAvailable) R.string.msg_server_error
-            else R.string.msg_upload_will_start_after_connect_to_internet
+            id = if (isNetworkAvailable) {
+                R.string.msg_server_error
+            } else {
+                R.string.msg_upload_will_start_after_connect_to_internet
+            }
         ),
         style = MaterialTheme.typography.caption,
         color = Color_Red
@@ -39,7 +42,7 @@ private fun ErrorMessagePreview() {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             ErrorMessage(
                 isNetworkAvailable = false,
-                textAlign = TextAlign.Center,
+                textAlign = TextAlign.Center
             )
         }
     }

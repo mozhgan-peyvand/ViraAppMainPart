@@ -142,9 +142,9 @@ fun AvaNegarArchiveDetailScreen(
     BackHandler {
         if (bottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
             coroutineScope.launch(IO) {
-                if (!isConvertingTxt && !isConvertingPdf)
+                if (!isConvertingTxt && !isConvertingPdf) {
                     bottomSheetState.hide()
-                else {
+                } else {
                     if (backPressedInterval + TIME_INTERVAL < System.currentTimeMillis()) {
                         withContext(Main) {
                             Toast.makeText(
@@ -172,7 +172,6 @@ fun AvaNegarArchiveDetailScreen(
 
     LaunchedEffect(isConvertingPdf) {
         if (isConvertingPdf) {
-
             viewModel.jobConverting?.cancel()
             viewModel.jobConverting = coroutineScope.launch(IO) {
                 viewModel.fileToShare = convertTextToPdf(
@@ -184,13 +183,13 @@ fun AvaNegarArchiveDetailScreen(
                 shouldSharePdf = true
                 isConvertingPdf = false
             }
-
-        } else viewModel.jobConverting?.cancel()
+        } else {
+            viewModel.jobConverting?.cancel()
+        }
     }
 
     LaunchedEffect(isConvertingTxt) {
         if (isConvertingTxt) {
-
             viewModel.jobConverting?.cancel()
             viewModel.jobConverting = coroutineScope.launch(IO) {
                 viewModel.fileToShare = convertTextToTXTFile(
@@ -202,9 +201,9 @@ fun AvaNegarArchiveDetailScreen(
                 shouldShareTxt = true
                 isConvertingTxt = false
             }
-
-        } else viewModel.jobConverting?.cancel()
-
+        } else {
+            viewModel.jobConverting?.cancel()
+        }
     }
 
     LaunchedEffect(shouldSharePdf) {
@@ -228,14 +227,17 @@ fun AvaNegarArchiveDetailScreen(
     }
 
     LaunchedEffect(bottomSheetState.currentValue) {
-
         if (bottomSheetState.isVisible) {
             if (selectedSheet.name == ArchiveDetailBottomSheetType.Rename.name) {
-                (context as Activity).window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+                (context as Activity).window.setSoftInputMode(
+                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+                )
                 shouldShowKeyBoard = true
             }
         } else {
-            (context as Activity).window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+            (context as Activity).window.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+            )
             shouldShowKeyBoard = false
         }
     }
@@ -243,7 +245,9 @@ fun AvaNegarArchiveDetailScreen(
     DisposableEffect(context) {
         onDispose {
             viewModel.saveEditedText()
-            (context as Activity).window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            (context as Activity).window.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+            )
         }
     }
 
@@ -254,9 +258,8 @@ fun AvaNegarArchiveDetailScreen(
         scrimColor = Color.Black.copy(alpha = 0.5f),
         sheetContent = {
             when (selectedSheet) {
-
                 ArchiveDetailBottomSheetType.Menu -> {
-                    //to close keyboard before opening bottomSheet
+                    // to close keyboard before opening bottomSheet
                     focusManager.clearFocus()
                     MenuDetailsScreenBottomSheet(
                         onRenameAction = {
@@ -319,7 +322,8 @@ fun AvaNegarArchiveDetailScreen(
                                     id = viewModel.processItemId.intValue
                                 )
                             }
-                        })
+                        }
+                    )
                 }
 
                 ArchiveDetailBottomSheetType.Share -> {
@@ -346,14 +350,17 @@ fun AvaNegarArchiveDetailScreen(
                     )
                 }
             }
-        }) {
+        }
+    ) {
         Scaffold(
             modifier = modifier.fillMaxSize(),
             scaffoldState = scaffoldState,
             snackbarHost = {
-                if (bottomSheetState.isVisible)
+                if (bottomSheetState.isVisible) {
                     SnackBarWithPaddingBottom(it, true, 500f)
-                else SnackBar(it)
+                } else {
+                    SnackBar(it)
+                }
             },
             topBar = {
                 AvaNegarProcessedArchiveDetailTopAppBar(
@@ -397,7 +404,6 @@ fun AvaNegarArchiveDetailScreen(
                                 bottomSheetState.hide()
                             }
                         }
-
                     },
                     onCopyOnClick = {
                         localClipBoardManager.setText(
@@ -534,7 +540,10 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
         Button(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(
-                top = 14.dp, bottom = 14.dp, start = 19.dp, end = 23.dp
+                top = 14.dp,
+                bottom = 14.dp,
+                start = 19.dp,
+                end = 23.dp
             ),
             onClick = {
                 safeClick {
@@ -568,7 +577,10 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
         Button(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(
-                top = 14.dp, bottom = 14.dp, start = 19.dp, end = 23.dp
+                top = 14.dp,
+                bottom = 14.dp,
+                start = 19.dp,
+                end = 23.dp
             ),
             onClick = {
                 safeClick {
@@ -685,7 +697,7 @@ fun PlayerBody(
             .background(color)
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
             modifier = Modifier.weight(1f),
@@ -704,7 +716,9 @@ fun PlayerBody(
             )
         }
         Spacer(modifier = Modifier.size(12.dp))
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) { // TODO: not working
+        CompositionLocalProvider(
+            LocalLayoutDirection provides LayoutDirection.Ltr
+        ) { // TODO: not working
             Slider(
                 colors = SliderDefaults.colors(
                     activeTrackColor = Color_Primary_300,
@@ -716,7 +730,7 @@ fun PlayerBody(
                     progress = it
                     mediaPlayer.seekTo((it * 1000).toInt())
                 },
-                valueRange = 0f..mediaPlayer.duration.toFloat() / 1000,
+                valueRange = 0f .. mediaPlayer.duration.toFloat() / 1000,
                 modifier = Modifier
                     .weight(4f)
                     .padding(end = 12.dp)

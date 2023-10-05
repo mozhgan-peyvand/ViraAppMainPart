@@ -34,7 +34,6 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 
-
 @Composable
 fun ArchiveProcessedFileElementColumn(
     archiveViewProcessed: AvanegarProcessedFileView,
@@ -44,10 +43,11 @@ fun ArchiveProcessedFileElementColumn(
     Card(
         backgroundColor = Color_Card,
         elevation = 0.dp,
-        border = if (archiveViewProcessed.isSeen)
+        border = if (archiveViewProcessed.isSeen) {
             BorderStroke(0.dp, Color_Card)
-        else
-            BorderStroke(0.5.dp, MaterialTheme.colors.primary),
+        } else {
+            BorderStroke(0.5.dp, MaterialTheme.colors.primary)
+        },
         modifier = Modifier.height(108.dp),
         onClick = {
             safeClick {
@@ -68,8 +68,11 @@ fun ArchiveProcessedFileElementColumn(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
-                    color = if (archiveViewProcessed.isSeen) Color_Text_1
-                    else MaterialTheme.colors.primary,
+                    color = if (archiveViewProcessed.isSeen) {
+                        Color_Text_1
+                    } else {
+                        MaterialTheme.colors.primary
+                    },
                     style = MaterialTheme.typography.subtitle2,
                     text = archiveViewProcessed.title
                 )
@@ -139,10 +142,10 @@ private fun ArchiveProcessedFileElementColumnPreview() {
                     text = "متن متن متن متن متن متن",
                     createdAt = "54654",
                     filePath = "SASAS",
-                    isSeen = true,
+                    isSeen = true
                 ),
                 onItemClick = {},
-                onMenuClick = {},
+                onMenuClick = {}
             )
         }
     }

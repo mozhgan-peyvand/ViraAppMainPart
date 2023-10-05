@@ -6,7 +6,6 @@ import javax.inject.Singleton
 
 @Singleton
 class IntelligentAssistantEventPublisher @Inject constructor() {
-
     val events = MutableSharedFlow<IntelligentAssistantEvent>(extraBufferCapacity = 1)
 
     fun publishEvent(iaEvent: IntelligentAssistantEvent) {

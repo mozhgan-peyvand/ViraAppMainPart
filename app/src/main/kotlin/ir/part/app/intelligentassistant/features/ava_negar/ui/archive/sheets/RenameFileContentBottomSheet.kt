@@ -48,7 +48,6 @@ fun RenameFileContentBottomSheet(
     renameAction: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     var textValue by rememberSaveable(fileName, stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
             TextFieldValue(
@@ -62,10 +61,11 @@ fun RenameFileContentBottomSheet(
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(shouldShowKeyBoard) {
-        if (shouldShowKeyBoard)
+        if (shouldShowKeyBoard) {
             focusRequester.requestFocus()
-        else
+        } else {
             focusManager.clearFocus()
+        }
     }
 
     Column(
@@ -104,7 +104,7 @@ fun RenameFileContentBottomSheet(
             colors = TextFieldDefaults.textFieldColors(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
             )
         )
 
