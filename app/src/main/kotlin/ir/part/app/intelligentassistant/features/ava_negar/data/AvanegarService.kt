@@ -13,7 +13,6 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 
 interface AvanegarService {
-
     @Multipart
     @POST("speechRecognition/v1/file")
     suspend fun audioToTextBelowSixtySecond(
@@ -30,6 +29,6 @@ interface AvanegarService {
 
     @GET("speechRecognition/v1/trackingText/{token}")
     suspend fun trackLargeFileResult(
-        @Path("token") fileToken: String,
+        @Path("token") fileToken: String
     ): ApiResult<AvanegarResponseNetwork>
 }

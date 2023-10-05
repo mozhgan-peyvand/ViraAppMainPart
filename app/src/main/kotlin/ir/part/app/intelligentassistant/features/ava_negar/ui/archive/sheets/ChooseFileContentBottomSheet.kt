@@ -48,13 +48,13 @@ fun ChooseFileContentBottomSheet(
         )
         Text(
             text = stringResource(id = R.string.lbl_you_can_only_choose_one_file),
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.body1
         )
         Text(
             text = stringResource(id = R.string.lbl_allowed_format),
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.body1
 
-            )
+        )
         Button(
             contentPadding = PaddingValues(14.dp),
             modifier = Modifier
@@ -79,9 +79,7 @@ fun ChooseFileContentBottomSheet(
                 style = MaterialTheme.typography.button
             )
         }
-
     }
-
 }
 
 @Preview

@@ -33,7 +33,7 @@ fun MicrophoneNotAvailableBottomSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(20.dp),
+            .padding(20.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

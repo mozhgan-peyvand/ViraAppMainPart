@@ -14,12 +14,10 @@ import javax.inject.Inject
 class OnboardingViewModel @Inject constructor(
     private val repository: DataStoreRepository
 ) : ViewModel() {
-
     var shouldNavigate = mutableStateOf(false)
         private set
 
     fun navigateArchiveListScreen() {
-
         viewModelScope.launch(Dispatchers.IO) {
             repository.saveOnBoardingState(completed = true, key = onBoardingKey)
         }

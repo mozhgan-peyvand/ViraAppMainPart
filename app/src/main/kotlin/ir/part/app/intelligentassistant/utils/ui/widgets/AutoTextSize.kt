@@ -26,7 +26,8 @@ fun AutoTextSize(
         color = color,
         style = style.copy(
             fontSize = LocalTextStyle.current.fontSize * multiplier,
-            lineHeight = LocalTextStyle.current.lineHeight * multiplier),
+            lineHeight = LocalTextStyle.current.lineHeight * multiplier
+        ),
         onTextLayout = {
             if (it.hasVisualOverflow) {
                 multiplier = textScale

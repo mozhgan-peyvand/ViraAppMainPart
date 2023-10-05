@@ -5,7 +5,7 @@ import ir.part.app.intelligentassistant.features.ava_negar.data.entity.AvanegarT
 import ir.part.app.intelligentassistant.features.ava_negar.data.entity.AvanegarUploadingFileEntity
 
 data class AvanegarArchiveFilesEntity(
-        val tracking: List<AvanegarTrackingFileEntity>,
-        val processed: List<AvanegarProcessedFileEntity>,
-        val uploading: List<AvanegarUploadingFileEntity>
+    val tracking: List<AvanegarTrackingFileEntity>,
+    val processed: List<AvanegarProcessedFileEntity>,
+    val uploading: List<AvanegarUploadingFileEntity>
 )

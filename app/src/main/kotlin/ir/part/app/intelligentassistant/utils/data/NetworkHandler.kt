@@ -14,7 +14,6 @@ class NetworkHandler @Inject constructor(
     @ApplicationContext val context: Context
 ) {
     fun hasNetworkConnection(): Boolean {
-
         var result = false
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -38,11 +37,9 @@ class NetworkHandler @Inject constructor(
                         ConnectivityManager.TYPE_ETHERNET -> true
                         else -> false
                     }
-
                 }
             }
         }
         return result
     }
-
 }

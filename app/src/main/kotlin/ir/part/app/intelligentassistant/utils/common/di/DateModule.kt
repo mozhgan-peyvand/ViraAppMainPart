@@ -4,8 +4,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import ir.part.app.intelligentassistant.features.ava_negar.data.AvanegarService
-import retrofit2.Retrofit
 import saman.zamani.persiandate.PersianDate
 import java.util.Calendar
 import java.util.TimeZone
@@ -19,5 +17,4 @@ object DateModule {
 
     @Provides
     fun provideCalendar(): Calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Tehran"))
-
 }

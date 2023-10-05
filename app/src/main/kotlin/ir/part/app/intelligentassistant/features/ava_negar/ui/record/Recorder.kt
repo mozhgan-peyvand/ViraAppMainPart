@@ -15,7 +15,6 @@ import javax.inject.Inject
 class Recorder @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-
     companion object {
         private const val SAMPLE_RATE = 44100
         const val TAG = "RecorderTAG"

@@ -10,7 +10,6 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Indigo_300_2
 import ir.part.app.intelligentassistant.utils.ui.theme.Light_green_300
 import ir.part.app.intelligentassistant.utils.ui.theme.Teal_200
 
-
 data class HomeItemScreen(
     @DrawableRes val icon: Int,
     @StringRes val title: Int,
@@ -18,7 +17,6 @@ data class HomeItemScreen(
     @StringRes val description: Int,
     val homeItemType: HomeItemBottomSheetType
 ) {
-
     companion object {
         val items: List<HomeItemScreen>
             get() {

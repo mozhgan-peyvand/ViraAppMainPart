@@ -30,14 +30,12 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_1
 import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_2
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 
-
 @Composable
 fun BackToArchiveListConfirmationBottomSheet(
     actionConvertFile: () -> Unit,
     actionDeleteFile: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-
         Text(
             modifier = Modifier
                 .fillMaxWidth()
@@ -74,7 +72,6 @@ fun BackToArchiveListConfirmationBottomSheet(
                 .fillMaxWidth()
                 .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
         ) {
-
             TextButton(
 
                 contentPadding = PaddingValues(vertical = 14.dp),
@@ -86,12 +83,12 @@ fun BackToArchiveListConfirmationBottomSheet(
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color_Primary_Opacity_15
-                ),
+                )
             ) {
                 Text(
                     text = stringResource(id = R.string.lbl_convert_to_text),
                     style = MaterialTheme.typography.button,
-                    color = Color_Primary_300,
+                    color = Color_Primary_300
                 )
             }
 
@@ -105,7 +102,7 @@ fun BackToArchiveListConfirmationBottomSheet(
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color_Red_Opacity_15
-                ),
+                )
             ) {
                 Text(
                     text = stringResource(id = R.string.lbl_delete_file),
@@ -113,7 +110,6 @@ fun BackToArchiveListConfirmationBottomSheet(
                     color = Color_Red
                 )
             }
-
         }
     }
 }

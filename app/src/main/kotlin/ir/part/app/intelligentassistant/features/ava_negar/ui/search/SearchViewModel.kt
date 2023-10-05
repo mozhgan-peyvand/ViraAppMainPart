@@ -28,8 +28,7 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val repository: AvanegarRepository
 ) : ViewModel() {
-
-    //placed these variables in viewModel to save from configuration change,
+    // placed these variables in viewModel to save from configuration change,
     // can not make these, rememberSaveable because these are dataClass
     var archiveViewItem by mutableStateOf<ArchiveView?>(null)
     var processItem by mutableStateOf<AvanegarProcessedFileView?>(null)
@@ -89,6 +88,4 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
-
-
 }

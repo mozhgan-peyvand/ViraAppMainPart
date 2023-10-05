@@ -85,7 +85,6 @@ fun AvaNegarOnboardingScreen(
             .background(Color_BG)
             .padding(bottom = 16.dp)
     ) {
-
         Row(modifier = Modifier.weight(0.1f)) {
             AnimatedVisibility(pagerState.currentPage != 2) {
                 TextButton(
@@ -158,7 +157,6 @@ private fun AvaNegarOnBoardingItemBody(
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -166,7 +164,6 @@ private fun AvaNegarOnBoardingItemBody(
                 .fillMaxWidth()
                 .weight(0.45f)
         ) {
-
             ViraImage(
                 drawable = onBoardingItem.image,
                 contentDescription = null,
@@ -199,7 +196,7 @@ private fun AvaNegarOnBoardingItemBody(
                 style = MaterialTheme.typography.body1,
                 color = Color_Text_2,
                 modifier = Modifier.fillMaxWidth(),
-                textScale = 0.9f,
+                textScale = 0.9f
             )
         }
     }

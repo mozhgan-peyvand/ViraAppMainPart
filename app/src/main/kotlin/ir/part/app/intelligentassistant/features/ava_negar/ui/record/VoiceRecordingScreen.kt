@@ -90,7 +90,6 @@ fun AvaNegarVoiceRecordingScreen(
     navController: NavHostController,
     viewModel: VoiceRecordingViewModel = hiltViewModel()
 ) {
-
     val context = LocalContext.current
 
     val bottomSheetState = rememberModalBottomSheetState(
@@ -164,17 +163,19 @@ fun AvaNegarVoiceRecordingScreen(
     )
 
     DisposableEffect(Unit) {
-        (context as ComponentActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        (context as ComponentActivity).window.addFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
         onDispose {
             context.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
     LaunchedEffect(bottomSheetState.targetValue) {
-
         if (bottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
-            if (bottomSheetContentType.name == VoiceRecordingBottomSheetType.ConvertToTextConfirmation.name)
+            if (bottomSheetContentType.name == VoiceRecordingBottomSheetType.ConvertToTextConfirmation.name) {
                 shouldShowKeyBoard.value = true
+            }
         } else {
             shouldShowKeyBoard.value = false
         }
@@ -274,7 +275,7 @@ fun AvaNegarVoiceRecordingScreen(
         sheetState = bottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         scrimColor = MaterialTheme.colors.background.copy(alpha = 0.5f),
-        sheetBackgroundColor = Color_BG_Bottom_Sheet,
+        sheetBackgroundColor = Color_BG_Bottom_Sheet
     ) {
         Column {
             VoiceRecordingTopAppBar(
@@ -340,7 +341,6 @@ fun AvaNegarVoiceRecordingScreen(
                                 bottomSheetState.hideAndShow(coroutineScope)
                             }
                         )
-
                     }
                 },
                 pauseRecord = {
@@ -400,7 +400,7 @@ fun VoiceRecordingTopAppBar(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
     ) {
         IconButton(
             onClick = {
@@ -434,9 +434,8 @@ fun VoiceRecordingBody(
     stopRecord: () -> Unit,
     pauseRecord: () -> Unit,
     convertToText: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
-
     Column(modifier = modifier.fillMaxWidth()) {
         VoiceRecordingPreviewSection(
             isRecording = isRecording,
@@ -469,7 +468,7 @@ fun VoiceRecordingPreviewSection(
     isRecording: Boolean,
     isStopped: Boolean,
     playerState: VoicePlayerState,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
 
@@ -478,11 +477,15 @@ fun VoiceRecordingPreviewSection(
         modifier = modifier
             .fillMaxWidth()
             .then(
-                if (isStopped) Modifier.padding(
-                    bottom = 54.dp,
-                    start = 16.dp,
-                    end = 16.dp
-                ) else Modifier.clip(CircleShape)
+                if (isStopped) {
+                    Modifier.padding(
+                        bottom = 54.dp,
+                        start = 16.dp,
+                        end = 16.dp
+                    )
+                } else {
+                    Modifier.clip(CircleShape)
+                }
             )
     ) {
         if (isStopped) {
@@ -535,14 +538,14 @@ fun VoiceRecordingHintSection(
     hasPaused: Boolean,
     isStopped: Boolean,
     modifier: Modifier = Modifier,
-    time: Int = 0,
+    time: Int = 0
 ) {
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 8.dp),
+            .padding(top = 8.dp)
     ) {
         if (isStopped) {
             Text(
@@ -558,8 +561,11 @@ fun VoiceRecordingHintSection(
             if (isRecording || hasPaused) {
                 Text(
                     text = stringResource(
-                        id = if (hasPaused) R.string.lbl_recording_paused
-                        else R.string.lbl_recording_in_progress
+                        id = if (hasPaused) {
+                            R.string.lbl_recording_paused
+                        } else {
+                            R.string.lbl_recording_in_progress
+                        }
                     ),
                     style = MaterialTheme.typography.subtitle2
                 )
@@ -618,7 +624,7 @@ fun VoiceRecordingControlsSection(
                 enabled = isStopped,
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(CircleShape),
+                    .clip(CircleShape)
             ) {
                 Surface(
                     color = Blue_gray_900,
@@ -657,7 +663,7 @@ fun VoiceRecordingControlsSection(
                     enabled = !isRecording && hasPaused,
                     modifier = Modifier
                         .size(iconSize)
-                        .clip(CircleShape),
+                        .clip(CircleShape)
                 ) {
                     Surface(
                         color = Blue_gray_900,
@@ -680,7 +686,6 @@ fun VoiceRecordingControlsSection(
             }
         }
     }
-
 }
 
 @Composable
@@ -715,7 +720,7 @@ fun VoicePlayerComponent(
                     ),
                     value = progress,
                     onValueChange = onProgressChanged,
-                    valueRange = 0f..duration.toFloat(),
+                    valueRange = 0f .. duration.toFloat(),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -742,7 +747,6 @@ fun VoicePlayerComponent(
                     )
                 }
             }
-
         }
     }
 }

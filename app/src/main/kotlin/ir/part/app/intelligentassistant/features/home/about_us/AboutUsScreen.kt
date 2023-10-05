@@ -48,7 +48,6 @@ import ir.part.app.intelligentassistant.utils.ui.widgets.ViraImage
 fun AboutUsScreen(
     navController: NavController
 ) {
-
     val context = LocalContext.current
 
     Column(
@@ -57,7 +56,7 @@ fun AboutUsScreen(
             .background(Color_BG)
     ) {
         AboutUsTopAppBar(
-            onBackClick = { navController.navigateUp() },
+            onBackClick = { navController.navigateUp() }
         )
 
         Spacer(modifier = Modifier.size(12.dp))
@@ -69,7 +68,6 @@ fun AboutUsScreen(
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
         ) {
-
             ViraImage(
                 drawable = R.drawable.ic_blue_logo,
                 contentDescription = null,
@@ -118,7 +116,10 @@ fun AboutUsScreen(
                 border = BorderStroke(1.dp, Color_OutLine),
                 shape = RoundedCornerShape(12.dp),
                 contentPadding = PaddingValues(
-                    top = 8.dp, bottom = 8.dp, start = 20.dp, end = 16.dp
+                    top = 8.dp,
+                    bottom = 8.dp,
+                    start = 20.dp,
+                    end = 16.dp
                 ),
                 onClick = {
                     safeClick {
@@ -130,7 +131,7 @@ fun AboutUsScreen(
                         }
                     }
                 },
-                modifier = Modifier.padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
                     text = stringResource(id = R.string.lbl_email),
@@ -152,13 +153,14 @@ fun AboutUsScreen(
 
 @Composable
 fun AboutUsTopAppBar(
-    onBackClick: () -> Unit, modifier: Modifier = Modifier
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
     ) {
         IconButton(onClick = {
             safeClick {
@@ -181,7 +183,6 @@ fun AboutUsTopAppBar(
         )
     }
 }
-
 
 @Preview
 @Composable

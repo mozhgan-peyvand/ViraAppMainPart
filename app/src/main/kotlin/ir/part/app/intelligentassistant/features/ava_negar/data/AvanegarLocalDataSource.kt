@@ -12,7 +12,6 @@ import javax.inject.Inject
 class AvanegarLocalDataSource @Inject constructor(
     private val dao: AvanegarDao
 ) {
-
     fun getArchiveFile(id: Int) = dao.getProcessedFileDetail(id).onEach {
         it?.let {
             if (!it.isSeen) {

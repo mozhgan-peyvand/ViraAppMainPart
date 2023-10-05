@@ -1,11 +1,9 @@
 package ir.part.app.intelligentassistant.utils.common.di
 
-import android.content.Context
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ir.part.app.intelligentassistant.BuildConfig
 import ir.part.app.intelligentassistant.utils.data.HeaderInterceptor
@@ -20,7 +18,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
     @Provides
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor().apply {

@@ -42,7 +42,6 @@ fun RecordingAnimation(
 
     LaunchedEffect(isRecording) {
         while (isRecording) {
-
             animate(
                 initialValue = 15f,
                 targetValue = -30f,
@@ -54,16 +53,22 @@ fun RecordingAnimation(
                 typeConverter = VoiceRecordingCircleAnimation.twoWayConverter(),
                 initialValue = VoiceRecordingCircleAnimation(scale = 0.7f, angle = -30f),
                 targetValue = VoiceRecordingCircleAnimation(scale = 0.8f, angle = 0f),
-                block = { anim, _ -> scale = anim.scale; angle = anim.angle },
-                animationSpec = tween(durationMillis = 300, easing = EaseOut),
+                block = { anim, _ ->
+                    scale = anim.scale
+                    angle = anim.angle
+                },
+                animationSpec = tween(durationMillis = 300, easing = EaseOut)
             )
 
             animate(
                 typeConverter = VoiceRecordingCircleAnimation.twoWayConverter(),
                 initialValue = VoiceRecordingCircleAnimation(scale = 0.8f, angle = 0f),
                 targetValue = VoiceRecordingCircleAnimation(scale = 0.7f, angle = 15f),
-                block = { anim, _ -> scale = anim.scale; angle = anim.angle },
-                animationSpec = tween(durationMillis = 300, easing = EaseOut),
+                block = { anim, _ ->
+                    scale = anim.scale
+                    angle = anim.angle
+                },
+                animationSpec = tween(durationMillis = 300, easing = EaseOut)
             )
         }
     }
@@ -110,7 +115,13 @@ fun RecordingAnimation(
 
         ViraImage(
             drawable = R.drawable.img_recording,
-            contentDescription = if (isRecording) null else stringResource(R.string.desc_start_recording),
+            contentDescription = if (isRecording) {
+                null
+            } else {
+                stringResource(
+                    R.string.desc_start_recording
+                )
+            },
             modifier = Modifier
                 .size(89.dp)
         )

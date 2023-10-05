@@ -29,5 +29,4 @@ fun ViraImage(
         alpha = alpha,
         colorFilter = colorFilter
     )
-
 }

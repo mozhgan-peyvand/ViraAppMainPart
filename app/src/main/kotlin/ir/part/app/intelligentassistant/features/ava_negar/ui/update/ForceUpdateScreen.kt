@@ -40,7 +40,6 @@ fun ForceUpdateScreen(
             .background(Color_Card),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Text(
             modifier = Modifier.padding(top = 16.dp),
             style = MaterialTheme.typography.subtitle1,
@@ -55,7 +54,6 @@ fun ForceUpdateScreen(
             modifier = Modifier
                 .size(200.dp)
         )
-
 
         Text(
             modifier = Modifier.padding(horizontal = 33.dp),

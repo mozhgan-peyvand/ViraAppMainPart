@@ -35,9 +35,7 @@ fun StartAgainBottomSheet(
     actionCancel: () -> Unit,
     actionStartAgain: () -> Unit
 ) {
-
     Column(modifier = Modifier.fillMaxWidth()) {
-
         Text(
             modifier = Modifier
                 .fillMaxWidth()
@@ -74,7 +72,6 @@ fun StartAgainBottomSheet(
                 .fillMaxWidth()
                 .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
         ) {
-
             TextButton(
                 contentPadding = PaddingValues(vertical = 14.dp),
                 onClick = {
@@ -85,12 +82,12 @@ fun StartAgainBottomSheet(
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color_Primary_Opacity_15
-                ),
+                )
             ) {
                 Text(
                     text = stringResource(id = R.string.lbl_start_again),
                     style = MaterialTheme.typography.button,
-                    color = Color_Primary_300,
+                    color = Color_Primary_300
                 )
             }
 
@@ -104,7 +101,7 @@ fun StartAgainBottomSheet(
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color_Red_Opacity_15
-                ),
+                )
             ) {
                 Text(
                     text = stringResource(id = R.string.lbl_cancel),
@@ -112,7 +109,6 @@ fun StartAgainBottomSheet(
                     color = Color_Red
                 )
             }
-
         }
     }
 }

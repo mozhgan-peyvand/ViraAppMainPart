@@ -42,21 +42,19 @@ fun ArchiveTrackingFileElementsColumn(
     onItemClick: (String) -> Unit,
     onMenuClick: (AvanegarTrackingFileView) -> Unit
 ) {
-
     Column(
         modifier = Modifier
             .height(108.dp)
             .background(brush, RoundedCornerShape(16.dp))
             .safeClickable {
                 onItemClick(archiveTrackingView.token)
-            },
+            }
     ) {
         Column(
             modifier = Modifier
                 .padding(start = 8.dp, bottom = 8.dp)
                 .fillMaxWidth()
         ) {
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -107,7 +105,7 @@ fun ArchiveTrackingFileElementsColumn(
                         color = Color_Text_2,
                         text = stringResource(id = R.string.lbl_converting)
                     )
-                } else
+                } else {
                     ErrorMessage(
                         isNetworkAvailable = isNetworkAvailable,
                         textAlign = TextAlign.Start,
@@ -116,11 +114,11 @@ fun ArchiveTrackingFileElementsColumn(
                             .padding(end = 8.dp)
 
                     )
+                }
             }
         }
     }
 }
-
 
 @Preview
 @Composable
@@ -132,12 +130,12 @@ private fun ArchiveTrackingFileElementsColumnPreview() {
                     token = "sa",
                     filePath = "Sasas",
                     title = "عنوان",
-                    createdAt = "Sasasasa",
+                    createdAt = "Sasasasa"
                 ),
                 brush = Brush.horizontalGradient(),
                 isNetworkAvailable = true,
                 onItemClick = {},
-                onMenuClick = {},
+                onMenuClick = {}
             )
         }
     }

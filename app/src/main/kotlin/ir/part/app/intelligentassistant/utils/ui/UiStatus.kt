@@ -1,6 +1,5 @@
 package ir.part.app.intelligentassistant.utils.ui
 
-
 sealed class UiStatus
 
 object UiIdle : UiStatus()

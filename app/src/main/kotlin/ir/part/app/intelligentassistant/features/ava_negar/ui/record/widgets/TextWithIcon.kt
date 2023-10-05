@@ -27,7 +27,6 @@ fun TextWithIcon(
     textStyle: TextStyle = MaterialTheme.typography.caption,
     iconTint: Color = MaterialTheme.colors.onBackground
 ) {
-
     val myId = "inlineContent"
     val annotatedText = buildAnnotatedString {
         val raw = stringResource(id = text)
@@ -46,7 +45,7 @@ fun TextWithIcon(
             Placeholder(
                 width = 30.sp,
                 height = 30.sp,
-                placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter,
+                placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter
             )
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -54,7 +53,8 @@ fun TextWithIcon(
                     drawable = icon,
                     contentDescription = null,
                     tint = iconTint,
-                    modifier = Modifier.align(Alignment.Center).fillMaxSize(0.8f)
+                    modifier = Modifier
+                        .align(Alignment.Center).fillMaxSize(0.8f)
                 )
             }
         }
@@ -65,5 +65,4 @@ fun TextWithIcon(
         inlineContent = inlineContent,
         style = textStyle
     )
-
 }

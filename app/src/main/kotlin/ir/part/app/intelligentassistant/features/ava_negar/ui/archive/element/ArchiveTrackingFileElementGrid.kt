@@ -48,14 +48,13 @@ fun ArchiveTrackingFileElementGrid(
             .background(brush = brush, RoundedCornerShape(16.dp))
             .safeClickable {
                 onItemClick(archiveTrackingView.token)
-            },
+            }
     ) {
         Column(
             modifier = Modifier
                 .padding(start = 8.dp, bottom = 16.dp)
                 .fillMaxWidth()
         ) {
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -105,7 +104,7 @@ fun ArchiveTrackingFileElementGrid(
                         color = Color_Text_2,
                         text = stringResource(id = R.string.lbl_converting)
                     )
-                } else
+                } else {
                     ErrorMessage(
                         isNetworkAvailable = isNetworkAvailable,
                         textAlign = TextAlign.Center,
@@ -113,11 +112,11 @@ fun ArchiveTrackingFileElementGrid(
                             .fillMaxWidth()
                             .padding(end = 8.dp)
                     )
+                }
             }
         }
     }
 }
-
 
 @Preview
 @Composable
@@ -129,12 +128,12 @@ private fun ArchiveTrackingFileElementGridPreview() {
                     token = "sa",
                     filePath = "Sasas",
                     title = "عنوان",
-                    createdAt = "Sasasasa",
+                    createdAt = "Sasasasa"
                 ),
                 isNetworkAvailable = true,
                 brush = Brush.horizontalGradient(),
                 onItemClick = {},
-                onMenuClick = {},
+                onMenuClick = {}
             )
         }
     }

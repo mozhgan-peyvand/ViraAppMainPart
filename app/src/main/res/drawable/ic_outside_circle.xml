@@ -4,20 +4,24 @@
     android:height="153dp"
     android:viewportWidth="152"
     android:viewportHeight="153">
-  <path
-      android:strokeWidth="1"
-      android:pathData="M76,76.6m-65.3,37.7a75.4,75.4 105,1 1,130.6 -75.4a75.4,75.4 105,1 1,-130.6 75.4"
-      android:fillColor="#00000000">
-    <aapt:attr name="android:strokeColor">
-      <gradient 
-          android:startX="38.3"
-          android:startY="11.3"
-          android:endX="113.7"
-          android:endY="141.9"
-          android:type="linear">
-        <item android:offset="0" android:color="#FF5EB3F9"/>
-        <item android:offset="1" android:color="#FF195A8E"/>
-      </gradient>
-    </aapt:attr>
-  </path>
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M76,76.6m-65.3,37.7a75.4,75.4 105,1 1,130.6 -75.4a75.4,75.4 105,1 1,-130.6 75.4"
+        android:strokeWidth="1">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:endX="113.7"
+                android:endY="141.9"
+                android:startX="38.3"
+                android:startY="11.3"
+                android:type="linear">
+                <item
+                    android:color="#FF5EB3F9"
+                    android:offset="0" />
+                <item
+                    android:color="#FF195A8E"
+                    android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
 </vector>

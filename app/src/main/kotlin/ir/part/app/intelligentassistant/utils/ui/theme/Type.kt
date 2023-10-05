@@ -91,7 +91,9 @@ val Typography = Typography(
         fontSize = 12.sp,
         fontWeight = FontWeight(400),
         fontStyle = FontStyle.Normal,
-        fontFamily = FontFamily(Font(R.font.bahij_helvetica_neue_vira_edition_roman)), // used also in record
+        fontFamily = FontFamily(
+            Font(R.font.bahij_helvetica_neue_vira_edition_roman)
+        ), // used also in record
         lineHeight = 16.sp
     ),
     overline = TextStyle(

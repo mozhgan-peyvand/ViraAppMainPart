@@ -80,5 +80,4 @@ interface AvanegarDao {
 
     @Query("SELECT * FROM AvanegarProcessedFileEntity WHERE title LIKE '%' || :searchText || '%'")
     fun getSearch(searchText: String): Flow<List<AvanegarProcessedFileEntity>>
-
 }

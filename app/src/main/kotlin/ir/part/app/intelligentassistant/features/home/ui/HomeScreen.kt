@@ -79,7 +79,6 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
-
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
     val context = LocalContext.current
@@ -87,7 +86,7 @@ fun HomeScreen(
     val modalBottomSheetState =
         rememberModalBottomSheetState(
             initialValue = ModalBottomSheetValue.Hidden,
-            skipHalfExpanded = true,
+            skipHalfExpanded = true
         )
     val (sheetSelected, setSelectedSheet) = rememberSaveable {
         mutableStateOf(HomeItemBottomSheetType.AvaSho)
@@ -97,12 +96,12 @@ fun HomeScreen(
         homeViewModel.onboardingHasBeenShown.value,
         homeViewModel.shouldNavigate.value
     ) {
-
         if (homeViewModel.shouldNavigate.value) {
-            if (!homeViewModel.onboardingHasBeenShown.value)
+            if (!homeViewModel.onboardingHasBeenShown.value) {
                 navController.navigate(ScreenRoutes.AvaNegarOnboarding.route)
-            else
+            } else {
                 navController.navigate(ScreenRoutes.AvaNegarArchiveList.route)
+            }
 
             homeViewModel.shouldNavigate.value = false
         }
@@ -162,7 +161,9 @@ fun HomeScreen(
                         HomeItemBottomSheet(
                             iconRes = R.drawable.img_ava_sho,
                             title = stringResource(id = R.string.lbl_ava_sho),
-                            textBody = stringResource(id = R.string.avasho_item_bottomsheet_explain),
+                            textBody = stringResource(
+                                id = R.string.avasho_item_bottomsheet_explain
+                            ),
                             action = {
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
@@ -175,22 +176,24 @@ fun HomeScreen(
                         HomeItemBottomSheet(
                             iconRes = R.drawable.img_nevise_nama,
                             title = stringResource(id = R.string.lbl_nevise_nama),
-                            textBody = stringResource(id = R.string.nevise_nama_item_bottomsheet_explain),
+                            textBody = stringResource(
+                                id = R.string.nevise_nama_item_bottomsheet_explain
+                            ),
                             action = {
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
                                 }
                             }
                         )
-
                     }
 
                     HomeItemBottomSheetType.NeviseNegar -> {
-
                         HomeItemBottomSheet(
                             iconRes = R.drawable.img_nevise_negar,
                             title = stringResource(id = R.string.lbl_nevise_negar),
-                            textBody = stringResource(id = R.string.nevise_negar_item_bottomsheet_explain),
+                            textBody = stringResource(
+                                id = R.string.nevise_negar_item_bottomsheet_explain
+                            ),
                             action = {
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
@@ -203,7 +206,9 @@ fun HomeScreen(
                         HomeItemBottomSheet(
                             iconRes = R.drawable.img_virasiar,
                             title = stringResource(id = R.string.lbl_virasiar),
-                            textBody = stringResource(id = R.string.vira_sayar_item_bottomsheet_explain),
+                            textBody = stringResource(
+                                id = R.string.vira_sayar_item_bottomsheet_explain
+                            ),
                             action = {
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
@@ -212,7 +217,8 @@ fun HomeScreen(
                         )
                     }
                 }
-            }) {
+            }
+        ) {
             HomeBody(
                 paddingValues = innerPadding,
                 onAvanegarClick = {
@@ -269,7 +275,6 @@ fun HomeScreen(
                             }
                         }
                     }
-
                 },
                 modifier = Modifier.padding(top = 8.dp)
             )
@@ -369,7 +374,7 @@ private fun HomeBody(
                         .clip(CircleShape)
                         .size(48.dp)
                         .background(Color_On_Surface_Variant),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.Center
                 ) {
                     ViraImage(
                         drawable = R.drawable.ic_arrow_crooked,
@@ -396,7 +401,8 @@ private fun HomeBody(
                 text = stringResource(id = R.string.coming_soon_vira),
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.subtitle2,
-                color = Color_Text_2, textAlign = TextAlign.Center
+                color = Color_Text_2,
+                textAlign = TextAlign.Center
             )
             Divider(
                 modifier = Modifier
@@ -416,7 +422,8 @@ private fun HomeBody(
             items(homeItem) { item ->
                 HomeBodyItem(
                     item = item,
-                    onItemClick = { onItemClick(item.homeItemType) })
+                    onItemClick = { onItemClick(item.homeItemType) }
+                )
             }
         }
     }
@@ -433,7 +440,7 @@ fun HomeBodyItem(
             .fillMaxSize()
             .background(Color.Transparent)
             .padding(top = 4.dp),
-        contentAlignment = Alignment.TopCenter,
+        contentAlignment = Alignment.TopCenter
     ) {
         Card(
             modifier = Modifier
@@ -498,14 +505,15 @@ fun HomeBodyItem(
     }
 }
 
-
 @Preview
 @Composable
 private fun HomeBodyPreview() {
     IntelligentAssistantTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             HomeBody(
-                PaddingValues(0.dp), onAvanegarClick = {}, onItemClick =
+                PaddingValues(0.dp),
+                onAvanegarClick = {},
+                onItemClick =
                 {}
             )
         }

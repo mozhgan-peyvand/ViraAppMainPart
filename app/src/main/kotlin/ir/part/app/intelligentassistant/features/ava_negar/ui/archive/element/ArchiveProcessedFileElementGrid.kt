@@ -42,10 +42,11 @@ fun ArchiveProcessedFileElementGrid(
     Card(
         backgroundColor = Color_Card,
         elevation = 0.dp,
-        border = if (archiveViewProcessed.isSeen)
+        border = if (archiveViewProcessed.isSeen) {
             BorderStroke(0.dp, Color_Card)
-        else
-            BorderStroke(0.5.dp, MaterialTheme.colors.primary),
+        } else {
+            BorderStroke(0.5.dp, MaterialTheme.colors.primary)
+        },
         modifier = Modifier.height(156.dp),
         onClick = {
             safeClick {
@@ -137,10 +138,10 @@ private fun ArchiveProcessedFileElementGridPreview() {
                     text = "متن متن متن متن متن متن",
                     createdAt = "54654",
                     filePath = "SASAS",
-                    isSeen = true,
+                    isSeen = true
                 ),
                 onItemClick = {},
-                onMenuClick = {},
+                onMenuClick = {}
             )
         }
     }

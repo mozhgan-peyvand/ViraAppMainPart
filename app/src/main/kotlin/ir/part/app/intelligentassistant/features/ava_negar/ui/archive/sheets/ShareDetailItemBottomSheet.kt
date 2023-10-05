@@ -33,7 +33,6 @@ import ir.part.app.intelligentassistant.utils.ui.theme.Color_Text_3
 import ir.part.app.intelligentassistant.utils.ui.theme.IntelligentAssistantTheme
 import ir.part.app.intelligentassistant.utils.ui.widgets.ViraIcon
 
-
 @Composable
 fun ShareDetailItemBottomSheet(
     modifier: Modifier = Modifier,
@@ -119,11 +118,13 @@ private fun ShareItem(
     modifier: Modifier = Modifier,
     onShareItemClick: () -> Unit
 ) {
-    Column(modifier = modifier
-        .fillMaxWidth()
-        .safeClickable {
-            onShareItemClick()
-        }) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .safeClickable {
+                onShareItemClick()
+            }
+    ) {
         Row(
             modifier = Modifier.padding(
                 vertical = 12.dp,
@@ -146,7 +147,8 @@ private fun ShareItem(
 
             Text(
                 text = text,
-                style = MaterialTheme.typography.subtitle1, color = Color_Text_2
+                style = MaterialTheme.typography.subtitle1,
+                color = Color_Text_2
             )
         }
     }
@@ -161,7 +163,7 @@ private fun ShareDetailItemBottomSheetPreview() {
                 isConverting = false,
                 onPdfClick = {},
                 onTextClick = {},
-                onOnlyTextClick = {},
+                onOnlyTextClick = {}
             )
         }
     }

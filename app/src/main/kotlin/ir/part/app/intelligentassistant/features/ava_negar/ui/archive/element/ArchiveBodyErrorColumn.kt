@@ -39,7 +39,6 @@ fun ArchiveBodyErrorColumn(
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-
         ErrorMessage(
             isNetworkAvailable = isNetworkAvailable,
             textAlign = TextAlign.Start,

@@ -11,7 +11,6 @@ sealed class OnboardingItem(
     val title: String,
     val description: String
 ) {
-
     data class First(val context: Context) : OnboardingItem(
         image = R.drawable.img_ai_sound_to_text,
         title = context.getString(R.string.lbl_avanegar_onboarding_first_title),

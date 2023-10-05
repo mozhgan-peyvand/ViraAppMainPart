@@ -96,6 +96,17 @@ android {
     }
 }
 
+
+android.applicationVariants.all { variant ->
+    tasks.named("assemble${variant.name.capitalize()}") {
+        it.dependsOn("detekt${variant.name.capitalize()}")
+    }
+    tasks.named("detekt${variant.name.capitalize()}") {
+        it.mustRunAfter("compile${variant.name.capitalize()}Kotlin")
+    }
+}
+
+
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.10.1'

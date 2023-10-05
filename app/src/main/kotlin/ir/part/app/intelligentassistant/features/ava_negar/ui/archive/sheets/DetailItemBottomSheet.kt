@@ -69,7 +69,8 @@ fun DetailItemBottomSheet(
         )
         ArchiveItemBodyBottomSheet(
             text = R.string.lbl_share_file,
-            icon = R.drawable.ic_share_new, onItemClick = {
+            icon = R.drawable.ic_share_new,
+            onItemClick = {
                 shareItemAction()
             }
         )
@@ -101,7 +102,6 @@ fun DetailItemBottomSheet(
         )
     }
 }
-
 
 @Composable
 private fun ArchiveItemBodyBottomSheet(

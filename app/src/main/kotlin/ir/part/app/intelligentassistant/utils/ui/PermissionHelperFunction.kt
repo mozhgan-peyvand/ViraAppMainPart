@@ -19,4 +19,3 @@ fun navigateToAppSettings(activity: Activity) {
     intent.data = uri
     activity.startActivity(intent)
 }
-

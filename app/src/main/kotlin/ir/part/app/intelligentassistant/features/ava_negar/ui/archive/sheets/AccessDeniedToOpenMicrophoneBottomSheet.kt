@@ -99,7 +99,7 @@ fun AccessDeniedToOpenMicrophoneBottomSheet(
             ) {
                 Text(
                     text = stringResource(id = R.string.lbl_cancel),
-                    style = MaterialTheme.typography.button,
+                    style = MaterialTheme.typography.button
                 )
             }
         }
