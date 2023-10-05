@@ -1,8 +1,12 @@
 *.iml
+# following is used to ignore everything in .idea except codeStyle
+!/.idea
+/.idea/*
+!.idea/codeStyles
+
 .gradle
 app/.signing-debug
 app/.signing
-/.idea
 .DS_Store
 /build
 **/build

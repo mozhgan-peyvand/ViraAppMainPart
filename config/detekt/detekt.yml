@@ -1,0 +1,90 @@
+build:
+  maxIssues: 0
+  excludeCorrectable: true
+
+processors:
+  active: true
+
+output-reports:
+  active: false
+  exclude:
+    - 'TxtOutputReport'
+    - 'XmlOutputReport'
+    - 'SarifOutputReport'
+    - 'MdOutputReport'
+    - 'HtmlOutputReport'
+
+formatting:
+  active: true
+  autoCorrect: true
+
+  FinalNewline:
+    insertFinalNewLine: false
+
+  PackageName:
+    active: false
+  Filename:
+    active: false
+  ParameterWrapping:
+    active: false
+  PropertyWrapping:
+    active: false
+  SpacingAroundRangeOperator:
+    active: false
+  AnnotationOnSeparateLine:
+    active: false
+  EnumWrapping:
+    active: true
+  IfElseBracing:
+    active: true
+  IfElseWrapping:
+    active: true
+  NoEmptyFirstLineInClassBody:
+    active: true
+  PropertyName:
+    active: false # only because of Color.kt
+  TypeArgumentListSpacing:
+    active: true
+  TypeParameterListSpacing:
+    active: true
+
+  MaximumLineLength:
+    maxLineLength: 100
+    ignoreBackTickedIdentifier: true
+  ArgumentListWrapping:
+    maxLineLength: 100
+  FunctionReturnTypeSpacing:
+    maxLineLength: 100
+  ParameterListWrapping:
+    maxLineLength: 100
+  Wrapping:
+    maxLineLength: 100
+  FunctionSignature:
+    maxLineLength: 100
+    forceMultilineWhenParameterCountGreaterOrEqualThan: 5
+
+  TrailingCommaOnCallSite:
+    active: true
+    useTrailingCommaOnCallSite: false
+  TrailingCommaOnDeclarationSite:
+    active: true
+    useTrailingCommaOnDeclarationSite: false
+
+comments:
+  active: false
+complexity:
+  active: false
+coroutines:
+  active: false
+empty-blocks:
+  active: false
+exceptions:
+  active: false
+naming:
+  active: false
+performance:
+  active: false
+potential-bugs:
+  active: false
+style:
+  active: false

@@ -1,0 +1,14 @@
+apply plugin: 'io.gitlab.arturbosch.detekt'
+
+tasks.detekt.jvmTarget = "17"
+
+dependencies {
+    detektPlugins "io.gitlab.arturbosch.detekt:detekt-formatting:1.23.1"
+}
+
+detekt {
+    autoCorrect = true
+    buildUponDefaultConfig = true
+    ignoreFailures = true
+    config = files("$rootProject.projectDir/config/detekt/detekt.yml")
+}
