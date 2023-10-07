@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -437,10 +436,10 @@ fun HomeBodyItem(
 ) {
     Box(
         modifier = Modifier
-            .aspectRatio(0.90f)
             .fillMaxSize()
             .background(Color.Transparent)
-            .padding(top = 4.dp),
+            .padding(top = 4.dp)
+            .heightIn(min = 148.dp),
         contentAlignment = Alignment.TopCenter
     ) {
         Card(

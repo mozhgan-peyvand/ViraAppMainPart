@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -48,7 +48,7 @@ fun ArchiveProcessedFileElementColumn(
         } else {
             BorderStroke(0.5.dp, MaterialTheme.colors.primary)
         },
-        modifier = Modifier.height(108.dp),
+        modifier = Modifier.heightIn(min = 108.dp),
         onClick = {
             safeClick {
                 onItemClick(archiveViewProcessed.id)
@@ -120,7 +120,6 @@ fun ArchiveProcessedFileElementColumn(
                 Spacer(modifier = Modifier.width(4.dp))
 
                 Text(
-                    modifier = Modifier.weight(1f),
                     color = Color_Text_3,
                     style = MaterialTheme.typography.caption,
                     text = archiveViewProcessed.createdAt
