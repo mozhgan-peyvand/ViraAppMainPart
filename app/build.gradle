@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace 'ir.part.app.intelligentassistant'
+    namespace 'ai.ivira.app'
     compileSdk 34
 
     defaultConfig {
-        applicationId "ir.part.app.intelligentassistant"
+        applicationId "ai.ivira.app"
         minSdk 21
         targetSdk 33
         versionCode 1
