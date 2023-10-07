@@ -22,28 +22,28 @@ data class HomeItemScreen(
             get() {
                 return listOf(
                     HomeItemScreen(
-                        icon = R.drawable.img_ava_sho,
+                        icon = R.drawable.img_ava_sho_2,
                         title = R.string.lbl_ava_sho,
                         textColor = Indigo_300,
                         description = R.string.lbl_ava_sho_desc,
                         homeItemType = HomeItemBottomSheetType.AvaSho
                     ),
                     HomeItemScreen(
-                        icon = R.drawable.img_nevise_negar,
+                        icon = R.drawable.img_nevise_negar_2,
                         textColor = Indigo_300_2,
                         title = R.string.lbl_nevise_negar,
                         description = R.string.lbl_nevise_negar_desc,
                         homeItemType = HomeItemBottomSheetType.NeviseNegar
                     ),
                     HomeItemScreen(
-                        icon = R.drawable.img_virasiar,
+                        icon = R.drawable.img_vira_siar_2,
                         title = R.string.lbl_virasiar,
                         textColor = Light_green_300,
                         description = R.string.lbl_virasiar_desc,
                         homeItemType = HomeItemBottomSheetType.ViraSiar
                     ),
                     HomeItemScreen(
-                        icon = R.drawable.img_nevise_nama,
+                        icon = R.drawable.img_nevise_nama_2,
                         title = R.string.lbl_nevise_nama,
                         textColor = Teal_200,
                         description = R.string.lbl_nevise_nama_desc,

@@ -12,8 +12,8 @@ import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Card_Stroke
-import ai.ivira.app.utils.ui.theme.Color_On_Surface_Variant
 import ai.ivira.app.utils.ui.theme.Color_OutLine
+import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -341,17 +342,17 @@ private fun HomeBody(
                 modifier = Modifier
                     .background(Color.Transparent)
                     .padding(
-                        top = 18.dp,
-                        bottom = 18.dp,
-                        start = 24.dp,
-                        end = 16.dp
-                    ),
+                        end = 24.dp
+                    )
+                    .heightIn(min = 128.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ViraImage(
-                    drawable = R.drawable.img_voice,
+                    drawable = R.drawable.img_ava_negar_2,
                     contentDescription = null,
-                    modifier = Modifier.size(width = 68.dp, height = 80.dp)
+                    modifier = Modifier
+                        .padding(start = 30.dp)
+                        .size(width = 68.dp, height = 80.dp)
                 )
                 Column(
                     modifier = Modifier
@@ -373,7 +374,7 @@ private fun HomeBody(
                     modifier = Modifier
                         .clip(CircleShape)
                         .size(48.dp)
-                        .background(Color_On_Surface_Variant),
+                        .background(Color_Primary_200),
                     contentAlignment = Alignment.Center
                 ) {
                     ViraImage(
@@ -387,7 +388,7 @@ private fun HomeBody(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 24.dp, bottom = 12.dp, start = 16.dp, end = 16.dp),
+                .padding(top = 36.dp, bottom = 16.dp, start = 16.dp, end = 16.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
