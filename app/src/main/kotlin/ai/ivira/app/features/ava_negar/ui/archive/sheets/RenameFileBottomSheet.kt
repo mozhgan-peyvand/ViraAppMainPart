@@ -25,7 +25,11 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -34,6 +38,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -41,13 +47,20 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun RenameFileBottomSheet(
     fileName: String,
-    onValueChange: (String) -> Unit,
     shouldShowKeyBoard: Boolean,
-    reNameAction: () -> Unit,
+    reNameAction: (fileName: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
+    var textValue by rememberSaveable(fileName, stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(
+                fileName,
+                selection = TextRange(0, fileName.length)
+            )
+        )
+    }
 
     LaunchedEffect(shouldShowKeyBoard) {
         if (shouldShowKeyBoard) {
@@ -104,9 +117,9 @@ fun RenameFileBottomSheet(
                 )
 
                 BasicTextField(
-                    value = fileName,
+                    value = textValue,
                     singleLine = true,
-                    onValueChange = { onValueChange(it) },
+                    onValueChange = { textValue = it },
                     cursorBrush = SolidColor(MaterialTheme.colors.primary),
                     textStyle = MaterialTheme.typography.body1.copy(color = Color_Text_2),
                     modifier = Modifier
@@ -125,10 +138,11 @@ fun RenameFileBottomSheet(
                 .padding(bottom = 6.dp),
             onClick = {
                 safeClick {
-                    reNameAction()
+                    reNameAction(textValue.text)
                 }
             },
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
+            enabled = textValue.text.isNotBlank()
         ) {
             Text(
                 text = stringResource(id = R.string.lbl_save),
@@ -146,7 +160,6 @@ private fun RenameFileBottomSheetPreview() {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             RenameFileBottomSheet(
                 fileName = "FileName",
-                onValueChange = {},
                 shouldShowKeyBoard = false,
                 reNameAction = {}
             )
