@@ -96,7 +96,7 @@ fun AvaNegarSearchScreen(
     val context = LocalContext.current
 
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
-    val searchResult by viewModel.getSearchResult.collectAsStateWithLifecycle()
+    val searchResult by viewModel.searchResult.collectAsStateWithLifecycle()
     val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
     val localClipBoardManager = LocalClipboardManager.current

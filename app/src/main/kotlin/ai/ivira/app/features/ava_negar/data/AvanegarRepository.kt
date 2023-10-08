@@ -31,8 +31,7 @@ class AvanegarRepository @Inject constructor(
 
     suspend fun getTrackingFilesSync() = avanegarLocalDataSource.getTrackingFilesSync()
 
-    fun getSearch(title: String) =
-        avanegarLocalDataSource.getSearchResult(title)
+    suspend fun getSearch(query: String) = avanegarLocalDataSource.getSearchResult(query)
 
     suspend fun audioToTextBelowSixtySecond(
         id: String,

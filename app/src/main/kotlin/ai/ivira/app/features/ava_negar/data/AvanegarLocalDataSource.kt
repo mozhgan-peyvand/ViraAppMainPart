@@ -69,7 +69,7 @@ class AvanegarLocalDataSource @Inject constructor(
     suspend fun deleteUnprocessedFile(token: String) =
         dao.deleteUnprocessedFile(token)
 
-    fun getSearchResult(title: String) = dao.getSearch(title)
+    suspend fun getSearchResult(query: String) = dao.getSearch(query)
 
     suspend fun deleteProcessFile(id: Int?) = dao.deleteProcessedFile(id)
 

@@ -81,5 +81,5 @@ interface AvanegarDao {
     @Query(
         "SELECT * FROM AvanegarProcessedFileEntity WHERE title LIKE '%' || :searchText || '%' COLLATE NOCASE"
     )
-    fun getSearch(searchText: String): Flow<List<AvanegarProcessedFileEntity>>
+    suspend fun getSearch(searchText: String): List<AvanegarProcessedFileEntity>
 }
