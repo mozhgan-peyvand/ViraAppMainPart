@@ -53,7 +53,7 @@ class AvanegarRepository @Inject constructor(
                             id = 0,
                             title = title,
                             text = result.data,
-                            createdAt = PersianDate().time,
+                            createdAt = PersianDate().time, // TODO: improve,
                             filePath = file.absolutePath,
                             isSeen = false
                         )

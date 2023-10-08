@@ -107,10 +107,6 @@ class ArchiveListViewModel @Inject constructor(
     var isGrid = MutableStateFlow(true)
         private set
 
-    // TODO set appropriate name
-    var isSavingFile = false
-        private set
-
     private var files: MutableMap<Uri, File> = ConcurrentHashMap()
 
     private var numberOfRequest = NUMBER_OF_REQUEST
@@ -303,11 +299,8 @@ class ArchiveListViewModel @Inject constructor(
     }
 
     private suspend fun createFileFromUri(uri: Uri): File? {
-        isSavingFile = true
-
         return files[uri] ?: fileCache.cacheUri(uri)?.also { file ->
             files[uri] = file
-            isSavingFile = false
         }
     }
 

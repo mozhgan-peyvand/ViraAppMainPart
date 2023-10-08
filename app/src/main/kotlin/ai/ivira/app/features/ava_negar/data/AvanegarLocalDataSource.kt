@@ -41,12 +41,14 @@ class AvanegarLocalDataSource @Inject constructor(
             }
         }
 
+        // TODO: do manual todo for all files
+        // for some reason, sort was not applied with union, then we sort it manually
         AvanegarArchiveFilesEntity(
             tracking = tracking,
-            processed = processed,
+            processed = processed.sortedByDescending { it.createdAt },
             uploading = uploading
         )
-    }
+    }.flowOn(IO)
 
     suspend fun getUnprocessedFile(token: String) =
         dao.getUnprocessedFileDetail(token)
