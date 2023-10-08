@@ -14,10 +14,12 @@ import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.Uplo
 import ai.ivira.app.features.ava_negar.ui.archive.model.toAvanegarProcessedFileView
 import ai.ivira.app.features.ava_negar.ui.archive.model.toAvanegarTrackingFileView
 import ai.ivira.app.features.ava_negar.ui.archive.model.toAvanegarUploadingFileView
+import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewModel.Companion.MAX_FILE_DURATION_MS
 import ai.ivira.app.utils.common.event.ViraEvent
 import ai.ivira.app.utils.common.event.ViraPublisher
 import ai.ivira.app.utils.common.file.FileCache
 import ai.ivira.app.utils.common.file.UploadProgressCallback
+import ai.ivira.app.utils.common.ifFailure
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
@@ -26,10 +28,10 @@ import ai.ivira.app.utils.data.api_result.AppResult.Error
 import ai.ivira.app.utils.data.api_result.AppResult.Success
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
-import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import android.content.Context
 import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -45,7 +47,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -60,7 +61,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import saman.zamani.persiandate.PersianDate
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -130,13 +130,14 @@ class ArchiveListViewModel @Inject constructor(
         uploadPercent,
         repository.getAllArchiveFiles()
     ) { networkStatus: NetworkStatus, uploadingFileStatus: UploadingFileStatus, uploadPercent: Float, avanegarArchiveFilesEntity: AvanegarArchiveFilesEntity ->
+        // just ignore invalid files
+        val uploadingList = avanegarArchiveFilesEntity.uploading.filter { it.fileDuration > 0L }
 
         if (networkStatus is NetworkStatus.Unavailable) {
             job?.cancel()
             resetUploadProcess()
             resetIndexOfItemThatShouldBeDownloaded()
         } else {
-            val uploadingList = avanegarArchiveFilesEntity.uploading
             // region uploadingFileStatus
             if (uploadingFileStatus != Uploading && uploadingFileStatus != IsNotUploading && uploadingFileStatus != FailureUpload && uploadingList.isNotEmpty()) {
 
@@ -150,7 +151,7 @@ class ArchiveListViewModel @Inject constructor(
                     val fileDuration = uploadingList[this].fileDuration
 
                     // 0L means that file duration was is null
-                    if (fileDuration < SIXTY_SECOND && fileDuration != 0L) {
+                    if (fileDuration < SIXTY_SECOND) {
                         audioToTextBelowSixtySecond(
                             title,
                             filePath,
@@ -171,7 +172,6 @@ class ArchiveListViewModel @Inject constructor(
         // region archiveView
         val processedList = avanegarArchiveFilesEntity.processed
         val trackingList = avanegarArchiveFilesEntity.tracking
-        val uploadingList = avanegarArchiveFilesEntity.uploading
 
         isThereAnyTrackingOrUploading.value =
             trackingList.isNotEmpty() || uploadingList.isNotEmpty()
@@ -213,7 +213,7 @@ class ArchiveListViewModel @Inject constructor(
     fun addFileToUploadingQueue(title: String, uri: Uri?) {
         viewModelScope.launch(IO) {
             if (uri == null) {
-                _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile()))
+                _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
                 return@launch
             }
 
@@ -228,9 +228,24 @@ class ArchiveListViewModel @Inject constructor(
                 return@launch
             }
 
+            val fileDuration = getFileDuration(absolutePath)
+            if (fileDuration <= 0L) {
+                _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
+                return@launch
+            }
+
+            if (fileDuration > MAX_FILE_DURATION_MS) {
+                _uiViewStat.emit(
+                    UiError(
+                        uiException.getErrorMessageMaxLengthExceeded(),
+                        isSnack = true
+                    )
+                )
+                return@launch
+            }
+
             val createdAt = PersianDate().time
             val id = title + absolutePath
-            val fileDuration = getFileDuration(absolutePath)
 
             insertUploadingFileToDatabase(
                 id = id,
@@ -239,26 +254,6 @@ class ArchiveListViewModel @Inject constructor(
                 createdAt = createdAt,
                 fileDuration = fileDuration
             )
-        }
-    }
-
-    fun trackLargeFileResult(token: String) {
-        viewModelScope.launch(IO) {
-            val result = repository.trackLargeFileResult(token)
-
-            withContext(Main) {
-                when (result) {
-                    is Success -> {
-                        // TODO should not emit state
-                        _uiViewStat.emit(UiSuccess)
-                    }
-
-                    is Error -> {
-                        // TODO should not emit state
-                        _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
-                    }
-                }
-            }
         }
     }
 
@@ -346,13 +341,41 @@ class ArchiveListViewModel @Inject constructor(
         }.getOrNull().orZero()
     }
 
-    fun cancelDownload() {
-        job?.cancel()
-        _uiViewStat.tryEmit(UiIdle)
+    @WorkerThread
+    private fun getFileDuration(context: Context, uri: Uri?): Long {
+        if (!this::retriever.isInitialized) return 0L
+
+        return kotlin.runCatching {
+            retriever.setDataSource(context, uri)
+            val time: String? =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            time?.toLong()
+        }.ifFailure { it?.printStackTrace() }.getOrNull().orZero()
     }
 
-    fun updateIsSaving(value: Boolean) {
-        isSavingFile = value
+    suspend fun checkIfUriDurationIsOk(context: Context, uri: Uri?): Boolean {
+        if (uri == null) {
+            _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
+            return false
+        }
+
+        val duration = getFileDuration(context, uri)
+        if (duration <= 0L) {
+            _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
+            return false
+        }
+
+        if (duration > MAX_FILE_DURATION_MS) {
+            _uiViewStat.emit(
+                UiError(
+                    uiException.getErrorMessageMaxLengthExceeded(),
+                    isSnack = true
+                )
+            )
+            return false
+        }
+
+        return true
     }
 
     fun removeProcessedFile(id: Int?) = viewModelScope.launch {
@@ -399,9 +422,7 @@ class ArchiveListViewModel @Inject constructor(
         // to make sure that it does not return -1
         indexOfItemThatShouldBeDownloaded = if (avanegarUploadingFile != null &&
             uploadingList != null &&
-            uploadingList.contains(
-                avanegarUploadingFile
-            )
+            uploadingList.contains(avanegarUploadingFile)
         ) {
             uploadingList.indexOf(avanegarUploadingFile)
         } else {

@@ -88,6 +88,7 @@
     <string name="msg_connection_error">اتصال به اینترنت برقرار نمی باشد</string>
     <string name="msg_server_error">ارتباط با سرور برقرار نمی باشد</string>
     <string name="msg_invalid_file">فایل نامعتبر می باشد</string>
+    <string name="msg_file_duration_exceeds_max">فایل صوتی نمی‌تواند بیش از 60 دقیقه باشد</string>
     <!--endregion -->
 
     <string name="msg_convert_error">خطایی رخ داده است</string>

@@ -108,12 +108,7 @@ fun AvaNegarVoiceRecordingScreen(
     }
     val coroutineScope = rememberCoroutineScope()
 
-    var state by rememberSaveable(
-        saver = Saver(
-            save = { it.value.serialize() },
-            restore = { mutableStateOf(VoiceRecordingViewState.deserialize(it)) }
-        )
-    ) { mutableStateOf<VoiceRecordingViewState>(VoiceRecordingViewState.Idle) }
+    var state by viewModel.state
     val timer by viewModel.timer.collectAsState()
 
     val recorder by viewModel::recorder
@@ -577,7 +572,8 @@ fun VoiceRecordingHintSection(
                         )
                     )
                     CompositionLocalProvider(LocalTextStyle provides body2Font) {
-                        Text(text = "02:00:00", color = Color_Red)
+                        // TODO: set based on MAX In viewModel
+                        Text(text = "01:00:00", color = Color_Red)
                         Spacer(modifier = Modifier.size(4.dp))
                         Text(text = "/")
                         Spacer(modifier = Modifier.size(4.dp))

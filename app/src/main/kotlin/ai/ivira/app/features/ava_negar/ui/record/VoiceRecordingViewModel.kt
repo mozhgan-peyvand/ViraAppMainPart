@@ -1,10 +1,16 @@
 package ai.ivira.app.features.ava_negar.ui.record
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.record.Recorder.OnMaxDurationReached
+import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewState.Idle
+import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewState.Stopped
 import ai.ivira.app.utils.common.safeGetInt
 import android.app.Application
 import android.content.SharedPreferences
 import android.media.MediaPlayer
+import android.text.format.DateUtils
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -24,14 +30,20 @@ class VoiceRecordingViewModel @Inject constructor(
     private val prefs: SharedPreferences,
     val recorder: Recorder,
     application: Application
-) : AndroidViewModel(application) {
+) : AndroidViewModel(application), OnMaxDurationReached {
     private val mediaPlayer = MediaPlayer()
     val playerState = VoicePlayerState(mediaPlayer, application)
 
     private val _timer = MutableStateFlow(0)
     val timer: StateFlow<Int> = _timer.asStateFlow()
 
+    val state: MutableState<VoiceRecordingViewState> = mutableStateOf(Idle)
+
     private var timerJob: Job? = null
+
+    init {
+        recorder.addOnMaxDurationReachedListener(this)
+    }
 
     fun startTimer() {
         timerJob?.cancel()
@@ -72,13 +84,24 @@ class VoiceRecordingViewModel @Inject constructor(
         }
     }
 
+    // when this is called, we are sure that the mediaRecorder is stopped
+    override fun maxFileReached() {
+        pauseTimer()
+        state.value = Stopped
+    }
+
     override fun onCleared() {
         super.onCleared()
         resetTimer()
         playerState.clear()
+        recorder.removeOnMaxDurationReachedListener(this)
     }
 
     companion object {
         private const val KEY_DEFAULT_NAME_COUNTER = "defaultNameCounter"
+
+        // note: 1h is shown in ui, if changed, change that as well
+        const val MAX_FILE_DURATION_MS = 60 * DateUtils.MINUTE_IN_MILLIS
+        const val RECORDING_OFFSET_MS = 300
     }
 }
