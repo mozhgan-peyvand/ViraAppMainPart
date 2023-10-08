@@ -140,6 +140,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -206,6 +207,15 @@ fun AvaNegarArchiveListScreen(
 
     val uiViewState by archiveListViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
 
+    // to ensure errors are received must be here!! (errors of invalid file from either source)
+    LaunchedEffect(Unit) {
+        archiveListViewModel.uiViewState.collectLatest {
+            if (it is UiError && it.isSnack) {
+                showMessage(snackbarHostState, this, it.message)
+            }
+        }
+    }
+
     val intent = Intent()
     intent.action = Intent.ACTION_GET_CONTENT
     intent.type = "audio/*"
@@ -218,19 +228,23 @@ fun AvaNegarArchiveListScreen(
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (it.resultCode == ComponentActivity.RESULT_OK) {
-            setSelectedSheet(ArchiveBottomSheetType.RenameUploading)
             coroutineScope.launch {
-                if (!modalBottomSheetState.isVisible) {
-                    modalBottomSheetState.show()
-                } else {
-                    modalBottomSheetState.hide()
+                if (archiveListViewModel.checkIfUriDurationIsOk(context, it.data?.data)) {
+                    setSelectedSheet(ArchiveBottomSheetType.RenameUploading)
+                    coroutineScope.launch {
+                        if (!modalBottomSheetState.isVisible) {
+                            modalBottomSheetState.show()
+                        } else {
+                            modalBottomSheetState.hide()
+                        }
+                    }
+                    try {
+                        fileName.value =
+                            it.data?.data?.filename(context).orEmpty()
+                        fileUri.value = it.data?.data
+                    } catch (_: Exception) {
+                    }
                 }
-            }
-            try {
-                fileName.value =
-                    it.data?.data?.filename(context).orEmpty()
-                fileUri.value = it.data?.data
-            } catch (_: Exception) {
             }
         }
     }
@@ -286,11 +300,6 @@ fun AvaNegarArchiveListScreen(
 
     var backPressedInterval: Long = 0
 
-    navHostController.currentBackStackEntry
-        ?.savedStateHandle?.remove<RecordFileResult>(FILE_NAME)?.let {
-            archiveListViewModel.addFileToUploadingQueue(it.title, Uri.fromFile(File(it.filepath)))
-        }
-
     BackHandler(modalBottomSheetStateUpdate.isVisible) {
         // we want to disable back
     }
@@ -338,6 +347,11 @@ fun AvaNegarArchiveListScreen(
 
     val shouldShowKeyBoard = rememberSaveable { mutableStateOf(false) }
     val shouldShowKeyBoardUploadingName = rememberSaveable { mutableStateOf(false) }
+
+    navHostController.currentBackStackEntry
+        ?.savedStateHandle?.remove<RecordFileResult>(FILE_NAME)?.let {
+            archiveListViewModel.addFileToUploadingQueue(it.title, Uri.fromFile(File(it.filepath)))
+        }
 
     LaunchedEffect(modalBottomSheetState.currentValue) {
         if (modalBottomSheetState.isVisible) {
@@ -701,7 +715,7 @@ fun AvaNegarArchiveListScreen(
                                 archiveFiles.isNotEmpty() &&
                                 isThereAnyTrackingOrUploading
                             ) ||
-                        uiViewState is UiError
+                        uiViewState.let { it is UiError && !it.isSnack }
                     ) {
                         ErrorBanner(
                             errorMessage = if (uiViewState is UiError) {
@@ -719,7 +733,7 @@ fun AvaNegarArchiveListScreen(
                         archiveViewList = archiveFiles,
                         isNetworkAvailable = isNetworkAvailable,
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
-                        isErrorState = uiViewState is UiError,
+                        isErrorState = uiViewState.let { it is UiError && !it.isSnack },
                         isGrid = isGrid,
                         brush = if (isGrid) gridBrush() else columnBrush(),
                         onTryAgainCLick = { archiveListViewModel.startUploading(it) },

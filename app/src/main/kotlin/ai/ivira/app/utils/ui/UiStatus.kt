@@ -6,6 +6,6 @@ object UiIdle : UiStatus()
 
 object UiLoading : UiStatus()
 
-data class UiError(val message: String) : UiStatus()
+data class UiError(val message: String, val isSnack: Boolean = false) : UiStatus()
 
 object UiSuccess : UiStatus()
