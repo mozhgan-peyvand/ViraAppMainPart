@@ -246,10 +246,10 @@ fun AvaNegarSearchScreen(
                         RenameFileBottomSheet(
                             fileName = fileName.value,
                             shouldShowKeyBoard = shouldShowKeyBoard.value,
-                            onValueChange = { fileName.value = it },
-                            reNameAction = {
+                            reNameAction = { name ->
+                                fileName.value = name
                                 viewModel.updateTitle(
-                                    title = fileName.value,
+                                    title = name,
                                     id = viewModel.processItem?.id
                                 )
 

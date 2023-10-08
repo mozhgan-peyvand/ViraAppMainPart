@@ -308,20 +308,16 @@ fun AvaNegarArchiveDetailScreen(
                 ArchiveDetailBottomSheetType.Rename -> {
                     RenameFileBottomSheet(
                         fileName = fileName.value ?: processItem.value?.title.orEmpty(),
-                        onValueChange = {
-                            fileName.value = it
-                        },
                         shouldShowKeyBoard = shouldShowKeyBoard,
-                        reNameAction = {
+                        reNameAction = { name ->
+                            fileName.value = name
                             coroutineScope.launch {
                                 bottomSheetState.hide()
                             }
-                            fileName.value?.let {
-                                viewModel.updateTitle(
-                                    title = it,
-                                    id = viewModel.processItemId.intValue
-                                )
-                            }
+                            viewModel.updateTitle(
+                                title = name,
+                                id = viewModel.processItemId.intValue
+                            )
                         }
                     )
                 }
