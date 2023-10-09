@@ -24,6 +24,7 @@ interface AvanegarService {
     @POST("speechRecognition/v1/largeFile")
     suspend fun audioToTextAboveSixtySecond(
         @Part file: MultipartBody.Part,
+        @Part("estimation") estimation: Boolean,
         @Part("language") language: RequestBody
     ): ApiResult<Resource<LargeFileResponseNetwork>>
 

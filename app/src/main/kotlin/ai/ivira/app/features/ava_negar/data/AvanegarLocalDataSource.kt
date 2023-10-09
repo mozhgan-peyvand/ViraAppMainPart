@@ -3,6 +3,7 @@ package ai.ivira.app.features.ava_negar.data
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarProcessedFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarTrackingFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarUploadingFileEntity
+import ai.ivira.app.features.ava_negar.data.entity.LastTrackFailure
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -81,4 +82,11 @@ class AvanegarLocalDataSource @Inject constructor(
         dao.updateTitle(title = title, id = id)
 
     suspend fun editText(text: String, id: Int) = dao.editText(text, id)
+
+    suspend fun updateLastTrackingFileFailure(lastTrackFailure: LastTrackFailure?) {
+        dao.updateLastTrackingFileFailure(
+            lastTrackFailure?.lastFailedRequest,
+            lastTrackFailure?.lastTrackedBootElapsed
+        )
+    }
 }

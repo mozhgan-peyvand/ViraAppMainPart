@@ -1,5 +1,6 @@
 package ai.ivira.app.features.ava_negar.data
 
+import ai.ivira.app.features.ava_negar.data.entity.LargeFileDataNetwork
 import ai.ivira.app.utils.data.api_result.ApiResult
 import ai.ivira.app.utils.data.api_result.ApiResult.Error
 import ai.ivira.app.utils.data.api_result.ApiResult.Success
@@ -28,14 +29,15 @@ class AvanegarRemoteDataSource @Inject constructor(
     suspend fun audioToTextAboveSixtySecond(
         multiPartFile: MultipartBody.Part,
         language: RequestBody
-    ): ApiResult<String> {
+    ): ApiResult<LargeFileDataNetwork> {
         val result = avanegarService.audioToTextAboveSixtySecond(
-            multiPartFile,
-            language
+            file = multiPartFile,
+            estimation = true,
+            language = language
         )
 
         return when (result) {
-            is Success -> Success(result.data.data.data.token)
+            is Success -> Success(result.data.data.data)
             is Error -> Error(result.error)
         }
     }

@@ -3,6 +3,7 @@ package ai.ivira.app.features.ava_negar.data
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarProcessedFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarTrackingFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarUploadingFileEntity
+import ai.ivira.app.features.ava_negar.data.entity.LastTrackFailure
 import ai.ivira.app.utils.common.file.UploadProgressCallback
 import ai.ivira.app.utils.common.file.toMultiPart
 import ai.ivira.app.utils.data.NetworkHandler
@@ -12,9 +13,11 @@ import ai.ivira.app.utils.data.api_result.AppResult.Error
 import ai.ivira.app.utils.data.api_result.AppResult.Success
 import ai.ivira.app.utils.data.api_result.toAppResult
 import ai.ivira.app.utils.data.asPlainTextRequestBody
+import android.os.SystemClock
 import saman.zamani.persiandate.PersianDate
 import java.io.File
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 class AvanegarRepository @Inject constructor(
     private val avanegarRemoteDataSource: AvanegarRemoteDataSource,
@@ -86,10 +89,13 @@ class AvanegarRepository @Inject constructor(
                     avanegarLocalDataSource.deleteUploadingFile(id)
                     avanegarLocalDataSource.insertUnprocessedFile(
                         AvanegarTrackingFileEntity(
-                            token = result.data,
+                            token = result.data.token,
+                            processEstimation = result.data.processEstimation?.roundToInt(),
                             filePath = file.absolutePath,
                             title = title,
-                            createdAt = PersianDate().time // TODO: improve
+                            createdAt = PersianDate().time, // TODO: improve
+                            bootElapsedTime = SystemClock.elapsedRealtime(),
+                            lastFailure = null
                         )
                     )
                     Success(id)
@@ -128,7 +134,15 @@ class AvanegarRepository @Inject constructor(
                     Success(true)
                 }
 
-                is Error -> Error(result.error)
+                is Error -> {
+                    avanegarLocalDataSource.updateLastTrackingFileFailure(
+                        LastTrackFailure(
+                            lastFailedRequest = PersianDate().time,
+                            lastTrackedBootElapsed = SystemClock.elapsedRealtime()
+                        )
+                    )
+                    Error(result.error)
+                }
             }
         } else {
             Error(AppException.NetworkConnectionException())
