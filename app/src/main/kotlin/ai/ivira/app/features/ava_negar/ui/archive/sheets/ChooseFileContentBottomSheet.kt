@@ -55,6 +55,11 @@ fun ChooseFileContentBottomSheet(
             style = MaterialTheme.typography.body1
 
         )
+        Text(
+            text = stringResource(id = R.string.lbl_limit_time),
+            style = MaterialTheme.typography.body1
+
+        )
         Button(
             contentPadding = PaddingValues(14.dp),
             modifier = Modifier
