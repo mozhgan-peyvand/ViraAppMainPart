@@ -142,7 +142,7 @@
     <string name="lbl_avanegar_onboarding_third_description_fifth">تنظیم نحوه ی نمایش اعداد</string>
 
     <!-- Main -->
-    <string name="lbl_avanegar_service">سرویس‌ آوانگار</string>
+    <string name="lbl_avanegar_service">سرویس تبدیل گفتار به متن، ‌آوانگار</string>
     <string name="lbl_avanegar_service_details">تنها سرویس تبدیل گفتار به متن فارسی با قابلیت تشخیص تمامی لهجه های بومی ایرانی</string>
     <string name="lbl_soon_in_vira">به‌زودی در ویرا</string>
     <string name="lbl_soon_in_vira_description_first">آواشو : &#160; تبدیل متن به گفتار با لحن طبیعی انسان</string>
