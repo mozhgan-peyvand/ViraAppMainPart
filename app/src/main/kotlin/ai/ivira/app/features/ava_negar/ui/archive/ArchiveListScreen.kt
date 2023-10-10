@@ -1103,7 +1103,6 @@ private fun ArchiveList(
                     is AvanegarTrackingFileView -> {
                         ArchiveTrackingFileElementGrid(
                             archiveTrackingView = it,
-                            isNetworkAvailable = isNetworkAvailable,
                             brush = brush,
                             onItemClick = {},
                             onMenuClick = { item -> onMenuClick(item) }
@@ -1149,7 +1148,6 @@ private fun ArchiveList(
                     is AvanegarTrackingFileView -> {
                         ArchiveTrackingFileElementsColumn(
                             archiveTrackingView = it,
-                            isNetworkAvailable = isNetworkAvailable,
                             onItemClick = {
                             },
                             brush = brush,
@@ -1234,13 +1232,14 @@ private fun Fabs(
         }
         AnimatedVisibility(
             visible = isFabExpanded,
-            modifier = Modifier.clip(CircleShape)
+            modifier = Modifier
+                .padding(bottom = 8.dp, start = 8.dp)
+                .clip(CircleShape)
         ) {
             FloatingActionButton(
                 backgroundColor = MaterialTheme.colors.primary,
                 modifier = Modifier
-                    .clip(CircleShape)
-                    .padding(bottom = 8.dp, start = 8.dp),
+                    .clip(CircleShape),
                 onClick = {
                     safeClick {
                         openRecordingScreen()

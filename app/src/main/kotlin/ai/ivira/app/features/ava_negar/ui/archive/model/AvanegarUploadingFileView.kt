@@ -14,13 +14,13 @@ data class AvanegarUploadingFileView(
 
 fun AvanegarUploadingFileEntity.toAvanegarUploadingFileView(
     uploadedPercent: Float = 0f,
-    aaaaa: String = ""
+    uploadingId: String = ""
 ) = AvanegarUploadingFileView(
     id = id,
     title = title,
     filePath = filePath,
     createdAt = createdAt,
     fileDuration = fileDuration,
-    uploadedPercent = if (aaaaa == title) uploadedPercent else 0f, // it's default and initial value
+    uploadedPercent = if (uploadingId == id) uploadedPercent else 0f, // it's default and initial value
     isUploadingFinished = false // it's default and initial value
 )
