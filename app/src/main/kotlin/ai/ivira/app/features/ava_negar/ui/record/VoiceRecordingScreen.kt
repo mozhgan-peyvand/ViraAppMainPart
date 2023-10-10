@@ -241,7 +241,9 @@ fun AvaNegarVoiceRecordingScreen(
                         fileName = viewModel.getCurrentDefaultName(),
                         shouldShowKeyBoard = shouldShowKeyBoard.value,
                         renameAction = { name ->
-                            viewModel.updateCurrentDefaultName()
+                            if (name == viewModel.getCurrentDefaultName()) {
+                                viewModel.updateCurrentDefaultName()
+                            }
                             navController.previousBackStackEntry
                                 ?.savedStateHandle
                                 ?.set(
