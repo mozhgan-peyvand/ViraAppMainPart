@@ -7,6 +7,7 @@ import ai.ivira.app.features.ava_negar.ui.record.sheets.BackToArchiveListConfirm
 import ai.ivira.app.features.ava_negar.ui.record.sheets.MicrophoneNotAvailableBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.sheets.StartAgainBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.sheets.VoiceRecordingBottomSheetType
+import ai.ivira.app.features.ava_negar.ui.record.sheets.VoiceRecordingBottomSheetType.BackConfirm
 import ai.ivira.app.features.ava_negar.ui.record.widgets.RecordingAnimation
 import ai.ivira.app.features.ava_negar.ui.record.widgets.TextWithIcon
 import ai.ivira.app.utils.ui.OnLifecycleEvent
@@ -104,7 +105,7 @@ fun AvaNegarVoiceRecordingScreen(
             }
         )
     ) {
-        mutableStateOf(VoiceRecordingBottomSheetType.BackConfirm)
+        mutableStateOf(BackConfirm)
     }
     val coroutineScope = rememberCoroutineScope()
 
@@ -188,6 +189,35 @@ fun AvaNegarVoiceRecordingScreen(
             goBack = {
                 recorder.removeCurrentRecording()
                 navController.popBackStack()
+            },
+            pauseAndShowBackConfirm = {
+                // Pause: Duplicate 3
+                if (recorder.isPauseResumeSupported()) {
+                    pausePlayback(
+                        recorder = recorder,
+                        onSuccess = {
+                            viewModel.pauseTimer()
+                            state = VoiceRecordingViewState.Paused
+                        },
+                        onFailure = {
+                            context.showText(R.string.msg_general_recorder_pause_error)
+                        }
+                    )
+                } else {
+                    stopPlayback(
+                        recorder = recorder,
+                        onSuccess = {
+                            viewModel.pauseTimer()
+                            state = VoiceRecordingViewState.Stopped
+                        },
+                        onFailure = {
+                            context.showText(R.string.msg_general_recorder_stop_error)
+                        }
+                    )
+                }
+
+                bottomSheetContentType = BackConfirm
+                bottomSheetState.hideAndShow(coroutineScope)
             }
         )
     }
@@ -195,7 +225,7 @@ fun AvaNegarVoiceRecordingScreen(
     ModalBottomSheetLayout(
         sheetContent = {
             when (bottomSheetContentType) {
-                VoiceRecordingBottomSheetType.BackConfirm -> {
+                BackConfirm -> {
                     BackToArchiveListConfirmationBottomSheet(
                         actionConvertFile = {
                             bottomSheetContentType =
@@ -288,6 +318,35 @@ fun AvaNegarVoiceRecordingScreen(
                         goBack = {
                             recorder.removeCurrentRecording()
                             navController.popBackStack()
+                        },
+                        pauseAndShowBackConfirm = {
+                            // Pause: Duplicate 4
+                            if (recorder.isPauseResumeSupported()) {
+                                pausePlayback(
+                                    recorder = recorder,
+                                    onSuccess = {
+                                        viewModel.pauseTimer()
+                                        state = VoiceRecordingViewState.Paused
+                                    },
+                                    onFailure = {
+                                        context.showText(R.string.msg_general_recorder_pause_error)
+                                    }
+                                )
+                            } else {
+                                stopPlayback(
+                                    recorder = recorder,
+                                    onSuccess = {
+                                        viewModel.pauseTimer()
+                                        state = VoiceRecordingViewState.Stopped
+                                    },
+                                    onFailure = {
+                                        context.showText(R.string.msg_general_recorder_stop_error)
+                                    }
+                                )
+                            }
+
+                            bottomSheetContentType = BackConfirm
+                            bottomSheetState.hideAndShow(coroutineScope)
                         }
                     )
                 }
@@ -754,7 +813,8 @@ private fun handleBackClick(
     coroutineScope: CoroutineScope,
     bottomSheetState: ModalBottomSheetState,
     updateBottomSheetType: (VoiceRecordingBottomSheetType) -> Unit,
-    goBack: () -> Unit
+    goBack: () -> Unit,
+    pauseAndShowBackConfirm: () -> Unit
 ) {
     if (bottomSheetState.isVisible) {
         bottomSheetState.hide(coroutineScope)
@@ -765,12 +825,12 @@ private fun handleBackClick(
             }
 
             is VoiceRecordingViewState.Recording -> {
-                // ignore back presses while recording
+                pauseAndShowBackConfirm()
             }
 
             VoiceRecordingViewState.Paused,
             VoiceRecordingViewState.Stopped -> {
-                updateBottomSheetType(VoiceRecordingBottomSheetType.BackConfirm)
+                updateBottomSheetType(BackConfirm)
                 bottomSheetState.hideAndShow(coroutineScope)
             }
         }
