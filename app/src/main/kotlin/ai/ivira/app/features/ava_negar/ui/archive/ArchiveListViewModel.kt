@@ -28,6 +28,7 @@ import ai.ivira.app.utils.data.api_result.AppResult.Error
 import ai.ivira.app.utils.data.api_result.AppResult.Success
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
+import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
@@ -114,6 +115,8 @@ class ArchiveListViewModel @Inject constructor(
     private var job: Job? = null
     var jobConverting: Job? = null
     var fileToShare: File? = null
+    private var uploadingList: List<AvanegarUploadingFileView> = listOf()
+    private var uploadingId = ""
 
     // placed these variables in viewModel to save from configuration change,
     // can not make these, rememberSaveable because these are dataClass
@@ -131,17 +134,18 @@ class ArchiveListViewModel @Inject constructor(
 
         if (networkStatus is NetworkStatus.Unavailable) {
             job?.cancel()
-            resetUploadProcess()
-            resetIndexOfItemThatShouldBeDownloaded()
+            _isUploading.emit(Idle)
         } else {
-            // region uploadingFileStatus
-            if (uploadingFileStatus != Uploading && uploadingFileStatus != IsNotUploading && uploadingFileStatus != FailureUpload && uploadingList.isNotEmpty()) {
-
-                startUploading()
+            if (
+                uploadingFileStatus != Uploading &&
+                uploadingFileStatus != FailureUpload &&
+                uploadingList.isNotEmpty()
+            ) {
                 _uiViewStat.emit(UiLoading)
                 _isUploading.value = Uploading
 
                 indexOfItemThatShouldBeDownloaded.run {
+                    uploadingId = uploadingList[this].id
                     val title = uploadingList[this].title
                     val filePath = uploadingList[this].filePath
                     val fileDuration = uploadingList[this].fileDuration
@@ -162,7 +166,6 @@ class ArchiveListViewModel @Inject constructor(
                     }
                 }
             }
-            // endregion
         }
 
         // region archiveView
@@ -172,11 +175,20 @@ class ArchiveListViewModel @Inject constructor(
         isThereAnyTrackingOrUploading.value =
             trackingList.isNotEmpty() || uploadingList.isNotEmpty()
 
+        if (trackingList.isEmpty() && uploadingList.isEmpty()) {
+            _uiViewStat.emit(UiIdle)
+        }
+
+        buildList {
+            addAll(
+                uploadingList.map { it.toAvanegarUploadingFileView(uploadPercent, uploadingId) }
+                    .also { this@ArchiveListViewModel.uploadingList = it }
+            )
+            addAll(trackingList.map { it.toAvanegarTrackingFileView() })
+            addAll(processedList.map { it.toAvanegarProcessedFileView() })
+        }
+
         // endregion
-        val title = if (uploadingList.isNotEmpty()) uploadingList[0].title else ""
-        uploadingList.map { it.toAvanegarUploadingFileView(uploadPercent, title) } +
-            trackingList.map { it.toAvanegarTrackingFileView() } +
-            processedList.map { it.toAvanegarProcessedFileView() }
     }.distinctUntilChanged()
 
     private lateinit var retriever: MediaMetadataRetriever
@@ -193,6 +205,17 @@ class ArchiveListViewModel @Inject constructor(
         viewModelScope.launch {
             aiEventPublisher.events.collect {
                 _aiEvent.value = it
+            }
+        }
+
+        viewModelScope.launch {
+            _isUploading.collect {
+
+                // on Idle and FailureUpload state, we reset everyThing
+                if (it is Idle || it is FailureUpload) {
+                    indexOfItemThatShouldBeDownloaded = 0
+                    uploadPercent.update { 0f }
+                }
             }
         }
     }
@@ -291,13 +314,6 @@ class ArchiveListViewModel @Inject constructor(
         }
     }
 
-    private fun changeUploadFileToIdle() {
-        viewModelScope.launch {
-            // fixme set the correct value
-            delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
-        }
-    }
-
     private suspend fun createFileFromUri(uri: Uri): File? {
         return files[uri] ?: fileCache.cacheUri(uri)?.also { file ->
             files[uri] = file
@@ -384,10 +400,10 @@ class ArchiveListViewModel @Inject constructor(
     fun removeUploadingFile(id: String?) = viewModelScope.launch {
         id?.let {
             viewModelScope.launch {
-                repository.deleteUploadingFile(it)
-                resetUploadProcess()
-                resetIndexOfItemThatShouldBeDownloaded()
+                job?.cancel()
+                // emit failure to start uploading from the first of list
                 _isUploading.value = FailureUpload
+                repository.deleteUploadingFile(it)
             }
         }
     }
@@ -408,18 +424,16 @@ class ArchiveListViewModel @Inject constructor(
         return sharedPref.getBoolean(permissionDeniedPrefKey(permission), false)
     }
 
-    fun startUploading(
-        avanegarUploadingFile: AvanegarUploadingFileView? = null,
-        uploadingList: List<AvanegarUploadingFileView>? = null
-    ) {
+    fun startUploading(avanegarUploadingFile: AvanegarUploadingFileView) {
         // to make sure that it does not return -1
-        indexOfItemThatShouldBeDownloaded = if (avanegarUploadingFile != null &&
-            uploadingList != null &&
-            uploadingList.contains(avanegarUploadingFile)
-        ) {
-            uploadingList.indexOf(avanegarUploadingFile)
-        } else {
-            0
+        with(uploadingList) {
+            indexOfItemThatShouldBeDownloaded = if (
+                contains(avanegarUploadingFile)
+            ) {
+                indexOf(avanegarUploadingFile)
+            } else {
+                0
+            }
         }
 
         _isUploading.value = IsNotUploading
@@ -438,24 +452,15 @@ class ArchiveListViewModel @Inject constructor(
         }
     }
 
-    private fun resetUploadProcess() {
-        uploadPercent.update { 0f }
-    }
-
-    private fun resetIndexOfItemThatShouldBeDownloaded() {
-        indexOfItemThatShouldBeDownloaded = 0
-    }
-
     private suspend fun <T> handleResultState(
         result: AppResult<T>,
         onSuccess: ((Success<T>) -> Unit)? = null
     ) {
         when (result) {
             is Success -> {
-                resetIndexOfItemThatShouldBeDownloaded()
                 numberOfRequest = NUMBER_OF_REQUEST
                 _uiViewStat.emit(UiSuccess)
-                changeUploadFileToIdle()
+                delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
                 _isUploading.value = Idle
 
                 onSuccess?.let {
@@ -463,15 +468,14 @@ class ArchiveListViewModel @Inject constructor(
                 }
             }
 
+            // onError we attempt to upload file 3 times, then emit failure and stop uploading
             is Error -> {
                 if (numberOfRequest > 0) {
                     numberOfRequest--
                     _isUploading.value = Idle
                 } else {
-                    resetUploadProcess()
-                    resetIndexOfItemThatShouldBeDownloaded()
-                    _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
                     _isUploading.value = FailureUpload
+                    _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
                 }
             }
         }

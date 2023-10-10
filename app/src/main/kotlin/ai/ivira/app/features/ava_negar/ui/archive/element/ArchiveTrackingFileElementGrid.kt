@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
@@ -37,7 +36,6 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ArchiveTrackingFileElementGrid(
     archiveTrackingView: AvanegarTrackingFileView,
-    isNetworkAvailable: Boolean,
     brush: Brush,
     onItemClick: (String) -> Unit,
     onMenuClick: (AvanegarTrackingFileView) -> Unit
@@ -95,24 +93,14 @@ fun ArchiveTrackingFileElementGrid(
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                if (isNetworkAvailable) {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(end = 8.dp),
-                        style = MaterialTheme.typography.body2,
-                        color = Color_Text_2,
-                        text = stringResource(id = R.string.lbl_converting)
-                    )
-                } else {
-                    ErrorMessage(
-                        isNetworkAvailable = isNetworkAvailable,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(end = 8.dp)
-                    )
-                }
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 8.dp),
+                    style = MaterialTheme.typography.body2,
+                    color = Color_Text_2,
+                    text = stringResource(id = R.string.lbl_converting)
+                )
             }
         }
     }
@@ -130,7 +118,6 @@ private fun ArchiveTrackingFileElementGridPreview() {
                     title = "عنوان",
                     createdAt = "Sasasasa"
                 ),
-                isNetworkAvailable = true,
                 brush = Brush.horizontalGradient(),
                 onItemClick = {},
                 onMenuClick = {}

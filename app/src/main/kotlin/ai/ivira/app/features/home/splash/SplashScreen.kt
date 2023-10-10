@@ -57,7 +57,7 @@ import kotlinx.coroutines.launch
 private const val APP_DESCRIPTION_DURATION = 1700
 private const val DELAY_TO_SHOW_APP_DESCRIPTION = 1300
 private const val APP_NAME_ANIMATION_DURATION = 500
-private const val DELAY_TO_NAVIGATE = 200L
+private const val DELAY_TO_NAVIGATE = 500L
 
 @Composable
 fun SplashScreen(
