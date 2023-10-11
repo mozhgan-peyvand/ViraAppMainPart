@@ -29,6 +29,7 @@ import ai.ivira.app.utils.common.event.ViraEvent
 import ai.ivira.app.utils.common.file.convertTextToPdf
 import ai.ivira.app.utils.common.file.convertTextToTXTFile
 import ai.ivira.app.utils.common.file.filename
+import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.Constants
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
@@ -200,7 +201,7 @@ fun AvaNegarArchiveListScreen(
     val archiveFiles by archiveListViewModel.allArchiveFiles.collectAsStateWithLifecycle(listOf())
     val isThereAnyTrackingOrUploading by archiveListViewModel.isThereAnyTrackingOrUploading.collectAsStateWithLifecycle()
 
-    val isNetworkAvailable by archiveListViewModel.isNetworkAvailable.collectAsStateWithLifecycle()
+    val networkStatus by archiveListViewModel.networkStatus.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
@@ -709,21 +710,24 @@ fun AvaNegarArchiveListScreen(
                         }
                     )
 
-                    if (
-                        (
-                            !isNetworkAvailable &&
-                                archiveFiles.isNotEmpty() &&
-                                isThereAnyTrackingOrUploading
-                            ) ||
-                        uiViewState.let { it is UiError && !it.isSnack }
-                    ) {
-                        ErrorBanner(
-                            errorMessage = if (uiViewState is UiError) {
-                                (uiViewState as UiError).message
-                            } else {
-                                stringResource(id = R.string.msg_internet_disconnected)
-                            }
-                        )
+                    val noNetworkAvailable = networkStatus is NetworkStatus.Unavailable
+                    val hasVpnConnection = networkStatus.let { it is NetworkStatus.Available && it.hasVpn }
+                    val isBannerError = uiViewState.let { it is UiError && !it.isSnack }
+
+                    if (noNetworkAvailable || hasVpnConnection || isBannerError) {
+                        val shouldShowError = archiveFiles.isNotEmpty() &&
+                            isThereAnyTrackingOrUploading
+                        if (shouldShowError) {
+                            ErrorBanner(
+                                errorMessage = if (uiViewState is UiError) {
+                                    (uiViewState as UiError).message
+                                } else if (hasVpnConnection) {
+                                    stringResource(id = R.string.msg_vpn_is_connected_error)
+                                } else {
+                                    stringResource(id = R.string.msg_internet_disconnected)
+                                }
+                            )
+                        }
                     }
 
                     ArchiveBody(
@@ -731,7 +735,7 @@ fun AvaNegarArchiveListScreen(
                             .weight(1f)
                             .fillMaxWidth(),
                         archiveViewList = archiveFiles,
-                        isNetworkAvailable = isNetworkAvailable,
+                        isNetworkAvailable = !noNetworkAvailable && !hasVpnConnection,
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                         isErrorState = uiViewState.let { it is UiError && !it.isSnack },
                         isGrid = isGrid,
