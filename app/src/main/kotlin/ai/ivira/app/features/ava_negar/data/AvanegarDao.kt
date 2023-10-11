@@ -55,19 +55,22 @@ interface AvanegarDao {
     @Query(
         """
         SELECT * FROM (
-            SELECT 0 AS id,'' AS uploadingId, title, 0 AS fileDuration, '' AS text, createdAt, filePath, token, 0 AS isSeen, 'tracking' as archiveType
+            SELECT 0 AS id,'' AS uploadingId, title, 0 AS fileDuration, '' AS text, createdAt, filePath, token, 0 AS isSeen, 'tracking' as archiveType,
+            processEstimation, bootElapsedTime, lastFailedRequest, lastTrackedBootElapsed
             FROM AvanegarTrackingFileEntity
             ORDER BY createdAt DESC
         )
         UNION
         SELECT * FROM (
-            SELECT id,'' AS uploadingId, title, 0 AS fileDuration, text, createdAt, filePath, '' AS token, isSeen, 'processed' as archiveType
+            SELECT id,'' AS uploadingId, title, 0 AS fileDuration, text, createdAt, filePath, '' AS token, isSeen, 'processed' as archiveType,
+            0 AS processEstimation, 0 AS bootElapsedTime, 0 AS lastFailedRequest, 0 AS lastTrackedBootElapsed
             FROM AvanegarProcessedFileEntity
             ORDER BY createdAt DESC
         )
         UNION
         SELECT * FROM (
-            SELECT 0 AS id, id AS uploadingId, title, fileDuration,'' AS text, createdAt, filePath,  '' AS token,  0 AS isSeen, 'uploading' as archiveType
+            SELECT 0 AS id, id AS uploadingId, title, fileDuration,'' AS text, createdAt, filePath,  '' AS token,  0 AS isSeen, 'uploading' as archiveType,
+            0 AS processEstimation, 0 AS bootElapsedTime, 0 AS lastFailedRequest, 0 AS lastTrackedBootElapsed
             FROM AvanegarUploadingFileEntity
             ORDER BY ROWID ASC
         )
@@ -82,4 +85,12 @@ interface AvanegarDao {
         "SELECT * FROM AvanegarProcessedFileEntity WHERE title LIKE '%' || :searchText || '%' COLLATE NOCASE"
     )
     suspend fun getSearch(searchText: String): List<AvanegarProcessedFileEntity>
+
+    @Query(
+        "UPDATE AvanegarTrackingFileEntity SET lastFailedRequest=:lastFailedRequest, lastTrackedBootElapsed=:lastTrackedBootElapsed"
+    )
+    suspend fun updateLastTrackingFileFailure(
+        lastFailedRequest: Long?,
+        lastTrackedBootElapsed: Long?
+    )
 }

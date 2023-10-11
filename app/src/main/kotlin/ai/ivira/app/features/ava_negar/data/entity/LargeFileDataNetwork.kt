@@ -4,5 +4,6 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class LargeFileDataNetwork(
-    val token: String
+    val token: String,
+    val processEstimation: Double?
 )

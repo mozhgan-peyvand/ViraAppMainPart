@@ -10,13 +10,28 @@ data class AvanegarArchiveUnionEntity(
     val token: String,
     val fileDuration: Long,
     val isSeen: Boolean,
-    val archiveType: String
+    val archiveType: String,
+    val bootElapsedTime: Long,
+    val processEstimation: Int?,
+    val lastFailedRequest: Long?,
+    val lastTrackedBootElapsed: Long?
 ) {
     fun toAvanegarTrackingFileEntity() = AvanegarTrackingFileEntity(
         token = token,
         filePath = filePath,
         title = title,
-        createdAt = createdAt
+        createdAt = createdAt,
+        bootElapsedTime = bootElapsedTime,
+        processEstimation = processEstimation,
+        lastFailure = if (lastFailedRequest != null && lastTrackedBootElapsed != null) {
+            if (lastTrackedBootElapsed != 0L && lastFailedRequest != 0L) {
+                LastTrackFailure(lastFailedRequest, lastTrackedBootElapsed)
+            } else {
+                null
+            }
+        } else {
+            null
+        }
     )
 
     fun toAvanegarProcessedFileEntity() = AvanegarProcessedFileEntity(
