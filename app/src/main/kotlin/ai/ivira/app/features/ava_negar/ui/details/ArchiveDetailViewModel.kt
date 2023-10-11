@@ -9,6 +9,7 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 import androidx.compose.runtime.IntState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +34,9 @@ class ArchiveDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     application: Application
 ) : AndroidViewModel(application) { // TODO: remove application
+
+    private val _fileNotExist = mutableStateOf(false)
+    val fileNotExist: State<Boolean> = _fileNotExist
 
     private val _processItemId =
         mutableIntStateOf(savedStateHandle.get<Int>("id").orZero())
@@ -83,10 +87,14 @@ class ArchiveDetailViewModel @Inject constructor(
                     textList[0] = text
                 }
                 it?.filePath?.let { filepath ->
-                    initializeMediaPlayer(
-                        application.applicationContext,
-                        filepath
-                    )
+                    if (checkFileExisting(filepath)) {
+                        initializeMediaPlayer(
+                            application.applicationContext,
+                            filepath
+                        )
+                    } else {
+                        _fileNotExist.value = true
+                    }
                 }
             }
         }
@@ -139,6 +147,14 @@ class ArchiveDetailViewModel @Inject constructor(
         ProcessLifecycleOwner.get().lifecycleScope.launch {
             repository.editText(textBody.value, _processItemId.intValue)
         }
+    }
+
+    private fun checkFileExisting(filePath: String): Boolean {
+        val file = File(filePath)
+        if (file.exists()) {
+            return true
+        }
+        return false
     }
 
     override fun onCleared() {

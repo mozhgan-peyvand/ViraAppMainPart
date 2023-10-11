@@ -431,6 +431,14 @@ fun AvaNegarArchiveDetailScreen(
                 },
                 startMediaPlayer = {
                     viewModel.startMediaPlayer()
+                },
+                fileNotExist = viewModel.fileNotExist.value,
+                fileNotExistAction = {
+                    showMessage(
+                        snackbarHostState,
+                        coroutineScope,
+                        context.getString(R.string.msg_invalid_file)
+                    )
                 }
             )
         }
@@ -617,14 +625,18 @@ fun AvaNegarProcessedArchiveDetailBody(
     scrollState: ScrollState,
     scrollStateValue: Int,
     startMediaPlayer: () -> Unit,
-    stopMediaPlayer: () -> Unit
+    stopMediaPlayer: () -> Unit,
+    fileNotExist: Boolean,
+    fileNotExistAction: () -> Unit
 ) {
     Column(modifier = modifier.padding(paddingValues)) {
         PlayerBody(
             mediaPlayer = mediaPlayer,
             scrollStateValue = scrollStateValue,
             startMediaPlayer = startMediaPlayer,
-            stopMediaPlayer = stopMediaPlayer
+            stopMediaPlayer = stopMediaPlayer,
+            fileNotExist = fileNotExist,
+            fileNotExistAction = fileNotExistAction
         )
         TextField(
             value = text,
@@ -650,7 +662,9 @@ fun PlayerBody(
     mediaPlayer: MediaPlayer,
     scrollStateValue: Int,
     startMediaPlayer: () -> Unit,
-    stopMediaPlayer: () -> Unit
+    stopMediaPlayer: () -> Unit,
+    fileNotExist: Boolean,
+    fileNotExistAction: () -> Unit
 ) {
     val color =
         if (scrollStateValue > 0) Color_Surface_Container_High else MaterialTheme.colors.primaryVariant
@@ -736,11 +750,16 @@ fun PlayerBody(
         IconButton(
             onClick = {
                 safeClick {
-                    isPlaying.value = !isPlaying.value
-                    if (isPlaying.value) {
-                        startMediaPlayer()
+                    if (!fileNotExist) {
+                        isPlaying.value = !isPlaying.value
+                        if (isPlaying.value) {
+                            startMediaPlayer()
+                        } else {
+                            stopMediaPlayer()
+                        }
                     } else {
-                        stopMediaPlayer()
+                        isPlaying.value = false
+                        fileNotExistAction()
                     }
                 }
             },
