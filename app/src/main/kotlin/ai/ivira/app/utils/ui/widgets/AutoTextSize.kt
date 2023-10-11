@@ -24,6 +24,7 @@ fun AutoTextSize(
     Text(
         text = text,
         color = color,
+        maxLines = 1,
         style = style.copy(
             fontSize = LocalTextStyle.current.fontSize * multiplier,
             lineHeight = LocalTextStyle.current.lineHeight * multiplier

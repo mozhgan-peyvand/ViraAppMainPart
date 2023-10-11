@@ -23,6 +23,7 @@ import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
 import ai.ivira.app.utils.ui.theme.Color_Surface_Container_High
 import ai.ivira.app.utils.ui.theme.Color_White
+import ai.ivira.app.utils.ui.widgets.AutoTextSize
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.app.Activity
@@ -34,11 +35,14 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize.Min
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -537,17 +541,20 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
 ) {
     Row(
         modifier = modifier
+            .height(Min)
             .fillMaxWidth()
             .padding(20.dp)
             .background(Color_BG_Solid_2)
     ) {
         Button(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
             contentPadding = PaddingValues(
-                top = 14.dp,
-                bottom = 14.dp,
-                start = 19.dp,
-                end = 23.dp
+                top = 16.dp,
+                bottom = 16.dp,
+                start = 10.dp,
+                end = 10.dp
             ),
             onClick = {
                 safeClick {
@@ -566,12 +573,13 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                 ViraImage(
                     drawable = R.drawable.ic_copy,
                     contentDescription = stringResource(id = R.string.desc_copy),
-                    modifier = modifier.padding(end = 8.dp)
+                    modifier = modifier.padding(end = 10.dp)
                 )
-                Text(
+                AutoTextSize(
                     text = stringResource(id = R.string.lbl_btn_copy_text),
                     style = MaterialTheme.typography.button,
-                    color = Color_Primary_300
+                    color = Color_Primary_300,
+                    textScale = 0.8f
                 )
             }
         }
@@ -579,12 +587,14 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
         Spacer(modifier = Modifier.size(16.dp))
 
         Button(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
             contentPadding = PaddingValues(
-                top = 14.dp,
-                bottom = 14.dp,
-                start = 19.dp,
-                end = 23.dp
+                top = 16.dp,
+                bottom = 16.dp,
+                start = 10.dp,
+                end = 10.dp
             ),
             onClick = {
                 safeClick {
@@ -603,12 +613,13 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                 ViraImage(
                     drawable = R.drawable.ic_share,
                     contentDescription = stringResource(id = R.string.desc_share),
-                    modifier = modifier.padding(end = 8.dp)
+                    modifier = modifier.padding(end = 10.dp)
                 )
-                Text(
+                AutoTextSize(
                     text = stringResource(id = R.string.lbl_btn_share_text),
                     style = MaterialTheme.typography.button,
-                    color = Color_Primary_300
+                    color = Color_Primary_300,
+                    textScale = 0.8f
                 )
             }
         }
