@@ -58,7 +58,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -87,12 +86,10 @@ class ArchiveListViewModel @Inject constructor(
     private val _aiEvent: MutableState<ViraEvent?> = mutableStateOf(null)
     val aiEvent: State<ViraEvent?> = _aiEvent
 
-    val isNetworkAvailable = networkStatusTracker.networkStatus.map {
-        it is NetworkStatus.Available
-    }.stateIn(
+    val networkStatus = networkStatusTracker.networkStatus.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = false
+        initialValue = NetworkStatus.Unavailable
     )
 
     private val _isUploading: MutableStateFlow<UploadingFileStatus> = MutableStateFlow(Idle)
@@ -135,7 +132,7 @@ class ArchiveListViewModel @Inject constructor(
         if (networkStatus is NetworkStatus.Unavailable) {
             job?.cancel()
             _isUploading.emit(Idle)
-        } else {
+        } else if (networkStatus is NetworkStatus.Available && !networkStatus.hasVpn) {
             if (
                 uploadingFileStatus != Uploading &&
                 uploadingFileStatus != FailureUpload &&

@@ -42,4 +42,18 @@ class NetworkHandler @Inject constructor(
         }
         return result
     }
+
+    fun hasVpnConnection(): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val networkCapabilities = connectivityManager.activeNetwork ?: return false
+            val actNw =
+                connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+        } else {
+            @Suppress("DEPRECATION")
+            connectivityManager.activeNetworkInfo?.type == ConnectivityManager.TYPE_VPN
+        }
+    }
 }
