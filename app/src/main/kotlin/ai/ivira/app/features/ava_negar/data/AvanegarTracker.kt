@@ -120,8 +120,9 @@ class AvanegarTracker @Inject constructor(
     }
 
     private fun log(message: String) {
-        if (BuildConfig.DEBUG)
+        if (BuildConfig.DEBUG) {
             Timber.tag("AvanegarTracker").v(message)
+        }
     }
 
     private fun getTrackingAsJsonString(tracking: AvanegarTrackingFileEntity): JSONObject {

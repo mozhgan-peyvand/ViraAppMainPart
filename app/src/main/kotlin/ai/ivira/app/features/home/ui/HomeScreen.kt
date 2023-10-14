@@ -291,7 +291,7 @@ fun HomeAppBar(openDrawer: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         ViraImage(
-            drawable = R.drawable.ic_app_log_name_description,
+            drawable = R.drawable.ic_app_logo_name_description,
             contentDescription = null
         )
 
