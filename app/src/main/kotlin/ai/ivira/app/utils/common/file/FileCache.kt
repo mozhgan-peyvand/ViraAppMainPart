@@ -15,7 +15,7 @@ class FileCache @Inject constructor(
     // content resolver
     private val contentResolver = context.contentResolver
 
-    private val cacheLocation = context.cacheDir
+    private val cacheLocation = File(context.filesDir, "avanegar")
 
     suspend fun cacheUri(uri: Uri): File? {
         return copyFromSource(uri)
@@ -37,7 +37,19 @@ class FileCache @Inject constructor(
             return@suspendCoroutine
         }
 
-        val fileName = uri.filename(context) ?: generateFileName(fileExtension)
+        val fileName = uri.filename(context)
+
+        val newFileName = if (!fileName.isNullOrBlank()) {
+            var generatedName: String
+
+            do {
+                generatedName = "${System.currentTimeMillis()}_$fileName"
+            } while (File(generatedName).exists())
+
+            generatedName
+        } else {
+            generateFileName(fileExtension)
+        }
 
         val inputStream = contentResolver.openInputStream(uri)
         if (inputStream == null) {
@@ -50,7 +62,7 @@ class FileCache @Inject constructor(
                 cacheLocation.mkdirs()
             }
             // the file which will be the new cached file
-            val outputFile = File(cacheLocation, fileName)
+            val outputFile = File(cacheLocation, newFileName)
             if (outputFile.exists()) {
                 outputFile.delete()
             }
@@ -66,6 +78,12 @@ class FileCache @Inject constructor(
     }
 
     private fun generateFileName(fileExtension: String): String {
-        return "${System.currentTimeMillis()}.$fileExtension"
+        var name: String
+
+        do {
+            name = "${System.currentTimeMillis()}.$fileExtension"
+        } while (File(cacheLocation, name).exists())
+
+        return name
     }
 }
