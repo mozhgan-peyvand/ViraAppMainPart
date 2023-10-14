@@ -26,7 +26,8 @@ class Recorder @Inject constructor(
     private val onMaxDurationReachedListeners = CopyOnWriteArrayList<OnMaxDurationReached>()
 
     private fun getFile(filename: String): File {
-        val parent = File(context.filesDir, "recordings")
+        val parent = File(File(context.filesDir, "avanegar"), "recordings")
+
         if (!parent.exists()) {
             parent.mkdirs()
         }
