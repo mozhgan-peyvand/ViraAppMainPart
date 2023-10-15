@@ -16,6 +16,7 @@ fun AutoTextSize(
     text: String,
     textScale: Float,
     modifier: Modifier = Modifier,
+    maxLine: Int = Int.MAX_VALUE,
     color: Color = Color.Unspecified,
     style: TextStyle = LocalTextStyle.current
 ) {
@@ -24,7 +25,7 @@ fun AutoTextSize(
     Text(
         text = text,
         color = color,
-        maxLines = 1,
+        maxLines = maxLine,
         style = style.copy(
             fontSize = LocalTextStyle.current.fontSize * multiplier,
             lineHeight = LocalTextStyle.current.lineHeight * multiplier

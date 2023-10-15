@@ -579,6 +579,7 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                     text = stringResource(id = R.string.lbl_btn_copy_text),
                     style = MaterialTheme.typography.button,
                     color = Color_Primary_300,
+                    maxLine = 1,
                     textScale = 0.8f
                 )
             }
@@ -619,6 +620,7 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
                     text = stringResource(id = R.string.lbl_btn_share_text),
                     style = MaterialTheme.typography.button,
                     color = Color_Primary_300,
+                    maxLine = 1,
                     textScale = 0.8f
                 )
             }
