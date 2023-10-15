@@ -1,6 +1,7 @@
 package ai.ivira.app.features.ava_negar.data
 
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarArchiveUnionEntity
+import ai.ivira.app.features.ava_negar.data.entity.AvanegarFilePath
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarProcessedFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarTrackingFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarUploadingFileEntity
@@ -77,6 +78,17 @@ interface AvanegarDao {
     """
     )
     fun getArchiveFiles(): Flow<List<AvanegarArchiveUnionEntity>>
+
+    @Query(
+        """
+        SELECT filePath, '$TRACKING_ITEM' AS type FROM AvanegarTrackingFileEntity
+        UNION ALL
+        SELECT filePath, '$UPLOADING_ITEM' AS type FROM AvanegarUploadingFileEntity
+        UNION ALL
+        SELECT filePath, '$PROCESSED_ITEM' AS type FROM AvanegarProcessedFileEntity
+    """
+    )
+    suspend fun getAllFilePaths(): List<AvanegarFilePath>
 
     @Query("UPDATE AvanegarProcessedFileEntity SET isSeen=1 WHERE id=:id")
     suspend fun markFileAsSeen(id: Int)

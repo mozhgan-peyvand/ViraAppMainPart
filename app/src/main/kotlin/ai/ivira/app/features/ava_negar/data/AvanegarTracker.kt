@@ -2,9 +2,11 @@ package ai.ivira.app.features.ava_negar.data
 
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarTrackingFileEntity
+import android.content.Context
 import android.os.SystemClock
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
@@ -14,6 +16,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import saman.zamani.persiandate.PersianDate
 import timber.log.Timber
+import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -22,7 +25,8 @@ import javax.inject.Singleton
 
 @Singleton
 class AvanegarTracker @Inject constructor(
-    private val avanegarRepository: AvanegarRepository
+    private val avanegarRepository: AvanegarRepository,
+    @ApplicationContext private val context: Context
 ) {
     private val isLock = AtomicBoolean(false)
     private val trackingJob = AtomicReference<Job?>(null)
@@ -42,12 +46,25 @@ class AvanegarTracker @Inject constructor(
                 }
             }
         }
+
+        ProcessLifecycleOwner.get().lifecycleScope.launch(Dispatchers.IO) {
+            val files = avanegarRepository.getAllFilePaths().associateBy { it.filePath }
+            File(context.filesDir, "avanegar").walkTopDown().filter {
+                it.isFile && it.extension == "mp3" && !files.contains(it.absolutePath)
+            }.forEach {
+                kotlin.runCatching {
+                    val deleted = it.delete()
+                    log("Removing: ${it.absolutePath} -> $deleted")
+                }
+            }
+        }
     }
 
     private suspend fun startTracking() {
         if (isLock.get()) return
         isLock.set(true)
 
+        // This logic is wrong, must be reworked (the loopCount)
         var loopCount = 0
 
         while (true) {
