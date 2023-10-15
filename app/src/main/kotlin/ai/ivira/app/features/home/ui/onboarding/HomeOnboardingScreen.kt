@@ -1,6 +1,8 @@
-package ai.ivira.app.features.home.onboarding
+package ai.ivira.app.features.home.ui.onboarding
 
 import ai.ivira.app.R
+import ai.ivira.app.features.home.ui.onboarding.MainOnboardingItem.First
+import ai.ivira.app.features.home.ui.onboarding.MainOnboardingItem.Second
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG
@@ -60,8 +62,8 @@ fun HomeOnboardingScreen(
     val context = LocalContext.current
     val pagerState = rememberPagerState(pageCount = { 2 })
     val pages = listOf(
-        MainOnboardingItem.First(context),
-        MainOnboardingItem.Second(context)
+        First(context),
+        Second(context)
     )
 
     LaunchedEffect(viewModel.shouldNavigate.value) {
@@ -243,7 +245,7 @@ private fun MainOnBoardingItemBodyPreview() {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
             val context = LocalContext.current
             MainOnBoardingItemBody(
-                onBoardingItem = MainOnboardingItem.First(context)
+                onBoardingItem = First(context)
             )
         }
     }

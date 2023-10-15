@@ -1,4 +1,4 @@
-package ai.ivira.app.features.home.splash
+package ai.ivira.app.features.splash
 
 import ai.ivira.app.R
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes

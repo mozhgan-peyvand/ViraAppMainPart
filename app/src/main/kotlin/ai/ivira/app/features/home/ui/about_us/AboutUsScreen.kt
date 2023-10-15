@@ -1,4 +1,4 @@
-package ai.ivira.app.features.home.about_us
+package ai.ivira.app.features.home.ui.about_us
 
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.R

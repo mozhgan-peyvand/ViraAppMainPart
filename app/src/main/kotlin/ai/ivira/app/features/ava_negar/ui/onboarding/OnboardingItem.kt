@@ -1,7 +1,7 @@
 package ai.ivira.app.features.ava_negar.ui.onboarding
 
 import ai.ivira.app.R
-import ai.ivira.app.features.home.onboarding.addBullet
+import ai.ivira.app.features.home.ui.onboarding.addBullet
 import android.content.Context
 import androidx.annotation.DrawableRes
 

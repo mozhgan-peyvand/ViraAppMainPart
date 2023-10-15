@@ -1,4 +1,4 @@
-package ai.ivira.app.features.home.ui
+package ai.ivira.app.features.home.ui.home
 
 import ai.ivira.app.features.ava_negar.data.DataStoreRepository
 import ai.ivira.app.features.ava_negar.data.PreferencesKey.onBoardingKey

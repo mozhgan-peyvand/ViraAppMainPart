@@ -1,4 +1,4 @@
-package ai.ivira.app.features.home.onboarding
+package ai.ivira.app.features.home.ui.onboarding
 
 import ai.ivira.app.features.ava_negar.data.DataStoreRepository
 import ai.ivira.app.features.ava_negar.data.PreferencesKey

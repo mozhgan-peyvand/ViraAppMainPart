@@ -5,11 +5,11 @@ import ai.ivira.app.features.ava_negar.ui.details.AvaNegarArchiveDetailScreen
 import ai.ivira.app.features.ava_negar.ui.onboarding.AvaNegarOnboardingScreen
 import ai.ivira.app.features.ava_negar.ui.record.AvaNegarVoiceRecordingScreen
 import ai.ivira.app.features.ava_negar.ui.search.AvaNegarSearchScreen
-import ai.ivira.app.features.home.about_us.AboutUsScreen
-import ai.ivira.app.features.home.onboarding.HomeMainOnboardingScreen
-import ai.ivira.app.features.home.onboarding.HomeOnboardingScreen
-import ai.ivira.app.features.home.splash.SplashScreen
-import ai.ivira.app.features.home.ui.HomeScreen
+import ai.ivira.app.features.home.ui.about_us.AboutUsScreen
+import ai.ivira.app.features.home.ui.home.HomeScreen
+import ai.ivira.app.features.home.ui.onboarding.HomeMainOnboardingScreen
+import ai.ivira.app.features.home.ui.onboarding.HomeOnboardingScreen
+import ai.ivira.app.features.splash.SplashScreen
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn

@@ -1,9 +1,11 @@
-package ai.ivira.app.features.home.ui
+package ai.ivira.app.features.home.ui.home
 
 import ai.ivira.app.R
-import ai.ivira.app.features.home.HomeItemScreen
+import ai.ivira.app.R.drawable
+import ai.ivira.app.R.string
 import ai.ivira.app.utils.ui.Constants.CAFEBAZAAR_LINK
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
+import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AboutUs
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.shareText
 import ai.ivira.app.utils.ui.theme.Blue_Grey_900_2
@@ -119,7 +121,7 @@ fun HomeScreen(
         drawerContent = {
             DrawerHeader(
                 aboutUsOnClick = {
-                    navController.navigate(ScreenRoutes.AboutUs.route)
+                    navController.navigate(AboutUs.route)
                     coroutineScope.launch {
                         scaffoldState.drawerState.close()
                     }
@@ -128,9 +130,9 @@ fun HomeScreen(
                     shareText(
                         context,
                         buildString {
-                            append(context.getString(R.string.lbl_introduce_text))
+                            append(context.getString(string.lbl_introduce_text))
                             append("\n")
-                            append(context.getString(R.string.lbl_download))
+                            append(context.getString(string.lbl_download))
                             append("\n")
                             append(CAFEBAZAAR_LINK)
                         }
@@ -159,10 +161,10 @@ fun HomeScreen(
                 when (sheetSelected) {
                     HomeItemBottomSheetType.AvaSho -> {
                         HomeItemBottomSheet(
-                            iconRes = R.drawable.img_ava_sho,
-                            title = stringResource(id = R.string.lbl_ava_sho),
+                            iconRes = drawable.img_ava_sho,
+                            title = stringResource(id = string.lbl_ava_sho),
                             textBody = stringResource(
-                                id = R.string.avasho_item_bottomsheet_explain
+                                id = string.avasho_item_bottomsheet_explain
                             ),
                             action = {
                                 coroutineScope.launch {
@@ -174,10 +176,10 @@ fun HomeScreen(
 
                     HomeItemBottomSheetType.NeviseNama -> {
                         HomeItemBottomSheet(
-                            iconRes = R.drawable.img_nevise_nama,
-                            title = stringResource(id = R.string.lbl_nevise_nama),
+                            iconRes = drawable.img_nevise_nama,
+                            title = stringResource(id = string.lbl_nevise_nama),
                             textBody = stringResource(
-                                id = R.string.nevise_nama_item_bottomsheet_explain
+                                id = string.nevise_nama_item_bottomsheet_explain
                             ),
                             action = {
                                 coroutineScope.launch {
@@ -189,10 +191,10 @@ fun HomeScreen(
 
                     HomeItemBottomSheetType.NeviseNegar -> {
                         HomeItemBottomSheet(
-                            iconRes = R.drawable.img_nevise_negar,
-                            title = stringResource(id = R.string.lbl_nevise_negar),
+                            iconRes = drawable.img_nevise_negar,
+                            title = stringResource(id = string.lbl_nevise_negar),
                             textBody = stringResource(
-                                id = R.string.nevise_negar_item_bottomsheet_explain
+                                id = string.nevise_negar_item_bottomsheet_explain
                             ),
                             action = {
                                 coroutineScope.launch {
@@ -204,10 +206,10 @@ fun HomeScreen(
 
                     HomeItemBottomSheetType.ViraSiar -> {
                         HomeItemBottomSheet(
-                            iconRes = R.drawable.img_virasiar,
-                            title = stringResource(id = R.string.lbl_virasiar),
+                            iconRes = drawable.img_virasiar,
+                            title = stringResource(id = string.lbl_virasiar),
                             textBody = stringResource(
-                                id = R.string.vira_sayar_item_bottomsheet_explain
+                                id = string.vira_sayar_item_bottomsheet_explain
                             ),
                             action = {
                                 coroutineScope.launch {
@@ -291,7 +293,7 @@ fun HomeAppBar(openDrawer: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         ViraImage(
-            drawable = R.drawable.ic_app_logo_name_description,
+            drawable = drawable.ic_app_logo_name_description,
             contentDescription = null
         )
 
@@ -300,7 +302,7 @@ fun HomeAppBar(openDrawer: () -> Unit) {
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
             ViraIcon(
-                drawable = R.drawable.ic_menu,
+                drawable = drawable.ic_menu,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
                 tint = Color_Text_2
@@ -347,7 +349,7 @@ private fun HomeBody(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ViraImage(
-                    drawable = R.drawable.img_ava_negar_2,
+                    drawable = drawable.img_ava_negar_2,
                     contentDescription = null,
                     modifier = Modifier
                         .padding(start = 30.dp)
@@ -359,12 +361,12 @@ private fun HomeBody(
                         .padding(start = 8.dp)
                 ) {
                     Text(
-                        text = stringResource(id = R.string.lbl_ava_negar),
+                        text = stringResource(id = string.lbl_ava_negar),
                         style = MaterialTheme.typography.h6,
                         color = Color_Text_1
                     )
                     Text(
-                        text = stringResource(id = R.string.lbl_ava_negar_desc),
+                        text = stringResource(id = string.lbl_ava_negar_desc),
                         color = Light_blue_50,
                         style = MaterialTheme.typography.labelMedium
                     )
@@ -377,7 +379,7 @@ private fun HomeBody(
                     contentAlignment = Alignment.Center
                 ) {
                     ViraImage(
-                        drawable = R.drawable.ic_arrow_crooked,
+                        drawable = drawable.ic_arrow_crooked,
                         contentDescription = "ic_arrow"
                     )
                 }
@@ -398,7 +400,7 @@ private fun HomeBody(
                 color = Color_OutLine
             )
             Text(
-                text = stringResource(id = R.string.coming_soon_vira),
+                text = stringResource(id = string.coming_soon_vira),
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.subtitle2,
                 color = Color_Text_2,
@@ -483,7 +485,7 @@ fun HomeBodyItem(
                     )
                 ) {
                     Text(
-                        text = stringResource(id = R.string.lbl_coming_soon),
+                        text = stringResource(id = string.lbl_coming_soon),
                         modifier = Modifier
                             .background(Blue_Grey_900_2)
                             .padding(

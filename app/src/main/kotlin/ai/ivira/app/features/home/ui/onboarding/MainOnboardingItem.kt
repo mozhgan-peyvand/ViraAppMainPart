@@ -1,4 +1,4 @@
-package ai.ivira.app.features.home.onboarding
+package ai.ivira.app.features.home.ui.onboarding
 
 import ai.ivira.app.R
 import android.content.Context

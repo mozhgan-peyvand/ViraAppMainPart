@@ -1,4 +1,4 @@
-package ai.ivira.app.features.home.ui
+package ai.ivira.app.features.home.ui.home
 
 enum class HomeItemBottomSheetType {
     AvaSho,
