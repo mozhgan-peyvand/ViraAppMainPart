@@ -127,7 +127,9 @@ class ArchiveListViewModel @Inject constructor(
         repository.getAllArchiveFiles()
     ) { networkStatus: NetworkStatus, uploadingFileStatus: UploadingFileStatus, uploadPercent: Float, avanegarArchiveFilesEntity: AvanegarArchiveFilesEntity ->
         // just ignore invalid files
-        val uploadingList = avanegarArchiveFilesEntity.uploading.filter { it.fileDuration > 0L }
+        val uploadingList = avanegarArchiveFilesEntity.uploading.filter {
+            it.fileDuration > 0L && File(it.filePath).exists()
+        }
 
         if (networkStatus is NetworkStatus.Unavailable) {
             job?.cancel()
