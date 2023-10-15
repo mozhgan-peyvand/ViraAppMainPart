@@ -51,6 +51,8 @@ class AvanegarLocalDataSource @Inject constructor(
         )
     }.flowOn(IO)
 
+    suspend fun getAllFilePaths() = dao.getAllFilePaths()
+
     suspend fun getUnprocessedFile(token: String) =
         dao.getUnprocessedFileDetail(token)
 

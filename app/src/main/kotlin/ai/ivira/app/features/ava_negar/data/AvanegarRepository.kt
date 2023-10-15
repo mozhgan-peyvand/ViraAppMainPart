@@ -32,6 +32,8 @@ class AvanegarRepository @Inject constructor(
 
     fun getTrackingFiles() = avanegarLocalDataSource.getTrackingFiles()
 
+    suspend fun getAllFilePaths() = avanegarLocalDataSource.getAllFilePaths()
+
     suspend fun getTrackingFilesSync() = avanegarLocalDataSource.getTrackingFilesSync()
 
     suspend fun getSearch(query: String) = avanegarLocalDataSource.getSearchResult(query)
