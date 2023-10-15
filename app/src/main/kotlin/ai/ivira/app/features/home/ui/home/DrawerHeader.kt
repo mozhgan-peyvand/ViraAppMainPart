@@ -1,6 +1,5 @@
 package ai.ivira.app.features.home.ui.home
 
-import ai.ivira.app.R
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.utils.ui.safeClickable

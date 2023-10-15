@@ -67,7 +67,7 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
-private const val NUMBER_OF_REQUEST = 3
+private const val MAX_RETRY_COUNT = 3
 private const val IS_GRID_AVANEGAR_ARCHIVE_LIST_KEY = "isGridPrefKey_AvanegarArchiveList"
 private const val SIXTY_SECOND = 60000
 
@@ -107,7 +107,7 @@ class ArchiveListViewModel @Inject constructor(
 
     private var files: MutableMap<Uri, File> = ConcurrentHashMap()
 
-    private var numberOfRequest = NUMBER_OF_REQUEST
+    private var failureCount = 0
 
     private var job: Job? = null
     var jobConverting: Job? = null
@@ -457,7 +457,7 @@ class ArchiveListViewModel @Inject constructor(
     ) {
         when (result) {
             is Success -> {
-                numberOfRequest = NUMBER_OF_REQUEST
+                failureCount = 0
                 _uiViewStat.emit(UiSuccess)
                 delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
                 _isUploading.value = Idle
@@ -469,8 +469,8 @@ class ArchiveListViewModel @Inject constructor(
 
             // onError we attempt to upload file 3 times, then emit failure and stop uploading
             is Error -> {
-                if (numberOfRequest > 0) {
-                    numberOfRequest--
+                failureCount++
+                if (failureCount < MAX_RETRY_COUNT) {
                     _isUploading.value = Idle
                 } else {
                     _isUploading.value = FailureUpload

@@ -67,7 +67,9 @@ class AvanegarRepository @Inject constructor(
                     Success(id)
                 }
 
-                is Error -> Error(result.error)
+                is Error -> {
+                    Error(result.error)
+                }
             }
         } else {
             Error(AppException.NetworkConnectionException())

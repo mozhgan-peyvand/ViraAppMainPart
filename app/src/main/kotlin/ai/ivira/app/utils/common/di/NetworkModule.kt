@@ -40,7 +40,7 @@ object NetworkModule {
             .addInterceptor(headerInterceptor)
             .readTimeout(60L, TimeUnit.SECONDS)
             .writeTimeout(60L, TimeUnit.SECONDS)
-            .connectTimeout(60L, TimeUnit.SECONDS)
+            .connectTimeout(30L, TimeUnit.SECONDS)
             .build()
     }
 
