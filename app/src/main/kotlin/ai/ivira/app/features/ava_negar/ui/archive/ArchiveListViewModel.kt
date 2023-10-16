@@ -95,6 +95,9 @@ class ArchiveListViewModel @Inject constructor(
     private val _isUploading: MutableStateFlow<UploadingFileStatus> = MutableStateFlow(Idle)
     val isUploading: StateFlow<UploadingFileStatus> = _isUploading.asStateFlow()
 
+    private val _uploadingId: MutableStateFlow<String> = MutableStateFlow("")
+    val uploadingId: StateFlow<String> = _uploadingId.asStateFlow()
+
     private var indexOfItemThatShouldBeDownloaded = 0
 
     private val uploadPercent = MutableStateFlow(0f)
@@ -113,7 +116,6 @@ class ArchiveListViewModel @Inject constructor(
     var jobConverting: Job? = null
     var fileToShare: File? = null
     private var uploadingList: List<AvanegarUploadingFileView> = listOf()
-    private var uploadingId = ""
 
     // placed these variables in viewModel to save from configuration change,
     // can not make these, rememberSaveable because these are dataClass
@@ -144,7 +146,7 @@ class ArchiveListViewModel @Inject constructor(
                 _isUploading.value = Uploading
 
                 indexOfItemThatShouldBeDownloaded.run {
-                    uploadingId = uploadingList[this].id
+                    _uploadingId.value = uploadingList[this].id
                     val title = uploadingList[this].title
                     val filePath = uploadingList[this].filePath
                     val fileDuration = uploadingList[this].fileDuration
@@ -180,7 +182,12 @@ class ArchiveListViewModel @Inject constructor(
 
         buildList {
             addAll(
-                uploadingList.map { it.toAvanegarUploadingFileView(uploadPercent, uploadingId) }
+                uploadingList.map {
+                    it.toAvanegarUploadingFileView(
+                        uploadPercent,
+                        uploadingId.value
+                    )
+                }
                     .also { this@ArchiveListViewModel.uploadingList = it }
             )
             addAll(trackingList.map { it.toAvanegarTrackingFileView() })

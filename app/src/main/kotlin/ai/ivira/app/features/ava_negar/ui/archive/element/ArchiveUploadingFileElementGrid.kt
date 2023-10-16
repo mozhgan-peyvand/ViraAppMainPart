@@ -41,6 +41,7 @@ fun ArchiveUploadingFileElementGrid(
     isUploading: Boolean,
     isNetworkAvailable: Boolean,
     isErrorState: Boolean,
+    uploadingId: String,
     onTryAgainClick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (AvanegarUploadingFileView) -> Unit,
     onItemClick: (AvanegarUploadingFileView) -> Unit
@@ -98,7 +99,7 @@ fun ArchiveUploadingFileElementGrid(
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (archiveUploadingFileView.uploadedPercent > 0 && isUploading) {
+                    if (isUploading && archiveUploadingFileView.id == uploadingId) {
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.Bottom
@@ -188,6 +189,7 @@ private fun ArchiveUploadingFileElementGridPreview() {
                     fileDuration = 0,
                     isUploadingFinished = false
                 ),
+                uploadingId = "",
                 isUploading = false,
                 isNetworkAvailable = true,
                 isErrorState = false,

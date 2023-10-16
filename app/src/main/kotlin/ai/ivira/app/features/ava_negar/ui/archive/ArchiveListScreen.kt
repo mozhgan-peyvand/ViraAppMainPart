@@ -171,6 +171,7 @@ fun AvaNegarArchiveListScreen(
     val fileUri = rememberSaveable { mutableStateOf<Uri?>(null) }
 
     val isGrid by archiveListViewModel.isGrid.collectAsStateWithLifecycle()
+    val uploadingId by archiveListViewModel.uploadingId.collectAsStateWithLifecycle()
 
     val (selectedSheet, setSelectedSheet) = rememberSaveable {
         mutableStateOf(
@@ -739,6 +740,7 @@ fun AvaNegarArchiveListScreen(
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                         isErrorState = uiViewState.let { it is UiError && !it.isSnack },
                         isGrid = isGrid,
+                        uploadingId = uploadingId,
                         brush = if (isGrid) gridBrush() else columnBrush(),
                         onTryAgainCLick = { archiveListViewModel.startUploading(it) },
                         onMenuClick = { item ->
@@ -943,6 +945,7 @@ private fun ArchiveBody(
     isUploading: Boolean,
     isGrid: Boolean,
     brush: Brush,
+    uploadingId: String,
     onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (Int) -> Unit
@@ -959,6 +962,7 @@ private fun ArchiveBody(
             isErrorState = isErrorState,
             isGrid = isGrid,
             brush = brush,
+            uploadingId = uploadingId,
             onTryAgainCLick = { onTryAgainCLick(it) },
             onMenuClick = { onMenuClick(it) },
             onItemClick = { onItemClick(it) }
@@ -1066,6 +1070,7 @@ private fun ArchiveList(
     isErrorState: Boolean,
     isGrid: Boolean,
     brush: Brush,
+    uploadingId: String,
     onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (Int) -> Unit
@@ -1119,6 +1124,7 @@ private fun ArchiveList(
                             isUploading = isUploading,
                             isNetworkAvailable = isNetworkAvailable,
                             isErrorState = isErrorState,
+                            uploadingId = uploadingId,
                             onTryAgainClick = { value -> onTryAgainCLick(value) },
                             onMenuClick = { item ->
                                 onMenuClick(item)
@@ -1165,6 +1171,7 @@ private fun ArchiveList(
                             isUploading = isUploading,
                             isNetworkAvailable = isNetworkAvailable,
                             isErrorState = isErrorState,
+                            uploadingId = uploadingId,
                             onTryAgainClick = { value -> onTryAgainCLick(value) },
                             onMenuClick = { item ->
                                 onMenuClick(item)
