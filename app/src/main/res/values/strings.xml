@@ -187,7 +187,7 @@
     <string name="avasho_item_bottomsheet_explain">سرویس آواشو با قابلیت تبدیل متن به گفتار با لحن طبیعی انسان، در نسخه های بعد فعال خواهد شد.</string>
     <string name="vira_sayar_item_bottomsheet_explain">سرویس ویراسیار با قابلیت ویرایش هوشمند متون فارسی، در نسخه های بعد فعال خواهد شد.</string>
     <string name="nevise_nama_item_bottomsheet_explain">سرویس نویسه نما با قابلیت تولید تصویر از توضیح متنی، در نسخه های بعد فعال خواهد شد.</string>
-    <string name="lbl_introduce_text">اپلیکیشن "ویرا" ابزارهای جذاب و کاربردی مبتنی بر فناوری هوش مصنوعی را در اختیارتان قرار می دهد.</string>
+    <string name="lbl_introduce_text">ابزارهای جذاب هوش مصنوعی همچون سرویس تبدیل گفتار به متن در اپلیکیشن ویرا</string>
     <string name="lbl_download">دانلود:</string>
 
 </resources>
