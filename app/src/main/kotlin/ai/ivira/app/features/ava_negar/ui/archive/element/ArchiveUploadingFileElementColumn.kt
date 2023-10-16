@@ -41,6 +41,7 @@ fun ArchiveUploadingFileElementColumn(
     isUploading: Boolean,
     isNetworkAvailable: Boolean,
     isErrorState: Boolean,
+    uploadingId: String,
     onTryAgainClick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (AvanegarUploadingFileView) -> Unit,
     onItemClick: (AvanegarUploadingFileView) -> Unit
@@ -99,7 +100,7 @@ fun ArchiveUploadingFileElementColumn(
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (archiveUploadingFileView.uploadedPercent > 0 && isUploading) {
+                    if (isUploading && archiveUploadingFileView.id == uploadingId) {
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.Bottom
@@ -189,6 +190,7 @@ private fun ArchiveUploadingFileElementColumn() {
                 isUploading = false,
                 isNetworkAvailable = true,
                 isErrorState = false,
+                uploadingId = "",
                 onTryAgainClick = {},
                 onMenuClick = {},
                 onItemClick = {}
