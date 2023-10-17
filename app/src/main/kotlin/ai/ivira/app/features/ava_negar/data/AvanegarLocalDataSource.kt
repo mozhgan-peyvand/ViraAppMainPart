@@ -45,9 +45,9 @@ class AvanegarLocalDataSource @Inject constructor(
         // TODO: do manual todo for all files
         // for some reason, sort was not applied with union, then we sort it manually
         AvanegarArchiveFilesEntity(
-            tracking = tracking,
+            tracking = tracking.sortedByDescending { it.createdAt },
             processed = processed.sortedByDescending { it.createdAt },
-            uploading = uploading
+            uploading = uploading.sortedBy { it.createdAt }
         )
     }.flowOn(IO)
 
