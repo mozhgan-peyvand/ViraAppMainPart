@@ -3,11 +3,10 @@ package ai.ivira.app.features.ava_negar.ui.details
 import ai.ivira.app.features.ava_negar.data.AvanegarRepository
 import ai.ivira.app.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ai.ivira.app.features.ava_negar.ui.archive.model.toAvanegarProcessedFileView
+import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.utils.common.orZero
 import android.app.Application
-import android.content.Context
 import android.media.MediaPlayer
-import android.net.Uri
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.asIntState
@@ -35,14 +34,15 @@ class ArchiveDetailViewModel @Inject constructor(
     application: Application
 ) : AndroidViewModel(application) { // TODO: remove application
 
+    val mediaPlayer: MediaPlayer = MediaPlayer()
+    val playerState = VoicePlayerState(mediaPlayer, application)
+
     private val _fileNotExist = mutableStateOf(false)
     val fileNotExist: State<Boolean> = _fileNotExist
 
     private val _processItemId =
         mutableIntStateOf(savedStateHandle.get<Int>("id").orZero())
     val processItemId: IntState = _processItemId.asIntState()
-
-    var mediaPlayer: MediaPlayer = MediaPlayer()
 
     private val _archiveFile =
         MutableStateFlow<AvanegarProcessedFileView?>(null)
@@ -57,25 +57,6 @@ class ArchiveDetailViewModel @Inject constructor(
     var jobConverting: Job? = null
     var fileToShare: File? = null
 
-    private fun initializeMediaPlayer(
-        context: Context,
-        filePath: String
-    ) {
-        mediaPlayer.stop()
-        mediaPlayer.reset()
-        mediaPlayer.setDataSource(context, Uri.fromFile(File(filePath)))
-        mediaPlayer.prepare()
-    }
-
-    fun startMediaPlayer() {
-        mediaPlayer.start()
-    }
-
-    fun stopMediaPlayer() {
-        mediaPlayer.pause()
-        //        mediaPlayer.prepare()
-    }
-
     init {
         viewModelScope.launch {
             val id = processItemId.intValue
@@ -88,10 +69,7 @@ class ArchiveDetailViewModel @Inject constructor(
                 }
                 it?.filePath?.let { filepath ->
                     if (checkFileExisting(filepath)) {
-                        initializeMediaPlayer(
-                            application.applicationContext,
-                            filepath
-                        )
+                        playerState.tryInitWith(File(filepath))
                     } else {
                         _fileNotExist.value = true
                     }
@@ -159,7 +137,6 @@ class ArchiveDetailViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        mediaPlayer.stop()
-        mediaPlayer.release()
+        playerState.clear()
     }
 }
