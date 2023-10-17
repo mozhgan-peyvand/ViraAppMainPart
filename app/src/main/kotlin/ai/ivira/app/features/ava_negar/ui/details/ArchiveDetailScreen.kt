@@ -117,6 +117,7 @@ fun AvaNegarArchiveDetailScreen(
     val scrollState = rememberScrollState(0)
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
     val focusManager = LocalFocusManager.current
+    val playerState by viewModel::playerState
 
     var isConvertingTxt by rememberSaveable { mutableStateOf(false) }
     var isConvertingPdf by rememberSaveable { mutableStateOf(false) }
@@ -431,10 +432,10 @@ fun AvaNegarArchiveDetailScreen(
                 scrollState = scrollState,
                 scrollStateValue = scrollState.value,
                 stopMediaPlayer = {
-                    viewModel.stopMediaPlayer()
+                    playerState.stopPlaying()
                 },
                 startMediaPlayer = {
-                    viewModel.startMediaPlayer()
+                    playerState.startPlaying()
                 },
                 fileNotExist = viewModel.fileNotExist.value,
                 fileNotExistAction = {
@@ -689,7 +690,10 @@ fun PlayerBody(
 
     OnLifecycleEvent(
         onPause = {
-            isPlaying.value = !isPlaying.value
+            if (isPlaying.value) {
+                isPlaying.value = !isPlaying.value
+            }
+
             if (!isPlaying.value) {
                 stopMediaPlayer()
             }
