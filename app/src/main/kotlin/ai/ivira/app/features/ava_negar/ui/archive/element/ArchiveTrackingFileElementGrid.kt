@@ -121,7 +121,7 @@ fun ArchiveTrackingFileElementGrid(
                         style = MaterialTheme.typography.body2,
                         color = Color_Text_2,
                         textAlign = Companion.Start,
-                        text = stringResource(id = R.string.lbl_converting)
+                        text = stringResource(id = R.string.lbl_converting_doing)
                     )
 
                     Text(
@@ -148,7 +148,11 @@ fun ArchiveTrackingFileElementGrid(
                         style = MaterialTheme.typography.body2,
                         color = Color_Text_2,
                         textAlign = TextAlign.Start,
-                        text = stringResource(id = R.string.lbl_wait_for_end_process)
+                        text = stringResource(
+                            id = if (archiveTrackingView.processEstimation != null) R.string.lbl_wait_for_end_process
+                            else R.string.lbl_converting
+
+                        )
                     )
                 }
             }
