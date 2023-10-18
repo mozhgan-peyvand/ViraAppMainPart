@@ -1,5 +1,7 @@
 package ai.ivira.app.utils.ui
 
+import ai.ivira.app.R
+import android.content.Context
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
@@ -32,3 +34,13 @@ fun formatDuration(duration: Long): String {
             )
     return String.format("%02d:%02d", minutes, seconds)
 }
+
+fun computeSecondAndMinute(second: Int) = if (second > 60) second / 60 else second
+fun computeTextBySecondAndMinute(second: Int, context: Context) =
+    if (second > 60) {
+        context.getString(
+            R.string.lbl_show_minute
+        )
+    } else {
+        context.getString(R.string.lbl_show_second)
+    }

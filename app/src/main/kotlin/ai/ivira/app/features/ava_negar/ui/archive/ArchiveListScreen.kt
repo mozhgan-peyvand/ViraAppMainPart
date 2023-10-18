@@ -107,6 +107,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -141,6 +142,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -1114,7 +1116,8 @@ private fun ArchiveList(
                             archiveTrackingView = it,
                             brush = brush,
                             onItemClick = {},
-                            onMenuClick = { item -> onMenuClick(item) }
+                            onMenuClick = { item -> onMenuClick(item) },
+                            estimateTime = { it.computeFileEstimateProcess() }
                         )
                     }
 
@@ -1161,7 +1164,8 @@ private fun ArchiveList(
                             onItemClick = {
                             },
                             brush = brush,
-                            onMenuClick = { item -> onMenuClick(item) }
+                            onMenuClick = { item -> onMenuClick(item) },
+                            estimateTime = { it.computeFileEstimateProcess() }
                         )
                     }
 
@@ -1354,6 +1358,20 @@ private fun columnBrush(): Brush {
                     tileMode = TileMode.Mirror
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun DecreaseEstimateTime(estimationTime: Int, token: String, callBack: (Int) -> Unit) {
+    val getEstimationTime = remember(token) {
+        mutableIntStateOf(estimationTime)
+    }
+    LaunchedEffect(token) {
+        while (getEstimationTime.intValue > 0) {
+            delay(10000)
+            getEstimationTime.intValue -= 10
+            callBack(getEstimationTime.intValue)
         }
     }
 }
