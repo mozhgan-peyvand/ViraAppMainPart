@@ -29,6 +29,7 @@
     <string name="lbl_set_name">انتخاب نام</string>
     <string name="lbl_accept">تایید</string>
     <string name="lbl_converting">در حال تبدیل به متن…</string>
+    <string name="lbl_converting_doing">زمان تقریبی</string>
     <string name="msg_upload_is_successfull">آپلود شما با موفقیت انجام شد</string>
     <string name="msg_failure_in_upload">خطا در آپلود فایل</string>
     <string name="msg_try_again">اتصال شما به اینترنت قطع است. \n لطفا دوباره تلاش کنید</string>
@@ -189,5 +190,8 @@
     <string name="nevise_nama_item_bottomsheet_explain">سرویس نویسه نما با قابلیت تولید تصویر از توضیح متنی، در نسخه های بعد فعال خواهد شد.</string>
     <string name="lbl_introduce_text">ابزارهای جذاب هوش مصنوعی همچون سرویس تبدیل گفتار به متن در اپلیکیشن ویرا</string>
     <string name="lbl_download">دانلود:</string>
+    <string name="lbl_show_minute">دقیقه</string>
+    <string name="lbl_show_second">ثانیه</string>
+    <string name="lbl_wait_for_end_process">در انتظار اتمام پردازش</string>
 
 </resources>
