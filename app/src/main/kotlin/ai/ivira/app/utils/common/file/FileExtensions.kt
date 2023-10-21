@@ -7,11 +7,13 @@ import androidx.annotation.RawRes
 import com.itextpdf.text.Document
 import com.itextpdf.text.Font
 import com.itextpdf.text.Paragraph
+import com.itextpdf.text.Phrase
 import com.itextpdf.text.pdf.BaseFont
 import com.itextpdf.text.pdf.PdfPCell
 import com.itextpdf.text.pdf.PdfPTable
 import com.itextpdf.text.pdf.PdfWriter
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -21,6 +23,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.FileWriter
 import java.io.IOException
+import kotlin.coroutines.resume
+
+const val CHAR_COUNT = 500
 
 fun File.toMultiPart(partName: String): MultipartBody.Part {
     return MultipartBody.Part.createFormData(
@@ -59,7 +64,7 @@ suspend fun convertTextToPdf(
     fileName: String,
     text: String,
     context: Context
-): File? = withContext(IO) {
+): File? = suspendCancellableCoroutine {
     val document = Document()
 
     val outputFile = File(context.filesDir, "$fileName.pdf")
@@ -78,28 +83,52 @@ suspend fun convertTextToPdf(
             R.raw.iran_yekan_regular
         ).absolutePath
         val persianFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED)
-
         val font = Font(persianFont, 14f)
-
-        val p = Paragraph(text, font)
-
-        p.alignment = Paragraph.ALIGN_RIGHT // Right-align the text
-        p.spacingBefore = 5f
-        p.spacingAfter = 5f
-        p.alignment = Paragraph.ALIGN_CENTER
         val table = PdfPTable(1)
-        val cell = PdfPCell(p)
-        cell.border = 0
-        cell.runDirection = PdfWriter.RUN_DIRECTION_RTL
-        table.addCell(cell)
-        document.add(table)
 
-        outputFile
+        text.split("\n").forEach loop@{ line ->
+            val p = Paragraph()
+            p.alignment = Paragraph.ALIGN_RIGHT // Right-align the text
+            p.spacingBefore = 5f
+            p.spacingAfter = 5f
+            p.alignment = Paragraph.ALIGN_CENTER
+
+            var index = 0
+
+            while (index < line.length) {
+                if (it.isCancelled) {
+                    return@loop
+                }
+                var end = index + CHAR_COUNT
+                if (end > line.length) {
+                    end = line.length
+                }
+
+                p.add(Phrase(line.substring(index, end), font))
+                index += CHAR_COUNT
+            }
+
+            p.add("\n")
+            val cell = PdfPCell(p)
+            cell.border = 0
+            cell.runDirection = PdfWriter.RUN_DIRECTION_RTL
+            table.addCell(cell)
+        }
+
+        if (!it.isCancelled) {
+            document.add(table)
+            it.resume(outputFile)
+        }
     } catch (e: Exception) {
         e.printStackTrace()
-        null
+        it.resume(null)
     } finally {
-        document.close()
+        runCatching {
+            document.close()
+        }
+    }
+    it.invokeOnCancellation {
+        outputFile.delete()
     }
 }
 
