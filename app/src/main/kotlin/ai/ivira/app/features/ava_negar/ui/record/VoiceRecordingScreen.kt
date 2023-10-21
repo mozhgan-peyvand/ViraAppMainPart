@@ -23,6 +23,7 @@ import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Surface_Container_High
+import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_White
 import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
@@ -608,11 +609,6 @@ fun VoiceRecordingHintSection(
                 text = stringResource(id = R.string.lbl_recording_finished),
                 style = MaterialTheme.typography.subtitle2
             )
-            Spacer(modifier = Modifier.size(12.dp))
-            TextWithIcon(
-                text = R.string.lbl_press_to_convert_to_text,
-                icon = R.drawable.ic_repeat
-            )
         } else {
             if (isRecording || hasPaused) {
                 Text(
@@ -672,32 +668,14 @@ fun VoiceRecordingControlsSection(
             .fillMaxWidth()
     ) {
         if (isRecording || hasPaused || isStopped) {
-            IconButton(
-                onClick = {
-                    safeClick {
-                        onConvertClick()
-                    }
-                },
+            ControlButton(
                 enabled = isStopped,
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-            ) {
-                Surface(
-                    color = Blue_gray_900,
-                    shape = CircleShape,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        ViraIcon(
-                            drawable = R.drawable.ic_repeat,
-                            contentDescription = stringResource(R.string.desc_convert_to_text),
-                            tint = if (isStopped) Color_Primary_200 else Color_On_Surface_Variant,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-            }
+                icon = R.drawable.ic_repeat,
+                contentDescription = stringResource(R.string.desc_convert_to_text),
+                title = stringResource(id = R.string.lbl_convert_to_text),
+                onClick = onConvertClick,
+                modifier = Modifier.weight(1f)
+            )
         }
 
         RecordingAnimation(
@@ -709,38 +687,15 @@ fun VoiceRecordingControlsSection(
         )
 
         if (isRecording || hasPaused || isStopped) {
-            val iconSize = 48.dp
-            if (isPauseSupported) {
-                IconButton(
-                    onClick = {
-                        safeClick {
-                            stopRecord()
-                        }
-                    },
-                    enabled = !isRecording && hasPaused,
-                    modifier = Modifier
-                        .size(iconSize)
-                        .clip(CircleShape)
-                ) {
-                    Surface(
-                        color = Blue_gray_900,
-                        shape = CircleShape,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            ViraIcon(
-                                drawable = R.drawable.ic_stop,
-                                contentDescription = stringResource(R.string.desc_stop_recording),
-                                tint = if (!isRecording && hasPaused) Color_Primary_200 else Color_On_Surface_Variant,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
-                }
-            } else {
-                // this is here so in android version < 7 layout does not break
-                Box(modifier = Modifier.size(iconSize))
-            }
+            ControlButton(
+                enabled = !isRecording && hasPaused,
+                icon = R.drawable.ic_stop,
+                contentDescription = stringResource(R.string.desc_stop_recording),
+                title = stringResource(id = R.string.lbl_pause_recording),
+                onClick = stopRecord,
+                modifier = Modifier.weight(1f),
+                isActive = isPauseSupported
+            )
         }
     }
 }
@@ -804,6 +759,58 @@ fun VoicePlayerComponent(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ControlButton(
+    enabled: Boolean,
+    icon: Int,
+    contentDescription: String?,
+    title: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isActive: Boolean = true
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+    ) {
+        if (isActive) {
+            IconButton(
+                onClick = {
+                    safeClick(onClick)
+                },
+                enabled = enabled,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+            ) {
+                Surface(
+                    color = Blue_gray_900,
+                    shape = CircleShape,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        ViraIcon(
+                            drawable = icon,
+                            contentDescription = contentDescription,
+                            tint = if (enabled) Color_Primary_200 else Color_On_Surface_Variant,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.size(12.dp))
+            Text(
+                text = title,
+                color = if (enabled) Color_Text_1 else Color_On_Surface_Variant,
+                style = MaterialTheme.typography.overline
+            )
+        } else {
+            Spacer(modifier = Modifier.size(1.dp))
         }
     }
 }
