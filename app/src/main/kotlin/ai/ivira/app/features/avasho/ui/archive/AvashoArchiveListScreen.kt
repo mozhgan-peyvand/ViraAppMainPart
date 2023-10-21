@@ -3,6 +3,7 @@ package ai.ivira.app.features.avasho.ui.archive
 import ai.ivira.app.R
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
+import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
@@ -57,7 +58,12 @@ fun AvashoArchiveListScreen(navController: NavController) {
                 .padding(paddingValues)
         ) {
             ArchiveEmptyBody()
-            Fabs(modifier = Modifier.align(Alignment.BottomStart), onMainFabClick = {})
+            Fabs(
+                modifier = Modifier.align(Alignment.BottomStart),
+                onMainFabClick = {
+                    navController.navigate(route = ScreenRoutes.AvaShoFileCreationScreen.route)
+                }
+            )
         }
     }
 }
@@ -144,7 +150,8 @@ private fun ArchiveAppBar(
                 safeClick {
                     onBackClick()
                 }
-            }) {
+            }
+        ) {
             ViraIcon(
                 drawable = drawable.ic_arrow_forward,
                 modifier = Modifier.padding(12.dp),

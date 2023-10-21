@@ -22,4 +22,5 @@ sealed class ScreenRoutes(val route: String) {
 
     data object AvaNegarArchiveList : ScreenRoutes("avaNegarArchive_screen")
     data object AvaShoArchiveScreen : ScreenRoutes("avashoArchive_screen")
+    data object AvaShoFileCreationScreen : ScreenRoutes("avashoFileCreation_Screen")
 }

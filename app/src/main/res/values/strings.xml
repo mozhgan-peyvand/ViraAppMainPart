@@ -209,4 +209,9 @@
     <string name="lbl_bullet">•</string>
     <string name="msg_updating_failed_please_try_again_later">متاسفانه درخواست به روزرسانی شما با خطا مواجه شد، لطفا مدتی منتظر بمانید و سپس دوباره امتحان کنید.</string>
     <string name="msg_vpn_is_connected_error">جهت ادامه کار فیلترشکن خود را خاموش کنید</string>
+
+    <string name="lbl_file_creation">ایجاد فایل</string>
+    <string name="lbl_convert_to_sound">تبدیل به صوت</string>
+    <string name="lbl_type_text_or_import_file">متن خود را تایپ یا فایل متنی را وارد کنید…</string>
+    <string name="lbl_character">کاراکتر:</string>
 </resources>

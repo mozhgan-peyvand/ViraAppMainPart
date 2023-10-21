@@ -101,7 +101,7 @@ fun AppNavigation(navController: NavHostController) {
     }
 }
 
-private fun NavGraphBuilder.navigateWithSlideAnimation(
+fun NavGraphBuilder.navigateWithSlideAnimation(
     route: String,
     arguments: List<NamedNavArgument> = emptyList(),
     content: @Composable (NavBackStackEntry) -> Unit
