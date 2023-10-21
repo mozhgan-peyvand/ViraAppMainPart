@@ -193,5 +193,6 @@
     <string name="lbl_show_minute">دقیقه</string>
     <string name="lbl_show_second">ثانیه</string>
     <string name="lbl_wait_for_end_process">در انتظار اتمام پردازش</string>
+    <string name="lbl_pause_recording">توقف ضبط</string>
 
 </resources>

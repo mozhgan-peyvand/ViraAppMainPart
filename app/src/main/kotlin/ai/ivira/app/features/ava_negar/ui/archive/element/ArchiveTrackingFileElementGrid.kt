@@ -149,9 +149,11 @@ fun ArchiveTrackingFileElementGrid(
                         color = Color_Text_2,
                         textAlign = TextAlign.Start,
                         text = stringResource(
-                            id = if (archiveTrackingView.processEstimation != null) R.string.lbl_wait_for_end_process
-                            else R.string.lbl_converting
-
+                            id = if (archiveTrackingView.processEstimation != null) {
+                                R.string.lbl_wait_for_end_process
+                            } else {
+                                R.string.lbl_converting
+                            }
                         )
                     )
                 }
