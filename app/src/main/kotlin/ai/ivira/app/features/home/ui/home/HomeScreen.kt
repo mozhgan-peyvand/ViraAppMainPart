@@ -28,6 +28,7 @@ import ai.ivira.app.utils.ui.isSdkVersion33orHigher
 import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AboutUs
+import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoArchiveScreen
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -321,20 +322,7 @@ private fun HomeScreen(
             scrimColor = Color.Black.copy(alpha = 0.5f),
             sheetContent = sheetContent@{
                 when (sheetSelected) {
-                    AvaSho -> {
-                        HomeItemBottomSheet(
-                            iconRes = R.drawable.img_ava_sho,
-                            title = stringResource(id = R.string.lbl_ava_sho),
-                            textBody = stringResource(
-                                id = R.string.avasho_item_bottomsheet_explain
-                            ),
-                            action = {
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
-                        )
-                    }
+                    AvaSho -> {}
 
                     NeviseNama -> {
                         HomeItemBottomSheet(
@@ -484,15 +472,7 @@ private fun HomeScreen(
                     when (homeItem) {
                         AvaSho -> {
                             eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
-                            setSelectedSheet(AvaSho)
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                } else {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
+                            navController.navigate(AvaShoArchiveScreen.route)
                         }
 
                         NeviseNegar -> {
@@ -737,19 +717,25 @@ fun HomeBodyItem(
                 )
 
                 Spacer(modifier = Modifier.size(16.dp))
-
-                Surface(
-                    shape = CircleShape,
-                    border = BorderStroke(0.5.dp, color = Color_Card_Stroke)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.lbl_coming_soon),
-                        style = MaterialTheme.typography.overline,
-                        color = Color_Text_3,
-                        modifier = Modifier
-                            .background(Blue_Grey_900_2)
-                            .padding(horizontal = 17.dp, vertical = 10.dp)
-                    )
+                if (item.homeItemType != AvaSho) {
+                    Surface(
+                        shape = CircleShape,
+                        border = BorderStroke(
+                            0.5.dp,
+                            color = Color_Card_Stroke
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.lbl_coming_soon),
+                            style = MaterialTheme.typography.overline,
+                            color = Color_Text_3,
+                            modifier = Modifier
+                                .background(Blue_Grey_900_2)
+                                .padding(horizontal = 17.dp, vertical = 10.dp)
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.size(40.dp))
                 }
             }
         }

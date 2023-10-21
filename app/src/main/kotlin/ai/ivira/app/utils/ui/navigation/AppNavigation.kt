@@ -33,6 +33,7 @@ fun AppNavigation(navController: NavHostController) {
         navController = navController,
         startDestination = ScreenRoutes.SplashScreen.route
     ) {
+        avashoNavGraph(navController)
         composable(
             route = ScreenRoutes.SplashScreen.route,
             enterTransition = {
