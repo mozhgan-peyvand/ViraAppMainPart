@@ -7,8 +7,8 @@ import okhttp3.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val TOKEN =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzeXN0ZW0iOiJzYWhhYiIsImNyZWF0ZVRpbWUiOiIxNDAyMDUxMDEwMTUzNzQxOCIsInVuaXF1ZUZpZWxkcyI6eyJ1c2VybmFtZSI6Ijc2YjY1ZDRmLTI5OWYtNGYyYy1hMzlmLTVjYTg3OGQyZmU1YSJ9LCJkYXRhIjp7InNlcnZpY2VJRCI6IjlmMjE1NjVjLTcxZmEtNDViMy1hZDQwLTM4ZmY2YTZjNWM2OCIsInJhbmRvbVRleHQiOiJFM3ZXQiJ9LCJncm91cE5hbWUiOiJhNzk0MWM5ZWMyMjA3NTc4ODQwYTgxNGQ0NTI3YTI2OCJ9.9mB7v8nBqrEvmq8qvqMHpxjls6gVP50XU0AKDDVg01c"
+private const val API_KEY =
+    "adff393c9ff5c559d4a6ec03c60de0950100f190845cb51f77eef9d132f87afefbfe3248b2de91baa6baeec9b0b4a531c4430b9ac934bcc09ec08560fa934274"
 
 @Singleton
 class HeaderInterceptor @Inject constructor(
@@ -18,10 +18,10 @@ class HeaderInterceptor @Inject constructor(
         val request = chain.request()
         val requestBuilder = request.newBuilder()
 
-        if (request.header("gateway-token") == null) {
+        if (request.header("ApiKey") == null) {
             requestBuilder.addHeader(
-                "gateway-token",
-                TOKEN
+                "ApiKey",
+                API_KEY
             )
         }
 
