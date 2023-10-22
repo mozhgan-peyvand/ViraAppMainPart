@@ -1,6 +1,8 @@
 package ai.ivira.app.features.ava_negar.ui.record.sheets
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
@@ -35,6 +37,8 @@ fun StartAgainBottomSheet(
     actionCancel: () -> Unit,
     actionStartAgain: () -> Unit
 ) {
+    val eventHandler = LocalEventHandler.current
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             modifier = Modifier
@@ -76,6 +80,7 @@ fun StartAgainBottomSheet(
                 contentPadding = PaddingValues(vertical = 14.dp),
                 onClick = {
                     safeClick {
+                        eventHandler.selectItem(AvanegarAnalytics.selectStartOver)
                         actionStartAgain()
                     }
                 },

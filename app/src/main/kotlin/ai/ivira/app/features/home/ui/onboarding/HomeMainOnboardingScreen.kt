@@ -1,6 +1,8 @@
 package ai.ivira.app.features.home.ui.onboarding
 
 import ai.ivira.app.R
+import ai.ivira.app.features.home.ui.HomeAnalytics
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_Card
@@ -50,15 +52,25 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun HomeMainOnboardingScreen(
-    navController: NavHostController
-) {
+fun HomeMainOnboardingScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(HomeAnalytics.screenViewOnboardingStart)
+    }
+
+    HomeMainOnboardingScreen(navController = navController)
+}
+
+@Composable
+private fun HomeMainOnboardingScreen(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
     var shouldNavigate by rememberSaveable {
         mutableStateOf(false)
     }
 
     LaunchedEffect(shouldNavigate) {
         if (shouldNavigate) {
+            eventHandler.onboardingEvent(HomeAnalytics.onboardingStart)
             navController.popBackStack()
             navController.navigate(
                 route = ScreenRoutes.HomeOnboardingScreen.route

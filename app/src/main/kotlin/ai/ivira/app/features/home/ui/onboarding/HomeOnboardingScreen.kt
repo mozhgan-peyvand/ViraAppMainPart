@@ -1,8 +1,10 @@
 package ai.ivira.app.features.home.ui.onboarding
 
 import ai.ivira.app.R
+import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.features.home.ui.onboarding.MainOnboardingItem.First
 import ai.ivira.app.features.home.ui.onboarding.MainOnboardingItem.Second
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG
@@ -55,10 +57,24 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.HorizontalPagerIndicator
 
 @Composable
-fun HomeOnboardingScreen(
+fun HomeOnboardingScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(HomeAnalytics.screenViewOnboardingSlides)
+    }
+
+    HomeOnboardingScreen(
+        navController = navController,
+        viewModel = hiltViewModel()
+    )
+}
+
+@Composable
+private fun HomeOnboardingScreen(
     navController: NavHostController,
-    viewModel: HomeOnboardingViewModel = hiltViewModel()
+    viewModel: HomeOnboardingViewModel
 ) {
+    val eventHandler = LocalEventHandler.current
     val context = LocalContext.current
     val pagerState = rememberPagerState(pageCount = { 2 })
     val pages = listOf(
@@ -91,6 +107,7 @@ fun HomeOnboardingScreen(
                 .background(Color_Card, RoundedCornerShape(32.dp)),
             onClick = {
                 safeClick {
+                    eventHandler.onboardingEvent(HomeAnalytics.onboardingEnd)
                     viewModel.navigateToMainOnboarding()
                 }
             }
@@ -134,6 +151,7 @@ fun HomeOnboardingScreen(
                 .weight(0.1f),
             pagerState = pagerState,
             onClick = {
+                eventHandler.onboardingEvent(HomeAnalytics.onboardingEnd)
                 viewModel.navigateToMainOnboarding()
             }
         )
@@ -233,7 +251,7 @@ private fun FinishButton(
 private fun HomeOnboardingScreenPreview() {
     ViraTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            HomeOnboardingScreen(rememberNavController())
+            HomeOnboardingScreenRoute(rememberNavController())
         }
     }
 }

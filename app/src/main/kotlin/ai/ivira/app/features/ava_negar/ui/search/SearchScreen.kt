@@ -1,9 +1,11 @@
 package ai.ivira.app.features.ava_negar.ui.search
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ai.ivira.app.features.ava_negar.ui.search.element.SearchFileElementGrid
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG
@@ -57,9 +59,22 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 
 @Composable
-fun AvaNegarSearchScreen(
-    viewModel: SearchViewModel = hiltViewModel(),
-    navHostController: NavHostController
+fun AvaNegarSearchScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(AvanegarAnalytics.screenViewSearch)
+    }
+
+    AvaNegarSearchScreen(
+        navHostController = navController,
+        viewModel = hiltViewModel()
+    )
+}
+
+@Composable
+private fun AvaNegarSearchScreen(
+    navHostController: NavHostController,
+    viewModel: SearchViewModel
 ) {
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val searchResult by viewModel.searchResult.collectAsStateWithLifecycle()
@@ -95,11 +110,9 @@ fun AvaNegarSearchScreen(
             },
             isSearch = isSearching,
             modifier = Modifier.padding(innerPadding),
-            onItemClick = {
+            onItemClick = { id, title ->
                 navHostController.navigate(
-                    ScreenRoutes.AvaNegarArchiveDetail.route.plus(
-                        "/$it"
-                    )
+                    ScreenRoutes.AvaNegarArchiveDetail.createRoute(id, title)
                 )
             }
         )
@@ -116,7 +129,7 @@ private fun AvaNegarSearchBody(
     onValueChangeAction: (String) -> Unit,
     clearState: () -> Unit,
     isSearch: Boolean,
-    onItemClick: (Int) -> Unit
+    onItemClick: (id: Int, title: String) -> Unit
 ) {
     val composition by rememberLottieComposition(
         LottieCompositionSpec
@@ -158,7 +171,7 @@ private fun AvaNegarSearchBody(
                     ) { item ->
                         SearchFileElementGrid(
                             archiveViewProcessed = item,
-                            onItemClick = { onItemClick(it) }
+                            onItemClick = { id, title -> onItemClick(id, title) }
                         )
                     }
                 }

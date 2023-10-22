@@ -2,7 +2,10 @@ package ai.ivira.app.features.home.ui.home
 
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
+import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.utils.ui.Constants.CAFEBAZAAR_LINK
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AboutUs
 import ai.ivira.app.utils.ui.safeClick
@@ -77,10 +80,24 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(
-    homeViewModel: HomeViewModel = hiltViewModel(),
-    navController: NavHostController
+fun HomeScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(HomeAnalytics.screenViewHome)
+    }
+
+    HomeScreen(
+        navController = navController,
+        homeViewModel = hiltViewModel()
+    )
+}
+
+@Composable
+private fun HomeScreen(
+    navController: NavHostController,
+    homeViewModel: HomeViewModel
 ) {
+    val eventHandler = LocalEventHandler.current
     val coroutineScope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
     val context = LocalContext.current
@@ -106,6 +123,8 @@ fun HomeScreen(
     ) {
         if (homeViewModel.shouldNavigate.value) {
             if (!homeViewModel.onboardingHasBeenShown.value) {
+                // TODO: should this be here?
+                eventHandler.onboardingEvent(AvanegarAnalytics.onboardingStart)
                 navController.navigate(ScreenRoutes.AvaNegarOnboarding.route)
             } else {
                 navController.navigate(ScreenRoutes.AvaNegarArchiveList.route)
@@ -135,6 +154,7 @@ fun HomeScreen(
                     }
                 },
                 inviteFriendOnclick = {
+                    eventHandler.specialEvent(HomeAnalytics.introduceToFriends)
                     shareText(
                         context,
                         buildString {
@@ -236,6 +256,7 @@ fun HomeScreen(
                     homeViewModel.navigate()
                 },
                 onItemClick = { homeItem ->
+                    eventHandler.selectItem(HomeAnalytics.selectComingSoonItem(homeItem))
                     when (homeItem) {
                         HomeItemBottomSheetType.AvaSho -> {
                             setSelectedSheet(HomeItemBottomSheetType.AvaSho)

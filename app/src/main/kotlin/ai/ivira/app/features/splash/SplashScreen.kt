@@ -1,6 +1,7 @@
 package ai.ivira.app.features.splash
 
 import ai.ivira.app.R
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Light_blue_50_2
@@ -62,9 +63,21 @@ private const val APP_NAME_ANIMATION_DURATION = 500
 private const val DELAY_TO_NAVIGATE = 500L
 
 @Composable
-fun SplashScreen(
+fun SplashScreenRoute(navController: NavController) {
+    val eventHandler = LocalEventHandler.current
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(SplashAnalytics.screenViewSplash)
+    }
+    SplashScreen(
+        navController = navController,
+        viewModel = hiltViewModel()
+    )
+}
+
+@Composable
+private fun SplashScreen(
     navController: NavController,
-    viewModel: SplashViewModel = hiltViewModel()
+    viewModel: SplashViewModel
 ) {
     val composition by rememberLottieComposition(
         spec = LottieCompositionSpec.RawRes(resId = R.raw.lottie_vira_splash)
@@ -191,7 +204,7 @@ fun SplashScreen(
 private fun SplashScreenPreview() {
     ViraTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            SplashScreen(rememberNavController())
+            SplashScreenRoute(rememberNavController())
         }
     }
 }

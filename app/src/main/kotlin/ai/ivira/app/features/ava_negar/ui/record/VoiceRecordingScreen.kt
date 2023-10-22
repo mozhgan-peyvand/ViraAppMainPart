@@ -1,6 +1,7 @@
 package ai.ivira.app.features.ava_negar.ui.record
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileContentBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.RecordFileResult.Companion.FILE_NAME
 import ai.ivira.app.features.ava_negar.ui.record.sheets.BackToArchiveListConfirmationBottomSheet
@@ -11,10 +12,12 @@ import ai.ivira.app.features.ava_negar.ui.record.sheets.VoiceRecordingBottomShee
 import ai.ivira.app.features.ava_negar.ui.record.widgets.RecordingAnimation
 import ai.ivira.app.features.ava_negar.ui.record.widgets.TextWithIcon
 import ai.ivira.app.utils.ui.OnLifecycleEvent
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.formatAsDuration
 import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.hideAndShow
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.showText
 import ai.ivira.app.utils.ui.theme.Blue_gray_900
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
@@ -31,6 +34,7 @@ import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.os.SystemClock
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,6 +64,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -86,13 +91,27 @@ import pl.droidsonroids.gif.GifDrawable
 import pl.droidsonroids.gif.GifImageView
 import timber.log.Timber
 
+@Composable
+fun AvaNegarVoiceRecordingScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(AvanegarAnalytics.screenViewVoiceRecord)
+    }
+
+    AvaNegarVoiceRecordingScreen(
+        navController = navController,
+        viewModel = hiltViewModel()
+    )
+}
+
 // check for audio permission here!
 @Composable
-fun AvaNegarVoiceRecordingScreen(
+private fun AvaNegarVoiceRecordingScreen(
     navController: NavHostController,
-    viewModel: VoiceRecordingViewModel = hiltViewModel()
+    viewModel: VoiceRecordingViewModel
 ) {
     val context = LocalContext.current
+    val eventHandler = LocalEventHandler.current
 
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -381,10 +400,16 @@ fun AvaNegarVoiceRecordingScreen(
                     }
 
                     if (state is VoiceRecordingViewState.Paused) {
+                        eventHandler.selectItem(
+                            AvanegarAnalytics.selectRecordIcon(willRecord = true, hasPaused = true)
+                        )
                         recorder.resume()
                         viewModel.startTimer()
                         state = VoiceRecordingViewState.Recording(hasPaused = true)
                     } else {
+                        eventHandler.selectItem(
+                            AvanegarAnalytics.selectRecordIcon(willRecord = true, hasPaused = false)
+                        )
                         // What if we don't have record permission
                         startPlayback(
                             recorder = recorder,
@@ -403,6 +428,13 @@ fun AvaNegarVoiceRecordingScreen(
                 pauseRecord = {
                     // Pause: Duplicate 2
                     if (recorder.isPauseResumeSupported()) {
+                        eventHandler.selectItem(
+                            AvanegarAnalytics.selectRecordIcon(
+                                willRecord = false,
+                                hasPaused = (state as? VoiceRecordingViewState.Recording)?.hasPaused
+                                    ?: false
+                            )
+                        )
                         pausePlayback(
                             recorder = recorder,
                             onSuccess = {
@@ -414,6 +446,7 @@ fun AvaNegarVoiceRecordingScreen(
                             }
                         )
                     } else {
+                        eventHandler.selectItem(AvanegarAnalytics.selectStopRecord)
                         stopPlayback(
                             recorder = recorder,
                             onSuccess = {
@@ -427,6 +460,7 @@ fun AvaNegarVoiceRecordingScreen(
                     }
                 },
                 stopRecord = {
+                    eventHandler.selectItem(AvanegarAnalytics.selectStopRecord)
                     stopPlayback(
                         recorder = recorder,
                         onSuccess = {
@@ -439,6 +473,7 @@ fun AvaNegarVoiceRecordingScreen(
                     )
                 },
                 convertToText = {
+                    eventHandler.selectItem(AvanegarAnalytics.selectConvertToText)
                     bottomSheetContentType = VoiceRecordingBottomSheetType.ConvertToTextConfirmation
                     bottomSheetState.hideAndShow(coroutineScope)
                 },
@@ -528,6 +563,7 @@ fun VoiceRecordingPreviewSection(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val eventHandler = LocalEventHandler.current
 
     Box(
         contentAlignment = Alignment.BottomCenter,
@@ -583,7 +619,15 @@ fun VoiceRecordingPreviewSection(
                         (it.drawable as GifDrawable).stop()
                     }
                 },
-                modifier = Modifier.size(236.dp)
+                modifier = Modifier
+                    .size(236.dp)
+                    .safeClickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = {
+                            eventHandler.selectItem(AvanegarAnalytics.selectGif)
+                        }
+                    )
             )
         }
     }
@@ -891,7 +935,7 @@ private fun stopPlayback(
 private fun AvaNegarVoiceRecordingScreenPreview() {
     ViraTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            AvaNegarVoiceRecordingScreen(rememberNavController())
+            AvaNegarVoiceRecordingScreenRoute(rememberNavController())
         }
     }
 }

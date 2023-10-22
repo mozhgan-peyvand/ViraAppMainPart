@@ -2,6 +2,8 @@ package ai.ivira.app.features.home.ui.about_us
 
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
+import ai.ivira.app.features.home.ui.HomeAnalytics
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_OutLine
@@ -32,6 +34,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -45,9 +48,17 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun AboutUsScreen(
-    navController: NavController
-) {
+fun AboutUsScreenRoute(navController: NavController) {
+    val eventHandler = LocalEventHandler.current
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(HomeAnalytics.screenViewAboutUs)
+    }
+
+    AboutUsScreen(navController = navController)
+}
+
+@Composable
+private fun AboutUsScreen(navController: NavController) {
     val context = LocalContext.current
 
     Column(

@@ -1,6 +1,8 @@
 package ai.ivira.app.features.ava_negar.ui.details
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Processed
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
@@ -11,6 +13,7 @@ import ai.ivira.app.utils.common.file.convertTextToPdf
 import ai.ivira.app.utils.common.file.convertTextToTXTFile
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.ui.OnLifecycleEvent
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.sharePdf
@@ -102,16 +105,35 @@ import kotlinx.coroutines.withContext
 
 const val TIME_INTERVAL = 2000
 
+@Composable
+fun AvaNegarArchiveDetailScreenRoute(
+    navController: NavHostController,
+    id: Int,
+    title: String
+) {
+    val eventHandler = LocalEventHandler.current
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(AvanegarAnalytics.screenViewArchiveDetail("$id", title))
+    }
+
+    AvaNegarArchiveDetailScreen(
+        navController = navController,
+        itemId = id,
+        viewModel = hiltViewModel()
+    )
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun AvaNegarArchiveDetailScreen(
-    modifier: Modifier = Modifier,
+private fun AvaNegarArchiveDetailScreen(
     navController: NavHostController,
     itemId: Int?,
-    viewModel: ArchiveDetailViewModel = hiltViewModel()
+    viewModel: ArchiveDetailViewModel
 ) {
+    // TODO: seems like savedStateHandle is better
     viewModel.setItemId(itemId.orZero())
     val context = LocalContext.current
+    val eventHandler = LocalEventHandler.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState(0)
@@ -295,6 +317,7 @@ fun AvaNegarArchiveDetailScreen(
                 ArchiveDetailBottomSheetType.Delete -> {
                     FileItemConfirmationDeleteBottomSheet(
                         deleteAction = {
+                            eventHandler.selectItem(AvanegarAnalytics.selectDeleteFile(Processed))
                             coroutineScope.launch {
                                 bottomSheetState.hide()
                                 navController.popBackStack()
@@ -347,14 +370,15 @@ fun AvaNegarArchiveDetailScreen(
                             coroutineScope.launch {
                                 bottomSheetState.hide()
                             }
-                        }
+                        },
+                        fileId = itemId?.let { "$it" }
                     )
                 }
             }
         }
     ) {
         Scaffold(
-            modifier = modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             scaffoldState = scaffoldState,
             snackbarHost = {
                 if (bottomSheetState.isVisible) {

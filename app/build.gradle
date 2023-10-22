@@ -5,6 +5,7 @@ plugins {
     id 'org.jetbrains.kotlin.kapt'
     id 'kotlin-parcelize'
     id 'com.google.devtools.ksp'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -187,5 +188,8 @@ dependencies {
     implementation "com.airbnb.android:lottie-compose:6.1.0"
 
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.27'
+
+    // firebase
+    implementation("com.google.firebase:firebase-analytics-ktx:19.0.0")
 
 }

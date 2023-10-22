@@ -1,6 +1,8 @@
 package ai.ivira.app.features.ava_negar.ui.onboarding
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG
@@ -54,10 +56,24 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.HorizontalPagerIndicator
 
 @Composable
-fun AvaNegarOnboardingScreen(
+fun AvaNegarOnboardingScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(AvanegarAnalytics.screenViewOnboarding)
+    }
+
+    AvaNegarOnboardingScreen(
+        navController = navController,
+        viewModel = hiltViewModel()
+    )
+}
+
+@Composable
+private fun AvaNegarOnboardingScreen(
     navController: NavHostController,
-    viewModel: OnboardingViewModel = hiltViewModel()
+    viewModel: OnboardingViewModel
 ) {
+    val eventHandler = LocalEventHandler.current
     val context = LocalContext.current
     val pagerState = rememberPagerState(pageCount = { 3 })
     val pages = listOf(
@@ -96,6 +112,7 @@ fun AvaNegarOnboardingScreen(
                         .background(Color_Card, RoundedCornerShape(32.dp)),
                     onClick = {
                         safeClick {
+                            eventHandler.onboardingEvent(AvanegarAnalytics.onboardingEnd)
                             viewModel.navigateArchiveListScreen()
                         }
                     }
@@ -141,6 +158,7 @@ fun AvaNegarOnboardingScreen(
                 .weight(0.1f),
             pagerState = pagerState,
             onClick = {
+                eventHandler.onboardingEvent(AvanegarAnalytics.onboardingEnd)
                 viewModel.navigateArchiveListScreen()
             }
         )
@@ -242,7 +260,7 @@ private fun FinishButton(
 private fun AvaNegarOnboardingScreenPreview() {
     ViraTheme {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            AvaNegarOnboardingScreen(rememberNavController())
+            AvaNegarOnboardingScreenRoute(rememberNavController())
         }
     }
 }

@@ -1,6 +1,10 @@
 package ai.ivira.app.features.ava_negar.ui.archive
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Processed
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Tracking
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Uploading
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementColumn
 import ai.ivira.app.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementGrid
@@ -33,6 +37,9 @@ import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.Constants
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
+import ai.ivira.app.utils.ui.hasPermission
+import ai.ivira.app.utils.ui.hasRecordAudioPermission
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
@@ -152,10 +159,24 @@ const val TRACKING_FILE_ANIMATION_DURATION_Column = 1300
 const val TRACKING_FILE_ANIMATION_DURATION_Grid = 1500
 
 @Composable
-fun AvaNegarArchiveListScreen(
+fun AvaNegarArchiveListScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(AvanegarAnalytics.screenViewArchiveList)
+    }
+
+    AvaNegarArchiveListScreen(
+        navHostController = navController,
+        archiveListViewModel = hiltViewModel()
+    )
+}
+
+@Composable
+private fun AvaNegarArchiveListScreen(
     navHostController: NavHostController,
-    archiveListViewModel: ArchiveListViewModel = hiltViewModel()
+    archiveListViewModel: ArchiveListViewModel
 ) {
+    val eventHandler = LocalEventHandler.current
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -472,11 +493,7 @@ fun AvaNegarArchiveListScreen(
                                 Manifest.permission.READ_EXTERNAL_STORAGE
                             }
 
-                            if (ContextCompat.checkSelfPermission(
-                                    context,
-                                    permission
-                                ) == PackageManager.PERMISSION_GRANTED
-                            ) {
+                            if (context.hasPermission(permission)) {
                                 launchOpenFile.launch(intent)
                             } else if (archiveListViewModel.hasDeniedPermissionPermanently(
                                     permission
@@ -609,7 +626,8 @@ fun AvaNegarArchiveListScreen(
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
                                 }
-                            }
+                            },
+                            fileId = archiveListViewModel.processItem?.id?.let { "$it" }
                         )
                     }
 
@@ -617,16 +635,28 @@ fun AvaNegarArchiveListScreen(
                         FileItemConfirmationDeleteBottomSheet(
                             deleteAction = {
                                 when (val file = archiveListViewModel.archiveViewItem) {
-                                    is AvanegarTrackingFileView ->
+                                    is AvanegarTrackingFileView -> {
+                                        eventHandler.selectItem(
+                                            AvanegarAnalytics.selectDeleteFile(Tracking)
+                                        )
                                         archiveListViewModel.removeTrackingFile(file.token)
+                                    }
 
-                                    is AvanegarUploadingFileView ->
+                                    is AvanegarUploadingFileView -> {
+                                        eventHandler.selectItem(
+                                            AvanegarAnalytics.selectDeleteFile(Uploading)
+                                        )
                                         archiveListViewModel.removeUploadingFile(file.id)
+                                    }
 
-                                    is AvanegarProcessedFileView ->
+                                    is AvanegarProcessedFileView -> {
+                                        eventHandler.selectItem(
+                                            AvanegarAnalytics.selectDeleteFile(Processed)
+                                        )
                                         archiveListViewModel.removeProcessedFile(
                                             archiveListViewModel.processItem?.id
                                         )
+                                    }
                                 }
 
                                 File(
@@ -705,9 +735,8 @@ fun AvaNegarArchiveListScreen(
                         onBackClick = { navHostController.navigateUp() },
                         isGrid = isGrid,
                         onChangeListTypeClick = {
-                            archiveListViewModel.saveListType(
-                                !isGrid
-                            )
+                            eventHandler.selectItem(AvanegarAnalytics.selectListViewType(!isGrid))
+                            archiveListViewModel.saveListType(!isGrid)
                         },
                         onSearchClick = {
                             navHostController.navigate(ScreenRoutes.AvaNegarSearch.route)
@@ -776,9 +805,9 @@ fun AvaNegarArchiveListScreen(
                                 }
                             }
                         },
-                        onItemClick = {
+                        onItemClick = { id, title ->
                             navHostController.navigate(
-                                ScreenRoutes.AvaNegarArchiveDetail.route.plus("/$it")
+                                ScreenRoutes.AvaNegarArchiveDetail.createRoute(id, title)
                             )
                         }
                     )
@@ -801,6 +830,7 @@ fun AvaNegarArchiveListScreen(
                     },
                     selectFile = {
                         if (isUploadingAllowed) {
+                            eventHandler.selectItem(AvanegarAnalytics.selectUploadFile)
                             isFabExpanded = false
                             snackbarHostState.currentSnackbarData?.dismiss()
                             setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
@@ -824,6 +854,11 @@ fun AvaNegarArchiveListScreen(
                     },
                     openRecordingScreen = {
                         if (isUploadingAllowed) {
+                            eventHandler.selectItem(
+                                AvanegarAnalytics.selectRecordAudio(
+                                    if (context.hasRecordAudioPermission()) "1" else "0"
+                                )
+                            )
                             isFabExpanded = false
                             snackbarHostState.currentSnackbarData?.dismiss()
 
@@ -832,12 +867,7 @@ fun AvaNegarArchiveListScreen(
                                 )
                             ) {
                                 // PermissionCheck Duplicate 2
-                                if (
-                                    ContextCompat.checkSelfPermission(
-                                        context,
-                                        Manifest.permission.RECORD_AUDIO
-                                    ) == PackageManager.PERMISSION_GRANTED
-                                ) {
+                                if (context.hasRecordAudioPermission()) {
                                     gotoRecordAudioScreen(navHostController)
                                 } else {
                                     // needs improvement, just need to save if permission is alreadyRequested
@@ -975,7 +1005,7 @@ private fun ArchiveBody(
     uploadingId: String,
     onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
-    onItemClick: (Int) -> Unit
+    onItemClick: (id: Int, title: String) -> Unit
 ) {
     if (archiveViewList.isEmpty()) {
         ArchiveEmptyBody(
@@ -992,7 +1022,7 @@ private fun ArchiveBody(
             uploadingId = uploadingId,
             onTryAgainCLick = { onTryAgainCLick(it) },
             onMenuClick = { onMenuClick(it) },
-            onItemClick = { onItemClick(it) }
+            onItemClick = { id, title -> onItemClick(id, title) }
         )
     }
 }
@@ -1100,7 +1130,7 @@ private fun ArchiveList(
     uploadingId: String,
     onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
-    onItemClick: (Int) -> Unit
+    onItemClick: (id: Int, title: String) -> Unit
 ) {
     if (isGrid) {
         LazyVerticalGrid(
@@ -1127,8 +1157,8 @@ private fun ArchiveList(
                     is AvanegarProcessedFileView -> {
                         ArchiveProcessedFileElementGrid(
                             archiveViewProcessed = it,
-                            onItemClick = { id ->
-                                onItemClick(id)
+                            onItemClick = { id, title ->
+                                onItemClick(id, title)
                             },
                             onMenuClick = { item ->
                                 onMenuClick(item)
@@ -1174,8 +1204,8 @@ private fun ArchiveList(
                     is AvanegarProcessedFileView -> {
                         ArchiveProcessedFileElementColumn(
                             archiveViewProcessed = it,
-                            onItemClick = { id ->
-                                onItemClick(id)
+                            onItemClick = { id, title ->
+                                onItemClick(id, title)
                             },
                             onMenuClick = { item ->
                                 onMenuClick(item)

@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ArchiveProcessedFileElementGrid(
     archiveViewProcessed: AvanegarProcessedFileView,
-    onItemClick: (Int) -> Unit,
+    onItemClick: (id: Int, title: String) -> Unit,
     onMenuClick: (AvanegarProcessedFileView) -> Unit
 ) {
     Card(
@@ -50,7 +50,7 @@ fun ArchiveProcessedFileElementGrid(
         modifier = Modifier.height(156.dp),
         onClick = {
             safeClick {
-                onItemClick(archiveViewProcessed.id)
+                onItemClick(archiveViewProcessed.id, archiveViewProcessed.title)
             }
         }
     ) {
@@ -140,7 +140,7 @@ private fun ArchiveProcessedFileElementGridPreview() {
                     filePath = "SASAS",
                     isSeen = true
                 ),
-                onItemClick = {},
+                onItemClick = { _, _ -> },
                 onMenuClick = {}
             )
         }
