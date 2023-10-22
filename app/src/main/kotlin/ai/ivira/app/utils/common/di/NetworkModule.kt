@@ -51,7 +51,7 @@ object NetworkModule {
         moshi: Moshi
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://partai.gw.isahab.ir/")
+            .baseUrl("https://ai.isahab.ir/")
             .client(okHttpClient)
             .addCallAdapterFactory(ApiResultCallAdapterFactory())
             .addConverterFactory(MoshiConverterFactory.create(moshi))

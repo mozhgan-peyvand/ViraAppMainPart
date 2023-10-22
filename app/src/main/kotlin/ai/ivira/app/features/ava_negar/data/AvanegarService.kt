@@ -2,7 +2,6 @@ package ai.ivira.app.features.ava_negar.data
 
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarResponseNetwork
 import ai.ivira.app.features.ava_negar.data.entity.LargeFileResponseNetwork
-import ai.ivira.app.features.ava_negar.data.entity.Resource
 import ai.ivira.app.utils.data.api_result.ApiResult
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -14,21 +13,21 @@ import retrofit2.http.Path
 
 interface AvanegarService {
     @Multipart
-    @POST("speechRecognition/v1/file")
+    @POST("sahab/gateway/service/pr-speech-asr-sahab/file")
     suspend fun audioToTextBelowSixtySecond(
         @Part file: MultipartBody.Part,
         @Part("language") language: RequestBody
-    ): ApiResult<Resource<AvanegarResponseNetwork>>
+    ): ApiResult<AvanegarResponseNetwork>
 
     @Multipart
-    @POST("speechRecognition/v1/largeFile")
+    @POST("sahab/gateway/service/pr-speech-asr-sahab-largefile/largeFile")
     suspend fun audioToTextAboveSixtySecond(
         @Part file: MultipartBody.Part,
         @Part("estimation") estimation: Boolean,
         @Part("language") language: RequestBody
-    ): ApiResult<Resource<LargeFileResponseNetwork>>
+    ): ApiResult<LargeFileResponseNetwork>
 
-    @GET("speechRecognition/v1/trackingText/{token}")
+    @GET("sahab/gateway/service/pr-speech-asr-sahab-largefile/largeFile/{token}")
     suspend fun trackLargeFileResult(
         @Path("token") fileToken: String
     ): ApiResult<AvanegarResponseNetwork>
