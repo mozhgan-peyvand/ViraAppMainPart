@@ -86,6 +86,17 @@ android {
     buildFeatures {
         compose true
     }
+    flavorDimensions "base"
+    productFlavors {
+        dev {
+            applicationIdSuffix ".dev"
+            dimension "base"
+        }
+
+        prod {
+            dimension "base"
+        }
+    }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.2'
     }
@@ -94,18 +105,16 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
-}
 
-
-android.applicationVariants.all { variant ->
-    tasks.named("assemble${variant.name.capitalize()}") {
-        it.dependsOn("detekt${variant.name.capitalize()}")
+    applicationVariants.all { variant ->
+        tasks.named("assemble${variant.name.capitalize()}") {
+            it.dependsOn("detekt${variant.name.capitalize()}")
+        }
+        tasks.named("detekt${variant.name.capitalize()}") {
+            it.mustRunAfter("compile${variant.name.capitalize()}Kotlin")
+        }
     }
-    tasks.named("detekt${variant.name.capitalize()}") {
-        it.mustRunAfter("compile${variant.name.capitalize()}Kotlin")
-    }
 }
-
 
 dependencies {
 

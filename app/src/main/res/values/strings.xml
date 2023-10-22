@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Vira</string>
-    <string name="app_name_farsi">ویرا</string>
     <string name="lbl_ava_negar_desc">تبدیل گفتار به متن</string>
     <string name="lbl_ava_negar">آوانگار</string>
     <string name="lbl_ava_sho">آواشو</string>
