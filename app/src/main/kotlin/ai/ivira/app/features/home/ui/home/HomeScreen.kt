@@ -23,6 +23,7 @@ import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.theme.labelMedium
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -93,6 +94,12 @@ fun HomeScreen(
         mutableStateOf(HomeItemBottomSheetType.AvaSho)
     }
 
+    BackHandler(scaffoldState.drawerState.isOpen) {
+        coroutineScope.launch {
+            scaffoldState.drawerState.close()
+        }
+    }
+
     LaunchedEffect(
         homeViewModel.onboardingHasBeenShown.value,
         homeViewModel.shouldNavigate.value
@@ -120,9 +127,11 @@ fun HomeScreen(
         drawerContent = {
             DrawerHeader(
                 aboutUsOnClick = {
-                    navController.navigate(AboutUs.route)
+                    // first close drawer because if we click on about us and after that quickly click somewhere else,
+                    // it's still open when we get back to main screen
                     coroutineScope.launch {
                         scaffoldState.drawerState.close()
+                        navController.navigate(AboutUs.route)
                     }
                 },
                 inviteFriendOnclick = {
