@@ -49,7 +49,10 @@ fun ArchiveTrackingFileElementsColumn(
 ) {
     val context = LocalContext.current
 
-    val getNewEstimateTime = remember(archiveTrackingView.token, archiveTrackingView.lastFailure) {
+    val getNewEstimateTime = remember(
+        archiveTrackingView.token,
+        archiveTrackingView.lastFailure
+    ) {
         mutableIntStateOf(estimateTime().toInt())
     }
 
@@ -106,6 +109,14 @@ fun ArchiveTrackingFileElementsColumn(
                         contentDescription = stringResource(id = R.string.desc_menu)
                     )
                 }
+            }
+
+            if (getNewEstimateTime.intValue > 0) {
+                Text(
+                    text = stringResource(id = R.string.lbl_converting),
+                    color = Color_Text_2,
+                    style = MaterialTheme.typography.body2
+                )
             }
 
             Row(

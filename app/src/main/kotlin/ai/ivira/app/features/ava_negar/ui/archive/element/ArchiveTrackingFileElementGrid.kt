@@ -107,6 +107,14 @@ fun ArchiveTrackingFileElementGrid(
                 }
             }
 
+            if (getNewEstimateTime.intValue > 0) {
+                Text(
+                    text = stringResource(id = R.string.lbl_converting),
+                    color = Color_Text_2,
+                    style = MaterialTheme.typography.body2
+                )
+            }
+
             Row(
                 verticalAlignment = Alignment.Bottom,
                 modifier = Modifier
