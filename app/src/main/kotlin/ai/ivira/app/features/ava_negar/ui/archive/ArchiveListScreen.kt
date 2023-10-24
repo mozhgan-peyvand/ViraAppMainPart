@@ -203,6 +203,7 @@ fun AvaNegarArchiveListScreen(
 
     val archiveFiles by archiveListViewModel.allArchiveFiles.collectAsStateWithLifecycle(listOf())
     val isThereAnyTrackingOrUploading by archiveListViewModel.isThereAnyTrackingOrUploading.collectAsStateWithLifecycle()
+    val isUploadingAllowed by archiveListViewModel.isUploadingAllowed.collectAsStateWithLifecycle()
 
     val networkStatus by archiveListViewModel.networkStatus.collectAsStateWithLifecycle()
 
@@ -799,60 +800,84 @@ fun AvaNegarArchiveListScreen(
                         isFabExpanded = !isFabExpanded
                     },
                     selectFile = {
-                        isFabExpanded = false
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
-                        coroutineScope.launch {
-                            if (!modalBottomSheetState.isVisible) {
-                                modalBottomSheetState.show()
-                            } else {
-                                modalBottomSheetState.hide()
-                            }
-                        }
-                    },
-                    openRecordingScreen = {
-                        isFabExpanded = false
-                        snackbarHostState.currentSnackbarData?.dismiss()
-
-                        if (context.packageManager.hasSystemFeature(
-                                PackageManager.FEATURE_MICROPHONE
-                            )
-                        ) {
-                            // PermissionCheck Duplicate 2
-                            if (
-                                ContextCompat.checkSelfPermission(
-                                    context,
-                                    Manifest.permission.RECORD_AUDIO
-                                ) == PackageManager.PERMISSION_GRANTED
-                            ) {
-                                gotoRecordAudioScreen(navHostController)
-                            } else {
-                                // needs improvement, just need to save if permission is alreadyRequested
-                                // and everytime check shouldShow
-                                if (archiveListViewModel.hasDeniedPermissionPermanently(
-                                        Manifest.permission.RECORD_AUDIO
-                                    )
-                                ) {
-                                    setSelectedSheet(
-                                        ArchiveBottomSheetType.AudioAccessPermissionDenied
-                                    )
-                                    coroutineScope.launch {
-                                        if (!modalBottomSheetState.isVisible) {
-                                            modalBottomSheetState.show()
-                                        } else {
-                                            modalBottomSheetState.hide()
-                                        }
-                                    }
+                        if (isUploadingAllowed) {
+                            isFabExpanded = false
+                            snackbarHostState.currentSnackbarData?.dismiss()
+                            setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
+                            coroutineScope.launch {
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
                                 } else {
-                                    recordAudioPermLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                    modalBottomSheetState.hide()
                                 }
                             }
                         } else {
+                            isFabExpanded = false
                             showMessage(
                                 snackbarHostState,
                                 coroutineScope,
                                 context.getString(
-                                    R.string.msg_no_microphone_found_on_phone
+                                    R.string.msg_wait_process_finish_or_cancel_it
+                                )
+                            )
+                        }
+                    },
+                    openRecordingScreen = {
+                        if (isUploadingAllowed) {
+                            isFabExpanded = false
+                            snackbarHostState.currentSnackbarData?.dismiss()
+
+                            if (context.packageManager.hasSystemFeature(
+                                    PackageManager.FEATURE_MICROPHONE
+                                )
+                            ) {
+                                // PermissionCheck Duplicate 2
+                                if (
+                                    ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.RECORD_AUDIO
+                                    ) == PackageManager.PERMISSION_GRANTED
+                                ) {
+                                    gotoRecordAudioScreen(navHostController)
+                                } else {
+                                    // needs improvement, just need to save if permission is alreadyRequested
+                                    // and everytime check shouldShow
+                                    if (archiveListViewModel.hasDeniedPermissionPermanently(
+                                            Manifest.permission.RECORD_AUDIO
+                                        )
+                                    ) {
+                                        setSelectedSheet(
+                                            ArchiveBottomSheetType.AudioAccessPermissionDenied
+                                        )
+                                        coroutineScope.launch {
+                                            if (!modalBottomSheetState.isVisible) {
+                                                modalBottomSheetState.show()
+                                            } else {
+                                                modalBottomSheetState.hide()
+                                            }
+                                        }
+                                    } else {
+                                        recordAudioPermLauncher.launch(
+                                            Manifest.permission.RECORD_AUDIO
+                                        )
+                                    }
+                                }
+                            } else {
+                                showMessage(
+                                    snackbarHostState,
+                                    coroutineScope,
+                                    context.getString(
+                                        R.string.msg_no_microphone_found_on_phone
+                                    )
+                                )
+                            }
+                        } else {
+                            isFabExpanded = false
+                            showMessage(
+                                snackbarHostState,
+                                coroutineScope,
+                                context.getString(
+                                    R.string.msg_wait_process_finish_or_cancel_it
                                 )
                             )
                         }

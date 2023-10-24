@@ -105,6 +105,9 @@ class ArchiveListViewModel @Inject constructor(
     var isThereAnyTrackingOrUploading = MutableStateFlow(false)
         private set
 
+    var isUploadingAllowed = MutableStateFlow(true)
+        private set
+
     var isGrid = MutableStateFlow(true)
         private set
 
@@ -175,6 +178,8 @@ class ArchiveListViewModel @Inject constructor(
 
         isThereAnyTrackingOrUploading.value =
             trackingList.isNotEmpty() || uploadingList.isNotEmpty()
+
+        isUploadingAllowed.value = trackingList.isEmpty() && uploadingList.isEmpty()
 
         if (trackingList.isEmpty() && uploadingList.isEmpty()) {
             _uiViewStat.emit(UiIdle)
