@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -175,9 +176,10 @@ fun SplashScreen(
 
         Text(
             text = stringResource(id = R.string.lbl_assistant),
-            style = MaterialTheme.typography.body1.copy(
+            style = MaterialTheme.typography.body2.copy(
                 brush = brush,
-                fontWeight = FontWeight(300)
+                fontWeight = FontWeight(300),
+                lineHeight = 22.sp
             ),
             color = animateColorBlueGrayOrBlueLight
         )
