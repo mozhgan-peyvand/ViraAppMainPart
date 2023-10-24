@@ -1,5 +1,7 @@
 package ai.ivira.app
 
+import ai.ivira.app.utils.ui.analytics.EventHandler
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.AppNavigation
 import ai.ivira.app.utils.ui.theme.ViraTheme
 import android.os.Bundle
@@ -18,9 +20,13 @@ import androidx.compose.ui.unit.LayoutDirection.Rtl
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var eventHandler: EventHandler
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -29,7 +35,8 @@ class MainActivity : ComponentActivity() {
 
             ViraTheme {
                 CompositionLocalProvider(
-                    LocalLayoutDirection provides Rtl
+                    LocalLayoutDirection provides Rtl,
+                    LocalEventHandler provides eventHandler
                 ) {
                     Scaffold(
                         modifier = Modifier

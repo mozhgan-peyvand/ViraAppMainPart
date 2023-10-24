@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ArchiveProcessedFileElementColumn(
     archiveViewProcessed: AvanegarProcessedFileView,
-    onItemClick: (Int) -> Unit,
+    onItemClick: (id: Int, title: String) -> Unit,
     onMenuClick: (AvanegarProcessedFileView) -> Unit
 ) {
     Card(
@@ -51,7 +51,7 @@ fun ArchiveProcessedFileElementColumn(
         modifier = Modifier.heightIn(min = 108.dp),
         onClick = {
             safeClick {
-                onItemClick(archiveViewProcessed.id)
+                onItemClick(archiveViewProcessed.id, archiveViewProcessed.title)
             }
         }
     ) {
@@ -143,7 +143,7 @@ private fun ArchiveProcessedFileElementColumnPreview() {
                     filePath = "SASAS",
                     isSeen = true
                 ),
-                onItemClick = {},
+                onItemClick = { _, _ -> },
                 onMenuClick = {}
             )
         }

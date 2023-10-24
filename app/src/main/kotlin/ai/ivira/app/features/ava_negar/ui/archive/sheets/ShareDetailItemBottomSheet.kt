@@ -1,6 +1,8 @@
 package ai.ivira.app.features.ava_negar.ui.archive.sheets
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.theme.Color_OutLine
 import ai.ivira.app.utils.ui.theme.Color_Text_2
@@ -39,8 +41,10 @@ fun ShareDetailItemBottomSheet(
     isConverting: Boolean,
     onPdfClick: () -> Unit,
     onTextClick: () -> Unit,
-    onOnlyTextClick: () -> Unit
+    onOnlyTextClick: () -> Unit,
+    fileId: String? = null
 ) {
+    val eventHandler = LocalEventHandler.current
     val composition by rememberLottieComposition(
         spec = LottieCompositionSpec.RawRes(resId = R.raw.lottie_loading)
     )
@@ -81,6 +85,7 @@ fun ShareDetailItemBottomSheet(
                 text = stringResource(id = R.string.lbl_share_with_Text),
                 icon = R.drawable.ic_text
             ) {
+                eventHandler.share(AvanegarAnalytics.shareTxt("$fileId"))
                 onTextClick()
             }
             Divider(
@@ -93,6 +98,7 @@ fun ShareDetailItemBottomSheet(
                 text = stringResource(id = R.string.lbl_share_with_pdf),
                 icon = R.drawable.ic_pdf_new
             ) {
+                eventHandler.share(AvanegarAnalytics.sharePdf("$fileId"))
                 onPdfClick()
             }
             Divider(
@@ -105,6 +111,7 @@ fun ShareDetailItemBottomSheet(
                 text = stringResource(id = R.string.lbl_text_without_change),
                 icon = R.drawable.ic_text_new
             ) {
+                eventHandler.share(AvanegarAnalytics.shareRawText("$fileId"))
                 onOnlyTextClick()
             }
         }

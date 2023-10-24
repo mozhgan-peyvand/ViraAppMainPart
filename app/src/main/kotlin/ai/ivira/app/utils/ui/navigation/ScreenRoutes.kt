@@ -11,7 +11,11 @@ sealed class ScreenRoutes(val route: String) {
 
     object AvaNegarSearch : ScreenRoutes("avaNegarSearch_screen")
     object AvaNegarArchiveDetail :
-        ScreenRoutes("avaNegarProcessedArchiveDetail_screen")
+        ScreenRoutes("avaNegarProcessedArchiveDetail_screen?id={id}&title={title}") {
+        fun createRoute(id: Int, title: String): String {
+            return "avaNegarProcessedArchiveDetail_screen?id=$id&title=$title"
+        }
+    }
 
     object AvaNegarOnboarding :
         ScreenRoutes("avaNegarOnBoarding_screen")

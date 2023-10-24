@@ -1,15 +1,15 @@
 package ai.ivira.app.utils.ui.navigation
 
-import ai.ivira.app.features.ava_negar.ui.archive.AvaNegarArchiveListScreen
-import ai.ivira.app.features.ava_negar.ui.details.AvaNegarArchiveDetailScreen
-import ai.ivira.app.features.ava_negar.ui.onboarding.AvaNegarOnboardingScreen
-import ai.ivira.app.features.ava_negar.ui.record.AvaNegarVoiceRecordingScreen
-import ai.ivira.app.features.ava_negar.ui.search.AvaNegarSearchScreen
-import ai.ivira.app.features.home.ui.about_us.AboutUsScreen
-import ai.ivira.app.features.home.ui.home.HomeScreen
-import ai.ivira.app.features.home.ui.onboarding.HomeMainOnboardingScreen
-import ai.ivira.app.features.home.ui.onboarding.HomeOnboardingScreen
-import ai.ivira.app.features.splash.SplashScreen
+import ai.ivira.app.features.ava_negar.ui.archive.AvaNegarArchiveListScreenRoute
+import ai.ivira.app.features.ava_negar.ui.details.AvaNegarArchiveDetailScreenRoute
+import ai.ivira.app.features.ava_negar.ui.onboarding.AvaNegarOnboardingScreenRoute
+import ai.ivira.app.features.ava_negar.ui.record.AvaNegarVoiceRecordingScreenRoute
+import ai.ivira.app.features.ava_negar.ui.search.AvaNegarSearchScreenRoute
+import ai.ivira.app.features.home.ui.about_us.AboutUsScreenRoute
+import ai.ivira.app.features.home.ui.home.HomeScreenRoute
+import ai.ivira.app.features.home.ui.onboarding.HomeMainOnboardingScreenRoute
+import ai.ivira.app.features.home.ui.onboarding.HomeOnboardingScreenRoute
+import ai.ivira.app.features.splash.SplashScreenRoute
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -48,46 +48,54 @@ fun AppNavigation(navController: NavHostController) {
                 fadeOut(animationSpec = tween(ANIMATION_NAVIGATION_DURATION_FADE))
             }
         ) {
-            SplashScreen(navController = navController)
+            SplashScreenRoute(navController = navController)
         }
         navigateWithSlideAnimationAndFadeInEnter(
             route = ScreenRoutes.HomeMainOnboardingScreen.route
         ) {
-            HomeMainOnboardingScreen(navController = navController)
+            HomeMainOnboardingScreenRoute(navController = navController)
         }
         navigateWithSlideAnimation(route = ScreenRoutes.HomeOnboardingScreen.route) {
-            HomeOnboardingScreen(navController = navController)
+            HomeOnboardingScreenRoute(navController = navController)
         }
         navigateWithSlideAnimationAndFadeInEnter(route = ScreenRoutes.Home.route) {
-            HomeScreen(navController = navController)
+            HomeScreenRoute(navController = navController)
         }
         navigateWithSlideAnimation(route = ScreenRoutes.AboutUs.route) {
-            AboutUsScreen(navController = navController)
+            AboutUsScreenRoute(navController = navController)
         }
         navigateWithSlideAnimation(route = ScreenRoutes.AvaNegarOnboarding.route) {
-            AvaNegarOnboardingScreen(navController = navController)
+            AvaNegarOnboardingScreenRoute(navController = navController)
         }
         navigateWithSlideAnimation(route = ScreenRoutes.AvaNegarArchiveList.route) {
-            AvaNegarArchiveListScreen(navHostController = navController)
+            AvaNegarArchiveListScreenRoute(navController = navController)
         }
         navigateWithSlideAnimation(
-            route = ScreenRoutes.AvaNegarArchiveDetail.route.plus("/{id}"),
+            route = ScreenRoutes.AvaNegarArchiveDetail.route,
             arguments = listOf(
                 navArgument("id") {
                     type = NavType.IntType
+                },
+                navArgument("title") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = false
                 }
             )
         ) { backStackEntry ->
-            AvaNegarArchiveDetailScreen(
+            val id = backStackEntry.arguments?.getInt("id") ?: error("could not fine id")
+            val title = backStackEntry.arguments?.getString("title") ?: error("could not fine id")
+            AvaNegarArchiveDetailScreenRoute(
                 navController = navController,
-                itemId = backStackEntry.arguments?.getInt("id")
+                id = id,
+                title = title
             )
         }
         navigateWithSlideAnimation(route = ScreenRoutes.AvaNegarVoiceRecording.route) {
-            AvaNegarVoiceRecordingScreen(navController = navController)
+            AvaNegarVoiceRecordingScreenRoute(navController = navController)
         }
         navigateWithSlideAnimation(route = ScreenRoutes.AvaNegarSearch.route) {
-            AvaNegarSearchScreen(navHostController = navController)
+            AvaNegarSearchScreenRoute(navController = navController)
         }
     }
 }

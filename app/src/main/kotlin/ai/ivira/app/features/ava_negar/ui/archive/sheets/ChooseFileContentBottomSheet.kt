@@ -1,6 +1,8 @@
 package ai.ivira.app.features.ava_negar.ui.archive.sheets
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_White
 import ai.ivira.app.utils.ui.theme.ViraTheme
@@ -28,6 +30,8 @@ fun ChooseFileContentBottomSheet(
     onOpenFile: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val eventHandler = LocalEventHandler.current
+
     Column(
         modifier = modifier
             .clip(
@@ -70,6 +74,7 @@ fun ChooseFileContentBottomSheet(
                 ),
             onClick = {
                 safeClick {
+                    eventHandler.selectItem(AvanegarAnalytics.selectChooseFile)
                     onOpenFile()
                 }
             },

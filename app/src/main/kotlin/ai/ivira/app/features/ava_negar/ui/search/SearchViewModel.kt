@@ -1,9 +1,11 @@
 package ai.ivira.app.features.ava_negar.ui.search
 
 import ai.ivira.app.features.ava_negar.data.AvanegarRepository
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.archive.model.ArchiveView
 import ai.ivira.app.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ai.ivira.app.features.ava_negar.ui.archive.model.toAvanegarProcessedFileView
+import ai.ivira.app.utils.ui.analytics.EventHandler
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,7 +26,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val repository: AvanegarRepository
+    private val repository: AvanegarRepository,
+    private val eventHandler: EventHandler // TODO: should this be here?
 ) : ViewModel() {
     // placed these variables in viewModel to save from configuration change,
     // can not make these, rememberSaveable because these are dataClass
@@ -60,6 +63,7 @@ class SearchViewModel @Inject constructor(
             queryJob = viewModelScope.launch(Dispatchers.IO) {
                 _isSearching.update { true }
                 delay(1000)
+                eventHandler.search(AvanegarAnalytics.search(query))
                 val result = repository.getSearch(query).map {
                     it.toAvanegarProcessedFileView()
                 }

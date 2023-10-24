@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SearchFileElementGrid(
     archiveViewProcessed: AvanegarProcessedFileView,
-    onItemClick: (Int) -> Unit
+    onItemClick: (id: Int, title: String) -> Unit
 ) {
     Card(
         backgroundColor = Color_Card,
@@ -47,7 +47,7 @@ fun SearchFileElementGrid(
         modifier = Modifier.height(156.dp),
         onClick = {
             safeClick {
-                onItemClick(archiveViewProcessed.id)
+                onItemClick(archiveViewProcessed.id, archiveViewProcessed.title)
             }
         }
     ) {
@@ -123,7 +123,7 @@ private fun SearchFileElementGridPreview() {
                     filePath = "SASAS",
                     isSeen = true
                 ),
-                onItemClick = {}
+                onItemClick = { _, _ -> }
             )
         }
     }

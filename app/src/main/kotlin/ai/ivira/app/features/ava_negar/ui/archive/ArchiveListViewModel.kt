@@ -3,6 +3,7 @@ package ai.ivira.app.features.ava_negar.ui.archive
 import ai.ivira.app.features.ava_negar.data.AvanegarArchiveFilesEntity
 import ai.ivira.app.features.ava_negar.data.AvanegarRepository
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarUploadingFileEntity
+import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.archive.model.ArchiveView
 import ai.ivira.app.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ai.ivira.app.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
@@ -32,6 +33,7 @@ import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.analytics.EventHandler
 import android.content.Context
 import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
@@ -78,6 +80,7 @@ class ArchiveListViewModel @Inject constructor(
     private val aiEventPublisher: ViraPublisher,
     private val sharedPref: SharedPreferences,
     private val uiException: UiException,
+    private val eventHandler: EventHandler, // TODO: should this be used here?
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
     private val _uiViewStat = MutableSharedFlow<UiStatus>()
@@ -260,11 +263,14 @@ class ArchiveListViewModel @Inject constructor(
 
             val fileDuration = getFileDuration(absolutePath)
             if (fileDuration <= 0L) {
+                eventHandler.specialEvent(AvanegarAnalytics.unableToReadFileDuration)
                 _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
                 return@launch
             }
 
-            if (fileDuration > MAX_FILE_DURATION_MS) {
+            // Duplicate 2: check file durations
+            if (fileDuration >= MAX_FILE_DURATION_MS) {
+                eventHandler.specialEvent(AvanegarAnalytics.fileDurationExceed)
                 _uiViewStat.emit(
                     UiError(
                         uiException.getErrorMessageMaxLengthExceeded(),
@@ -272,6 +278,12 @@ class ArchiveListViewModel @Inject constructor(
                     )
                 )
                 return@launch
+            }
+
+            if (fileDuration < SIXTY_SECOND) {
+                eventHandler.specialEvent(AvanegarAnalytics.fileBelow60SecondsCreated)
+            } else {
+                eventHandler.specialEvent(AvanegarAnalytics.fileAbove60SecondsCreated)
             }
 
             val createdAt = PersianDate().time
@@ -381,11 +393,14 @@ class ArchiveListViewModel @Inject constructor(
 
         val duration = getFileDuration(context, uri)
         if (duration <= 0L) {
+            eventHandler.specialEvent(AvanegarAnalytics.unableToReadFileDuration)
             _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
             return false
         }
 
+        // Duplicate 1: check file durations
         if (duration > MAX_FILE_DURATION_MS) {
+            eventHandler.specialEvent(AvanegarAnalytics.fileDurationExceed)
             _uiViewStat.emit(
                 UiError(
                     uiException.getErrorMessageMaxLengthExceeded(),

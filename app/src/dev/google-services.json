@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "205267445458",
+    "project_id": "vira-feb96",
+    "storage_bucket": "vira-feb96.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205267445458:android:90c7f86c7fb98a998bef0b",
+        "android_client_info": {
+          "package_name": "ai.ivira.app.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrjDdz8LA5BLSd0AFZdpORvzKQigmdT1o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
