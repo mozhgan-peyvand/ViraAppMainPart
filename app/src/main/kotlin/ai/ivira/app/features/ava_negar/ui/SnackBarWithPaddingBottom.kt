@@ -35,7 +35,6 @@ fun SnackBarWithPaddingBottom(
                     .background(Color_Surface_Inverse, RoundedCornerShape(5.dp))
             ) {
                 Text(
-                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     text = it.message,
@@ -78,7 +77,7 @@ fun Modifier.bottomAlignSnackBar(
 ) = layout { measurable, constraints ->
     val placeable = measurable.measure(constraints)
     layout(constraints.maxWidth, constraints.maxHeight) {
-        val marginFromBottom = if (implementPadding) paddingValue else 370f
+        val marginFromBottom = if (implementPadding) paddingValue else 400f
         placeable.place(0, (constraints.maxHeight - marginFromBottom).toInt(), 10f)
     }
 }
