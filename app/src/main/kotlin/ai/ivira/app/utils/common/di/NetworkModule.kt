@@ -18,6 +18,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+    init {
+        System.loadLibrary("vira")
+    }
+
     @Provides
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor().apply {
@@ -51,7 +55,7 @@ object NetworkModule {
         moshi: Moshi
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://ai.isahab.ir/")
+            .baseUrl(bu())
             .client(okHttpClient)
             .addCallAdapterFactory(ApiResultCallAdapterFactory())
             .addConverterFactory(MoshiConverterFactory.create(moshi))
@@ -63,4 +67,6 @@ object NetworkModule {
     fun provideMoshi(): Moshi {
         return Moshi.Builder().build()
     }
+
+    private external fun bu(): String
 }
