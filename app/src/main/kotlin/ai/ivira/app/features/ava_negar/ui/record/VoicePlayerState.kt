@@ -7,6 +7,7 @@ import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
@@ -27,19 +28,27 @@ class VoicePlayerState(
     private var playJob: Job? = null
     private val currentPosition: Int get() = mediaPlayer.currentPosition
 
+    var duration by mutableIntStateOf(0)
+        private set
+
     var isPlaying by mutableStateOf(false)
         private set
 
     var progress by mutableFloatStateOf(0f)
         private set
 
-    val duration: Int
-        get() = mediaPlayer.duration
+    var remainingTime by mutableIntStateOf(0)
+        private set
 
     init {
+        mediaPlayer.setOnPreparedListener { mp ->
+            duration = mp.duration.coerceAtLeast(0)
+            remainingTime = duration
+        }
         mediaPlayer.setOnCompletionListener {
             kotlin.runCatching {
                 isPlaying = false
+                remainingTime = duration
                 progress = 0f
             }
         }
@@ -68,6 +77,7 @@ class VoicePlayerState(
                 while (isPlaying && isActive) {
                     progress = currentPosition / 1000.0f
                     delay(1000)
+                    remainingTime = duration - currentPosition
                 }
             }
         }.ifFailure {
@@ -81,8 +91,10 @@ class VoicePlayerState(
 
     fun seekTo(position: Float) {
         kotlin.runCatching {
+            val newTime = (position * 1000).toInt()
             progress = position
-            mediaPlayer.seekTo((position * 1000).toInt())
+            remainingTime = duration - newTime
+            mediaPlayer.seekTo(newTime)
         }
     }
 

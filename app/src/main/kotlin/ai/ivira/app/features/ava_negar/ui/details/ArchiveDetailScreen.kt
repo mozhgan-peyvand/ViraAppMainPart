@@ -9,6 +9,7 @@ import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDel
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.ShareDetailItemBottomSheet
 import ai.ivira.app.features.ava_negar.ui.details.sheets.MenuDetailsScreenBottomSheet
+import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.utils.common.file.convertTextToPdf
 import ai.ivira.app.utils.common.file.convertTextToTXTFile
 import ai.ivira.app.utils.common.orZero
@@ -30,7 +31,6 @@ import ai.ivira.app.utils.ui.widgets.AutoTextSize
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.app.Activity
-import android.media.MediaPlayer
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -71,8 +71,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -98,8 +96,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -452,15 +448,9 @@ private fun AvaNegarArchiveDetailScreen(
                 onTextChange = {
                     viewModel.addTextToList(it)
                 },
-                mediaPlayer = viewModel.mediaPlayer,
+                playerState = viewModel.playerState,
                 scrollState = scrollState,
                 scrollStateValue = scrollState.value,
-                stopMediaPlayer = {
-                    playerState.stopPlaying()
-                },
-                startMediaPlayer = {
-                    playerState.startPlaying()
-                },
                 fileNotExist = viewModel.fileNotExist.value,
                 fileNotExistAction = {
                     showMessage(
@@ -475,7 +465,7 @@ private fun AvaNegarArchiveDetailScreen(
 }
 
 @Composable
-fun AvaNegarProcessedArchiveDetailTopAppBar(
+private fun AvaNegarProcessedArchiveDetailTopAppBar(
     modifier: Modifier = Modifier,
     title: String,
     isUndoEnabled: Boolean,
@@ -559,7 +549,7 @@ fun AvaNegarProcessedArchiveDetailTopAppBar(
 }
 
 @Composable
-fun AvaNegarProcessedArchiveDetailBottomBar(
+private fun AvaNegarProcessedArchiveDetailBottomBar(
     modifier: Modifier = Modifier,
     onShareClick: () -> Unit,
     onCopyOnClick: () -> Unit
@@ -654,25 +644,21 @@ fun AvaNegarProcessedArchiveDetailBottomBar(
 }
 
 @Composable
-fun AvaNegarProcessedArchiveDetailBody(
+private fun AvaNegarProcessedArchiveDetailBody(
     paddingValues: PaddingValues,
     modifier: Modifier = Modifier,
     text: String,
     onTextChange: (String) -> Unit,
-    mediaPlayer: MediaPlayer,
+    playerState: VoicePlayerState,
     scrollState: ScrollState,
     scrollStateValue: Int,
-    startMediaPlayer: () -> Unit,
-    stopMediaPlayer: () -> Unit,
     fileNotExist: Boolean,
     fileNotExistAction: () -> Unit
 ) {
     Column(modifier = modifier.padding(paddingValues)) {
         PlayerBody(
-            mediaPlayer = mediaPlayer,
+            playerState = playerState,
             scrollStateValue = scrollStateValue,
-            startMediaPlayer = startMediaPlayer,
-            stopMediaPlayer = stopMediaPlayer,
             fileNotExist = fileNotExist,
             fileNotExistAction = fileNotExistAction
         )
@@ -695,53 +681,27 @@ fun AvaNegarProcessedArchiveDetailBody(
 }
 
 @Composable
-fun PlayerBody(
+private fun PlayerBody(
     modifier: Modifier = Modifier,
-    mediaPlayer: MediaPlayer,
+    playerState: VoicePlayerState,
     scrollStateValue: Int,
-    startMediaPlayer: () -> Unit,
-    stopMediaPlayer: () -> Unit,
     fileNotExist: Boolean,
     fileNotExistAction: () -> Unit
 ) {
     val color =
         if (scrollStateValue > 0) Color_Surface_Container_High else MaterialTheme.colors.primaryVariant
-    val isPlaying = rememberSaveable {
-        mutableStateOf(false)
-    }
-    var remainingTime by rememberSaveable { mutableLongStateOf(0) }
-    var progress by rememberSaveable { mutableFloatStateOf(0f) }
+    val isPlaying by playerState::isPlaying
+    val progress by playerState::progress
+    val remainingTime by playerState::remainingTime
 
     OnLifecycleEvent(
         onPause = {
-            if (isPlaying.value) {
-                isPlaying.value = !isPlaying.value
-            }
-
-            if (!isPlaying.value) {
-                stopMediaPlayer()
+            if (isPlaying) {
+                playerState.stopPlaying()
             }
         }
     )
 
-    LaunchedEffect(key1 = Unit) {
-        while (isActive) {
-            mediaPlayer.setOnPreparedListener {
-                remainingTime = mediaPlayer.duration.toLong()
-            }
-            if (mediaPlayer.isPlaying) {
-                progress = mediaPlayer.currentPosition.toFloat() / 1000
-                remainingTime =
-                    (mediaPlayer.duration - mediaPlayer.currentPosition).toLong()
-                mediaPlayer.setOnCompletionListener {
-                    isPlaying.value = false
-                    progress = 0f
-                    remainingTime = mediaPlayer.duration.toLong()
-                }
-            }
-            delay(1000)
-        }
-    }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -755,7 +715,7 @@ fun PlayerBody(
             horizontalArrangement = Arrangement.End
         ) {
             Text(
-                text = formatDuration(remainingTime),
+                text = formatDuration(remainingTime.toLong()),
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.caption
             )
@@ -767,9 +727,7 @@ fun PlayerBody(
             )
         }
         Spacer(modifier = Modifier.size(12.dp))
-        CompositionLocalProvider(
-            LocalLayoutDirection provides LayoutDirection.Ltr
-        ) { // TODO: not working
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Slider(
                 colors = SliderDefaults.colors(
                     activeTrackColor = Color_Primary_300,
@@ -778,10 +736,9 @@ fun PlayerBody(
                 ),
                 value = progress,
                 onValueChange = {
-                    progress = it
-                    mediaPlayer.seekTo((it * 1000).toInt())
+                    playerState.seekTo(it)
                 },
-                valueRange = 0f .. mediaPlayer.duration.toFloat() / 1000,
+                valueRange = 0f .. playerState.duration / 1000.0f,
                 modifier = Modifier
                     .weight(4f)
                     .padding(end = 12.dp)
@@ -791,22 +748,24 @@ fun PlayerBody(
         IconButton(
             onClick = {
                 safeClick {
-                    if (!fileNotExist) {
-                        isPlaying.value = !isPlaying.value
-                        if (isPlaying.value) {
-                            startMediaPlayer()
-                        } else {
-                            stopMediaPlayer()
+                    if (fileNotExist) {
+                        if (playerState.isPlaying) {
+                            playerState.stopPlaying()
                         }
-                    } else {
-                        isPlaying.value = false
                         fileNotExistAction()
+                        return@safeClick
+                    }
+
+                    if (isPlaying) {
+                        playerState.stopPlaying()
+                    } else {
+                        playerState.startPlaying()
                     }
                 }
             },
             modifier = Modifier.size(46.dp)
         ) {
-            if (isPlaying.value) {
+            if (isPlaying) {
                 ViraImage(
                     drawable = R.drawable.ic_pause,
                     contentDescription = stringResource(id = R.string.desc_stop_playing),

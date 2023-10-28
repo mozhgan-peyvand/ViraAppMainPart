@@ -34,7 +34,7 @@ class ArchiveDetailViewModel @Inject constructor(
     application: Application
 ) : AndroidViewModel(application) { // TODO: remove application
 
-    val mediaPlayer: MediaPlayer = MediaPlayer()
+    private val mediaPlayer: MediaPlayer = MediaPlayer()
     val playerState = VoicePlayerState(mediaPlayer, application)
 
     private val _fileNotExist = mutableStateOf(false)
