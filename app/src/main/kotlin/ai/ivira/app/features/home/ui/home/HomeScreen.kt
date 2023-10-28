@@ -1,10 +1,10 @@
 package ai.ivira.app.features.home.ui.home
 
+import ai.ivira.app.BuildConfig
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.home.ui.HomeAnalytics
-import ai.ivira.app.utils.ui.Constants.CAFEBAZAAR_LINK
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AboutUs
@@ -162,7 +162,7 @@ private fun HomeScreen(
                             append("\n")
                             append(context.getString(string.lbl_download))
                             append("\n")
-                            append(CAFEBAZAAR_LINK)
+                            append(BuildConfig.SHARE_URL)
                         }
                     )
                     coroutineScope.launch {

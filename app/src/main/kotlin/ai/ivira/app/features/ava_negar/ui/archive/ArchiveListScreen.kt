@@ -1,5 +1,6 @@
 package ai.ivira.app.features.ava_negar.ui.archive
 
+import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Processed
@@ -34,7 +35,6 @@ import ai.ivira.app.utils.common.file.convertTextToPdf
 import ai.ivira.app.utils.common.file.convertTextToTXTFile
 import ai.ivira.app.utils.common.file.filename
 import ai.ivira.app.utils.data.NetworkStatus
-import ai.ivira.app.utils.ui.Constants
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
@@ -247,8 +247,6 @@ private fun AvaNegarArchiveListScreen(
     intent.type = "audio/*"
     val mimetypes = arrayOf("audio/mpeg")
     intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes)
-
-    val updateIntent = Intent(Intent.ACTION_VIEW, Uri.parse(Constants.CAFEBAZAAR_LINK))
 
     val launchOpenFile = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -536,7 +534,11 @@ private fun AvaNegarArchiveListScreen(
                     ArchiveBottomSheetType.Update -> {
                         ForceUpdateScreen(
                             onUpdateClick = {
-                                ContextCompat.startActivity(context, updateIntent, null)
+                                ContextCompat.startActivity(
+                                    context,
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.SHARE_URL)),
+                                    null
+                                )
                             }
                         )
                     }

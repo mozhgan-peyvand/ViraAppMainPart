@@ -122,16 +122,26 @@ android {
     buildFeatures {
         compose true
     }
-    flavorDimensions "base"
+    flavorDimensions "source", "store"
     productFlavors {
         dev {
             applicationIdSuffix ".dev"
-            dimension "base"
+            dimension "source"
+        }
+        prod {
+            dimension "source"
         }
 
-        prod {
-            dimension "base"
+        cafeBazaar {
+            dimension "store"
+            buildConfigField("String", "SHARE_URL", "\"https://cafebazaar.ir/app/ai.ivira.app\"")
         }
+
+        myket {
+            dimension "store"
+            buildConfigField("String", "SHARE_URL", "\"https://myket.ir/app/ai.ivira.app\"")
+        }
+
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.2'
@@ -139,6 +149,15 @@ android {
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+
+    variantFilter { variant ->
+        def names = variant.flavors*.name
+        if (names.contains("myket") &&
+                (names.contains("dev") || variant.buildType.name == "debug")
+        ) {
+            variant.ignore = true
         }
     }
 
