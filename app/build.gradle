@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.tasks.FinalizeBundleTask
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -9,16 +11,48 @@ plugins {
     id 'com.google.firebase.crashlytics'
 }
 
+project.ext {
+    versionMajor = 1
+    versionMinor = 0
+    versionPatch = 0
+    versionUploadFailed = 0
+    versionMinSdk = 21
+    versionCompileSdk = 34
+    versionTargetSdk = 33
+    applicationId = 'ai.ivira.app'
+}
+
+int generateVersionCode() {
+    return project.ext.versionMinSdk * 1000000 +
+            project.ext.versionMajor * 100000 +
+            project.ext.versionMinor * 10000 +
+            project.ext.versionPatch * 100 +
+            project.ext.versionUploadFailed
+}
+
+String generateVersionName() {
+    return "${project.ext.versionMajor}.${project.ext.versionMinor}.${project.ext.versionPatch}"
+}
+
+def getGitHash = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
 android {
-    namespace 'ai.ivira.app'
-    compileSdk 34
+    namespace project.ext.applicationId
+    compileSdk versionCompileSdk
 
     defaultConfig {
-        applicationId "ai.ivira.app"
-        minSdk 21
-        targetSdk 33
-        versionCode 1
-        versionName "1.0"
+        applicationId project.ext.applicationId
+        minSdk project.ext.versionMinSdk
+        targetSdk project.ext.versionTargetSdk
+        versionCode generateVersionCode()
+        versionName generateVersionName()
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -114,6 +148,19 @@ android {
         }
         tasks.named("detekt${variant.name.capitalize()}") {
             it.mustRunAfter("compile${variant.name.capitalize()}Kotlin")
+        }
+
+        // rename output files
+        def artifactName = "Vira-v${generateVersionName()}(${variant.versionCode})-${variant.getFlavorName()}${variant.buildType.name.capitalize()}-g${getGitHash}"
+        // rename apk
+        variant.outputs.all {
+            outputFileName = "${artifactName}.apk"
+        }
+        // rename bundle files
+        tasks.named("sign${variant.name.capitalize()}Bundle", FinalizeBundleTask) {
+            File file = finalBundleFile.asFile.get()
+            File finalFile = new File(file.parentFile, "${artifactName}.aab")
+            finalBundleFile.set(finalFile)
         }
     }
 
