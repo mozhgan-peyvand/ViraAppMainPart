@@ -7,6 +7,8 @@ import ai.ivira.app.features.ava_negar.data.entity.AvanegarUploadingFileEntity
 import ai.ivira.app.features.home.data.VersionDao
 import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
 import ai.ivira.app.features.home.data.entity.VersionEntity
+import ai.ivira.app.features.avasho.data.AvashoDao
+import ai.ivira.app.features.avasho.data.entity.AvashoProcessedFileEntity
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
@@ -16,7 +18,9 @@ import androidx.room.RoomDatabase
         AvanegarTrackingFileEntity::class,
         AvanegarUploadingFileEntity::class,
         VersionEntity::class,
-        ReleaseNoteEntity::class
+        ReleaseNoteEntity::class,
+        AvanegarUploadingFileEntity::class,
+        AvashoProcessedFileEntity::class
     ],
     version = 3,
     exportSchema = false
@@ -24,4 +28,5 @@ import androidx.room.RoomDatabase
 abstract class ViraDb : RoomDatabase() {
     abstract fun avanegarDao(): AvanegarDao
     abstract fun versionDao(): VersionDao
+    abstract fun avashoDao(): AvashoDao
 }

@@ -55,9 +55,12 @@ object Migration {
                 db.execSQL("DROP TABLE `AvanegarTrackingFileEntity`")
                 db.execSQL("ALTER TABLE `AvanegarTrackingFileEntityNew` RENAME TO `AvanegarTrackingFileEntity`")
             }
-
             override fun migrate(db: SupportSQLiteDatabase) {
                 migrateTrackingData(db)
+
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `AvashoProcessedFileEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `checksum` TEXT NOT NULL, `filePath` TEXT NOT NULL, `fileName` TEXT NOT NULL, `text` TEXT NOT NULL, `createdAt` LONG NOT NULL )"
+                )
             }
         }
     }

@@ -198,6 +198,11 @@
     <string name="lbl_notification">اعلانات</string>
     <string name="lbl_enable_notification_for_recording_when_screen_is_locked">برای جلوگیری از قطع ضبط صدا هنگام قفل شدن گوشی یا هنگام خروج از صفحات برنامه، لازم است اعلانات اپلیکیشن را فعال کنید.</string>
     <string name="lbl_enable_notification_for_recording">برای بهترین تجربه استفاده از ویرا پیشنهاد می‌کنیم اعلانات مربوط به این اپلیکیشن را فعال کنید.</string>
+    <string name="lbl_determind_file_name">تعیین نام فایل</string>
+    <string name="lbl_speaker_type">انتخاب گوینده صوت</string>
+    <string name="lbl_transform">تبدیل</string>
+    <string name="lbl_man_speaker">گوینده مرد</string>
+    <string name="lbl_woman_speaker">گوینده زن</string>
 
     <string name="lbl_vira_is_updated">نسخه  ویرا شما به روز است</string>
     <string name="lbl_have_latest_version_wait_for_update">آخرین نسخه ی ویرا بر روی گوشی شما نصب است \nمنتظر آپدیت های جدید نرم افزار ما باشید</string>

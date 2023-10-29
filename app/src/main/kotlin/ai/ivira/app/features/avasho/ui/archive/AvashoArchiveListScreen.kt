@@ -3,6 +3,7 @@ package ai.ivira.app.features.avasho.ui.archive
 import ai.ivira.app.R
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
+import ai.ivira.app.features.avasho.ui.file_creation.SpeechResult
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Text_1
@@ -41,11 +42,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun AvashoArchiveListScreen(navController: NavController) {
+fun AvashoArchiveListScreen(
+    navController: NavHostController,
+    viewModel: AvashoArchiveListViewModel = hiltViewModel()
+) {
+    navController.currentBackStackEntry
+        ?.savedStateHandle?.remove<SpeechResult>(SpeechResult.FILE_NAME)?.let {
+            viewModel.getSpeechFile(
+                fileName = it.fileName,
+                speakerType = it.speakerType,
+                text = it.speakerType
+            )
+        }
+
     Scaffold(
         backgroundColor = MaterialTheme.colors.background,
         topBar = {
