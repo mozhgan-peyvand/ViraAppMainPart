@@ -13,7 +13,7 @@ class AvashoRepository @Inject constructor(
     private val avashoLocalDataSource: AvashoLocalDataSource,
     private val networkHandler: NetworkHandler
 ) {
-    suspend fun converToToSpeechBelow1000(
+    suspend fun convertToSpeechBelow1000(
         text: String,
         speakerType: String,
         fileName: String

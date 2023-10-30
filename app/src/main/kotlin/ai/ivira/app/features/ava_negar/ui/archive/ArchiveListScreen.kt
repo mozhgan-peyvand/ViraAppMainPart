@@ -463,14 +463,17 @@ private fun AvaNegarArchiveListScreen(
             sheetContent = {
                 when (selectedSheet) {
                     ArchiveBottomSheetType.ChooseFile -> {
-                        ChooseFileContentBottomSheet(onOpenFile = {
-                            coroutineScope.launch {
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                } else {
-                                    modalBottomSheetState.hide()
+                        ChooseFileContentBottomSheet(
+                            descriptionFileFormat = R.string.lbl_allowed_format,
+                            descriptionTimeNeed = R.string.lbl_limit_time,
+                            onOpenFile = {
+                                coroutineScope.launch {
+                                    if (!modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.show()
+                                    } else {
+                                        modalBottomSheetState.hide()
+                                    }
                                 }
-                            }
 
                             // PermissionCheck Duplicate 1
                             val permission = if (isSdkVersion33orHigher()) {
@@ -488,20 +491,23 @@ private fun AvaNegarArchiveListScreen(
                                 // needs improvement, just need to save if permission is alreadyRequested
                                 // and everytime check shouldShow
 
-                                setSelectedSheet(ArchiveBottomSheetType.FileAccessPermissionDenied)
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    } else {
+                                    setSelectedSheet(
+                                        ArchiveBottomSheetType.FileAccessPermissionDenied
+                                    )
+                                    coroutineScope.launch {
                                         modalBottomSheetState.hide()
+                                        if (!modalBottomSheetState.isVisible) {
+                                            modalBottomSheetState.show()
+                                        } else {
+                                            modalBottomSheetState.hide()
+                                        }
                                     }
+                                } else {
+                                    // Asking for permission
+                                    chooseAudioPermLauncher.launch(permission)
                                 }
-                            } else {
-                                // Asking for permission
-                                chooseAudioPermLauncher.launch(permission)
                             }
-                        })
+                        )
                     }
 
                     ArchiveBottomSheetType.RenameUploading -> {

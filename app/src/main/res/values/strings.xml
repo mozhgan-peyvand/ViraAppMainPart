@@ -44,6 +44,7 @@
     <string name="lbl_allowed_format">فرمت های مجاز : mp3</string>
     <string name="lbl_limit_time">حداکثر زمان فایل: 60 دقیقه</string>
     <string name="lbl_button_upload_new_file">بارگذاری فایل جدید</string>
+    <string name="lbl_lbl_allow_text_format">فرمت های مجاز:TXT</string>
 
     <string name="lbl_change_name">تغییر نام</string>
     <string name="lbl_choose_name">اگر چنانچه تمایل دارید میتوانید نام دلخواه برای فایل خود انتخاب کنید</string>

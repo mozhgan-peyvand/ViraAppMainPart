@@ -13,7 +13,7 @@ class AvashoArchiveListViewModel @Inject constructor(
 ) : ViewModel() {
     fun getSpeechFile(speakerType: String, text: String, fileName: String) =
         viewModelScope.launch {
-            avashoRepository.converToToSpeechBelow1000(
+            avashoRepository.convertToSpeechBelow1000(
                 text = text,
                 speakerType = speakerType,
                 fileName = fileName
