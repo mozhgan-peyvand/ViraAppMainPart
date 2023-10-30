@@ -56,7 +56,7 @@ fun AvashoArchiveListScreen(
             viewModel.getSpeechFile(
                 fileName = it.fileName,
                 speakerType = it.speakerType,
-                text = it.speakerType
+                text = it.text
             )
         }
 
