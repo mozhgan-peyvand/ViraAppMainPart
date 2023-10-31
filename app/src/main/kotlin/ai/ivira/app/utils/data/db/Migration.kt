@@ -59,7 +59,7 @@ object Migration {
                 migrateTrackingData(db)
 
                 db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `AvashoProcessedFileEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `checksum` TEXT NOT NULL, `filePath` TEXT NOT NULL, `fileName` TEXT NOT NULL, `text` TEXT NOT NULL, `createdAt` LONG NOT NULL )"
+                    "CREATE TABLE IF NOT EXISTS `AvashoProcessedFileEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `checksum` TEXT NOT NULL, `filePath` TEXT NOT NULL, `fileName` TEXT NOT NULL, `text` TEXT NOT NULL, `createdAt` INTEGER NOT NULL )"
                 )
             }
         }
