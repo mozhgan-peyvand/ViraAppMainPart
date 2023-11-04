@@ -279,4 +279,8 @@ dependencies {
 
     implementation("io.sentry:sentry-android:7.0.0")
 
+    //ktor
+    implementation 'io.ktor:ktor-client-core:2.3.5'
+    implementation 'io.ktor:ktor-client-okhttp:2.3.5'
+
 }

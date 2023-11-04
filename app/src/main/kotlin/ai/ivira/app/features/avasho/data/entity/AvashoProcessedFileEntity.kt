@@ -8,8 +8,10 @@ data class AvashoProcessedFileEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
     val checksum: String,
+    val fileUrl: String,
     val filePath: String,
     val fileName: String,
     val text: String,
-    val createdAt: Long
+    val createdAt: Long,
+    val isDownloading: Boolean
 )

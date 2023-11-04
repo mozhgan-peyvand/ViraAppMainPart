@@ -3,12 +3,12 @@ package ai.ivira.app.features.avasho.data.entity
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class TextToSpeechResponseNetwork(
-    val data: TextToSpeechItemResponseNetwork
+data class TextToSpeechNetwork<out T>(
+    val data: T
 )
 
 @JsonClass(generateAdapter = true)
-data class TextToSpeechItemResponseNetwork(
+data class TextToSpeechItemNetwork(
     val checksum: String,
     val filePath: String
 )

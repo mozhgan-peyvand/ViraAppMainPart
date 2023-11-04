@@ -1,9 +1,10 @@
 package ai.ivira.app.features.avasho.ui.archive
 
-import ai.ivira.app.R
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
+import ai.ivira.app.features.avasho.ui.archive.element.AvashoArchiveProcessedFileElement
 import ai.ivira.app.features.avasho.ui.file_creation.SpeechResult
+import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Text_1
@@ -15,6 +16,7 @@ import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -24,6 +26,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
@@ -32,6 +36,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,8 +48,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import java.io.File
 
 @Composable
 fun AvashoArchiveListScreen(
@@ -53,12 +60,17 @@ fun AvashoArchiveListScreen(
 ) {
     navController.currentBackStackEntry
         ?.savedStateHandle?.remove<SpeechResult>(SpeechResult.FILE_NAME)?.let {
-            viewModel.getSpeechFile(
+            viewModel.textToSpeechShort(
                 fileName = it.fileName,
                 speakerType = it.speakerType,
                 text = it.text
             )
         }
+
+    val archiveFiles by viewModel.allArchiveFiles.collectAsStateWithLifecycle(listOf())
+    val networkStatus by viewModel.networkStatus.collectAsStateWithLifecycle()
+    val uiViewState by viewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
+    val downloadQueue by viewModel.downloadQueue.collectAsStateWithLifecycle()
 
     Scaffold(
         backgroundColor = MaterialTheme.colors.background,
@@ -71,7 +83,37 @@ fun AvashoArchiveListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            ArchiveEmptyBody()
+            if (archiveFiles.isEmpty()) {
+                ArchiveEmptyBody()
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(archiveFiles) {
+                        AvashoArchiveProcessedFileElement(
+                            archiveViewProcessed = it,
+                            isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
+                            onItemClick = {
+                                // TODO open bottomSheet
+                            },
+                            onIconClick = callback@{ processedItem ->
+                                if (File(processedItem.filePath).exists()) {
+                                    // TODO open bottomSheet
+                                    return@callback
+                                }
+
+                                if (viewModel.isInDownloadQueue(processedItem.id)) {
+                                    viewModel.cancelDownload(processedItem.id)
+                                } else {
+                                    viewModel.addFileToDownloadQueue(processedItem)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
             Fabs(
                 modifier = Modifier.align(Alignment.BottomStart),
                 onMainFabClick = {
@@ -107,7 +149,7 @@ private fun ArchiveEmptyBody(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = stringResource(id = R.string.lbl_dose_not_exist_any_file),
+                text = stringResource(id = string.lbl_dose_not_exist_any_file),
                 style = MaterialTheme.typography.subtitle1,
                 color = Color_Text_1,
                 modifier = Modifier
@@ -117,7 +159,7 @@ private fun ArchiveEmptyBody(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = stringResource(id = R.string.lbl_make_your_first_file),
+                text = stringResource(id = string.lbl_make_your_first_file),
                 style = MaterialTheme.typography.caption,
                 color = Color_Text_3,
                 modifier = Modifier

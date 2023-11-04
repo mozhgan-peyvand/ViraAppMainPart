@@ -83,8 +83,8 @@ class ArchiveListViewModel @Inject constructor(
     private val eventHandler: EventHandler, // TODO: should this be used here?
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
-    private val _uiViewStat = MutableSharedFlow<UiStatus>()
-    val uiViewState: SharedFlow<UiStatus> = _uiViewStat
+    private val _uiViewState = MutableSharedFlow<UiStatus>()
+    val uiViewState: SharedFlow<UiStatus> = _uiViewState
 
     private val _aiEvent: MutableState<ViraEvent?> = mutableStateOf(null)
     val aiEvent: State<ViraEvent?> = _aiEvent
@@ -150,7 +150,7 @@ class ArchiveListViewModel @Inject constructor(
                 uploadingFileStatus != FailureUpload &&
                 uploadList.isNotEmpty()
             ) {
-                _uiViewStat.emit(UiLoading)
+                _uiViewState.emit(UiLoading)
                 _isUploading.value = Uploading
 
                 indexOfItemThatShouldBeDownloaded.run {
@@ -186,7 +186,7 @@ class ArchiveListViewModel @Inject constructor(
             trackingList.isEmpty() && uploadList.isEmpty() && _failureList.value.isEmpty()
 
         if (trackingList.isEmpty() && uploadList.isEmpty()) {
-            _uiViewStat.emit(UiIdle)
+            _uiViewState.emit(UiIdle)
         }
 
         buildList {
@@ -255,7 +255,7 @@ class ArchiveListViewModel @Inject constructor(
     fun addFileToUploadingQueue(title: String, uri: Uri?) {
         viewModelScope.launch(IO) {
             if (uri == null) {
-                _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
+                _uiViewState.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
                 return@launch
             }
 
@@ -266,7 +266,7 @@ class ArchiveListViewModel @Inject constructor(
             }
 
             if (absolutePath.isNullOrBlank()) {
-                _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile()))
+                _uiViewState.emit(UiError(uiException.getErrorMessageInvalidFile()))
                 return@launch
             }
 
@@ -274,14 +274,14 @@ class ArchiveListViewModel @Inject constructor(
             if (fileDuration <= 0L) {
                 AvanegarSentry.unableToGetAudioDuration(absolutePath)
                 eventHandler.specialEvent(AvanegarAnalytics.unableToReadFileDuration)
-                _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
+                _uiViewState.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
                 return@launch
             }
 
             // Duplicate 2: check file durations
-            if (fileDuration >= MAX_FILE_DURATION_MS) {
+            if (fileDuration > MAX_FILE_DURATION_MS) {
                 eventHandler.specialEvent(AvanegarAnalytics.fileDurationExceed)
-                _uiViewStat.emit(
+                _uiViewState.emit(
                     UiError(
                         uiException.getErrorMessageMaxLengthExceeded(),
                         isSnack = true
@@ -401,7 +401,7 @@ class ArchiveListViewModel @Inject constructor(
 
     suspend fun checkIfUriDurationIsOk(context: Context, uri: Uri?): Boolean {
         if (uri == null) {
-            _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
+            _uiViewState.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
             return false
         }
 
@@ -409,14 +409,14 @@ class ArchiveListViewModel @Inject constructor(
         if (duration <= 0L) {
             AvanegarSentry.unableToGetAudioDuration("$uri")
             eventHandler.specialEvent(AvanegarAnalytics.unableToReadFileDuration)
-            _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
+            _uiViewState.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
             return false
         }
 
         // Duplicate 1: check file durations
         if (duration > MAX_FILE_DURATION_MS) {
             eventHandler.specialEvent(AvanegarAnalytics.fileDurationExceed)
-            _uiViewStat.emit(
+            _uiViewState.emit(
                 UiError(
                     uiException.getErrorMessageMaxLengthExceeded(),
                     isSnack = true
@@ -509,7 +509,8 @@ class ArchiveListViewModel @Inject constructor(
     ) {
         when (result) {
             is Success -> {
-                _uiViewStat.emit(UiSuccess)
+                failureCount = 0
+                _uiViewState.emit(UiSuccess)
                 delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
                 _isUploading.value = Idle
 
@@ -534,7 +535,7 @@ class ArchiveListViewModel @Inject constructor(
                 // to try upload all uploading items before emitting error
                 if (uploadList.value.isEmpty()) {
                     _isUploading.value = FailureUpload
-                    _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
+                    _uiViewState.emit(UiError(uiException.getErrorMessage(result.error)))
                 } else {
                     _isUploading.value = Idle
                 }

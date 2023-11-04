@@ -8,12 +8,17 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+
+private const val READ_WRITE_TIMEOUT = 60L
+private const val CONNECTION_TIMEOUT = 30L
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -42,10 +47,22 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .addNetworkInterceptor(loggingInterceptor)
             .addInterceptor(headerInterceptor)
-            .readTimeout(60L, TimeUnit.SECONDS)
-            .writeTimeout(60L, TimeUnit.SECONDS)
-            .connectTimeout(30L, TimeUnit.SECONDS)
+            .readTimeout(READ_WRITE_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(READ_WRITE_TIMEOUT, TimeUnit.SECONDS)
+            .connectTimeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS)
             .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideHttpClient(
+        okHttpClient: OkHttpClient
+    ): HttpClient {
+        return HttpClient(OkHttp) {
+            engine {
+                preconfigured = okHttpClient
+            }
+        }
     }
 
     @Singleton

@@ -1,8 +1,9 @@
 package ai.ivira.app.features.avasho.data
 
 import ai.ivira.app.features.ava_negar.data.entity.Resource
+import ai.ivira.app.features.avasho.data.entity.TextToSpeechItemNetwork
+import ai.ivira.app.features.avasho.data.entity.TextToSpeechNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechRequestNetwork
-import ai.ivira.app.features.avasho.data.entity.TextToSpeechResponseNetwork
 import ai.ivira.app.utils.data.api_result.ApiResult
 import retrofit2.http.Body
 import retrofit2.http.Header
@@ -16,5 +17,5 @@ interface AvashoService {
         @Header("Content-Type") contentType: String = "application/json",
         @Header("gateway-token") token: String = Token,
         @Body getSpeechBody: TextToSpeechRequestNetwork
-    ): ApiResult<Resource<TextToSpeechResponseNetwork>>
+    ): ApiResult<Resource<TextToSpeechNetwork<TextToSpeechItemNetwork>>>
 }
