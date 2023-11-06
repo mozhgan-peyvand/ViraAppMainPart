@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.LocalContentAlpha
+import androidx.compose.material.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -32,8 +34,9 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AudioImage(
     audioImageStatus: AudioImageStatus,
-    isInDownloadQueue: Boolean,
     modifier: Modifier = Modifier,
+    isInDownloadQueue: Boolean = false,
+    isEnabled: Boolean = true,
     progress: Float = -1f
 ) {
     val icon = when (audioImageStatus) {
@@ -69,28 +72,30 @@ fun AudioImage(
             }
         }
 
-        ViraIcon(
-            drawable = drawable.ic_transparent_circle,
-            contentDescription = null,
-            tint = Color_Primary,
-            modifier = Modifier.fillMaxSize()
-        )
+        with(LocalContentColor.current.copy(alpha = LocalContentAlpha.current)) {
+            ViraIcon(
+                drawable = drawable.ic_transparent_circle,
+                contentDescription = null,
+                tint = if (isEnabled) Color_Primary else this,
+                modifier = Modifier.fillMaxSize()
+            )
 
-        ViraIcon(
-            drawable = drawable.ic_transparent_circle,
-            contentDescription = null,
-            tint = Color_Primary,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(4.dp)
-                .clip(CircleShape)
-        )
+            ViraIcon(
+                drawable = drawable.ic_transparent_circle,
+                contentDescription = null,
+                tint = if (isEnabled) Color_Primary else this,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(4.dp)
+                    .clip(CircleShape)
+            )
 
-        ViraIcon(
-            drawable = icon,
-            contentDescription = null,
-            tint = Color_White
-        )
+            ViraIcon(
+                drawable = icon,
+                contentDescription = null,
+                tint = if (isEnabled) Color_White else this
+            )
+        }
     }
 }
 
@@ -99,7 +104,10 @@ fun AudioImage(
 private fun AudioImagePreview() {
     ViraTheme {
         CompositionLocalProvider(LocalLayoutDirection provides Rtl) {
-            AudioImage(audioImageStatus = Converting, isInDownloadQueue = false)
+            AudioImage(
+                audioImageStatus = Converting,
+                isEnabled = true
+            )
         }
     }
 }

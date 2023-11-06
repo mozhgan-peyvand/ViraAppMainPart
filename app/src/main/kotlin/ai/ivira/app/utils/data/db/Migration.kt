@@ -61,6 +61,12 @@ object Migration {
                 db.execSQL(
                     "CREATE TABLE IF NOT EXISTS `AvashoProcessedFileEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `checksum` TEXT NOT NULL, `fileUrl` TEXT NOT NULL, `filePath` TEXT NOT NULL, `fileName` TEXT NOT NULL, `text` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `isDownloading` INTEGER NOT NULL)"
                 )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `AvashoTrackingFileEntity` (`token` TEXT NOT NULL, `title` TEXT NOT NULL, `processEstimation` INTEGER, `createdAt` INTEGER NOT NULL, `bootElapsedTime` INTEGER NOT NULL, `lastFailedRequest` INTEGER, `lastTrackedBootElapsed` INTEGER, PRIMARY KEY(`token`))"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `AvashoUploadingFileEntity` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `text` TEXT NOT NULL, `speaker` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))"
+                )
             }
         }
     }

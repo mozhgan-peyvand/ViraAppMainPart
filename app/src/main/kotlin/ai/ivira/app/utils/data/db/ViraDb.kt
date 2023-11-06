@@ -9,6 +9,8 @@ import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
 import ai.ivira.app.features.home.data.entity.VersionEntity
 import ai.ivira.app.features.avasho.data.AvashoDao
 import ai.ivira.app.features.avasho.data.entity.AvashoProcessedFileEntity
+import ai.ivira.app.features.avasho.data.entity.AvashoTrackingFileEntity
+import ai.ivira.app.features.avasho.data.entity.AvashoUploadingFileEntity
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
@@ -19,8 +21,9 @@ import androidx.room.RoomDatabase
         AvanegarUploadingFileEntity::class,
         VersionEntity::class,
         ReleaseNoteEntity::class,
-        AvanegarUploadingFileEntity::class,
-        AvashoProcessedFileEntity::class
+        AvashoProcessedFileEntity::class,
+        AvashoTrackingFileEntity::class,
+        AvashoUploadingFileEntity::class
     ],
     version = 3,
     exportSchema = false

@@ -1,14 +1,24 @@
 package ai.ivira.app.features.avasho.ui.archive
 
+import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus
+import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.FailureUpload
+import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.Idle
+import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.IsNotUploading
+import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.Uploading
 import ai.ivira.app.features.avasho.data.AvashoRepository
 import ai.ivira.app.features.avasho.data.entity.AvashoArchiveFilesEntity
+import ai.ivira.app.features.avasho.data.entity.AvashoUploadingFileEntity
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
+import ai.ivira.app.features.avasho.ui.archive.model.AvashoUploadingFileView
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Downloading
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleDownload
 import ai.ivira.app.features.avasho.ui.archive.model.toAvashoProcessedFileView
+import ai.ivira.app.features.avasho.ui.archive.model.toAvashoTrackingFileView
+import ai.ivira.app.features.avasho.ui.archive.model.toAvashoUploadingFileView
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.data.NetworkStatus
+import ai.ivira.app.utils.data.NetworkStatus.Available
 import ai.ivira.app.utils.data.NetworkStatus.Unavailable
 import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult
@@ -16,9 +26,11 @@ import ai.ivira.app.utils.data.api_result.AppResult.Error
 import ai.ivira.app.utils.data.api_result.AppResult.Success
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
+import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.combine
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,18 +41,19 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import saman.zamani.persiandate.PersianDate
 import javax.inject.Inject
 
 // fixme these two are duplicated, in ArchiveListViewModel
 private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
 private const val MAX_RETRY_COUNT = 3
+
+private const val TEXT_LENGTH_LIMIT = 1000
 
 @HiltViewModel
 class AvashoArchiveListViewModel @Inject constructor(
@@ -48,18 +61,26 @@ class AvashoArchiveListViewModel @Inject constructor(
     private val uiException: UiException,
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
-    // fix me implement it correctly
     private val _uiViewStat = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewStat
 
-    private val _downloadQueue = MutableStateFlow(listOf<AvashoProcessedFileView>())
-    val downloadQueue: StateFlow<List<AvashoProcessedFileView>> = _downloadQueue.asStateFlow()
+    private var uploadingList: List<AvashoUploadingFileView> = listOf()
 
-    private val _downloadFileView = MutableStateFlow<AvashoProcessedFileView?>(null)
+    private val _uploadingId: MutableStateFlow<String> = MutableStateFlow("")
+    val uploadingId = _uploadingId.asStateFlow()
 
+    private val downloadQueue = MutableStateFlow(listOf<AvashoProcessedFileView>())
+    private val downloadFileView = MutableStateFlow<AvashoProcessedFileView?>(null)
+
+    private val _uploadStatus: MutableStateFlow<UploadingFileStatus> = MutableStateFlow(Idle)
     private val _downloadStatus: MutableStateFlow<DownloadingFileStatus> = MutableStateFlow(
         IdleDownload
     )
+
+    private var indexOfItemThatShouldBeDownloaded = 0
+
+    var isThereAnyTrackingOrUploading = MutableStateFlow(false)
+        private set
 
     val networkStatus = networkStatusTracker.networkStatus.stateIn(
         scope = viewModelScope,
@@ -74,40 +95,90 @@ class AvashoArchiveListViewModel @Inject constructor(
 
     val allArchiveFiles = combine(
         networkStatusTracker.networkStatus,
+        _uploadStatus,
         _downloadStatus,
         avashoRepository.getAllArchiveFiles(),
-        _downloadFileView,
+        downloadFileView,
         downloadQueue
     ) { networkStatus: NetworkStatus,
+        uploadState: UploadingFileStatus,
         downloadState: DownloadingFileStatus,
         avashoArchiveFilesEntity: AvashoArchiveFilesEntity,
         downloadingFile: AvashoProcessedFileView?,
-        downloadQueue: List<AvashoProcessedFileView> ->
+        downloadQueueList: List<AvashoProcessedFileView> ->
 
-        if (networkStatus is Unavailable) {
-            job?.cancel()
-            downloadJob?.cancel()
-            _downloadStatus.emit(IdleDownload)
-            _downloadFileView.emit(null)
-        } else if (networkStatus is NetworkStatus.Available && !networkStatus.hasVpn) {
-            if (
-                downloadState != Downloading &&
-                downloadQueue.isNotEmpty()
-            ) {
-                _uiViewStat.emit(UiLoading)
-                _downloadStatus.value = Downloading
+        val uploadingList = avashoArchiveFilesEntity.uploading
 
-                downloadQueue.first().apply {
-                    downloadFile(this)
+        when (networkStatus) {
+            is Unavailable -> resetEverything()
+
+            is Available -> {
+                if (networkStatus.hasVpn) resetEverything()
+
+                if (
+                    uploadState != Uploading &&
+                    uploadState != FailureUpload &&
+                    uploadingList.isNotEmpty()
+                ) {
+                    _uiViewStat.emit(UiLoading)
+                    _uploadStatus.value = Uploading
+
+                    indexOfItemThatShouldBeDownloaded.run {
+                        _uploadingId.value = uploadingList[this].id
+                        val id = uploadingList[this].id
+                        val title = uploadingList[this].title
+                        val text = uploadingList[this].text
+                        val speaker = uploadingList[this].speaker
+
+                        if (text.length <= TEXT_LENGTH_LIMIT) {
+                            textToSpeechShort(
+                                id = id,
+                                fileName = title,
+                                text = text,
+                                speakerType = speaker
+                            )
+                        } else {
+                            textToSpeechLong(
+                                id = id,
+                                fileName = title,
+                                text = text,
+                                speakerType = speaker
+                            )
+                        }
+                    }
+                }
+
+                if (
+                    downloadState != Downloading &&
+                    downloadQueueList.isNotEmpty()
+                ) {
+                    _downloadStatus.value = Downloading
+                    downloadQueueList.first().apply {
+                        downloadFile(this)
+                    }
                 }
             }
         }
 
         // region archiveView
         val processedList = avashoArchiveFilesEntity.processed
+        val trackingList = avashoArchiveFilesEntity.tracking
+
+        isThereAnyTrackingOrUploading.value =
+            trackingList.isNotEmpty() || uploadingList.isNotEmpty()
+
+        if (trackingList.isEmpty() && uploadingList.isEmpty()) {
+            _uiViewStat.emit(UiIdle)
+        }
 
         buildList {
-            // TODO all tracking and uploading
+            addAll(
+                uploadingList.map {
+                    it.toAvashoUploadingFileView()
+                }.also { this@AvashoArchiveListViewModel.uploadingList = it }
+            )
+            addAll(trackingList.map { it.toAvashoTrackingFileView() })
+
             addAll(
                 processedList.map {
                     it.toAvashoProcessedFileView(
@@ -123,7 +194,58 @@ class AvashoArchiveListViewModel @Inject constructor(
         // endregion
     }.distinctUntilChanged()
 
-    fun textToSpeechShort(
+    init {
+        viewModelScope.launch {
+            _uploadStatus.collect {
+
+                // on Idle and FailureUpload state, we reset everyThing
+                if (it is Idle || it is FailureUpload) {
+                    indexOfItemThatShouldBeDownloaded = 0
+                }
+            }
+        }
+    }
+
+    fun startUploading(avashoUploadingFileView: AvashoUploadingFileView) {
+        // to make sure that it does not return -1
+        with(uploadingList) {
+            indexOfItemThatShouldBeDownloaded = if (
+                contains(avashoUploadingFileView)
+            ) {
+                indexOf(avashoUploadingFileView)
+            } else {
+                0
+            }
+        }
+
+        _uploadStatus.value = IsNotUploading
+    }
+
+    fun addToQueue(speakerType: String, text: String, fileName: String) {
+        val partOfText = if (text.length < 10) text else text.substring(0, 9)
+        val id = buildString {
+            append(fileName)
+            append("_")
+            append(partOfText)
+            append("_")
+            append(speakerType)
+        }
+
+        viewModelScope.launch(IO) {
+            avashoRepository.insertUploadingSpeechToDatabase(
+                AvashoUploadingFileEntity(
+                    id = id,
+                    title = fileName,
+                    text = text,
+                    speaker = speakerType,
+                    createdAt = PersianDate().time
+                )
+            )
+        }
+    }
+
+    private fun textToSpeechShort(
+        id: String,
         speakerType: String,
         text: String,
         fileName: String
@@ -131,6 +253,26 @@ class AvashoArchiveListViewModel @Inject constructor(
         job?.cancel()
         job = viewModelScope.launch(IO) {
             val result = avashoRepository.convertToSpeechShort(
+                id = id,
+                text = text,
+                speakerType = speakerType,
+                fileName = fileName
+            )
+
+            handleResultState(result)
+        }
+    }
+
+    private fun textToSpeechLong(
+        id: String,
+        speakerType: String,
+        text: String,
+        fileName: String
+    ) {
+        job?.cancel()
+        job = viewModelScope.launch(IO) {
+            val result = avashoRepository.convertToSpeechLong(
+                id = id,
                 text = text,
                 speakerType = speakerType,
                 fileName = fileName
@@ -141,7 +283,7 @@ class AvashoArchiveListViewModel @Inject constructor(
     }
 
     fun addFileToDownloadQueue(id: AvashoProcessedFileView) {
-        _downloadQueue.update {
+        downloadQueue.update {
             it.plus(id)
         }
     }
@@ -149,7 +291,7 @@ class AvashoArchiveListViewModel @Inject constructor(
     private fun downloadFile(avashoProcessedFileView: AvashoProcessedFileView) {
         downloadJob?.cancel()
         downloadJob = viewModelScope.launch(IO) {
-            _downloadFileView.value = avashoProcessedFileView
+            downloadFileView.value = avashoProcessedFileView
 
             avashoRepository.downloadFile(
                 id = avashoProcessedFileView.id,
@@ -158,7 +300,7 @@ class AvashoArchiveListViewModel @Inject constructor(
             ) { byteRead, totalSize ->
                 val percent = byteRead / totalSize.toFloat()
 
-                _downloadFileView.update { processedView ->
+                downloadFileView.update { processedView ->
                     processedView?.copy(
                         id = avashoProcessedFileView.id,
                         downloadingPercent = percent,
@@ -168,23 +310,23 @@ class AvashoArchiveListViewModel @Inject constructor(
                 }
             }
 
-            _downloadQueue.update { list ->
+            downloadQueue.update { list ->
                 list.filter {
                     it.id != avashoProcessedFileView.id
                 }
             }
             _downloadStatus.emit(IdleDownload)
-            _downloadFileView.emit(null)
+            downloadFileView.emit(null)
         }
     }
 
     fun cancelDownload(id: Int) {
-        _downloadQueue.update { it.filter { item -> item.id != id } }
+        downloadQueue.update { it.filter { item -> item.id != id } }
 
-        if (_downloadFileView.value?.id == id) {
+        if (downloadFileView.value?.id == id) {
             downloadJob?.cancel()
             downloadJob = null
-            _downloadFileView.value = null
+            downloadFileView.value = null
             _downloadStatus.value = IdleDownload
         }
     }
@@ -193,18 +335,28 @@ class AvashoArchiveListViewModel @Inject constructor(
         return downloadQueue.value.any { it.id == id }
     }
 
+    private suspend fun resetEverything() {
+        job?.cancel()
+        job = null
+        downloadJob?.cancel()
+        downloadJob = null
+        _uploadStatus.emit(Idle)
+        _downloadStatus.emit(IdleDownload)
+        downloadFileView.emit(null)
+    }
+
     // fixme it's duplicate, in ArchiveListViewModel
     private suspend fun <T> handleResultState(
         result: AppResult<T>,
         onSuccess: ((Success<T>) -> Unit)? = null
     ) {
+        job = null
         when (result) {
             is Success -> {
                 failureCount = 0
                 _uiViewStat.emit(UiSuccess)
                 delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
-
-                // TODO emit Idle in Download state
+                _uploadStatus.value = Idle
 
                 onSuccess?.let {
                     it(result)
@@ -215,9 +367,9 @@ class AvashoArchiveListViewModel @Inject constructor(
             is Error -> {
                 failureCount++
                 if (failureCount < MAX_RETRY_COUNT) {
-                    // TODO emit Idle in Download state
+                    _uploadStatus.value = Idle
                 } else {
-                    // TODO emit FailureUpload in Download state
+                    _uploadStatus.value = FailureUpload
                     _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
                 }
             }

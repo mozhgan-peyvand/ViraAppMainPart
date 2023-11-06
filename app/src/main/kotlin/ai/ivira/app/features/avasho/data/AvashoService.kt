@@ -1,7 +1,9 @@
 package ai.ivira.app.features.avasho.data
 
 import ai.ivira.app.features.ava_negar.data.entity.Resource
+import ai.ivira.app.features.avasho.data.entity.TextToSpeechItemLongNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechItemNetwork
+import ai.ivira.app.features.avasho.data.entity.TextToSpeechLongRequestNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechRequestNetwork
 import ai.ivira.app.utils.data.api_result.ApiResult
@@ -18,4 +20,11 @@ interface AvashoService {
         @Header("gateway-token") token: String = Token,
         @Body getSpeechBody: TextToSpeechRequestNetwork
     ): ApiResult<Resource<TextToSpeechNetwork<TextToSpeechItemNetwork>>>
+
+    @POST("TextToSpeech/v1/longText")
+    suspend fun getTextToSpeechLong(
+        @Header("Content-Type") contentType: String = "application/json",
+        @Header("gateway-token") token: String = Token,
+        @Body getSpeechBody: TextToSpeechLongRequestNetwork
+    ): ApiResult<Resource<TextToSpeechNetwork<TextToSpeechItemLongNetwork>>>
 }

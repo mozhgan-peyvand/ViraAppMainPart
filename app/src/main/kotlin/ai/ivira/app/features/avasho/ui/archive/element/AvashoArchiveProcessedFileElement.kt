@@ -51,7 +51,7 @@ fun AvashoArchiveProcessedFileElement(
     Card(
         backgroundColor = Color_Card,
         elevation = 0.dp,
-        modifier = Modifier.heightIn(min = 108.dp),
+        modifier = Modifier.heightIn(min = 89.dp),
         onClick = {
             safeClick {
                 onItemClick(archiveViewProcessed)

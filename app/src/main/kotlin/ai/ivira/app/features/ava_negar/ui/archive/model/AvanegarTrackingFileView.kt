@@ -14,6 +14,7 @@ data class AvanegarTrackingFileView(
     val bootElapsedTime: Long,
     val lastFailure: Boolean
 ) : ArchiveView {
+    // CalculateEstimateProcess: Duplicate 1
     fun computeFileEstimateProcess(): Double {
         if (processEstimation == null) return -1.0
         if (lastFailure || processEstimation <= 0) return -1.0

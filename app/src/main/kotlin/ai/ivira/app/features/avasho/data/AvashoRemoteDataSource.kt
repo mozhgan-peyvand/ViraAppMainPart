@@ -1,6 +1,8 @@
 package ai.ivira.app.features.avasho.data
 
+import ai.ivira.app.features.avasho.data.entity.TextToSpeechItemLongNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechItemNetwork
+import ai.ivira.app.features.avasho.data.entity.TextToSpeechLongRequestNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechRequestNetwork
 import ai.ivira.app.utils.common.file.DownloadFileRequest
@@ -20,6 +22,22 @@ class AvashoRemoteDataSource @Inject constructor(
     ): ApiResult<TextToSpeechNetwork<TextToSpeechItemNetwork>> {
         val result = service.getTextToSpeech(
             getSpeechBody = TextToSpeechRequestNetwork(
+                data = text,
+                speaker = speakerType
+            )
+        )
+        return when (result) {
+            is Success -> Success(result.data.data)
+            is Error -> Error(result.error)
+        }
+    }
+
+    suspend fun getSpeechFileLong(
+        text: String,
+        speakerType: String
+    ): ApiResult<TextToSpeechNetwork<TextToSpeechItemLongNetwork>> {
+        val result = service.getTextToSpeechLong(
+            getSpeechBody = TextToSpeechLongRequestNetwork(
                 data = text,
                 speaker = speakerType
             )

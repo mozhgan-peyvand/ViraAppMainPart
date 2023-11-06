@@ -2,17 +2,36 @@ package ai.ivira.app.features.avasho.ui.archive
 
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
+import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Converting
 import ai.ivira.app.features.avasho.ui.archive.element.AvashoArchiveProcessedFileElement
+import ai.ivira.app.features.avasho.ui.archive.element.AvashoArchiveTrackingFileElement
+import ai.ivira.app.features.avasho.ui.archive.element.AvashoArchiveUploadingFileElement
+import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
+import ai.ivira.app.features.avasho.ui.archive.model.AvashoTrackingFileView
+import ai.ivira.app.features.avasho.ui.archive.model.AvashoUploadingFileView
 import ai.ivira.app.features.avasho.ui.file_creation.SpeechResult
+import ai.ivira.app.utils.data.NetworkStatus
+import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.theme.BLue_a200_Opacity_40
+import ai.ivira.app.utils.ui.theme.Color_Card
+import ai.ivira.app.utils.ui.theme.Color_Red
+import ai.ivira.app.utils.ui.theme.Color_Red_800
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Color_White
 import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.RepeatMode.Reverse
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,9 +56,17 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.LinearGradientShader
+import androidx.compose.ui.graphics.Shader
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -53,6 +80,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import java.io.File
 
+private const val TRACKING_FILE_ANIMATION_DURATION_COLUMN = 1300
+
 @Composable
 fun AvashoArchiveListScreen(
     navController: NavHostController,
@@ -60,7 +89,7 @@ fun AvashoArchiveListScreen(
 ) {
     navController.currentBackStackEntry
         ?.savedStateHandle?.remove<SpeechResult>(SpeechResult.FILE_NAME)?.let {
-            viewModel.textToSpeechShort(
+            viewModel.addToQueue(
                 fileName = it.fileName,
                 speakerType = it.speakerType,
                 text = it.text
@@ -70,7 +99,8 @@ fun AvashoArchiveListScreen(
     val archiveFiles by viewModel.allArchiveFiles.collectAsStateWithLifecycle(listOf())
     val networkStatus by viewModel.networkStatus.collectAsStateWithLifecycle()
     val uiViewState by viewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
-    val downloadQueue by viewModel.downloadQueue.collectAsStateWithLifecycle()
+    val isThereAnyTrackingOrUploading by viewModel.isThereAnyTrackingOrUploading.collectAsStateWithLifecycle()
+    val brush = columnBrush()
 
     Scaffold(
         backgroundColor = MaterialTheme.colors.background,
@@ -86,41 +116,112 @@ fun AvashoArchiveListScreen(
             if (archiveFiles.isEmpty()) {
                 ArchiveEmptyBody()
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(archiveFiles) {
-                        AvashoArchiveProcessedFileElement(
-                            archiveViewProcessed = it,
-                            isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
-                            onItemClick = {
-                                // TODO open bottomSheet
-                            },
-                            onIconClick = callback@{ processedItem ->
-                                if (File(processedItem.filePath).exists()) {
-                                    // TODO open bottomSheet
-                                    return@callback
+                Column(modifier = Modifier.fillMaxSize()) {
+                    val noNetworkAvailable = networkStatus is NetworkStatus.Unavailable
+                    val hasVpnConnection = networkStatus.let { it is NetworkStatus.Available && it.hasVpn }
+                    val isBannerError = uiViewState.let { it is UiError && !it.isSnack }
+
+                    if (noNetworkAvailable || hasVpnConnection || isBannerError) {
+                        if (isThereAnyTrackingOrUploading) {
+                            ErrorBanner(
+                                errorMessage = if (uiViewState is UiError) {
+                                    (uiViewState as UiError).message
+                                } else if (hasVpnConnection) {
+                                    stringResource(id = string.msg_vpn_is_connected_error)
+                                } else {
+                                    stringResource(id = string.msg_internet_disconnected)
+                                }
+                            )
+                        }
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(archiveFiles) {
+                            when (it) {
+                                is AvashoProcessedFileView -> AvashoArchiveProcessedFileElement(
+                                    archiveViewProcessed = it,
+                                    isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
+                                    onItemClick = {
+                                        // TODO open bottomSheet
+                                    },
+                                    onIconClick = callback@{ processedItem ->
+                                        if (File(processedItem.filePath).exists()) {
+                                            // TODO open bottomSheet
+                                            return@callback
+                                        }
+
+                                        if (viewModel.isInDownloadQueue(processedItem.id)) {
+                                            viewModel.cancelDownload(processedItem.id)
+                                        } else {
+                                            viewModel.addFileToDownloadQueue(processedItem)
+                                        }
+                                    }
+                                )
+
+                                is AvashoTrackingFileView -> {
+                                    AvashoArchiveTrackingFileElement(
+                                        archiveTrackingView = it,
+                                        brush = brush,
+                                        estimateTime = { it.computeFileEstimateProcess() },
+                                        audioImageStatus = Converting
+                                    )
                                 }
 
-                                if (viewModel.isInDownloadQueue(processedItem.id)) {
-                                    viewModel.cancelDownload(processedItem.id)
-                                } else {
-                                    viewModel.addFileToDownloadQueue(processedItem)
+                                is AvashoUploadingFileView -> {
+                                    AvashoArchiveUploadingFileElement(
+                                        avashoUploadingFileView = it,
+                                        isNetworkAvailable = !noNetworkAvailable && !hasVpnConnection,
+                                        isErrorState = uiViewState.let { uiStatus ->
+                                            (uiStatus is UiError) && !uiStatus.isSnack
+                                        },
+                                        onTryAgainClick = { uploadingItem ->
+                                            viewModel.startUploading(uploadingItem)
+                                        }
+                                    )
                                 }
                             }
-                        )
+                        }
                     }
                 }
             }
-            Fabs(
+            Fab(
                 modifier = Modifier.align(Alignment.BottomStart),
                 onMainFabClick = {
                     navController.navigate(route = ScreenRoutes.AvaShoFileCreationScreen.route)
                 }
             )
         }
+    }
+}
+
+// fixme it's duplicate, in [AvaNegarArchiveListScreen]
+@Composable
+private fun ErrorBanner(
+    errorMessage: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color_Red_800)
+            .padding(8.dp)
+    ) {
+        ViraIcon(
+            drawable = drawable.ic_failure_network,
+            contentDescription = null,
+            tint = Color_Red
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = errorMessage,
+            style = MaterialTheme.typography.body2,
+            color = Color_Red
+        )
     }
 }
 
@@ -228,7 +329,7 @@ private fun ArchiveAppBar(
 }
 
 @Composable
-private fun Fabs(
+private fun Fab(
     modifier: Modifier = Modifier,
     onMainFabClick: () -> Unit
 ) {
@@ -255,6 +356,39 @@ private fun Fabs(
                 contentDescription = null,
                 tint = Color_White
             )
+        }
+    }
+}
+
+@Composable
+private fun columnBrush(): Brush {
+    val infiniteTransition = rememberInfiniteTransition(label = "")
+
+    val offset by infiniteTransition.animateFloat(
+        initialValue = 0.01f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = TRACKING_FILE_ANIMATION_DURATION_COLUMN,
+                easing = EaseInOut
+            ),
+            repeatMode = Reverse
+        ),
+        label = ""
+    )
+
+    return remember(offset) {
+        object : ShaderBrush() {
+            override fun createShader(size: Size): Shader {
+                val widthOffset = size.width * offset
+                val heightOffset = size.height
+                return LinearGradientShader(
+                    colors = listOf(BLue_a200_Opacity_40, Color_Card),
+                    from = Offset(widthOffset, heightOffset),
+                    to = Offset(widthOffset + size.width, size.height),
+                    tileMode = TileMode.Mirror
+                )
+            }
         }
     }
 }
