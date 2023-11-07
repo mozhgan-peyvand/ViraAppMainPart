@@ -7,8 +7,8 @@ dependencies {
 }
 
 detekt {
-    autoCorrect = true
+    autoCorrect = false
     buildUponDefaultConfig = true
-    ignoreFailures = true
+    ignoreFailures = false
     config = files("$rootProject.projectDir/config/detekt/detekt.yml")
 }

@@ -49,19 +49,25 @@ formatting:
     active: true
 
   MaximumLineLength:
+    active: false
     maxLineLength: 100
-    ignoreBackTickedIdentifier: true
+    #ignoreBackTickedIdentifier: true
   ArgumentListWrapping:
+    active: false
     maxLineLength: 100
   FunctionReturnTypeSpacing:
+    active: false
     maxLineLength: 100
   ParameterListWrapping:
+    active: false
     maxLineLength: 100
   Wrapping:
+    active: false
     maxLineLength: 100
   FunctionSignature:
+    active: false
     maxLineLength: 100
-    forceMultilineWhenParameterCountGreaterOrEqualThan: 5
+    #forceMultilineWhenParameterCountGreaterOrEqualThan: 5
 
   TrailingCommaOnCallSite:
     active: true

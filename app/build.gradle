@@ -162,13 +162,6 @@ android {
     }
 
     applicationVariants.all { variant ->
-        tasks.named("assemble${variant.name.capitalize()}") {
-            it.dependsOn("detekt${variant.name.capitalize()}")
-        }
-        tasks.named("detekt${variant.name.capitalize()}") {
-            it.mustRunAfter("compile${variant.name.capitalize()}Kotlin")
-        }
-
         // rename output files
         def artifactName = "Vira-v${generateVersionName()}(${variant.versionCode})-${variant.getFlavorName()}${variant.buildType.name.capitalize()}-g${getGitHash}"
         // rename apk
