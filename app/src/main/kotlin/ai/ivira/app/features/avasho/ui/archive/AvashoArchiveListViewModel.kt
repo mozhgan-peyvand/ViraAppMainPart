@@ -31,6 +31,7 @@ import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.combine
+import android.media.MediaMetadataRetriever
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -61,6 +62,8 @@ class AvashoArchiveListViewModel @Inject constructor(
     private val uiException: UiException,
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
+    private var retriever: MediaMetadataRetriever? = null
+
     private val _uiViewStat = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewStat
 
@@ -185,7 +188,8 @@ class AvashoArchiveListViewModel @Inject constructor(
                         downloadingPercent = downloadingFile?.downloadingPercent.orZero(),
                         downloadingId = downloadingFile?.id ?: -1,
                         fileSize = downloadingFile?.fileSize,
-                        downloadedBytes = downloadingFile?.downloadedBytes
+                        downloadedBytes = downloadingFile?.downloadedBytes,
+                        retriever = retriever
                     )
                 }
             )
@@ -195,6 +199,10 @@ class AvashoArchiveListViewModel @Inject constructor(
     }.distinctUntilChanged()
 
     init {
+        kotlin.runCatching {
+            retriever = MediaMetadataRetriever()
+        }
+
         viewModelScope.launch {
             _uploadStatus.collect {
 

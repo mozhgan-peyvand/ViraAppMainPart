@@ -8,6 +8,7 @@ import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Play
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.ui.convertByteToMB
+import ai.ivira.app.utils.ui.millisecondsToTime
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
@@ -156,11 +157,10 @@ fun AvashoArchiveProcessedFileElement(
 
                             Spacer(modifier = Modifier.width(4.dp))
 
-                            // todo set time
                             Text(
                                 color = Color_Text_3,
                                 style = MaterialTheme.typography.caption,
-                                text = archiveViewProcessed.createdAt
+                                text = millisecondsToTime(archiveViewProcessed.fileDuration)
                             )
                         }
                     }
@@ -208,7 +208,8 @@ private fun AvashoArchiveProcessedFileElementPreview() {
                     fileSize = 0,
                     downloadingPercent = 0.5f,
                     downloadedBytes = 1055205252558,
-                    isDownloading = false
+                    isDownloading = false,
+                    fileDuration = 0L
                 ),
                 isInDownloadQueue = true,
                 onItemClick = {},

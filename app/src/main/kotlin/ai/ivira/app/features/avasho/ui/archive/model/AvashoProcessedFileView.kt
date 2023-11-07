@@ -2,6 +2,8 @@ package ai.ivira.app.features.avasho.ui.archive.model
 
 import ai.ivira.app.features.ava_negar.ui.archive.model.convertDate
 import ai.ivira.app.features.avasho.data.entity.AvashoProcessedFileEntity
+import ai.ivira.app.utils.common.file.getFileDuration
+import android.media.MediaMetadataRetriever
 import java.io.File
 
 data class AvashoProcessedFileView(
@@ -14,14 +16,16 @@ data class AvashoProcessedFileView(
     val fileSize: Long?,
     val downloadedBytes: Long?,
     val downloadingPercent: Float,
-    val isDownloading: Boolean
+    val isDownloading: Boolean,
+    val fileDuration: Long
 ) : AvashoArchiveView
 
 fun AvashoProcessedFileEntity.toAvashoProcessedFileView(
     downloadingId: Int = -1,
     downloadingPercent: Float = -1f,
     fileSize: Long?,
-    downloadedBytes: Long?
+    downloadedBytes: Long?,
+    retriever: MediaMetadataRetriever?
 ) = AvashoProcessedFileView(
     id = id,
     fileName = fileName,
@@ -32,5 +36,13 @@ fun AvashoProcessedFileEntity.toAvashoProcessedFileView(
     fileSize = if (filePath.isNotEmpty()) File(filePath).length() else fileSize,
     downloadedBytes = downloadedBytes,
     downloadingPercent = if (downloadingId == id) downloadingPercent else -1f, // it's default and initial value
-    isDownloading = isDownloading
+    isDownloading = isDownloading,
+    fileDuration = if (retriever != null && File(filePath).exists()) {
+        getFileDuration(
+            retriever,
+            filePath
+        )
+    } else {
+        0L
+    }
 )
