@@ -1,6 +1,6 @@
 package ai.ivira.app.features.avasho.ui.file_creation
 
-import ai.ivira.app.R
+import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.ChooseFileContentBottomSheet
@@ -64,6 +64,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -71,6 +72,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -85,6 +87,7 @@ import kotlinx.coroutines.launch
 
 private const val CHAR_COUNT = 2500
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AvashoFileCreationScreen(
     navController: NavHostController,
@@ -95,6 +98,7 @@ fun AvashoFileCreationScreen(
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
@@ -184,6 +188,7 @@ fun AvashoFileCreationScreen(
             sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
             sheetBackgroundColor = Color_BG_Bottom_Sheet,
             scrimColor = Color.Black.copy(alpha = 0.5f),
+            modifier = Modifier.padding(padding),
             sheetContent = {
                 when (selectedSheet) {
                     OpenForChooseSpeaker -> {
@@ -261,7 +266,7 @@ fun AvashoFileCreationScreen(
                                     }
                                 }
                             },
-                            descriptionFileFormat = R.string.lbl_lbl_allow_text_format
+                            descriptionFileFormat = string.lbl_lbl_allow_text_format
                         )
                     }
                 }
@@ -273,6 +278,18 @@ fun AvashoFileCreationScreen(
                     .background(Color_BG)
             ) {
                 TopAppBar(
+                    isUndoEnabled = viewModel.canUndo(),
+                    isRedoEnabled = viewModel.canRedo(),
+                    onUndoClick = {
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                        viewModel.undo()
+                    },
+                    onRedoClick = {
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                        viewModel.redo()
+                    },
                     onBackAction = {
                         // todo should handle the situation when the textField is not empty
                         navController.navigateUp()
@@ -331,9 +348,13 @@ fun AvashoFileCreationScreen(
 
 @Composable
 private fun TopAppBar(
+    isUndoEnabled: Boolean,
+    isRedoEnabled: Boolean,
+    onUndoClick: () -> Unit,
+    onRedoClick: () -> Unit,
     onBackAction: () -> Unit,
-    modifier: Modifier = Modifier,
-    uploadAction: () -> Unit
+    uploadAction: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
@@ -349,16 +370,16 @@ private fun TopAppBar(
             }
         ) {
             ViraIcon(
-                drawable = R.drawable.ic_arrow_forward,
+                drawable = drawable.ic_arrow_forward,
                 modifier = Modifier.padding(8.dp),
-                contentDescription = stringResource(id = R.string.desc_back)
+                contentDescription = stringResource(id = string.desc_back)
             )
         }
 
         Spacer(modifier = Modifier.size(8.dp))
 
         Text(
-            text = stringResource(id = R.string.lbl_file_creation),
+            text = stringResource(id = string.lbl_file_creation),
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
             modifier = Modifier.weight(1f),
@@ -373,9 +394,37 @@ private fun TopAppBar(
             }
         ) {
             ViraIcon(
-                drawable = R.drawable.ic_upload_txt_file,
+                drawable = drawable.ic_upload_txt_file,
                 modifier = Modifier.padding(8.dp),
-                contentDescription = stringResource(id = R.string.desc_upload)
+                contentDescription = stringResource(id = string.desc_upload)
+            )
+        }
+
+        IconButton(
+            enabled = isRedoEnabled,
+            onClick = {
+                safeClick {
+                    onRedoClick()
+                }
+            }
+        ) {
+            ViraIcon(
+                drawable = drawable.ic_redo,
+                contentDescription = stringResource(id = string.desc_redo),
+                modifier = Modifier.padding(12.dp)
+            )
+        }
+
+        IconButton(
+            enabled = isUndoEnabled,
+            onClick = {
+                safeClick { onUndoClick() }
+            }
+        ) {
+            ViraIcon(
+                drawable = drawable.ic_undo,
+                contentDescription = stringResource(id = string.desc_undo),
+                modifier = Modifier.padding(12.dp)
             )
         }
     }
@@ -404,7 +453,7 @@ private fun Body(
                 textStyle = MaterialTheme.typography.body1,
                 placeholder = {
                     Text(
-                        text = stringResource(id = R.string.lbl_type_text_or_import_file),
+                        text = stringResource(id = string.lbl_type_text_or_import_file),
                         style = MaterialTheme.typography.body1,
                         color = Color_Text_3
                     )
@@ -442,7 +491,7 @@ private fun Body(
         ) {
             CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.labelMedium) {
                 Text(
-                    text = stringResource(id = R.string.lbl_character),
+                    text = stringResource(id = string.lbl_character),
                     color = Color_Primary_200
                 )
 
