@@ -32,6 +32,9 @@ import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.combine
 import android.media.MediaMetadataRetriever
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.ModalBottomSheetValue.Hidden
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -90,6 +93,8 @@ class AvashoArchiveListViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = Unavailable
     )
+    var selectedAvashoItemBottomSheet = mutableStateOf<AvashoProcessedFileView?>(null)
+    var bottomSheetInitialValue = mutableStateOf<ModalBottomSheetValue>(Hidden)
 
     private var job: Job? = null
     private var downloadJob: Job? = null

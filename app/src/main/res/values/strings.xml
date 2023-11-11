@@ -221,6 +221,9 @@
     <string name="lbl_type_text_or_import_file">متن خود را تایپ یا فایل متنی را وارد کنید…</string>
     <string name="lbl_character">کاراکتر:</string>
     <string name="lbl_converting_to_audio">درحال تبدیل به صوت…</string>
+    <string name="lbl_avasho_bottomSheet_expand_tenSecond_after">ده ثانیه جلو</string>
+    <string name="lbl_avasho_bottomSheet_expand_tenSecond_before">ده ثانیه عقب</string>
+
     <string name="lbl_ready_for_download">فایل آماده دانلود</string>
     <string name="lbl_downloading_file">درحال دانلود فایل</string>
     <string name="lbl_mb">MB</string>

@@ -9,13 +9,16 @@ import ai.ivira.app.features.avasho.ui.archive.element.AvashoArchiveUploadingFil
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoTrackingFileView
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoUploadingFileView
+import ai.ivira.app.features.avasho.ui.detail.AvashoDetailBottomSheet
 import ai.ivira.app.features.avasho.ui.file_creation.SpeechResult
-import ai.ivira.app.utils.data.NetworkStatus
+import ai.ivira.app.utils.data.NetworkStatus.Available
+import ai.ivira.app.utils.data.NetworkStatus.Unavailable
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes
+import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoFileCreationScreen
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.BLue_a200_Opacity_40
+import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Red_800
@@ -25,6 +28,7 @@ import ai.ivira.app.utils.ui.theme.Color_White
 import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.RepeatMode.Reverse
 import androidx.compose.animation.core.animateFloat
@@ -48,26 +52,38 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue.Expanded
+import androidx.compose.material.ModalBottomSheetValue.HalfExpanded
+import androidx.compose.material.ModalBottomSheetValue.Hidden
 import androidx.compose.material.Scaffold
+import androidx.compose.material.SwipeableDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -78,6 +94,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 import java.io.File
 
 private const val TRACKING_FILE_ANIMATION_DURATION_COLUMN = 1300
@@ -101,99 +118,201 @@ fun AvashoArchiveListScreen(
     val uiViewState by viewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
     val isThereAnyTrackingOrUploading by viewModel.isThereAnyTrackingOrUploading.collectAsStateWithLifecycle()
     val brush = columnBrush()
+    val coroutineScope = rememberCoroutineScope()
 
-    Scaffold(
-        backgroundColor = MaterialTheme.colors.background,
-        topBar = {
-            ArchiveAppBar(onBackClick = { navController.navigateUp() })
+    var selectedAvashoItemBottomSheet by viewModel.selectedAvashoItemBottomSheet
+
+    var bottomSheetInitialValue by viewModel.bottomSheetInitialValue
+
+    val density = LocalDensity.current
+
+    val bottomSheetState = rememberSaveable(
+        inputs = arrayOf(density, bottomSheetInitialValue.name),
+        key = bottomSheetInitialValue.name,
+        saver = ModalBottomSheetState.Saver(
+            density = density,
+            animationSpec = SwipeableDefaults.AnimationSpec,
+            skipHalfExpanded = false,
+            confirmValueChange = { true }
+        )
+    ) {
+        ModalBottomSheetState(
+            density = density,
+            initialValue = bottomSheetInitialValue,
+            animationSpec = SwipeableDefaults.AnimationSpec,
+            isSkipHalfExpanded = false,
+            confirmValueChange = { true }
+        )
+    }
+
+    BackHandler(bottomSheetState.isVisible) {
+        bottomSheetInitialValue = when (bottomSheetState.currentValue) {
+            Expanded -> {
+                HalfExpanded
+            }
+            HalfExpanded -> {
+                coroutineScope.launch {
+                    if (bottomSheetState.isVisible) {
+                        bottomSheetState.hide()
+                    }
+                }
+                Hidden
+            }
+            else -> {
+                return@BackHandler
+            }
         }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            if (archiveFiles.isEmpty()) {
-                ArchiveEmptyBody()
-            } else {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    val noNetworkAvailable = networkStatus is NetworkStatus.Unavailable
-                    val hasVpnConnection = networkStatus.let { it is NetworkStatus.Available && it.hasVpn }
-                    val isBannerError = uiViewState.let { it is UiError && !it.isSnack }
+    }
 
-                    if (noNetworkAvailable || hasVpnConnection || isBannerError) {
-                        if (isThereAnyTrackingOrUploading) {
-                            ErrorBanner(
-                                errorMessage = if (uiViewState is UiError) {
-                                    (uiViewState as UiError).message
-                                } else if (hasVpnConnection) {
-                                    stringResource(id = string.msg_vpn_is_connected_error)
-                                } else {
-                                    stringResource(id = string.msg_internet_disconnected)
-                                }
-                            )
+    val modalBottomSheetBorderShape =
+        if (bottomSheetState.currentValue == HalfExpanded) {
+            RoundedCornerShape(
+                topEnd = 24.dp,
+                topStart = 24.dp
+            )
+        } else {
+            RoundedCornerShape(0.dp)
+        }
+
+    ModalBottomSheetLayout(
+        sheetShape = modalBottomSheetBorderShape,
+        sheetBackgroundColor = Color_BG_Bottom_Sheet,
+        scrimColor = Color.Black.copy(alpha = 0.5f),
+        sheetState = bottomSheetState,
+        modifier = Modifier.fillMaxSize(),
+        sheetContent = {
+            AvashoDetailBottomSheet(
+                modifier = Modifier,
+                collapseToolbarAction = {
+                    coroutineScope.launch {
+                        bottomSheetState.hide()
+                    }
+                },
+                avashoProcessedItem = selectedAvashoItemBottomSheet
+            )
+        }
+    ) {
+        Scaffold(
+            backgroundColor = MaterialTheme.colors.background,
+            topBar = {
+                ArchiveAppBar(
+                    onBackClick = {
+                        safeClick {
+                            navController.navigateUp()
                         }
                     }
+                )
+            }
+        ) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                if (archiveFiles.isEmpty()) {
+                    ArchiveEmptyBody()
+                } else {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        val noNetworkAvailable = networkStatus is Unavailable
+                        val hasVpnConnection = networkStatus.let { it is Available && it.hasVpn }
+                        val isBannerError = uiViewState.let { it is UiError && !it.isSnack }
 
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(archiveFiles) {
-                            when (it) {
-                                is AvashoProcessedFileView -> AvashoArchiveProcessedFileElement(
-                                    archiveViewProcessed = it,
-                                    isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
-                                    onItemClick = {
-                                        // TODO open bottomSheet
-                                    },
-                                    onIconClick = callback@{ processedItem ->
-                                        if (File(processedItem.filePath).exists()) {
-                                            // TODO open bottomSheet
-                                            return@callback
-                                        }
-
-                                        if (viewModel.isInDownloadQueue(processedItem.id)) {
-                                            viewModel.cancelDownload(processedItem.id)
-                                        } else {
-                                            viewModel.addFileToDownloadQueue(processedItem)
-                                        }
+                        if (noNetworkAvailable || hasVpnConnection || isBannerError) {
+                            if (isThereAnyTrackingOrUploading) {
+                                ErrorBanner(
+                                    errorMessage = if (uiViewState is UiError) {
+                                        (uiViewState as UiError).message
+                                    } else if (hasVpnConnection) {
+                                        stringResource(id = string.msg_vpn_is_connected_error)
+                                    } else {
+                                        stringResource(id = string.msg_internet_disconnected)
                                     }
                                 )
+                            }
+                        }
 
-                                is AvashoTrackingFileView -> {
-                                    AvashoArchiveTrackingFileElement(
-                                        archiveTrackingView = it,
-                                        brush = brush,
-                                        estimateTime = { it.computeFileEstimateProcess() },
-                                        audioImageStatus = Converting
-                                    )
-                                }
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(archiveFiles) {
+                                when (it) {
+                                    is AvashoProcessedFileView -> AvashoArchiveProcessedFileElement(
+                                        archiveViewProcessed = it,
+                                        isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
+                                        onItemClick = callback@{ item ->
+                                            selectedAvashoItemBottomSheet = item
+                                            if (File(item.filePath).exists()) {
+                                                coroutineScope.launch {
+                                                    if (!bottomSheetState.isVisible) {
+                                                        bottomSheetState.show()
+                                                    } else {
+                                                        bottomSheetState.hide()
+                                                    }
+                                                }
+                                                return@callback
+                                            }
 
-                                is AvashoUploadingFileView -> {
-                                    AvashoArchiveUploadingFileElement(
-                                        avashoUploadingFileView = it,
-                                        isNetworkAvailable = !noNetworkAvailable && !hasVpnConnection,
-                                        isErrorState = uiViewState.let { uiStatus ->
-                                            (uiStatus is UiError) && !uiStatus.isSnack
+                                            if (viewModel.isInDownloadQueue(item.id)) {
+                                                viewModel.cancelDownload(item.id)
+                                            } else {
+                                                viewModel.addFileToDownloadQueue(item)
+                                            }
                                         },
-                                        onTryAgainClick = { uploadingItem ->
-                                            viewModel.startUploading(uploadingItem)
+                                        onIconClick = callback@{ processedItem ->
+                                            if (File(processedItem.filePath).exists()) {
+                                                coroutineScope.launch {
+                                                    if (!bottomSheetState.isVisible) {
+                                                        bottomSheetState.show()
+                                                    } else {
+                                                        bottomSheetState.hide()
+                                                    }
+                                                }
+                                                return@callback
+                                            }
+
+                                            if (viewModel.isInDownloadQueue(processedItem.id)) {
+                                                viewModel.cancelDownload(processedItem.id)
+                                            } else {
+                                                viewModel.addFileToDownloadQueue(processedItem)
+                                            }
                                         }
                                     )
+
+                                    is AvashoTrackingFileView -> {
+                                        AvashoArchiveTrackingFileElement(
+                                            archiveTrackingView = it,
+                                            brush = brush,
+                                            estimateTime = { it.computeFileEstimateProcess() },
+                                            audioImageStatus = Converting
+                                        )
+                                    }
+
+                                    is AvashoUploadingFileView -> {
+                                        AvashoArchiveUploadingFileElement(
+                                            avashoUploadingFileView = it,
+                                            isNetworkAvailable = !noNetworkAvailable && !hasVpnConnection,
+                                            isErrorState = uiViewState.let { uiStatus ->
+                                                (uiStatus is UiError) && !uiStatus.isSnack
+                                            },
+                                            onTryAgainClick = { uploadingItem ->
+                                                viewModel.startUploading(uploadingItem)
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                Fab(
+                    modifier = Modifier.align(Alignment.BottomStart),
+                    onMainFabClick = {
+                        navController.navigate(route = AvaShoFileCreationScreen.route)
+                    }
+                )
             }
-            Fab(
-                modifier = Modifier.align(Alignment.BottomStart),
-                onMainFabClick = {
-                    navController.navigate(route = ScreenRoutes.AvaShoFileCreationScreen.route)
-                }
-            )
         }
     }
 }
