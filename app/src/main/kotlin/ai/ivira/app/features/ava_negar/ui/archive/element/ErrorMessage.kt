@@ -1,18 +1,15 @@
 package ai.ivira.app.features.ava_negar.ui.archive.element
 
 import ai.ivira.app.R
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.theme.Color_Red
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 
 @Composable
 fun ErrorMessage(
@@ -35,15 +32,13 @@ fun ErrorMessage(
     )
 }
 
-@Preview(showBackground = true)
+@ViraDarkPreview
 @Composable
 private fun ErrorMessagePreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            ErrorMessage(
-                isNetworkAvailable = false,
-                textAlign = TextAlign.Center
-            )
-        }
+    ViraPreview {
+        ErrorMessage(
+            isNetworkAvailable = false,
+            textAlign = TextAlign.Center
+        )
     }
 }

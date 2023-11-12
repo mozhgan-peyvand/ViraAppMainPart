@@ -1,10 +1,11 @@
 package ai.ivira.app.features.ava_negar.ui.record.sheets
 
 import ai.ivira.app.R
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,13 +18,9 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -75,14 +72,12 @@ fun MicrophoneNotAvailableBottomSheet(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 fun MicrophoneNotAvailableBottomSheetPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            MicrophoneNotAvailableBottomSheet(
-                onDismissClick = {}
-            )
-        }
+    ViraPreview {
+        MicrophoneNotAvailableBottomSheet(
+            onDismissClick = {}
+        )
     }
 }

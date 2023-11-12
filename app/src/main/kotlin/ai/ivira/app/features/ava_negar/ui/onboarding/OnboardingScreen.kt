@@ -2,8 +2,11 @@ package ai.ivira.app.features.ava_negar.ui.onboarding
 
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
+import ai.ivira.app.features.ava_negar.ui.onboarding.OnboardingItem.First
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_Card
@@ -12,7 +15,6 @@ import ai.ivira.app.utils.ui.theme.Color_On_Surface_Variant
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.AutoTextSize
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.animation.AnimatedVisibility
@@ -44,11 +46,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -255,23 +254,18 @@ private fun FinishButton(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 private fun AvaNegarOnboardingScreenPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            AvaNegarOnboardingScreenRoute(rememberNavController())
-        }
+    ViraPreview {
+        AvaNegarOnboardingScreenRoute(rememberNavController())
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 private fun AvaNegarOnBoardingItemBodyPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            val context = LocalContext.current
-            AvaNegarOnBoardingItemBody(onBoardingItem = OnboardingItem.First(context))
-        }
+    ViraPreview {
+        AvaNegarOnBoardingItemBody(onBoardingItem = First(LocalContext.current))
     }
 }

@@ -1,13 +1,16 @@
 package ai.ivira.app.features.ava_negar.ui.archive.sheets
 
 import ai.ivira.app.R
+import ai.ivira.app.R.drawable
+import ai.ivira.app.R.string
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.theme.Color_OutLine
 import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,15 +23,11 @@ import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -141,34 +140,30 @@ private fun ArchiveItemBodyBottomSheet(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 private fun DetailItemBottomSheetPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            DetailItemBottomSheet(
-                text = "aaa",
-                copyItemAction = {},
-                shareItemAction = {},
-                renameItemAction = {},
-                deleteItemAction = {}
-            )
-        }
+    ViraPreview {
+        DetailItemBottomSheet(
+            text = "aaa",
+            copyItemAction = {},
+            shareItemAction = {},
+            renameItemAction = {},
+            deleteItemAction = {}
+        )
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 private fun ArchiveItemBodyBottomSheetPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            ArchiveItemBodyBottomSheet(
-                text = R.string.lbl_share_file,
-                icon = R.drawable.icon_share,
-                onItemClick = {},
-                textColor = Color_Text_2
+    ViraPreview {
+        ArchiveItemBodyBottomSheet(
+            text = string.lbl_share_file,
+            icon = drawable.icon_share,
+            onItemClick = {},
+            textColor = Color_Text_2
 
-            )
-        }
+        )
     }
 }
