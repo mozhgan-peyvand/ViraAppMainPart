@@ -3,9 +3,10 @@ package ai.ivira.app.features.splash
 import ai.ivira.app.R
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Light_blue_50_2
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -24,7 +25,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,11 +39,8 @@ import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -199,12 +196,10 @@ private fun SplashScreen(
     }
 }
 
-@Preview(showBackground = true)
+@ViraDarkPreview
 @Composable
 private fun SplashScreenPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            SplashScreenRoute(rememberNavController())
-        }
+    ViraPreview {
+        SplashScreenRoute(rememberNavController())
     }
 }

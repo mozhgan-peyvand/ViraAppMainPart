@@ -1,12 +1,13 @@
 package ai.ivira.app.features.ava_negar.ui.archive.sheets
 
 import ai.ivira.app.R
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +24,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,12 +36,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -153,16 +150,14 @@ fun RenameFileBottomSheet(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 private fun RenameFileBottomSheetPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            RenameFileBottomSheet(
-                fileName = "FileName",
-                shouldShowKeyBoard = false,
-                reNameAction = {}
-            )
-        }
+    ViraPreview {
+        RenameFileBottomSheet(
+            fileName = "FileName",
+            shouldShowKeyBoard = false,
+            reNameAction = {}
+        )
     }
 }

@@ -2,12 +2,13 @@ package ai.ivira.app.features.ava_negar.ui.archive.element
 
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.archive.model.AvanegarUploadingFileView
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,15 +25,11 @@ import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -172,29 +169,27 @@ fun ArchiveUploadingFileElementColumn(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 private fun ArchiveUploadingFileElementColumn() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            ArchiveUploadingFileElementColumn(
-                archiveUploadingFileView = AvanegarUploadingFileView(
-                    id = "id",
-                    title = "عنوان",
-                    filePath = "filePath",
-                    createdAt = 5456465L,
-                    uploadedPercent = 30f,
-                    fileDuration = 0,
-                    isUploadingFinished = false
-                ),
-                isUploading = false,
-                isNetworkAvailable = true,
-                isErrorState = false,
-                uploadingId = "",
-                onTryAgainClick = {},
-                onMenuClick = {},
-                onItemClick = {}
-            )
-        }
+    ViraPreview {
+        ArchiveUploadingFileElementColumn(
+            archiveUploadingFileView = AvanegarUploadingFileView(
+                id = "id",
+                title = "عنوان",
+                filePath = "filePath",
+                createdAt = 5456465L,
+                uploadedPercent = 30f,
+                fileDuration = 0,
+                isUploadingFinished = false
+            ),
+            isUploading = false,
+            isNetworkAvailable = true,
+            isErrorState = false,
+            uploadingId = "",
+            onTryAgainClick = {},
+            onMenuClick = {},
+            onItemClick = {}
+        )
     }
 }

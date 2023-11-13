@@ -4,13 +4,14 @@ import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
 import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_OutLine
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_White
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.content.Intent
@@ -33,16 +34,12 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection.Rtl
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -195,12 +192,10 @@ fun AboutUsTopAppBar(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 private fun ArchiveEmptyBodyPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides Rtl) {
-            AboutUsScreen(rememberNavController())
-        }
+    ViraPreview {
+        AboutUsScreen(rememberNavController())
     }
 }

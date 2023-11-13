@@ -8,6 +8,8 @@ import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AboutUs
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.shareText
 import ai.ivira.app.utils.ui.theme.Blue_Grey_900_2
@@ -22,7 +24,6 @@ import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Light_blue_50
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.theme.labelMedium
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
@@ -58,7 +59,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,11 +69,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -536,27 +533,22 @@ fun HomeBodyItem(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 private fun HomeBodyPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            HomeBody(
-                PaddingValues(0.dp),
-                onAvanegarClick = {},
-                onItemClick =
-                {}
-            )
-        }
+    ViraPreview {
+        HomeBody(
+            paddingValues = PaddingValues(0.dp),
+            onAvanegarClick = {},
+            onItemClick = {}
+        )
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF070707)
+@ViraDarkPreview
 @Composable
 private fun HomeAppBarPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            HomeAppBar {}
-        }
+    ViraPreview {
+        HomeAppBar(openDrawer = {})
     }
 }

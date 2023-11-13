@@ -3,9 +3,10 @@ package ai.ivira.app.features.ava_negar.ui.archive.sheets
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_White
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,13 +17,9 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -92,14 +89,10 @@ fun ChooseFileContentBottomSheet(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 private fun ChooseFileContentBottomSheetPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            ChooseFileContentBottomSheet(
-                onOpenFile = {}
-            )
-        }
+    ViraPreview {
+        ChooseFileContentBottomSheet(onOpenFile = {})
     }
 }

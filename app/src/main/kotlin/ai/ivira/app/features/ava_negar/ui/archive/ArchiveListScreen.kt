@@ -43,6 +43,8 @@ import ai.ivira.app.utils.ui.hasRecordAudioPermission
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.sharePdf
 import ai.ivira.app.utils.ui.shareTXT
@@ -57,7 +59,6 @@ import ai.ivira.app.utils.ui.theme.Color_Red_800
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Color_White
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.Manifest
@@ -111,7 +112,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -136,12 +136,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -1327,32 +1324,6 @@ private fun Fabs(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF070707)
-@Composable
-private fun ArchiveBodyErrorPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            ArchiveAppBar(
-                modifier = Modifier,
-                onBackClick = {},
-                isGrid = true,
-                onChangeListTypeClick = {},
-                onSearchClick = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF070707)
-@Composable
-private fun ArchiveEmptyBodyPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            ArchiveEmptyBody()
-        }
-    }
-}
-
 @Composable
 private fun gridBrush(): Brush {
     val infiniteTransition = rememberInfiniteTransition(label = "")
@@ -1435,4 +1406,26 @@ fun DecreaseEstimateTime(estimationTime: Int, token: String, callBack: (Int) -> 
 
 private fun gotoRecordAudioScreen(navHostController: NavHostController) {
     navHostController.navigate(ScreenRoutes.AvaNegarVoiceRecording.route)
+}
+
+@ViraDarkPreview
+@Composable
+private fun ArchiveBodyErrorPreview() {
+    ViraPreview {
+        ArchiveAppBar(
+            modifier = Modifier,
+            onBackClick = {},
+            isGrid = true,
+            onChangeListTypeClick = {},
+            onSearchClick = {}
+        )
+    }
+}
+
+@ViraDarkPreview
+@Composable
+private fun ArchiveEmptyBodyPreview() {
+    ViraPreview {
+        ArchiveEmptyBody()
+    }
 }

@@ -16,6 +16,8 @@ import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.formatAsDuration
 import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.hideAndShow
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.showText
@@ -28,7 +30,6 @@ import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Surface_Container_High
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_White
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.os.SystemClock
@@ -78,7 +79,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -930,12 +930,10 @@ private fun stopPlayback(
     }
 }
 
+@ViraDarkPreview
 @Composable
-@Preview(showBackground = true)
 private fun AvaNegarVoiceRecordingScreenPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            AvaNegarVoiceRecordingScreenRoute(rememberNavController())
-        }
+    ViraPreview {
+        AvaNegarVoiceRecordingScreenRoute(rememberNavController())
     }
 }

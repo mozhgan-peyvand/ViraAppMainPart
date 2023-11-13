@@ -5,11 +5,12 @@ import ai.ivira.app.features.ava_negar.ui.archive.DecreaseEstimateTime
 import ai.ivira.app.features.ava_negar.ui.archive.model.AvanegarTrackingFileView
 import ai.ivira.app.utils.ui.computeSecondAndMinute
 import ai.ivira.app.utils.ui.computeTextBySecondAndMinute
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -24,19 +25,15 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -175,26 +172,24 @@ fun ArchiveTrackingFileElementsColumn(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 private fun ArchiveTrackingFileElementsColumnPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            ArchiveTrackingFileElementsColumn(
-                archiveTrackingView = AvanegarTrackingFileView(
-                    token = "sa",
-                    filePath = "Sasas",
-                    title = "عنوان",
-                    createdAt = "Sasasasa",
-                    processEstimation = 0,
-                    lastFailure = false,
-                    bootElapsedTime = 0
-                ),
-                brush = Brush.horizontalGradient(),
-                onItemClick = {},
-                onMenuClick = {},
-                estimateTime = { 0.0 }
-            )
-        }
+    ViraPreview {
+        ArchiveTrackingFileElementsColumn(
+            archiveTrackingView = AvanegarTrackingFileView(
+                token = "sa",
+                filePath = "Sasas",
+                title = "عنوان",
+                createdAt = "Sasasasa",
+                processEstimation = 0,
+                lastFailure = false,
+                bootElapsedTime = 0
+            ),
+            brush = Brush.horizontalGradient(),
+            onItemClick = {},
+            onMenuClick = {},
+            estimateTime = { 0.0 }
+        )
     }
 }

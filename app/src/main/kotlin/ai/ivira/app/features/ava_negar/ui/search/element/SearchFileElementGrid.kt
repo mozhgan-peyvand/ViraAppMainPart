@@ -2,13 +2,14 @@ package ai.ivira.app.features.ava_negar.ui.search.element
 
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
@@ -22,13 +23,9 @@ import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -109,22 +106,20 @@ fun SearchFileElementGrid(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
 private fun SearchFileElementGridPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            SearchFileElementGrid(
-                archiveViewProcessed = AvanegarProcessedFileView(
-                    id = 0,
-                    title = "عنوان",
-                    text = "متن متن متن متن متن متن",
-                    createdAt = "54654",
-                    filePath = "SASAS",
-                    isSeen = true
-                ),
-                onItemClick = { _, _ -> }
-            )
-        }
+    ViraPreview {
+        SearchFileElementGrid(
+            archiveViewProcessed = AvanegarProcessedFileView(
+                id = 0,
+                title = "عنوان",
+                text = "متن متن متن متن متن متن",
+                createdAt = "54654",
+                filePath = "SASAS",
+                isSeen = true
+            ),
+            onItemClick = { _, _ -> }
+        )
     }
 }
