@@ -16,6 +16,8 @@ import ai.ivira.app.utils.data.NetworkStatus.Unavailable
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoFileCreationScreen
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
+import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.BLue_a200_Opacity_40
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
@@ -25,7 +27,6 @@ import ai.ivira.app.utils.ui.theme.Color_Red_800
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Color_White
-import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.activity.compose.BackHandler
@@ -65,12 +66,15 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.SwipeableDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -84,11 +88,8 @@ import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -119,6 +120,15 @@ fun AvashoArchiveListScreen(
     val isThereAnyTrackingOrUploading by viewModel.isThereAnyTrackingOrUploading.collectAsStateWithLifecycle()
     val brush = columnBrush()
     val coroutineScope = rememberCoroutineScope()
+    var progressState by remember { mutableFloatStateOf(0f) }
+    var calculatedProgress by remember { mutableFloatStateOf(0f) }
+    var bottomSheetTargetValue by rememberSaveable {
+        mutableStateOf(HalfExpanded)
+    }
+
+    var bottomSheetCurrentValue by rememberSaveable {
+        mutableStateOf(HalfExpanded)
+    }
 
     var selectedAvashoItemBottomSheet by viewModel.selectedAvashoItemBottomSheet
 
@@ -143,6 +153,55 @@ fun AvashoArchiveListScreen(
             isSkipHalfExpanded = false,
             confirmValueChange = { true }
         )
+    }
+
+    LaunchedEffect(bottomSheetState.targetValue) {
+        snapshotFlow { bottomSheetState.targetValue }
+            .collect { targetValue ->
+                bottomSheetTargetValue = targetValue
+            }
+    }
+
+    LaunchedEffect(bottomSheetState.currentValue) {
+        snapshotFlow { bottomSheetState.currentValue }
+            .collect { currentValue ->
+                bottomSheetCurrentValue = currentValue
+            }
+    }
+
+    LaunchedEffect(bottomSheetState.progress) {
+        snapshotFlow { bottomSheetState.progress }
+            .collect { progress ->
+                progressState = progress
+            }
+    }
+
+    LaunchedEffect(progressState, bottomSheetCurrentValue, bottomSheetTargetValue) {
+        val isGoingToBeHalfFromHidden = bottomSheetCurrentValue == Hidden &&
+            bottomSheetTargetValue == HalfExpanded
+        val isGoingToHiddenFromHalf = bottomSheetCurrentValue == HalfExpanded &&
+            bottomSheetTargetValue == Hidden
+        val isGoingToHiddenFromExpand = bottomSheetCurrentValue == Expanded &&
+            bottomSheetTargetValue == Hidden
+        val isGoingToExpandedFromHafExpanded = bottomSheetCurrentValue == HalfExpanded &&
+            bottomSheetTargetValue == Expanded
+        val isGoingToHalfExpandedFromExpanded = bottomSheetCurrentValue == Expanded &&
+            bottomSheetTargetValue == HalfExpanded
+
+        calculatedProgress =
+            if (isGoingToBeHalfFromHidden || isGoingToHiddenFromHalf || isGoingToHiddenFromExpand) {
+                0f
+            } else if (isGoingToExpandedFromHafExpanded) {
+                progressState
+            } else if (isGoingToHalfExpandedFromExpanded) {
+                1 - progressState
+            } else if (bottomSheetCurrentValue == HalfExpanded) {
+                0f
+            } else if (bottomSheetCurrentValue == Expanded) {
+                1f
+            } else {
+                0f
+            }
     }
 
     BackHandler(bottomSheetState.isVisible) {
@@ -182,7 +241,7 @@ fun AvashoArchiveListScreen(
         modifier = Modifier.fillMaxSize(),
         sheetContent = {
             AvashoDetailBottomSheet(
-                modifier = Modifier,
+                progress = calculatedProgress,
                 collapseToolbarAction = {
                     coroutineScope.launch {
                         bottomSheetState.hide()
@@ -512,12 +571,10 @@ private fun columnBrush(): Brush {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF070707)
+@ViraDarkPreview
 @Composable
 private fun AvashoArchiveListScreenPreview() {
-    ViraTheme {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-            AvashoArchiveListScreen(navController = rememberNavController())
-        }
+    ViraPreview {
+        AvashoArchiveListScreen(navController = rememberNavController())
     }
 }

@@ -192,6 +192,8 @@
     <string name="lbl_download">دانلود:</string>
     <string name="lbl_show_minute">دقیقه</string>
     <string name="lbl_show_second">ثانیه</string>
+    <string name="lbl_move_ten_sec_back">10 ثانیه به عقب</string>
+    <string name="lbl_move_ten_sec_forward">10 ثانیه به جلو</string>
     <string name="lbl_wait_for_end_process">در انتظار اتمام پردازش</string>
     <string name="lbl_avasho">آواشو</string>
     <string name="lbl_dose_not_exist_any_file">فایلی در آرشیو خود ندارید</string>
