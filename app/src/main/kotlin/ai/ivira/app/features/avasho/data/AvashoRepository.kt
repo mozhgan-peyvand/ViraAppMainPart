@@ -40,8 +40,8 @@ class AvashoRepository @Inject constructor(
                     avashoLocalDataSource.insertProcessedSpeechToDataBase(
                         AvashoProcessedFileEntity(
                             id = 0,
-                            checksum = result.data.data.checksum,
-                            fileUrl = "https://${result.data.data.filePath}",
+                            checksum = result.data.checksum,
+                            fileUrl = "https://${result.data.filePath}",
                             fileName = fileName,
                             filePath = "",
                             text = text,
@@ -77,8 +77,8 @@ class AvashoRepository @Inject constructor(
                     avashoLocalDataSource.deleteUploadingFile(id)
                     avashoLocalDataSource.insertTrackingSpeechToDatabase(
                         AvashoTrackingFileEntity(
-                            token = result.data.data.token,
-                            processEstimation = result.data.data.estimatedProcessTime
+                            token = result.data.token,
+                            processEstimation = result.data.estimatedProcessTime
                                 .filter { it.isDigit() }
                                 .toInt(),
                             createdAt = PersianDate().time,

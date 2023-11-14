@@ -3,7 +3,6 @@ package ai.ivira.app.features.avasho.data
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechItemLongNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechItemNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechLongRequestNetwork
-import ai.ivira.app.features.avasho.data.entity.TextToSpeechNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechRequestNetwork
 import ai.ivira.app.utils.common.file.DownloadFileRequest
 import ai.ivira.app.utils.data.api_result.ApiResult
@@ -16,11 +15,16 @@ class AvashoRemoteDataSource @Inject constructor(
     private val service: AvashoService,
     private val downloadFileRequest: DownloadFileRequest
 ) {
+    init {
+        System.loadLibrary("vira")
+    }
+
     suspend fun getSpeechFile(
         text: String,
         speakerType: String
-    ): ApiResult<TextToSpeechNetwork<TextToSpeechItemNetwork>> {
+    ): ApiResult<TextToSpeechItemNetwork> {
         val result = service.getTextToSpeech(
+            token = sak(),
             getSpeechBody = TextToSpeechRequestNetwork(
                 data = text,
                 speaker = speakerType
@@ -35,8 +39,9 @@ class AvashoRemoteDataSource @Inject constructor(
     suspend fun getSpeechFileLong(
         text: String,
         speakerType: String
-    ): ApiResult<TextToSpeechNetwork<TextToSpeechItemLongNetwork>> {
+    ): ApiResult<TextToSpeechItemLongNetwork> {
         val result = service.getTextToSpeechLong(
+            token = sak(),
             getSpeechBody = TextToSpeechLongRequestNetwork(
                 data = text,
                 speaker = speakerType
@@ -55,4 +60,6 @@ class AvashoRemoteDataSource @Inject constructor(
     ) {
         downloadFileRequest.downloadFile(url, file, progress)
     }
+
+    private external fun sak(): String
 }

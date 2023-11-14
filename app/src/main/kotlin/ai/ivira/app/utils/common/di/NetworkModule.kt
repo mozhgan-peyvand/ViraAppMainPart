@@ -1,7 +1,7 @@
 package ai.ivira.app.utils.common.di
 
 import ai.ivira.app.BuildConfig
-import ai.ivira.app.utils.data.HeaderInterceptor
+import ai.ivira.app.utils.data.InvalidTokenInterceptor
 import ai.ivira.app.utils.data.api_result.ApiResultCallAdapterFactory
 import com.squareup.moshi.Moshi
 import dagger.Module
@@ -42,11 +42,11 @@ object NetworkModule {
     @Provides
     fun provideOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
-        headerInterceptor: HeaderInterceptor
+        invalidTokenInterceptor: InvalidTokenInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addNetworkInterceptor(loggingInterceptor)
-            .addInterceptor(headerInterceptor)
+            .addInterceptor(invalidTokenInterceptor)
             .readTimeout(READ_WRITE_TIMEOUT, TimeUnit.SECONDS)
             .writeTimeout(READ_WRITE_TIMEOUT, TimeUnit.SECONDS)
             .connectTimeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS)

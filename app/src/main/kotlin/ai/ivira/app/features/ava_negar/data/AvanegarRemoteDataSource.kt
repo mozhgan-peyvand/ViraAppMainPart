@@ -11,11 +11,16 @@ import javax.inject.Inject
 class AvanegarRemoteDataSource @Inject constructor(
     private val avanegarService: AvanegarService
 ) {
+    init {
+        System.loadLibrary("vira")
+    }
+
     suspend fun audioToTextBelowSixtySecond(
         multiPartFile: MultipartBody.Part,
         language: RequestBody
     ): ApiResult<String> {
         val result = avanegarService.audioToTextBelowSixtySecond(
+            token = nak(),
             file = multiPartFile,
             language = language
         )
@@ -31,6 +36,7 @@ class AvanegarRemoteDataSource @Inject constructor(
         language: RequestBody
     ): ApiResult<LargeFileDataNetwork> {
         val result = avanegarService.audioToTextAboveSixtySecond(
+            token = nak(),
             file = multiPartFile,
             estimation = true,
             language = language
@@ -46,6 +52,7 @@ class AvanegarRemoteDataSource @Inject constructor(
         fileToken: String
     ): ApiResult<String> {
         val result = avanegarService.trackLargeFileResult(
+            token = nak(),
             fileToken = fileToken
         )
 
@@ -54,4 +61,6 @@ class AvanegarRemoteDataSource @Inject constructor(
             is Error -> Error(result.error)
         }
     }
+
+    private external fun nak(): String
 }
