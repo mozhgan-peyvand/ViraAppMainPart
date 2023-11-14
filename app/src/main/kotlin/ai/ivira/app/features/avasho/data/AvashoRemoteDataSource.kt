@@ -57,8 +57,13 @@ class AvashoRemoteDataSource @Inject constructor(
         url: String,
         file: File,
         progress: (byteReceived: Long, totalSize: Long) -> Unit
-    ) {
-        downloadFileRequest.downloadFile(url, file, progress)
+    ): ApiResult<Unit> {
+        return when (
+            val result = downloadFileRequest.downloadFile(url, file, progress)
+        ) {
+            is Success -> Success(Unit)
+            is Error -> Error(result.error)
+        }
     }
 
     private external fun sak(): String

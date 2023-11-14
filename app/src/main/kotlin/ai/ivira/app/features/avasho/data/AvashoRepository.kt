@@ -12,13 +12,17 @@ import ai.ivira.app.utils.data.api_result.toAppResult
 import android.os.SystemClock
 import saman.zamani.persiandate.PersianDate
 import javax.inject.Inject
-const val Base_Url = "https://partai.gw.isahab.ir"
+
 class AvashoRepository @Inject constructor(
     private val avashoRemoteDataSource: AvashoRemoteDataSource,
     private val avashoLocalDataSource: AvashoLocalDataSource,
     private val fileOperationHelper: FileOperationHelper,
     private val networkHandler: NetworkHandler
 ) {
+    init {
+        System.loadLibrary("vira")
+    }
+
     fun getAllArchiveFiles() =
         avashoLocalDataSource.getAllArchiveFiles()
 
@@ -41,7 +45,7 @@ class AvashoRepository @Inject constructor(
                         AvashoProcessedFileEntity(
                             id = 0,
                             checksum = result.data.checksum,
-                            fileUrl = Base_Url + result.data.filePath,
+                            fileUrl = "${bu()}${result.data.filePath}",
                             fileName = fileName,
                             filePath = "",
                             text = text,
@@ -107,16 +111,28 @@ class AvashoRepository @Inject constructor(
         url: String,
         fileName: String,
         progress: (byteReceived: Long, totalSize: Long) -> Unit
-    ) {
-        val file = fileOperationHelper.getFile(
-            fileName = fileName,
-            path = AVASHO_FOLDER_PATH
-        )
-        avashoRemoteDataSource.downloadFile(url, file, progress)
+    ): AppResult<Unit> {
+        return if (networkHandler.hasNetworkConnection()) {
+            val file = fileOperationHelper.getFile(
+                fileName = fileName,
+                path = AVASHO_FOLDER_PATH
+            )
 
-        if (file.exists()) {
-            avashoLocalDataSource.updateFilePath(id, file.absolutePath)
-            avashoLocalDataSource.updateDownloadStatus(id, false)
+            val result = avashoRemoteDataSource.downloadFile(url, file, progress).toAppResult()
+
+            if (file.exists()) {
+                avashoLocalDataSource.updateFilePath(id, file.absolutePath)
+                avashoLocalDataSource.updateDownloadStatus(id, false)
+            }
+
+            when (result) {
+                is AppResult.Success -> AppResult.Success(Unit)
+                is AppResult.Error -> AppResult.Error(result.error)
+            }
+        } else {
+            AppResult.Error(NetworkConnectionException())
         }
     }
+
+    private external fun bu(): String
 }

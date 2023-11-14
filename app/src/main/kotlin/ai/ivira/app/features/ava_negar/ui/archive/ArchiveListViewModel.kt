@@ -502,6 +502,7 @@ class ArchiveListViewModel @Inject constructor(
         }
     }
 
+    // handleResultState Duplicate 1
     private suspend fun <T> handleResultState(
         item: AvanegarUploadingFileView,
         result: AppResult<T>,

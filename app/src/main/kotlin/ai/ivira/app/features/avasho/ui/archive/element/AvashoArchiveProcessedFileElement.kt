@@ -5,6 +5,7 @@ import ai.ivira.app.R.string
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Cancel
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Download
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Play
+import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Retry
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.ui.convertByteToMB
@@ -12,6 +13,7 @@ import ai.ivira.app.utils.ui.millisecondsToTime
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
+import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.ViraTheme
@@ -25,7 +27,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Card
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -43,9 +44,10 @@ import java.io.File
 @Composable
 fun AvashoArchiveProcessedFileElement(
     archiveViewProcessed: AvashoProcessedFileView,
+    isNetworkAvailable: Boolean,
+    isDownloadFailure: Boolean,
     isInDownloadQueue: Boolean,
-    onItemClick: (AvashoProcessedFileView) -> Unit,
-    onIconClick: (AvashoProcessedFileView) -> Unit
+    onItemClick: (AvashoProcessedFileView) -> Unit
 ) {
     val isDownloaded = File(archiveViewProcessed.filePath).exists()
 
@@ -63,19 +65,19 @@ fun AvashoArchiveProcessedFileElement(
             verticalAlignment = CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            IconButton(onClick = { safeClick { onIconClick(archiveViewProcessed) } }) {
-                AudioImage(
-                    audioImageStatus = if (isDownloaded) {
-                        Play // play or pause
-                    } else if (isInDownloadQueue) {
-                        Cancel
-                    } else {
-                        Download
-                    },
-                    isInDownloadQueue = isInDownloadQueue,
-                    progress = archiveViewProcessed.downloadingPercent
-                )
-            }
+            AudioImage(
+                audioImageStatus = if (isDownloaded) {
+                    Play // play or pause
+                } else if (isInDownloadQueue) {
+                    Cancel
+                } else if (isDownloadFailure) {
+                    Retry
+                } else {
+                    Download
+                },
+                isInDownloadQueue = isInDownloadQueue,
+                progress = archiveViewProcessed.downloadingPercent
+            )
 
             Column(
                 modifier = Modifier.weight(1f)
@@ -87,69 +89,97 @@ fun AvashoArchiveProcessedFileElement(
                     text = archiveViewProcessed.fileName
                 )
 
-                if (!isDownloaded) {
-                    if (
-                        archiveViewProcessed.downloadingPercent != 0f &&
-                        archiveViewProcessed.downloadingPercent != -1f
+                if (!isNetworkAvailable && isDownloadFailure) {
+                    Spacer(modifier = Modifier.size(8.dp))
+
+                    Text(
+                        text = stringResource(id = string.msg_internet_connection_problem),
+                        style = MaterialTheme.typography.caption,
+                        color = Color_Red
+                    )
+                } else {
+                    if (!isDownloaded) {
+                        if (
+                            archiveViewProcessed.downloadingPercent != 0f &&
+                            archiveViewProcessed.downloadingPercent != -1f
+                        ) {
+                            Text(
+                                // fixme set this correctly
+                                text = buildString {
+                                    append(stringResource(id = string.lbl_downloading_file))
+                                    append(" ")
+                                    append("(")
+                                    append(
+                                        convertByteToMB(
+                                            archiveViewProcessed.downloadedBytes?.toDouble()
+                                                .orZero()
+                                        )
+                                    )
+                                    append("/")
+
+                                    append(
+                                        convertByteToMB(
+                                            archiveViewProcessed.fileSize?.toDouble().orZero()
+                                        )
+                                    )
+                                    append(stringResource(id = string.lbl_mb))
+                                    append(")")
+                                },
+                                style = MaterialTheme.typography.caption,
+                                color = Color_Text_2
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(id = string.lbl_ready_for_download),
+                                style = MaterialTheme.typography.caption,
+                                color = Color_Text_2
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.size(8.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            // fixme set this correctly
-                            text = buildString {
-                                append(stringResource(id = string.lbl_downloading_file))
-                                append(" ")
-                                append("(")
-                                append(
-                                    convertByteToMB(
-                                        archiveViewProcessed.downloadedBytes?.toDouble().orZero()
+                        if (isDownloaded) {
+                            Text(
+                                color = Color_Text_2,
+                                style = MaterialTheme.typography.caption,
+                                text = buildString {
+                                    append(
+                                        convertByteToMB(
+                                            archiveViewProcessed.fileSize?.toDouble().orZero()
+                                        )
                                     )
-                                )
-                                append("/")
+                                    append(stringResource(id = string.lbl_mb))
+                                }
+                            )
+                        }
 
-                                append(
-                                    convertByteToMB(
-                                        archiveViewProcessed.fileSize?.toDouble().orZero()
-                                    )
+                        if (isInDownloadQueue || isDownloaded) {
+                            Row {
+                                ViraIcon(
+                                    drawable = R.drawable.ic_time,
+                                    contentDescription = null,
+                                    modifier = Modifier.align(alignment = CenterVertically),
+                                    tint = Color_Primary_300
                                 )
-                                append(stringResource(id = string.lbl_mb))
-                                append(")")
-                            },
-                            style = MaterialTheme.typography.caption,
-                            color = Color_Text_2
-                        )
-                    } else {
-                        Text(
-                            text = stringResource(id = string.lbl_ready_for_download),
-                            style = MaterialTheme.typography.caption,
-                            color = Color_Text_2
-                        )
-                    }
-                }
 
-                Spacer(modifier = Modifier.size(8.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
 
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (isDownloaded) {
-                        Text(
-                            color = Color_Text_2,
-                            style = MaterialTheme.typography.caption,
-                            text = buildString {
-                                append(
-                                    convertByteToMB(
-                                        archiveViewProcessed.fileSize?.toDouble().orZero()
-                                    )
+                                Text(
+                                    color = Color_Text_3,
+                                    style = MaterialTheme.typography.caption,
+                                    text = millisecondsToTime(archiveViewProcessed.fileDuration)
                                 )
-                                append(stringResource(id = string.lbl_mb))
                             }
-                        )
-                    }
+                        }
 
-                    if (isInDownloadQueue || isDownloaded) {
                         Row {
                             ViraIcon(
-                                drawable = R.drawable.ic_time,
+                                drawable = R.drawable.ic_calendar,
                                 contentDescription = null,
                                 modifier = Modifier.align(alignment = CenterVertically),
                                 tint = Color_Primary_300
@@ -160,32 +190,15 @@ fun AvashoArchiveProcessedFileElement(
                             Text(
                                 color = Color_Text_3,
                                 style = MaterialTheme.typography.caption,
-                                text = millisecondsToTime(archiveViewProcessed.fileDuration)
+                                text = archiveViewProcessed.createdAt
                             )
+
+                            Spacer(modifier = Modifier.size(8.dp))
                         }
+
+                        // fixme remove it after menu implemented
+                        Spacer(modifier = Modifier.size(4.dp))
                     }
-
-                    Row {
-                        ViraIcon(
-                            drawable = R.drawable.ic_calendar,
-                            contentDescription = null,
-                            modifier = Modifier.align(alignment = CenterVertically),
-                            tint = Color_Primary_300
-                        )
-
-                        Spacer(modifier = Modifier.width(4.dp))
-
-                        Text(
-                            color = Color_Text_3,
-                            style = MaterialTheme.typography.caption,
-                            text = archiveViewProcessed.createdAt
-                        )
-
-                        Spacer(modifier = Modifier.size(8.dp))
-                    }
-
-                    // fixme remove it after menu implemented
-                    Spacer(modifier = Modifier.size(4.dp))
                 }
             }
         }
@@ -211,9 +224,10 @@ private fun AvashoArchiveProcessedFileElementPreview() {
                     isDownloading = false,
                     fileDuration = 0L
                 ),
+                isNetworkAvailable = true,
+                isDownloadFailure = false,
                 isInDownloadQueue = true,
-                onItemClick = {},
-                onIconClick = {}
+                onItemClick = {}
             )
         }
     }

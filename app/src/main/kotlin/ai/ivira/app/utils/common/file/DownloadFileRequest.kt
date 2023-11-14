@@ -1,6 +1,10 @@
 package ai.ivira.app.utils.common.file
 
 import ai.ivira.app.utils.common.orZero
+import ai.ivira.app.utils.data.api_result.ApiError.EmptyBodyError
+import ai.ivira.app.utils.data.api_result.ApiResult
+import ai.ivira.app.utils.data.api_result.ApiResult.Error
+import ai.ivira.app.utils.data.api_result.ApiResult.Success
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.prepareGet
@@ -8,6 +12,7 @@ import io.ktor.http.contentLength
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.core.isEmpty
 import io.ktor.utils.io.core.readBytes
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,10 +25,10 @@ class DownloadFileRequest @Inject constructor(
         url: String,
         file: File,
         progress: (byteReceived: Long, totalSize: Long) -> Unit
-    ) {
-        var channel: ByteReadChannel? = null
+    ): ApiResult<Unit> {
+        var channel: ByteReadChannel?
 
-        try {
+        return try {
             httpClient.prepareGet(url).execute { httpResponse ->
                 channel = httpResponse.body()
                 channel?.let {
@@ -37,10 +42,13 @@ class DownloadFileRequest @Inject constructor(
                     }
                 }
             }
-        } catch (e: Exception) {
-            channel?.closedCause
 
+            Success(Unit)
+        } catch (e: Exception) {
+            channel = null
+            Timber.d(e)
             if (file.exists()) file.delete()
+            Error(EmptyBodyError)
         }
     }
 }

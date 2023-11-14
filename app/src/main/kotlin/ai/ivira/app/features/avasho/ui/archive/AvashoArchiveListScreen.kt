@@ -9,6 +9,7 @@ import ai.ivira.app.features.avasho.ui.archive.element.AvashoArchiveUploadingFil
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoTrackingFileView
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoUploadingFileView
+import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.FailureDownload
 import ai.ivira.app.features.avasho.ui.detail.AvashoDetailBottomSheet
 import ai.ivira.app.features.avasho.ui.file_creation.SpeechResult
 import ai.ivira.app.utils.data.NetworkStatus.Available
@@ -119,7 +120,8 @@ fun AvashoArchiveListScreen(
     val archiveFiles by viewModel.allArchiveFiles.collectAsStateWithLifecycle(listOf())
     val networkStatus by viewModel.networkStatus.collectAsStateWithLifecycle()
     val uiViewState by viewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
-    val isThereAnyTrackingOrUploading by viewModel.isThereAnyTrackingOrUploading.collectAsStateWithLifecycle()
+    val downloadState by viewModel.downloadStatus.collectAsStateWithLifecycle()
+    val downloadFailureList by viewModel.downloadFailureList.collectAsStateWithLifecycle()
     val brush = columnBrush()
     val coroutineScope = rememberCoroutineScope()
     var progressState by remember { mutableFloatStateOf(0f) }
@@ -281,10 +283,12 @@ fun AvashoArchiveListScreen(
                     Column(modifier = Modifier.fillMaxSize()) {
                         val noNetworkAvailable = networkStatus is Unavailable
                         val hasVpnConnection = networkStatus.let { it is Available && it.hasVpn }
+                        val isNetworkAvailableWithoutVpn = networkStatus.let { it is Available && !it.hasVpn }
                         val isBannerError = uiViewState.let { it is UiError && !it.isSnack }
+                        val isFailureDownload = downloadState is FailureDownload
 
-                        if (noNetworkAvailable || hasVpnConnection || isBannerError) {
-                            if (isThereAnyTrackingOrUploading) {
+                        if (noNetworkAvailable || hasVpnConnection || isBannerError || isFailureDownload) {
+                            if (archiveFiles.isNotEmpty()) {
                                 ErrorBanner(
                                     errorMessage = if (uiViewState is UiError) {
                                         (uiViewState as UiError).message
@@ -306,7 +310,9 @@ fun AvashoArchiveListScreen(
                                 when (it) {
                                     is AvashoProcessedFileView -> AvashoArchiveProcessedFileElement(
                                         archiveViewProcessed = it,
+                                        isDownloadFailure = downloadFailureList.contains(it.id),
                                         isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
+                                        isNetworkAvailable = isNetworkAvailableWithoutVpn,
                                         onItemClick = callback@{ item ->
                                             selectedAvashoItemBottomSheet = item
                                             if (File(item.filePath).exists()) {
@@ -324,25 +330,6 @@ fun AvashoArchiveListScreen(
                                                 viewModel.cancelDownload(item.id)
                                             } else {
                                                 viewModel.addFileToDownloadQueue(item)
-                                            }
-                                        },
-                                        onIconClick = callback@{ processedItem ->
-                                            selectedAvashoItemBottomSheet = processedItem
-                                            if (File(processedItem.filePath).exists()) {
-                                                coroutineScope.launch {
-                                                    if (!bottomSheetState.isVisible) {
-                                                        bottomSheetState.show()
-                                                    } else {
-                                                        bottomSheetState.hide()
-                                                    }
-                                                }
-                                                return@callback
-                                            }
-
-                                            if (viewModel.isInDownloadQueue(processedItem.id)) {
-                                                viewModel.cancelDownload(processedItem.id)
-                                            } else {
-                                                viewModel.addFileToDownloadQueue(processedItem)
                                             }
                                         }
                                     )
