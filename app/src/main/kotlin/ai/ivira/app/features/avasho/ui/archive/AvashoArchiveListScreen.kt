@@ -254,6 +254,11 @@ fun AvashoArchiveListScreen(
                             bottomSheetState.hide()
                         }
                     },
+                    halfToolbarAction = {
+                        coroutineScope.launch {
+                            bottomSheetState.show()
+                        }
+                    },
                     avashoProcessedItem = processItem,
                     isBottomSheetExpanded = bottomSheetState.isVisible
                 )

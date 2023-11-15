@@ -27,6 +27,7 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ScrollState
@@ -175,9 +176,14 @@ fun AvashoFileCreationScreen(
     val fileName = rememberSaveable { mutableStateOf("") }
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = Hidden,
-        skipHalfExpanded = true,
-        confirmValueChange = { false }
+        skipHalfExpanded = true
     )
+
+    BackHandler(bottomSheetState.isVisible) {
+        coroutineScope.launch {
+            bottomSheetState.hide()
+        }
+    }
 
     Scaffold(
         backgroundColor = Color_BG,
@@ -192,7 +198,7 @@ fun AvashoFileCreationScreen(
             sheetContent = {
                 when (selectedSheet) {
                     OpenForChooseSpeaker -> {
-                        SelectSpeachBottomSheet(
+                        SelectSpeakerBottomSheet(
                             fileName = fileName.value,
                             uploadFileAction = { nameFile, selectedItem ->
                                 navController.previousBackStackEntry

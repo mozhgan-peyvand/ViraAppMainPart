@@ -35,7 +35,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.IconButton
@@ -44,6 +43,7 @@ import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -71,6 +71,7 @@ import java.io.File
 fun AvashoDetailBottomSheet(
     animationProgress: Float,
     collapseToolbarAction: () -> Unit,
+    halfToolbarAction: () -> Unit,
     avashoProcessedItem: AvashoProcessedFileView,
     isBottomSheetExpanded: Boolean,
     avashoDetailsViewModel: AvashoDetailsBottomSheetViewModel = hiltViewModel()
@@ -98,6 +99,7 @@ fun AvashoDetailBottomSheet(
             CollapseStateToolbar(
                 progress = animationProgress,
                 collapseToolbarAction = { collapseToolbarAction() },
+                halfToolbarAction = { halfToolbarAction() },
                 fileName = avashoProcessedItem.fileName
             )
 
@@ -143,6 +145,7 @@ private fun CollapseStateToolbar(
     progress: Float,
     modifier: Modifier = Modifier,
     collapseToolbarAction: () -> Unit,
+    halfToolbarAction: () -> Unit,
     fileName: String
 ) {
     val size by remember(progress) {
@@ -187,7 +190,7 @@ private fun CollapseStateToolbar(
                     .padding(horizontal = 8.dp)
                     .size(48.dp * progress),
                 onClick = {
-                    collapseToolbarAction()
+                    halfToolbarAction()
                 }
             ) {
                 ViraIcon(
@@ -399,7 +402,7 @@ fun BottomBar(
         Spacer(modifier = Modifier.height(4.dp))
 
         Row(modifier = modifier.fillMaxWidth()) {
-            Button(
+            TextButton(
                 modifier = Modifier
                     .weight(1f)
                     .height(52.dp),
@@ -439,7 +442,7 @@ fun BottomBar(
 
             Spacer(modifier = Modifier.size(16.dp))
 
-            Button(
+            TextButton(
                 modifier = Modifier
                     .weight(1f)
                     .height(52.dp),
@@ -489,6 +492,7 @@ private fun AvashoDetailBottomSheetPreview() {
         AvashoDetailBottomSheet(
             animationProgress = 0f,
             collapseToolbarAction = {},
+            halfToolbarAction = {},
             avashoProcessedItem = AvashoProcessedFileView(
                 0,
                 "",
