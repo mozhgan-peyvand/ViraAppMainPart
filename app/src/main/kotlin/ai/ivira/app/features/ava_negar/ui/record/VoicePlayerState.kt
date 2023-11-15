@@ -53,18 +53,20 @@ class VoicePlayerState(
         }
     }
 
-    fun tryInitWith(file: File?) {
-        if (file == null || !file.exists()) return
+    fun tryInitWith(file: File?, forcePrepare: Boolean = false): Boolean {
+        if (file == null || !file.exists()) return false
 
-        if (file.absolutePath != currentFile?.absolutePath) {
-            if (currentFile != null) {
-                mediaPlayer.stop()
-                mediaPlayer.reset()
+        return kotlin.runCatching {
+            if (forcePrepare || file.absolutePath != currentFile?.absolutePath) {
+                if (currentFile != null) {
+                    mediaPlayer.stop()
+                    mediaPlayer.reset()
+                }
+                currentFile = file
+                mediaPlayer.setDataSource(application.applicationContext, file.toUri())
+                mediaPlayer.prepare()
             }
-            currentFile = file
-            mediaPlayer.setDataSource(application.applicationContext, file.toUri())
-            mediaPlayer.prepare()
-        }
+        }.isSuccess
     }
 
     fun startPlaying() {
@@ -112,10 +114,41 @@ class VoicePlayerState(
         playJob?.cancel()
         progress = 0f
         isPlaying = false
+        remainingTime = duration
     }
 
     fun clear() {
         mediaPlayer.stop()
         mediaPlayer.release()
+    }
+
+    fun stopMediaPlayer() {
+        kotlin.runCatching {
+            mediaPlayer.stop()
+        }
+    }
+
+    fun seekForward() {
+        val newTime = (currentPosition + SEEK_TIME_MS).coerceAtMost(duration)
+        remainingTime = (duration - newTime).coerceAtLeast(0)
+        if (remainingTime <= 0) {
+            mediaPlayer.seekTo(0)
+            mediaPlayer.pause()
+            reset()
+        } else {
+            mediaPlayer.seekTo(newTime)
+            progress = newTime / 1000.0f
+        }
+    }
+
+    fun seekBackward() {
+        val newTime = (currentPosition - SEEK_TIME_MS).coerceAtLeast(0)
+        remainingTime = (duration - newTime).coerceIn(0, duration)
+        mediaPlayer.seekTo(newTime)
+        progress = newTime / 1000.0f
+    }
+
+    companion object {
+        const val SEEK_TIME_MS = 10000
     }
 }

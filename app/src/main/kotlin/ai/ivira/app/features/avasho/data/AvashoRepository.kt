@@ -12,7 +12,7 @@ import ai.ivira.app.utils.data.api_result.toAppResult
 import android.os.SystemClock
 import saman.zamani.persiandate.PersianDate
 import javax.inject.Inject
-
+const val Base_Url = "https://partai.gw.isahab.ir"
 class AvashoRepository @Inject constructor(
     private val avashoRemoteDataSource: AvashoRemoteDataSource,
     private val avashoLocalDataSource: AvashoLocalDataSource,
@@ -41,7 +41,7 @@ class AvashoRepository @Inject constructor(
                         AvashoProcessedFileEntity(
                             id = 0,
                             checksum = result.data.checksum,
-                            fileUrl = "https://${result.data.filePath}",
+                            fileUrl = Base_Url + result.data.filePath,
                             fileName = fileName,
                             filePath = "",
                             text = text,

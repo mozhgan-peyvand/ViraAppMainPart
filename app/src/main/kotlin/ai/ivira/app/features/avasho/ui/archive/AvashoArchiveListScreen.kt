@@ -63,6 +63,7 @@ import androidx.compose.material.ModalBottomSheetValue.Expanded
 import androidx.compose.material.ModalBottomSheetValue.HalfExpanded
 import androidx.compose.material.ModalBottomSheetValue.Hidden
 import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.SwipeableDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -87,6 +88,7 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -129,6 +131,8 @@ fun AvashoArchiveListScreen(
     var bottomSheetCurrentValue by rememberSaveable {
         mutableStateOf(HalfExpanded)
     }
+    val snackBarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     var selectedAvashoItemBottomSheet by viewModel.selectedAvashoItemBottomSheet
 
@@ -240,15 +244,18 @@ fun AvashoArchiveListScreen(
         sheetState = bottomSheetState,
         modifier = Modifier.fillMaxSize(),
         sheetContent = {
-            AvashoDetailBottomSheet(
-                progress = calculatedProgress,
-                collapseToolbarAction = {
-                    coroutineScope.launch {
-                        bottomSheetState.hide()
-                    }
-                },
-                avashoProcessedItem = selectedAvashoItemBottomSheet
-            )
+            selectedAvashoItemBottomSheet?.let { processItem ->
+                AvashoDetailBottomSheet(
+                    animationProgress = calculatedProgress,
+                    collapseToolbarAction = {
+                        coroutineScope.launch {
+                            bottomSheetState.hide()
+                        }
+                    },
+                    avashoProcessedItem = processItem,
+                    isBottomSheetExpanded = bottomSheetState.isVisible
+                )
+            }
         }
     ) {
         Scaffold(
@@ -320,6 +327,7 @@ fun AvashoArchiveListScreen(
                                             }
                                         },
                                         onIconClick = callback@{ processedItem ->
+                                            selectedAvashoItemBottomSheet = processedItem
                                             if (File(processedItem.filePath).exists()) {
                                                 coroutineScope.launch {
                                                     if (!bottomSheetState.isVisible) {

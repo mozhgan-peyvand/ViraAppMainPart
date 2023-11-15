@@ -2,6 +2,7 @@ package ai.ivira.app.features.avasho.ui.detail
 
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
+import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
 import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
@@ -45,11 +46,12 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
@@ -62,43 +64,72 @@ import androidx.compose.ui.text.lerp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import java.io.File
 
 @Composable
 fun AvashoDetailBottomSheet(
-    progress: Float,
+    animationProgress: Float,
     collapseToolbarAction: () -> Unit,
-    modifier: Modifier = Modifier,
-    avashoProcessedItem: AvashoProcessedFileView? = null
+    avashoProcessedItem: AvashoProcessedFileView,
+    isBottomSheetExpanded: Boolean,
+    avashoDetailsViewModel: AvashoDetailsBottomSheetViewModel = hiltViewModel()
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
+    val playerState by avashoDetailsViewModel::playerState
+
+    LaunchedEffect(
+        isBottomSheetExpanded
+    ) {
+        val emitSuccess = playerState.tryInitWith(File(avashoProcessedItem.filePath), true)
+        if (emitSuccess) {
+            if (isBottomSheetExpanded) {
+                playerState.startPlaying()
+            } else {
+                playerState.stopMediaPlayer()
+                playerState.reset()
+            }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             CollapseStateToolbar(
-                progress = progress,
+                progress = animationProgress,
                 collapseToolbarAction = { collapseToolbarAction() },
-                fileName = avashoProcessedItem?.fileName.orEmpty()
+                fileName = avashoProcessedItem.fileName
             )
 
             CollapseStatePlayer(
-                fileDuration = avashoProcessedItem?.fileDuration ?: 0,
-                progress = progress
+                onProgressChanged = {
+                    playerState.seekTo(it)
+                },
+                animationProgress = animationProgress,
+                onPlayingChanged = {
+                    if (!playerState.isPlaying) {
+                        playerState.startPlaying()
+                    } else {
+                        playerState.stopPlaying()
+                    }
+                },
+                playerState = playerState
             )
 
             Divider(modifier = Modifier.height(1.dp), color = Color_Card_Stroke)
 
             Text(
-                text = avashoProcessedItem?.text.orEmpty(),
+                text = avashoProcessedItem.text,
                 style = MaterialTheme.typography.body2,
                 color = Color_Text_2,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
             )
         }
 
-        if (progress < 1.0f && progress > 0f) {
+        if (animationProgress < 1.0f && animationProgress > 0f) {
             Surface(
                 color = Color.Transparent,
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .pointerInput(Unit) { },
                 content = {}
@@ -208,12 +239,14 @@ private fun CollapseStateToolbar(
 
 @Composable
 private fun CollapseStatePlayer(
-    fileDuration: Long,
-    progress: Float,
+    animationProgress: Float,
+    playerState: VoicePlayerState,
+    onPlayingChanged: (Boolean) -> Unit,
+    onProgressChanged: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isPlaying = rememberSaveable {
-        mutableStateOf(false)
+    val duration by remember(playerState.duration) {
+        mutableFloatStateOf(playerState.duration.toFloat() / 1000)
     }
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -222,7 +255,7 @@ private fun CollapseStatePlayer(
                 .padding(horizontal = 20.dp)
         ) {
             Text(
-                text = formatDuration(fileDuration),
+                text = formatDuration(playerState.duration.toLong()),
                 textAlign = TextAlign.Start,
                 style = MaterialTheme.typography.caption,
                 modifier = Modifier
@@ -231,7 +264,7 @@ private fun CollapseStatePlayer(
                 color = Color_Text_3
             )
             Text(
-                text = formatDuration(0),
+                text = formatDuration(playerState.remainingTime.toLong()),
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.caption,
                 modifier = Modifier
@@ -242,15 +275,15 @@ private fun CollapseStatePlayer(
         }
         CompositionLocalProvider(LocalLayoutDirection provides Ltr) {
             Slider(
-                value = 0f,
-                onValueChange = {
-                },
                 colors = SliderDefaults.colors(
                     activeTrackColor = Color_Primary_300,
                     inactiveTrackColor = Color_Surface_Container_High,
                     thumbColor = Color_White
                 ),
-                modifier = Modifier.padding(horizontal = 20.dp)
+                modifier = Modifier.padding(horizontal = 20.dp),
+                value = playerState.progress,
+                onValueChange = onProgressChanged,
+                valueRange = 0f .. duration
             )
         }
         Row(
@@ -263,8 +296,8 @@ private fun CollapseStatePlayer(
                 modifier = Modifier.padding(end = 24.dp),
                 onClick = {
                     safeClick {
-                        if (progress == 1f) {
-                            // TODO move audio ten second
+                        if (animationProgress == 1f) {
+                            playerState.seekForward()
                             return@safeClick
                         }
 
@@ -275,19 +308,20 @@ private fun CollapseStatePlayer(
                 ViraImage(
                     drawable = drawable.ic_download_voice,
                     contentDescription = stringResource(id = string.lbl_download),
-                    alpha = 1 - progress
+                    alpha = 1 - animationProgress
                 )
 
                 ViraImage(
                     drawable = drawable.ic_ten_second_after,
                     contentDescription = stringResource(id = string.lbl_move_ten_sec_forward),
-                    alpha = progress
+                    alpha = animationProgress
                 )
             }
 
             IconButton(
                 onClick = {
                     safeClick {
+                        onPlayingChanged(!playerState.isPlaying)
                     }
                 },
                 modifier = Modifier
@@ -297,7 +331,7 @@ private fun CollapseStatePlayer(
                         color = Color_Primary
                     )
             ) {
-                if (isPlaying.value) {
+                if (playerState.isPlaying) {
                     ViraImage(
                         drawable = drawable.ic_pause,
                         contentDescription = stringResource(id = string.desc_stop_playing),
@@ -316,8 +350,8 @@ private fun CollapseStatePlayer(
                 modifier = Modifier.padding(start = 24.dp),
                 onClick = {
                     safeClick {
-                        if (progress == 1f) {
-                            // TODO move audio ten second
+                        if (animationProgress == 1f) {
+                            playerState.seekBackward()
                             return@safeClick
                         }
 
@@ -328,19 +362,19 @@ private fun CollapseStatePlayer(
                 ViraImage(
                     drawable = drawable.ic_share_speech,
                     contentDescription = stringResource(id = string.lbl_share_file),
-                    alpha = 1 - progress
+                    alpha = 1 - animationProgress
                 )
 
                 ViraImage(
                     drawable = drawable.ic_ten_second_before,
                     contentDescription = stringResource(id = string.lbl_move_ten_sec_back),
-                    alpha = progress
+                    alpha = animationProgress
                 )
             }
         }
 
         BottomBar(
-            modifier = Modifier.height(104.dp * progress),
+            modifier = Modifier.height(104.dp * animationProgress),
             onShareClick = {
                 // TODO share
             },
@@ -453,8 +487,22 @@ fun BottomBar(
 private fun AvashoDetailBottomSheetPreview() {
     ViraPreview {
         AvashoDetailBottomSheet(
-            progress = 0f,
-            collapseToolbarAction = {}
+            animationProgress = 0f,
+            collapseToolbarAction = {},
+            avashoProcessedItem = AvashoProcessedFileView(
+                0,
+                "",
+                "",
+                "",
+                "",
+                "",
+                0,
+                0,
+                0f,
+                false,
+                0
+            ),
+            isBottomSheetExpanded = false
         )
     }
 }
