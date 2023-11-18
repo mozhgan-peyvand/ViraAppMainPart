@@ -13,7 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -73,11 +73,13 @@ class VoicePlayerState(
             mediaPlayer.start()
             isPlaying = true
             playJob?.cancel()
-            playJob = ProcessLifecycleOwner.get().lifecycleScope.launch(Dispatchers.IO) {
+            playJob = ProcessLifecycleOwner.get().lifecycleScope.launch(IO) {
                 while (isPlaying && isActive) {
-                    progress = currentPosition / 1000.0f
-                    delay(1000)
-                    remainingTime = duration - currentPosition
+                    kotlin.runCatching {
+                        progress = currentPosition / 1000.0f
+                        delay(1000)
+                        remainingTime = duration - currentPosition
+                    }
                 }
             }
         }.ifFailure {
@@ -101,6 +103,8 @@ class VoicePlayerState(
     fun stopPlaying() {
         kotlin.runCatching {
             isPlaying = false
+            playJob?.cancel()
+            playJob = null
             mediaPlayer.pause()
         }
     }
