@@ -31,7 +31,7 @@ class SplashViewModel @Inject constructor(
         }
     }
 
-    fun navigateToMainOnboarding() {
+    fun startNavigation() {
         shouldNavigate.value = true
     }
 }
