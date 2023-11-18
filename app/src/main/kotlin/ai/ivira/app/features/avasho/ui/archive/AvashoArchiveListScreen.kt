@@ -32,6 +32,7 @@ import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.InfiniteTransition
 import androidx.compose.animation.core.RepeatMode.Reverse
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -64,7 +65,6 @@ import androidx.compose.material.ModalBottomSheetValue.Expanded
 import androidx.compose.material.ModalBottomSheetValue.HalfExpanded
 import androidx.compose.material.ModalBottomSheetValue.Hidden
 import androidx.compose.material.Scaffold
-import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.SwipeableDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -89,7 +89,6 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -116,13 +115,13 @@ fun AvashoArchiveListScreen(
                 text = it.text
             )
         }
+    val infiniteTransition = rememberInfiniteTransition(label = "columnBrushTransition")
 
     val archiveFiles by viewModel.allArchiveFiles.collectAsStateWithLifecycle(listOf())
     val networkStatus by viewModel.networkStatus.collectAsStateWithLifecycle()
     val uiViewState by viewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
     val downloadState by viewModel.downloadStatus.collectAsStateWithLifecycle()
     val downloadFailureList by viewModel.downloadFailureList.collectAsStateWithLifecycle()
-    val brush = columnBrush()
     val coroutineScope = rememberCoroutineScope()
     var progressState by remember { mutableFloatStateOf(0f) }
     var calculatedProgress by remember { mutableFloatStateOf(0f) }
@@ -133,8 +132,6 @@ fun AvashoArchiveListScreen(
     var bottomSheetCurrentValue by rememberSaveable {
         mutableStateOf(HalfExpanded)
     }
-    val snackBarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
 
     var selectedAvashoItemBottomSheet by viewModel.selectedAvashoItemBottomSheet
 
@@ -342,7 +339,7 @@ fun AvashoArchiveListScreen(
                                     is AvashoTrackingFileView -> {
                                         AvashoArchiveTrackingFileElement(
                                             archiveTrackingView = it,
-                                            brush = brush,
+                                            brush = columnBrush(infiniteTransition),
                                             estimateTime = { it.computeFileEstimateProcess() },
                                             audioImageStatus = Converting
                                         )
@@ -539,9 +536,7 @@ private fun Fab(
 }
 
 @Composable
-private fun columnBrush(): Brush {
-    val infiniteTransition = rememberInfiniteTransition(label = "")
-
+private fun columnBrush(infiniteTransition: InfiniteTransition): Brush {
     val offset by infiniteTransition.animateFloat(
         initialValue = 0.01f,
         targetValue = 1f,
@@ -552,7 +547,7 @@ private fun columnBrush(): Brush {
             ),
             repeatMode = Reverse
         ),
-        label = ""
+        label = "offsetAnimation"
     )
 
     return remember(offset) {
