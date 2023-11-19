@@ -20,14 +20,14 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SnackBarWithPaddingBottom(
     snackbarHostState: SnackbarHostState,
-    shouldShowOverBottomSheet: Boolean,
+    shouldShowOverItems: Boolean,
     paddingValue: Float
 ) {
     SnackbarHost(
         hostState = snackbarHostState,
         modifier = Modifier
             .padding(horizontal = 20.dp)
-            .bottomAlignSnackBar(shouldShowOverBottomSheet, paddingValue),
+            .bottomAlignSnackBar(shouldShowOverItems, paddingValue),
         snackbar = {
             Column(
                 modifier = Modifier
