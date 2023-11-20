@@ -730,7 +730,11 @@ private fun AvaNegarArchiveListScreen(
                                     snackbarHostState,
                                     coroutineScope,
                                     context.getString(
-                                        R.string.msg_wait_process_finish_or_cancel_it
+                                        if (uiViewState is UiError && isThereAnyTrackingOrUploading) {
+                                            R.string.msg_wait_for_connection_to_server
+                                        } else {
+                                            R.string.msg_wait_process_finish_or_cancel_it
+                                        }
                                     )
                                 )
                             }
@@ -879,7 +883,11 @@ private fun AvaNegarArchiveListScreen(
                                     snackbarHostState,
                                     coroutineScope,
                                     context.getString(
-                                        R.string.msg_wait_process_finish_or_cancel_it
+                                        if (uiViewState is UiError && isThereAnyTrackingOrUploading) {
+                                            R.string.msg_wait_for_connection_to_server
+                                        } else {
+                                            R.string.msg_wait_process_finish_or_cancel_it
+                                        }
                                     )
                                 )
                             }
