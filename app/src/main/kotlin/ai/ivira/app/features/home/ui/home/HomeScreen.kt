@@ -5,13 +5,21 @@ import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.home.ui.HomeAnalytics
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NotificationPermission
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
+import ai.ivira.app.utils.ui.hasNotificationPermission
+import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
+import ai.ivira.app.utils.ui.isSdkVersion33orHigher
+import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AboutUs
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.shareText
+import ai.ivira.app.utils.ui.sheets.AccessNotificationBottomSheet
 import ai.ivira.app.utils.ui.theme.Blue_Grey_900_2
 import ai.ivira.app.utils.ui.theme.Blue_gray_900
 import ai.ivira.app.utils.ui.theme.Color_BG
@@ -27,7 +35,11 @@ import ai.ivira.app.utils.ui.theme.Light_blue_50
 import ai.ivira.app.utils.ui.theme.labelMedium
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import android.Manifest.permission
+import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -104,6 +116,7 @@ private fun HomeScreen(
             initialValue = ModalBottomSheetValue.Hidden,
             skipHalfExpanded = true
         )
+
     val (sheetSelected, setSelectedSheet) = rememberSaveable {
         mutableStateOf(HomeItemBottomSheetType.AvaSho)
     }
@@ -128,6 +141,21 @@ private fun HomeScreen(
             }
 
             homeViewModel.shouldNavigate.value = false
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (
+            isSdkVersion33orHigher() &&
+            !context.hasNotificationPermission() &&
+            homeViewModel.shouldShowNotificationBottomSheet
+        ) {
+            setSelectedSheet(HomeItemBottomSheetType.NotificationPermission)
+            coroutineScope.launch {
+                if (!modalBottomSheetState.isVisible) {
+                    modalBottomSheetState.show()
+                }
+            }
         }
     }
 
@@ -182,7 +210,7 @@ private fun HomeScreen(
             ),
             sheetBackgroundColor = Color_BG_Bottom_Sheet,
             scrimColor = Color.Black.copy(alpha = 0.5f),
-            sheetContent = {
+            sheetContent = sheetContent@{
                 when (sheetSelected) {
                     HomeItemBottomSheetType.AvaSho -> {
                         HomeItemBottomSheet(
@@ -243,6 +271,53 @@ private fun HomeScreen(
                             }
                         )
                     }
+
+                    HomeItemBottomSheetType.NotificationPermission -> {
+                        if (!isSdkVersion33orHigher()) return@sheetContent
+                        val notificationPermissionLauncher = rememberLauncherForActivityResult(
+                            RequestPermission()
+                        ) { isGranted ->
+                            if (!isGranted) {
+                                homeViewModel.putDeniedPermissionToSharedPref(
+                                    permission = permission.POST_NOTIFICATIONS,
+                                    deniedPermanently = isPermissionDeniedPermanently(
+                                        activity = context as Activity,
+                                        permission = permission.POST_NOTIFICATIONS
+                                    )
+                                )
+                            }
+                        }
+
+                        AccessNotificationBottomSheet(
+                            isPermissionDeniedPermanently = {
+                                homeViewModel.hasDeniedPermissionPermanently(
+                                    permission.POST_NOTIFICATIONS
+                                )
+                            },
+                            onCancelClick = {
+                                homeViewModel.putCurrentTimeDayToSharedPref()
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            },
+                            onEnableClick = {
+                                notificationPermissionLauncher.launch(
+                                    permission.POST_NOTIFICATIONS
+                                )
+
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            },
+                            onSettingClick = {
+                                navigateToAppSettings(activity = context as Activity)
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        )
+                        homeViewModel.doNotShowUtilNextLaunch()
+                    }
                 }
             }
         ) {
@@ -302,6 +377,8 @@ private fun HomeScreen(
                                 }
                             }
                         }
+
+                        NotificationPermission -> {}
                     }
                 },
                 modifier = Modifier.padding(top = 8.dp)
@@ -341,8 +418,8 @@ fun HomeAppBar(openDrawer: () -> Unit) {
 private fun HomeBody(
     paddingValues: PaddingValues,
     onAvanegarClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    onItemClick: (HomeItemBottomSheetType) -> Unit
+    onItemClick: (HomeItemBottomSheetType) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val homeItem = remember { HomeItemScreen.items }
 

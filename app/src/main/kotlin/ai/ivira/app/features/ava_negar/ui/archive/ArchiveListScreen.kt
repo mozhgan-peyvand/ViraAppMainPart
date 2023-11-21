@@ -41,6 +41,7 @@ import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.hasPermission
 import ai.ivira.app.utils.ui.hasRecordAudioPermission
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
+import ai.ivira.app.utils.ui.isSdkVersion33orHigher
 import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.openAudioSelector
@@ -66,7 +67,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -259,7 +259,7 @@ private fun AvaNegarArchiveListScreen(
         if (isGranted) {
             launchOpenFile.launch(openAudioSelector())
         } else {
-            val permission = if (Build.VERSION.SDK_INT >= 33) {
+            val permission = if (isSdkVersion33orHigher()) {
                 Manifest.permission.READ_MEDIA_AUDIO
             } else {
                 Manifest.permission.READ_EXTERNAL_STORAGE
@@ -463,7 +463,7 @@ private fun AvaNegarArchiveListScreen(
                             }
 
                             // PermissionCheck Duplicate 1
-                            val permission = if (Build.VERSION.SDK_INT >= 33) {
+                            val permission = if (isSdkVersion33orHigher()) {
                                 Manifest.permission.READ_MEDIA_AUDIO
                             } else {
                                 Manifest.permission.READ_EXTERNAL_STORAGE

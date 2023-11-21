@@ -1,4 +1,4 @@
-package ai.ivira.app.features.home.ui.home
+package ai.ivira.app.features.home.ui.home.sheets
 
 import ai.ivira.app.R
 import ai.ivira.app.utils.ui.safeClick
