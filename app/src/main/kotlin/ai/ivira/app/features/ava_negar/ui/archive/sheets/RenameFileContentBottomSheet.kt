@@ -21,6 +21,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,9 @@ fun RenameFileContentBottomSheet(
                 selection = TextRange(0, fileName.length)
             )
         )
+    }
+    val isRenameEnabled by remember(textValue) {
+        derivedStateOf { textValue.text.isNotBlank() }
     }
 
     val focusRequester = remember { FocusRequester() }
@@ -121,7 +125,7 @@ fun RenameFileContentBottomSheet(
                 contentColor = Color_White
             ),
             shape = RoundedCornerShape(8.dp),
-            enabled = textValue.text.isNotBlank()
+            enabled = isRenameEnabled
         ) {
             Text(
                 text = stringResource(id = R.string.lbl_save),

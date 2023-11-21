@@ -25,6 +25,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +58,9 @@ fun RenameFileBottomSheet(
                 selection = TextRange(0, fileName.length)
             )
         )
+    }
+    val isRenameEnabled by remember(textValue) {
+        derivedStateOf { textValue.text.isNotBlank() }
     }
 
     LaunchedEffect(shouldShowKeyBoard) {
@@ -139,7 +143,7 @@ fun RenameFileBottomSheet(
                 }
             },
             shape = RoundedCornerShape(8.dp),
-            enabled = textValue.text.isNotBlank()
+            enabled = isRenameEnabled
         ) {
             Text(
                 text = stringResource(id = R.string.lbl_save),
