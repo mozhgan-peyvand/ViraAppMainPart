@@ -6,7 +6,7 @@ import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.theme.Color_Text_1
-import ai.ivira.app.utils.ui.theme.Color_Text_3
+import ai.ivira.app.utils.ui.theme.Cyan_200
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.annotation.DrawableRes
@@ -38,9 +38,9 @@ fun DrawerHeader(
 
 @Composable
 private fun DrawerHeaderBody(
-    modifier: Modifier = Modifier,
     aboutUsOnClick: () -> Unit,
-    inviteFriendOnclick: () -> Unit
+    inviteFriendOnclick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier
@@ -83,24 +83,24 @@ private fun DrawerHeaderBody(
 
 @Composable
 fun DrawerBody(
-    modifier: Modifier = Modifier,
     title: String,
     @DrawableRes icon: Int,
-    onItemClick: () -> Unit
+    onItemClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 12.dp, bottom = 12.dp, end = 16.dp, start = 24.dp)
             .safeClickable {
                 onItemClick()
-            },
+            }
+            .padding(top = 12.dp, bottom = 12.dp, end = 16.dp, start = 24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         ViraIcon(
             drawable = icon,
             contentDescription = null,
-            tint = Color_Text_3
+            tint = Cyan_200
         )
 
         Spacer(modifier = Modifier.size(12.dp))

@@ -32,12 +32,12 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun DetailItemBottomSheet(
-    modifier: Modifier = Modifier,
     text: String,
     copyItemAction: () -> Unit,
     shareItemAction: () -> Unit,
     renameItemAction: () -> Unit,
-    deleteItemAction: () -> Unit
+    deleteItemAction: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -104,18 +104,18 @@ fun DetailItemBottomSheet(
 
 @Composable
 private fun ArchiveItemBodyBottomSheet(
-    modifier: Modifier = Modifier,
     text: Int,
     icon: Int,
     onItemClick: () -> Unit,
+    modifier: Modifier = Modifier,
     textColor: Color = Color_Text_2,
     iconColor: Color = Color_Text_3
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp, horizontal = 8.dp)
-            .safeClickable { onItemClick() },
+            .safeClickable { onItemClick() }
+            .padding(vertical = 12.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
 
     ) {

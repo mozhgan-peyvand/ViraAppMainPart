@@ -29,9 +29,9 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun MenuDetailsScreenBottomSheet(
-    modifier: Modifier = Modifier,
     onRenameAction: () -> Unit,
-    onRemoveFileAction: () -> Unit
+    onRemoveFileAction: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -39,7 +39,6 @@ fun MenuDetailsScreenBottomSheet(
             .padding(vertical = 16.dp)
     ) {
         TextButton(
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 12.dp),
             contentPadding = PaddingValues(12.dp),
             onClick = {
                 safeClick {
@@ -49,7 +48,9 @@ fun MenuDetailsScreenBottomSheet(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 12.dp)
             ) {
                 ViraIcon(
                     drawable = R.drawable.icon_documents,
@@ -67,8 +68,6 @@ fun MenuDetailsScreenBottomSheet(
             }
         }
 
-        Spacer(modifier = Modifier.size(12.dp))
-
         Divider(
             modifier = Modifier
                 .fillMaxWidth()
@@ -76,10 +75,7 @@ fun MenuDetailsScreenBottomSheet(
             color = Color_OutLine
         )
 
-        Spacer(modifier = Modifier.size(12.dp))
-
         TextButton(
-            modifier = modifier.padding(start = 8.dp, end = 8.dp, bottom = 12.dp),
             contentPadding = PaddingValues(12.dp),
             onClick = {
                 safeClick { onRemoveFileAction() }
@@ -87,7 +83,9 @@ fun MenuDetailsScreenBottomSheet(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 12.dp)
             ) {
                 ViraIcon(
                     drawable = R.drawable.icon_trash_delete,
