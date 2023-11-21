@@ -417,4 +417,12 @@ class AvashoArchiveListViewModel @Inject constructor(
             }
         }
     }
+
+    fun updateTitle(title: String, id: Int) = viewModelScope.launch {
+        avashoRepository.updateTitle(title = title, id = id)
+    }
+
+    fun removeProcessedFile(id: Int) = viewModelScope.launch {
+        avashoRepository.deleteProcessFile(id)
+    }
 }

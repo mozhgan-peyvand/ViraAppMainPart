@@ -67,4 +67,12 @@ class AvashoLocalDataSource @Inject constructor(
     suspend fun deleteUploadingFile(id: String) {
         dao.deleteUploadingFile(id)
     }
+
+    suspend fun updateTitle(title: String, id: Int) {
+        dao.updateTitle(title, id)
+    }
+
+    suspend fun deleteProcessFile(id: Int) {
+        dao.deleteProcessedFile(id)
+    }
 }

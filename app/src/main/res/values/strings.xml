@@ -229,4 +229,6 @@
     <string name="lbl_ready_for_download">فایل آماده دانلود</string>
     <string name="lbl_downloading_file">درحال دانلود فایل</string>
     <string name="lbl_mb">MB</string>
+    <string name="lbl_save_audio_file">ذخیره فایل صوتی</string>
+    <string name="lbl_download_audio_file">دانلود فایل صوتی</string>
 </resources>

@@ -59,4 +59,10 @@ interface AvashoDao {
 
     @Query("DELETE FROM AvashoUploadingFileEntity WHERE id =:id")
     suspend fun deleteUploadingFile(id: String)
+
+    @Query("UPDATE AvashoProcessedFileEntity SET fileName=:title WHERE id=:id")
+    suspend fun updateTitle(title: String, id: Int)
+
+    @Query("DELETE FROM AvashoProcessedFileEntity WHERE id = :id")
+    suspend fun deleteProcessedFile(id: Int)
 }

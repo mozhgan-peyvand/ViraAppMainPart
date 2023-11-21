@@ -2,6 +2,12 @@ package ai.ivira.app.features.avasho.ui.archive
 
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
+import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
+import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
+import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Delete
+import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Details
+import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Process
+import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Rename
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Converting
 import ai.ivira.app.features.avasho.ui.archive.element.AvashoArchiveProcessedFileElement
 import ai.ivira.app.features.avasho.ui.archive.element.AvashoArchiveTrackingFileElement
@@ -129,11 +135,15 @@ fun AvashoArchiveListScreen(
         mutableStateOf(HalfExpanded)
     }
 
+    val (fileSheetState, setBottomSheetType) = rememberSaveable {
+        mutableStateOf<AvashoFileType>(Details)
+    }
+
     var bottomSheetCurrentValue by rememberSaveable {
         mutableStateOf(HalfExpanded)
     }
 
-    var selectedAvashoItemBottomSheet by viewModel.selectedAvashoItemBottomSheet
+    var selectedAvashoItem by viewModel.selectedAvashoItemBottomSheet
 
     var bottomSheetInitialValue by viewModel.bottomSheetInitialValue
 
@@ -224,6 +234,11 @@ fun AvashoArchiveListScreen(
                 return@BackHandler
             }
         }
+        if (bottomSheetState.isVisible) {
+            coroutineScope.launch {
+                bottomSheetState.hide()
+            }
+        }
     }
 
     val modalBottomSheetBorderShape =
@@ -243,22 +258,98 @@ fun AvashoArchiveListScreen(
         sheetState = bottomSheetState,
         modifier = Modifier.fillMaxSize(),
         sheetContent = {
-            selectedAvashoItemBottomSheet?.let { processItem ->
-                AvashoDetailBottomSheet(
-                    animationProgress = calculatedProgress,
-                    collapseToolbarAction = {
-                        coroutineScope.launch {
-                            bottomSheetState.hide()
-                        }
-                    },
-                    halfToolbarAction = {
-                        coroutineScope.launch {
-                            bottomSheetState.show()
-                        }
-                    },
-                    avashoProcessedItem = processItem,
-                    isBottomSheetExpanded = bottomSheetState.isVisible
-                )
+            when (fileSheetState) {
+                Details -> {
+                    selectedAvashoItem?.let { processItem ->
+                        AvashoDetailBottomSheet(
+                            animationProgress = calculatedProgress,
+                            collapseToolbarAction = {
+                                coroutineScope.launch {
+                                    bottomSheetState.hide()
+                                }
+                            },
+                            halfToolbarAction = {
+                                coroutineScope.launch {
+                                    bottomSheetState.show()
+                                }
+                            },
+                            avashoProcessedItem = processItem,
+                            isBottomSheetExpanded = bottomSheetState.isVisible
+                        )
+                    }
+                }
+                Process -> {
+                    selectedAvashoItem?.let { avashoItem ->
+                        ProcessedWithDownloadBottomSheet(
+                            title = avashoItem.fileName,
+                            saveAudioFile = {},
+                            shareItemAction = {},
+                            renameItemAction = {
+                                setBottomSheetType(Rename)
+                                coroutineScope.launch {
+                                    bottomSheetState.show()
+                                }
+                            },
+                            deleteItemAction = {
+                                setBottomSheetType(Delete)
+                                coroutineScope.launch {
+                                    bottomSheetState.show()
+                                }
+                            },
+                            downloadAudioFile = {
+                                if (!File(avashoItem.filePath).exists()) {
+                                    if (viewModel.isInDownloadQueue(avashoItem.id)) {
+                                        viewModel.cancelDownload(avashoItem.id)
+                                    } else {
+                                        viewModel.addFileToDownloadQueue(avashoItem)
+                                    }
+                                    coroutineScope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                }
+                            },
+                            isFileDownloading = viewModel.isInDownloadQueue(avashoItem.id),
+                            isFileDownloaded = File(avashoItem.filePath).exists()
+
+                        )
+                    }
+                }
+                Rename -> {
+                    selectedAvashoItem?.let { selectedItem ->
+                        RenameFileBottomSheet(
+                            fileName = selectedItem.fileName,
+                            shouldShowKeyBoard = true,
+                            reNameAction = { name ->
+                                viewModel.updateTitle(
+                                    title = name,
+                                    id = selectedItem.id
+                                )
+                                coroutineScope.launch {
+                                    bottomSheetState.hide()
+                                }
+                            }
+                        )
+                    }
+                }
+                Delete -> {
+                    selectedAvashoItem?.let { selectedItem ->
+                        FileItemConfirmationDeleteBottomSheet(
+                            deleteAction = {
+                                kotlin.runCatching {
+                                    viewModel.removeProcessedFile(selectedItem.id)
+                                    File(
+                                        selectedAvashoItem?.filePath.orEmpty()
+                                    ).delete()
+                                }
+                                coroutineScope.launch {
+                                    bottomSheetState.hide()
+                                }
+                            },
+                            cancelAction = { coroutineScope.launch { bottomSheetState.hide() } },
+                            fileName = selectedItem.fileName
+                        )
+                    }
+                }
             }
         }
     ) {
@@ -316,8 +407,9 @@ fun AvashoArchiveListScreen(
                                         isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
                                         isNetworkAvailable = isNetworkAvailableWithoutVpn,
                                         onItemClick = callback@{ item ->
-                                            selectedAvashoItemBottomSheet = item
+                                            selectedAvashoItem = item
                                             if (File(item.filePath).exists()) {
+                                                setBottomSheetType(Details)
                                                 coroutineScope.launch {
                                                     if (!bottomSheetState.isVisible) {
                                                         bottomSheetState.show()
@@ -332,6 +424,15 @@ fun AvashoArchiveListScreen(
                                                 viewModel.cancelDownload(item.id)
                                             } else {
                                                 viewModel.addFileToDownloadQueue(item)
+                                            }
+                                        },
+                                        onMenuClick = { avashoSelectedItem ->
+                                            selectedAvashoItem = avashoSelectedItem
+                                            setBottomSheetType(Process)
+                                            coroutineScope.launch {
+                                                if (!bottomSheetState.isVisible) {
+                                                    bottomSheetState.show()
+                                                }
                                             }
                                         }
                                     )

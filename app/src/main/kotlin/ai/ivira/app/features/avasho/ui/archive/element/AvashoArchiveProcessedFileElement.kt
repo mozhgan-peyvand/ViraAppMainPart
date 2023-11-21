@@ -1,6 +1,7 @@
 package ai.ivira.app.features.avasho.ui.archive.element
 
 import ai.ivira.app.R
+import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Cancel
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Download
@@ -11,6 +12,7 @@ import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.ui.convertByteToMB
 import ai.ivira.app.utils.ui.millisecondsToTime
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Red
@@ -18,12 +20,14 @@ import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
+import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Card
@@ -47,7 +51,8 @@ fun AvashoArchiveProcessedFileElement(
     isNetworkAvailable: Boolean,
     isDownloadFailure: Boolean,
     isInDownloadQueue: Boolean,
-    onItemClick: (AvashoProcessedFileView) -> Unit
+    onItemClick: (AvashoProcessedFileView) -> Unit,
+    onMenuClick: (AvashoProcessedFileView) -> Unit
 ) {
     val isDownloaded = File(archiveViewProcessed.filePath).exists()
 
@@ -201,6 +206,15 @@ fun AvashoArchiveProcessedFileElement(
                     }
                 }
             }
+            ViraImage(
+                drawable = drawable.ic_dots_menu,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(end = 10.dp)
+                    .safeClickable {
+                        onMenuClick(archiveViewProcessed)
+                    }
+            )
         }
     }
 }
@@ -227,7 +241,8 @@ private fun AvashoArchiveProcessedFileElementPreview() {
                 isNetworkAvailable = true,
                 isDownloadFailure = false,
                 isInDownloadQueue = true,
-                onItemClick = {}
+                onItemClick = {},
+                onMenuClick = {}
             )
         }
     }

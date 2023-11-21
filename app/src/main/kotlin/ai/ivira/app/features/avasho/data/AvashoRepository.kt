@@ -134,5 +134,13 @@ class AvashoRepository @Inject constructor(
         }
     }
 
+    suspend fun updateTitle(title: String, id: Int) {
+        avashoLocalDataSource.updateTitle(title, id)
+    }
+
+    suspend fun deleteProcessFile(id: Int) {
+        avashoLocalDataSource.deleteProcessFile(id)
+    }
+
     private external fun bu(): String
 }
