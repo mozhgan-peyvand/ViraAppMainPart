@@ -210,8 +210,9 @@ private fun AvaNegarArchiveListScreen(
     )
 
     val archiveFiles by archiveListViewModel.allArchiveFiles.collectAsStateWithLifecycle(listOf())
-    val isThereAnyTrackingOrUploading by archiveListViewModel.isThereAnyTrackingOrUploading.collectAsStateWithLifecycle()
+    val isThereAnyTrackingOrUploading by archiveListViewModel.isThereAnyTrackingOrUploadingOrFailure.collectAsStateWithLifecycle()
     val isUploadingAllowed by archiveListViewModel.isUploadingAllowed.collectAsStateWithLifecycle()
+    val failureList by archiveListViewModel.failureList.collectAsStateWithLifecycle()
 
     val networkStatus by archiveListViewModel.networkStatus.collectAsStateWithLifecycle()
 
@@ -625,7 +626,7 @@ private fun AvaNegarArchiveListScreen(
                                         eventHandler.selectItem(
                                             AvanegarAnalytics.selectDeleteFile(Uploading)
                                         )
-                                        archiveListViewModel.removeUploadingFile(file.id)
+                                        archiveListViewModel.removeUploadingFile(file)
                                     }
 
                                     is AvanegarProcessedFileView -> {
@@ -748,13 +749,23 @@ private fun AvaNegarArchiveListScreen(
                         }
                     )
 
-                    val noNetworkAvailable = networkStatus is NetworkStatus.Unavailable
-                    val hasVpnConnection = networkStatus.let { it is NetworkStatus.Available && it.hasVpn }
-                    val isBannerError = uiViewState.let { it is UiError && !it.isSnack }
+                    val noNetworkAvailable by remember(networkStatus) {
+                        mutableStateOf(networkStatus is NetworkStatus.Unavailable)
+                    }
+
+                    val hasVpnConnection by remember(networkStatus) {
+                        mutableStateOf(networkStatus.let { it is NetworkStatus.Available && it.hasVpn })
+                    }
+
+                    val isBannerError by remember(uiViewState) {
+                        mutableStateOf(uiViewState.let { it is UiError && !it.isSnack })
+                    }
+
+                    val shouldShowError by remember(archiveFiles, isThereAnyTrackingOrUploading) {
+                        mutableStateOf(archiveFiles.isNotEmpty() && isThereAnyTrackingOrUploading)
+                    }
 
                     if (noNetworkAvailable || hasVpnConnection || isBannerError) {
-                        val shouldShowError = archiveFiles.isNotEmpty() &&
-                            isThereAnyTrackingOrUploading
                         if (shouldShowError) {
                             ErrorBanner(
                                 errorMessage = if (uiViewState is UiError) {
@@ -773,9 +784,9 @@ private fun AvaNegarArchiveListScreen(
                             .weight(1f)
                             .fillMaxWidth(),
                         archiveViewList = archiveFiles,
+                        failureList = failureList,
                         isNetworkAvailable = !noNetworkAvailable && !hasVpnConnection,
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
-                        isErrorState = uiViewState.let { it is UiError && !it.isSnack },
                         isGrid = isGrid,
                         uploadingId = uploadingId,
                         brush = if (isGrid) gridBrush() else columnBrush(),
@@ -1006,8 +1017,8 @@ private fun ArchiveAppBar(
 @Composable
 private fun ArchiveBody(
     archiveViewList: List<ArchiveView>,
+    failureList: List<AvanegarUploadingFileView>,
     isNetworkAvailable: Boolean,
-    isErrorState: Boolean,
     isUploading: Boolean,
     isGrid: Boolean,
     brush: Brush,
@@ -1024,9 +1035,9 @@ private fun ArchiveBody(
     } else {
         ArchiveList(
             list = archiveViewList,
+            failureList = failureList,
             isNetworkAvailable = isNetworkAvailable,
             isUploading = isUploading,
-            isErrorState = isErrorState,
             isGrid = isGrid,
             brush = brush,
             uploadingId = uploadingId,
@@ -1131,9 +1142,9 @@ private fun ArchiveEmptyBody(
 @Composable
 private fun ArchiveList(
     list: List<ArchiveView>,
+    failureList: List<AvanegarUploadingFileView>,
     isNetworkAvailable: Boolean,
     isUploading: Boolean,
-    isErrorState: Boolean,
     isGrid: Boolean,
     brush: Brush,
     uploadingId: String,
@@ -1191,8 +1202,8 @@ private fun ArchiveList(
                             archiveUploadingFileView = it,
                             isUploading = isUploading,
                             isNetworkAvailable = isNetworkAvailable,
-                            isErrorState = isErrorState,
                             uploadingId = uploadingId,
+                            isFailure = failureList.contains(it),
                             onTryAgainClick = { value -> onTryAgainCLick(value) },
                             onMenuClick = { item ->
                                 onMenuClick(item)
@@ -1239,8 +1250,8 @@ private fun ArchiveList(
                             archiveUploadingFileView = it,
                             isUploading = isUploading,
                             isNetworkAvailable = isNetworkAvailable,
-                            isErrorState = isErrorState,
                             uploadingId = uploadingId,
+                            isFailure = failureList.contains(it),
                             onTryAgainClick = { value -> onTryAgainCLick(value) },
                             onMenuClick = { item ->
                                 onMenuClick(item)

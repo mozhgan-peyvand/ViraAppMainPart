@@ -69,7 +69,6 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
-private const val MAX_RETRY_COUNT = 3
 private const val IS_GRID_AVANEGAR_ARCHIVE_LIST_KEY = "isGridPrefKey_AvanegarArchiveList"
 private const val SIXTY_SECOND = 60000
 
@@ -105,23 +104,24 @@ class ArchiveListViewModel @Inject constructor(
 
     private val uploadPercent = MutableStateFlow(0f)
 
-    var isThereAnyTrackingOrUploading = MutableStateFlow(false)
+    var isThereAnyTrackingOrUploadingOrFailure = MutableStateFlow(false)
         private set
 
-    var isUploadingAllowed = MutableStateFlow(true)
-        private set
+    private var _isUploadingAllowed = MutableStateFlow(true)
+    val isUploadingAllowed = _isUploadingAllowed.asStateFlow()
 
     var isGrid = MutableStateFlow(true)
         private set
 
     private var files: MutableMap<Uri, File> = ConcurrentHashMap()
-
-    private var failureCount = 0
-
     private var job: Job? = null
     var jobConverting: Job? = null
     var fileToShare: File? = null
-    private var uploadingList: List<AvanegarUploadingFileView> = listOf()
+
+    private var uploadList = MutableStateFlow(listOf<AvanegarUploadingFileView>())
+
+    private var _failureList = MutableStateFlow(listOf<AvanegarUploadingFileView>())
+    val failureList = _failureList.asStateFlow()
 
     // placed these variables in viewModel to save from configuration change,
     // can not make these, rememberSaveable because these are dataClass
@@ -132,12 +132,13 @@ class ArchiveListViewModel @Inject constructor(
         networkStatusTracker.networkStatus,
         _isUploading,
         uploadPercent,
+        uploadList,
         repository.getAllArchiveFiles()
-    ) { networkStatus: NetworkStatus, uploadingFileStatus: UploadingFileStatus, uploadPercent: Float, avanegarArchiveFilesEntity: AvanegarArchiveFilesEntity ->
-        // just ignore invalid files
-        val uploadingList = avanegarArchiveFilesEntity.uploading.filter {
-            it.fileDuration > 0L && File(it.filePath).exists()
-        }
+    ) { networkStatus: NetworkStatus,
+        uploadingFileStatus: UploadingFileStatus,
+        uploadPercent: Float,
+        uploadList,
+        avanegarArchiveFilesEntity: AvanegarArchiveFilesEntity ->
 
         if (networkStatus is NetworkStatus.Unavailable) {
             job?.cancel()
@@ -146,28 +147,25 @@ class ArchiveListViewModel @Inject constructor(
             if (
                 uploadingFileStatus != Uploading &&
                 uploadingFileStatus != FailureUpload &&
-                uploadingList.isNotEmpty()
+                uploadList.isNotEmpty()
             ) {
                 _uiViewStat.emit(UiLoading)
                 _isUploading.value = Uploading
 
                 indexOfItemThatShouldBeDownloaded.run {
-                    _uploadingId.value = uploadingList[this].id
-                    val title = uploadingList[this].title
-                    val filePath = uploadingList[this].filePath
-                    val fileDuration = uploadingList[this].fileDuration
+                    _uploadingId.value = uploadList[this].id
+                    val item = uploadList[this]
+                    val fileDuration = uploadList[this].fileDuration
 
                     // 0L means that file duration was is null
                     if (fileDuration < SIXTY_SECOND) {
                         audioToTextBelowSixtySecond(
-                            title,
-                            filePath,
+                            item,
                             createProgressListener()
                         )
                     } else {
                         audioToTextAboveSixtySecond(
-                            title,
-                            filePath,
+                            item,
                             createProgressListener()
                         )
                     }
@@ -178,25 +176,34 @@ class ArchiveListViewModel @Inject constructor(
         // region archiveView
         val processedList = avanegarArchiveFilesEntity.processed
         val trackingList = avanegarArchiveFilesEntity.tracking
+        // just ignore invalid files
+        val uploadingList = avanegarArchiveFilesEntity.uploading.filter {
+            it.fileDuration > 0L && File(it.filePath).exists()
+        }
 
-        isThereAnyTrackingOrUploading.value =
-            trackingList.isNotEmpty() || uploadingList.isNotEmpty()
+        _isUploadingAllowed.value = trackingList.isEmpty() && uploadList.isEmpty()
 
-        isUploadingAllowed.value = trackingList.isEmpty() && uploadingList.isEmpty()
-
-        if (trackingList.isEmpty() && uploadingList.isEmpty()) {
+        if (trackingList.isEmpty() && uploadList.isEmpty()) {
             _uiViewStat.emit(UiIdle)
         }
 
         buildList {
             addAll(
-                uploadingList.map {
-                    it.toAvanegarUploadingFileView(
+                uploadingList.map { avanegarUploadingFile ->
+                    avanegarUploadingFile.toAvanegarUploadingFileView(
                         uploadPercent,
                         uploadingId.value
                     )
+                }.also { uploadingList ->
+                    val uploadItem = uploadingList.filter { uploadingItem ->
+                        !_failureList.value.contains(uploadingItem)
+                    }
+
+                    isThereAnyTrackingOrUploadingOrFailure.value =
+                        trackingList.isNotEmpty() || uploadItem.isNotEmpty() || _failureList.value.isNotEmpty()
+
+                    this@ArchiveListViewModel.uploadList.value = uploadItem
                 }
-                    .also { this@ArchiveListViewModel.uploadingList = it }
             )
             addAll(trackingList.map { it.toAvanegarTrackingFileView() })
             addAll(processedList.map { it.toAvanegarProcessedFileView() })
@@ -296,44 +303,48 @@ class ArchiveListViewModel @Inject constructor(
                 createdAt = createdAt,
                 fileDuration = fileDuration
             )
+
+            if (_isUploading.value == FailureUpload) {
+                _isUploading.update {
+                    Idle
+                }
+            }
         }
     }
 
     private suspend fun audioToTextBelowSixtySecond(
-        title: String,
-        filePath: String,
+        item: AvanegarUploadingFileView,
         listener: UploadProgressCallback
     ) {
         job?.cancel()
         job = viewModelScope.launch(IO) {
-            val file = File(filePath)
+            val file = File(item.filePath)
             val result = repository.audioToTextBelowSixtySecond(
-                id = title + filePath,
-                title = title,
+                id = item.title + item.filePath,
+                title = item.title,
                 file = file,
                 listener = listener
             )
 
-            handleResultState(result)
+            handleResultState(item, result)
         }
     }
 
     private suspend fun audioToTextAboveSixtySecond(
-        title: String,
-        filePath: String,
+        item: AvanegarUploadingFileView,
         listener: UploadProgressCallback
     ) {
         job?.cancel()
         job = viewModelScope.launch(IO) {
-            val file = File(filePath)
+            val file = File(item.filePath)
             val result = repository.audioToTextAboveSixtySecond(
-                id = title + filePath,
-                title = title,
+                id = item.title + item.filePath,
+                title = item.title,
                 file = file,
                 listener = listener
             )
 
-            handleResultState(result)
+            handleResultState(item, result)
         }
     }
 
@@ -423,13 +434,17 @@ class ArchiveListViewModel @Inject constructor(
         }
     }
 
-    fun removeUploadingFile(id: String?) = viewModelScope.launch {
-        id?.let {
+    fun removeUploadingFile(item: AvanegarUploadingFileView?) = viewModelScope.launch {
+        item?.let {
+            _failureList.update { list ->
+                list.filter { uploadingFailure -> uploadingFailure.id != item.id }
+            }
+
             viewModelScope.launch {
                 job?.cancel()
                 // emit failure to start uploading from the first of list
                 _isUploading.value = FailureUpload
-                repository.deleteUploadingFile(it)
+                repository.deleteUploadingFile(it.id)
             }
         }
     }
@@ -452,7 +467,12 @@ class ArchiveListViewModel @Inject constructor(
 
     fun startUploading(avanegarUploadingFile: AvanegarUploadingFileView) {
         // to make sure that it does not return -1
-        with(uploadingList) {
+
+        _failureList.update { uploadingList ->
+            uploadingList.filter { failureItem -> failureItem != avanegarUploadingFile }
+        }
+
+        with(uploadList.value) {
             indexOfItemThatShouldBeDownloaded = if (
                 contains(avanegarUploadingFile)
             ) {
@@ -479,29 +499,40 @@ class ArchiveListViewModel @Inject constructor(
     }
 
     private suspend fun <T> handleResultState(
+        item: AvanegarUploadingFileView,
         result: AppResult<T>,
         onSuccess: ((Success<T>) -> Unit)? = null
     ) {
         when (result) {
             is Success -> {
-                failureCount = 0
                 _uiViewStat.emit(UiSuccess)
                 delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
                 _isUploading.value = Idle
+
+                uploadList.update { list ->
+                    list.filter { uploadingItem -> uploadingItem != item }
+                }
 
                 onSuccess?.let {
                     it(result)
                 }
             }
 
-            // onError we attempt to upload file 3 times, then emit failure and stop uploading
             is Error -> {
-                failureCount++
-                if (failureCount < MAX_RETRY_COUNT) {
-                    _isUploading.value = Idle
-                } else {
+                _failureList.update { failureList ->
+                    failureList + item
+                }
+
+                uploadList.update { list ->
+                    list.filter { uploadingItem -> uploadingItem != item }
+                }
+
+                // to try upload all uploading items before emitting error
+                if (uploadList.value.isEmpty()) {
                     _isUploading.value = FailureUpload
                     _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
+                } else {
+                    _isUploading.value = Idle
                 }
             }
         }

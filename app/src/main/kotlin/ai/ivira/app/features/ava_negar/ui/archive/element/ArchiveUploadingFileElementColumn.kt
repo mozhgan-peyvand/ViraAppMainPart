@@ -37,7 +37,7 @@ fun ArchiveUploadingFileElementColumn(
     archiveUploadingFileView: AvanegarUploadingFileView,
     isUploading: Boolean,
     isNetworkAvailable: Boolean,
-    isErrorState: Boolean,
+    isFailure: Boolean,
     uploadingId: String,
     onTryAgainClick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (AvanegarUploadingFileView) -> Unit,
@@ -57,7 +57,7 @@ fun ArchiveUploadingFileElementColumn(
             modifier = Modifier
                 .padding(
                     start = 8.dp,
-                    bottom = if (!isErrorState) 16.dp else 8.dp
+                    bottom = if (!isFailure || isNetworkAvailable) 16.dp else 8.dp
                 )
                 .fillMaxWidth()
         ) {
@@ -93,7 +93,7 @@ fun ArchiveUploadingFileElementColumn(
                 }
             }
 
-            if (!isErrorState && isNetworkAvailable) {
+            if (isNetworkAvailable && !isFailure) {
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -180,12 +180,11 @@ private fun ArchiveUploadingFileElementColumn() {
                 filePath = "filePath",
                 createdAt = 5456465L,
                 uploadedPercent = 30f,
-                fileDuration = 0,
-                isUploadingFinished = false
+                fileDuration = 0
             ),
             isUploading = false,
             isNetworkAvailable = true,
-            isErrorState = false,
+            isFailure = false,
             uploadingId = "",
             onTryAgainClick = {},
             onMenuClick = {},
