@@ -1,6 +1,6 @@
 package ai.ivira.app.features.home.ui
 
-import ai.ivira.app.features.home.ui.home.HomeItemBottomSheetType
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
 import ai.ivira.app.utils.ui.analytics.events.OnboardingEvent
 import ai.ivira.app.utils.ui.analytics.events.OnboardingEvent.Type
 import ai.ivira.app.utils.ui.analytics.events.ScreenViewEvent

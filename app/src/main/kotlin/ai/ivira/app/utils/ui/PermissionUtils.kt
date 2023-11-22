@@ -31,3 +31,7 @@ fun Context.hasPermission(permission: String): Boolean {
 fun Context.hasRecordAudioPermission(): Boolean {
     return hasPermission(Manifest.permission.RECORD_AUDIO)
 }
+
+fun Context.hasNotificationPermission(): Boolean {
+    return !isSdkVersion33orHigher() || hasPermission(Manifest.permission.POST_NOTIFICATIONS)
+}

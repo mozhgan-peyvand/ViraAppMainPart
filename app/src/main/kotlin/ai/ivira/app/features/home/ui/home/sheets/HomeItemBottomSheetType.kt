@@ -1,8 +1,9 @@
-package ai.ivira.app.features.home.ui.home
+package ai.ivira.app.features.home.ui.home.sheets
 
 enum class HomeItemBottomSheetType(val value: String) {
     AvaSho("avasho"),
     NeviseNegar("neviseNegar"),
     ViraSiar("viraSiar"),
-    NeviseNama("neviseNama")
+    NeviseNama("neviseNama"),
+    NotificationPermission("notificationPermission")
 }

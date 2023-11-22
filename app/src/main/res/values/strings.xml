@@ -24,6 +24,7 @@
     <string name="lbl_delete_file">حذف فایل</string>
     <string name="msg_if_start_again_file_will_be_deleted">با شروع مجدد، فایل صوتی حذف خواهد شد. برای جلوگیری از حذف فایل ابتدا فایل را به متن تبدیل کنید.</string>
     <string name="lbl_cancel">انصراف</string>
+    <string name="lbl_enable">فعال کردن</string>
     <string name="lbl_start_again">شروع مجدد</string>
     <string name="lbl_set_name">انتخاب نام</string>
     <string name="lbl_accept">تایید</string>
@@ -195,5 +196,8 @@
     <string name="lbl_show_second">ثانیه</string>
     <string name="lbl_wait_for_end_process">در انتظار اتمام پردازش</string>
     <string name="lbl_pause_recording">توقف ضبط</string>
+    <string name="lbl_notification">اعلانات</string>
+    <string name="lbl_enable_notification_for_recording_when_screen_is_locked">برای جلوگیری از قطع ضبط صدا هنگام قفل شدن گوشی یا هنگام خروج از صفحات برنامه، لازم است اعلانات اپلیکیشن را فعال کنید.</string>
+    <string name="lbl_enable_notification_for_recording">برای بهترین تجربه استفاده از ویرا پیشنهاد می‌کنیم اعلانات مربوط به این اپلیکیشن را فعال کنید.</string>
 
 </resources>
