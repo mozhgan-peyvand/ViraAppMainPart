@@ -260,5 +260,6 @@ dependencies {
     // firebase
     implementation("com.google.firebase:firebase-analytics-ktx:19.0.0")
     implementation 'com.google.firebase:firebase-crashlytics-ktx:18.3.7'
+    implementation "com.google.firebase:firebase-messaging:23.3.1"
 
 }
