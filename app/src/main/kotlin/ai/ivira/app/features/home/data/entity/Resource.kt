@@ -1,4 +1,4 @@
-package ai.ivira.app.features.ava_negar.data.entity
+package ai.ivira.app.features.home.data.entity
 
 import com.squareup.moshi.JsonClass
 

@@ -30,3 +30,79 @@ Java_ai_ivira_app_utils_data_HeaderInterceptor_ak(JNIEnv *env, jobject thiz) {
 
     return env->NewStringUTF(dec.c_str());
 }
+
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gw(JNIEnv *env, jobject thiz) {
+    std::string AK = "https://gateway-v3-dev.apipart.ir/service/gateway@3/token";
+    std::string key = "YMV";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+
+    return env->NewStringUTF(AK.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_up(JNIEnv *env, jobject thiz) {
+    std::string AK = "https://barjavand-v3-dev.apipart.ir/service/barjavand@3/data?schemaName=vira&schemaVersion=1.0.0";
+    std::string key = "YMV";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+
+    return env->NewStringUTF(AK.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gws(JNIEnv *env, jobject thiz) {
+    std::string AK = "barjavand";
+    std::string key = "QZL";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+
+    return env->NewStringUTF(AK.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gwu(JNIEnv *env, jobject thiz) {
+    std::string AK = "vira";
+    std::string key = "QZL";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+
+    return env->NewStringUTF(AK.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gwp(JNIEnv *env, jobject thiz) {
+    std::string AK = "hrL6cPiZ3su7BfKfPlDM";
+    std::string key = "QZL";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+
+    return env->NewStringUTF(AK.c_str());
+}

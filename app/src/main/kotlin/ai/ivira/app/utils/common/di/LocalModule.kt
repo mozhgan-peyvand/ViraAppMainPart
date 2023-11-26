@@ -1,6 +1,7 @@
 package ai.ivira.app.utils.common.di
 
 import ai.ivira.app.features.ava_negar.data.DataStoreRepository
+import ai.ivira.app.utils.data.db.Migration
 import ai.ivira.app.utils.data.db.ViraDb
 import android.content.Context
 import android.content.SharedPreferences
@@ -29,6 +30,7 @@ object LocalModule {
                 ViraDb::class.java,
                 "vira.db"
             )
+            .addMigrations(Migration.migration1_2())
             .fallbackToDestructiveMigration()
             .build()
     }

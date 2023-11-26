@@ -5,5 +5,6 @@ enum class HomeItemBottomSheetType(val value: String) {
     NeviseNegar("neviseNegar"),
     ViraSiar("viraSiar"),
     NeviseNama("neviseNama"),
-    NotificationPermission("notificationPermission")
+    NotificationPermission("notificationPermission"),
+    UpdateApp("update")
 }
