@@ -2,7 +2,6 @@ package ai.ivira.app.features.ava_negar.ui.record
 
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
-import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileContentBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.RecordFileResult.Companion.FILE_NAME
 import ai.ivira.app.features.ava_negar.ui.record.sheets.BackToArchiveListConfirmationBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.sheets.MicrophoneNotAvailableBottomSheet
@@ -135,11 +134,28 @@ private fun AvaNegarVoiceRecordingScreen(
     val recorder by viewModel::recorder
     val playerState by viewModel::playerState
 
+    val actionConvertToText = remember<() -> Unit> {
+        {
+            val name = viewModel.getCurrentDefaultName()
+            viewModel.updateCurrentDefaultName()
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set(
+                    FILE_NAME,
+                    recorder.currentFile?.absolutePath?.let {
+                        RecordFileResult(
+                            title = name,
+                            filepath = it
+                        )
+                    }
+                )
+            navController.popBackStack()
+        }
+    }
+
     if (state is VoiceRecordingViewState.Stopped) {
         playerState.tryInitWith(recorder.currentFile)
     }
-
-    val shouldShowKeyBoard = rememberSaveable { mutableStateOf(false) }
 
     OnLifecycleEvent(
         onPause = onPause@{
@@ -184,16 +200,6 @@ private fun AvaNegarVoiceRecordingScreen(
         )
         onDispose {
             context.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        }
-    }
-
-    LaunchedEffect(bottomSheetState.targetValue) {
-        if (bottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
-            if (bottomSheetContentType.name == VoiceRecordingBottomSheetType.ConvertToTextConfirmation.name) {
-                shouldShowKeyBoard.value = true
-            }
-        } else {
-            shouldShowKeyBoard.value = false
         }
     }
 
@@ -248,9 +254,9 @@ private fun AvaNegarVoiceRecordingScreen(
                 BackConfirm -> {
                     BackToArchiveListConfirmationBottomSheet(
                         actionConvertFile = {
-                            bottomSheetContentType =
-                                VoiceRecordingBottomSheetType.ConvertToTextConfirmation
-                            bottomSheetState.hideAndShow(coroutineScope)
+                            eventHandler.selectItem(AvanegarAnalytics.selectConvertToText)
+                            bottomSheetState.hide(coroutineScope)
+                            actionConvertToText()
                         },
                         actionDeleteFile = {
                             recorder.removeCurrentRecording()
@@ -282,30 +288,6 @@ private fun AvaNegarVoiceRecordingScreen(
                                     bottomSheetState.hideAndShow(coroutineScope)
                                 }
                             )
-                        }
-                    )
-                }
-
-                VoiceRecordingBottomSheetType.ConvertToTextConfirmation -> {
-                    RenameFileContentBottomSheet(
-                        fileName = viewModel.getCurrentDefaultName(),
-                        shouldShowKeyBoard = shouldShowKeyBoard.value,
-                        renameAction = { name ->
-                            if (name == viewModel.getCurrentDefaultName()) {
-                                viewModel.updateCurrentDefaultName()
-                            }
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(
-                                    FILE_NAME,
-                                    recorder.currentFile?.absolutePath?.let {
-                                        RecordFileResult(
-                                            title = name,
-                                            filepath = it
-                                        )
-                                    }
-                                )
-                            navController.popBackStack()
                         }
                     )
                 }
@@ -473,9 +455,21 @@ private fun AvaNegarVoiceRecordingScreen(
                     )
                 },
                 convertToText = {
+                    if (state != VoiceRecordingViewState.Stopped) {
+                        stopPlayback(
+                            recorder = recorder,
+                            onSuccess = {
+                                viewModel.pauseTimer()
+                                state = VoiceRecordingViewState.Stopped
+                            },
+                            onFailure = {
+                                context.showText(R.string.msg_general_recorder_stop_error)
+                            }
+                        )
+                    }
                     eventHandler.selectItem(AvanegarAnalytics.selectConvertToText)
-                    bottomSheetContentType = VoiceRecordingBottomSheetType.ConvertToTextConfirmation
-                    bottomSheetState.hideAndShow(coroutineScope)
+                    bottomSheetState.hide(coroutineScope)
+                    actionConvertToText()
                 },
                 modifier = Modifier.weight(1f)
             )
@@ -484,7 +478,7 @@ private fun AvaNegarVoiceRecordingScreen(
 }
 
 @Composable
-fun VoiceRecordingTopAppBar(
+private fun VoiceRecordingTopAppBar(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -515,7 +509,7 @@ fun VoiceRecordingTopAppBar(
 }
 
 @Composable
-fun VoiceRecordingBody(
+private fun VoiceRecordingBody(
     isRecording: Boolean,
     hasPaused: Boolean,
     isStopped: Boolean,
@@ -556,7 +550,7 @@ fun VoiceRecordingBody(
 }
 
 @Composable
-fun VoiceRecordingPreviewSection(
+private fun VoiceRecordingPreviewSection(
     isRecording: Boolean,
     isStopped: Boolean,
     playerState: VoicePlayerState,
@@ -634,7 +628,7 @@ fun VoiceRecordingPreviewSection(
 }
 
 @Composable
-fun VoiceRecordingHintSection(
+private fun VoiceRecordingHintSection(
     isRecording: Boolean,
     hasPaused: Boolean,
     isStopped: Boolean,
@@ -694,7 +688,7 @@ fun VoiceRecordingHintSection(
 }
 
 @Composable
-fun VoiceRecordingControlsSection(
+private fun VoiceRecordingControlsSection(
     isRecording: Boolean,
     hasPaused: Boolean,
     isStopped: Boolean,
@@ -713,7 +707,7 @@ fun VoiceRecordingControlsSection(
     ) {
         if (isRecording || hasPaused || isStopped) {
             ControlButton(
-                enabled = isStopped,
+                enabled = (!isRecording && hasPaused) || isStopped,
                 icon = R.drawable.ic_repeat,
                 contentDescription = stringResource(R.string.desc_convert_to_text),
                 title = stringResource(id = R.string.lbl_convert_to_text),
@@ -745,7 +739,7 @@ fun VoiceRecordingControlsSection(
 }
 
 @Composable
-fun VoicePlayerComponent(
+private fun VoicePlayerComponent(
     duration: Int,
     progress: Float,
     onProgressChanged: (Float) -> Unit,
