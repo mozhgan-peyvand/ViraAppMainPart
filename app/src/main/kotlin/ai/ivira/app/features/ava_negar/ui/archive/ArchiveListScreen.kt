@@ -475,21 +475,21 @@ private fun AvaNegarArchiveListScreen(
                                     }
                                 }
 
-                            // PermissionCheck Duplicate 1
-                            val permission = if (isSdkVersion33orHigher()) {
-                                Manifest.permission.READ_MEDIA_AUDIO
-                            } else {
-                                Manifest.permission.READ_EXTERNAL_STORAGE
-                            }
+                                // PermissionCheck Duplicate 1
+                                val permission = if (isSdkVersion33orHigher()) {
+                                    Manifest.permission.READ_MEDIA_AUDIO
+                                } else {
+                                    Manifest.permission.READ_EXTERNAL_STORAGE
+                                }
 
-                            if (context.hasPermission(permission)) {
-                                launchOpenFile.launch(openAudioSelector())
-                            } else if (archiveListViewModel.hasDeniedPermissionPermanently(
-                                    permission
-                                )
-                            ) {
-                                // needs improvement, just need to save if permission is alreadyRequested
-                                // and everytime check shouldShow
+                                if (context.hasPermission(permission)) {
+                                    launchOpenFile.launch(openAudioSelector())
+                                } else if (archiveListViewModel.hasDeniedPermissionPermanently(
+                                        permission
+                                    )
+                                ) {
+                                    // needs improvement, just need to save if permission is alreadyRequested
+                                    // and everytime check shouldShow
 
                                     setSelectedSheet(
                                         ArchiveBottomSheetType.FileAccessPermissionDenied

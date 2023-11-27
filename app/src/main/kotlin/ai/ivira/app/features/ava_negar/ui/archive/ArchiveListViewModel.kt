@@ -510,7 +510,6 @@ class ArchiveListViewModel @Inject constructor(
     ) {
         when (result) {
             is Success -> {
-                failureCount = 0
                 _uiViewState.emit(UiSuccess)
                 delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
                 _isUploading.value = Idle

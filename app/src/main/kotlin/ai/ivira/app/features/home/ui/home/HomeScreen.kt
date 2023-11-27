@@ -514,9 +514,9 @@ private fun HomeScreen(
                             }
                         }
 
-                        UpdateApp -> {}
-
                         NotificationPermission -> {}
+
+                        UpdateApp -> {}
                     }
                 },
                 modifier = Modifier.padding(top = 8.dp)
