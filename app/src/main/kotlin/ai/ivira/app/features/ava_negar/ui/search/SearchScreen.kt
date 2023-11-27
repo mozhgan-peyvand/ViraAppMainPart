@@ -121,7 +121,6 @@ private fun AvaNegarSearchScreen(
 
 @Composable
 private fun AvaNegarSearchBody(
-    modifier: Modifier = Modifier,
     searchText: String,
     searchResult: List<AvanegarProcessedFileView>,
     focusRequester: FocusRequester,
@@ -129,7 +128,8 @@ private fun AvaNegarSearchBody(
     onValueChangeAction: (String) -> Unit,
     clearState: () -> Unit,
     isSearch: Boolean,
-    onItemClick: (id: Int, title: String) -> Unit
+    onItemClick: (id: Int, title: String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val composition by rememberLottieComposition(
         LottieCompositionSpec
@@ -142,9 +142,7 @@ private fun AvaNegarSearchBody(
         speed = 1f,
         restartOnPlay = true
     )
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
+    Column(modifier = modifier.fillMaxSize()) {
         SearchToolbar(
             searchText = searchText,
             focusRequester = focusRequester,
@@ -207,11 +205,13 @@ private fun SearchToolbar(
             ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = {
-            safeClick {
-                arrowForwardAction()
+        IconButton(
+            onClick = {
+                safeClick {
+                    arrowForwardAction()
+                }
             }
-        }) {
+        ) {
             ViraIcon(
                 drawable = R.drawable.ic_arrow_right,
                 contentDescription = stringResource(id = R.string.desc_forward),
@@ -221,6 +221,8 @@ private fun SearchToolbar(
         TextField(
             value = searchText,
             textStyle = MaterialTheme.typography.body2,
+            maxLines = 1,
+            singleLine = true,
             modifier = Modifier
                 .weight(1f)
                 .focusRequester(focusRequester)
@@ -244,11 +246,13 @@ private fun SearchToolbar(
                 )
             },
             trailingIcon = {
-                IconButton(onClick = {
-                    safeClick {
-                        clearState()
+                IconButton(
+                    onClick = {
+                        safeClick {
+                            clearState()
+                        }
                     }
-                }) {
+                ) {
                     ViraIcon(
                         drawable = R.drawable.ic_clear,
                         contentDescription = stringResource(id = R.string.desc_clear),
