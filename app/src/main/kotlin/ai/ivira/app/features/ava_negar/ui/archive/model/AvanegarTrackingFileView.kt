@@ -19,13 +19,17 @@ data class AvanegarTrackingFileView(
         if (lastFailure || processEstimation <= 0) return -1.0
         if (SystemClock.elapsedRealtime() > bootElapsedTime) {
             val diff = (SystemClock.elapsedRealtime() - bootElapsedTime) / 1000
-            return (processEstimation - diff) * 1.2
+            return (processEstimation - diff) * ESTIMATED_TIME_FACTOR
         } else if (PersianDate().time > createdAt.toLong()) {
             val diff = (PersianDate().time - createdAt.toLong()) / 1000
-            return (processEstimation - diff) * 1.2
+            return (processEstimation - diff) * ESTIMATED_TIME_FACTOR
         }
 
         return (-1).toDouble()
+    }
+
+    companion object {
+        private const val ESTIMATED_TIME_FACTOR = 1.1
     }
 }
 
