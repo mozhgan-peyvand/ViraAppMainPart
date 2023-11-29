@@ -80,7 +80,6 @@
     <string name="lbl_btn_delete_file">حذف فایل</string>
     <string name="lbl_try_again">تلاش مجدد</string>
     <string name="msg_internet_disconnected">اتصال شما به اینترنت قطع است.</string>
-    <string name="msg_vpn_is_connected_error">جهت ادامه کار فیلترشکن خود را خاموش کنید</string>
     <string name="msg_internet_connection_problem">مشکل در اتصال به اینترنت</string>
     <string name="msg_upload_will_start_after_connect_to_internet">پس از اتصال به اینترنت، فایل شما به صورت خودکار بارگذاری خواهد شد.</string>
 
