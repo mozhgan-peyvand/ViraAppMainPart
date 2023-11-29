@@ -4,10 +4,12 @@ import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
+import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_Card_Stroke
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
@@ -41,6 +43,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -52,12 +55,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.lerp
@@ -65,10 +70,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.flow.collectLatest
 import java.io.File
 
 @Composable
 fun AvashoDetailBottomSheet(
+    snackBatState: SnackbarHostState,
     animationProgress: Float,
     collapseToolbarAction: () -> Unit,
     halfToolbarAction: () -> Unit,
@@ -76,6 +83,8 @@ fun AvashoDetailBottomSheet(
     isBottomSheetExpanded: Boolean,
     avashoDetailsViewModel: AvashoDetailsBottomSheetViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val playerState by avashoDetailsViewModel::playerState
 
     LaunchedEffect(
@@ -92,6 +101,18 @@ fun AvashoDetailBottomSheet(
         }
     }
 
+    LaunchedEffect(Unit) {
+        avashoDetailsViewModel.uiViewState.collectLatest {
+            if (it is UiError && it.isSnack) {
+                showMessage(
+                    snackBatState,
+                    coroutineScope,
+                    it.message
+                )
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -104,10 +125,11 @@ fun AvashoDetailBottomSheet(
             )
 
             CollapseStatePlayer(
+                animationProgress = animationProgress,
+                playerState = playerState,
                 onProgressChanged = {
                     playerState.seekTo(it)
                 },
-                animationProgress = animationProgress,
                 onPlayingChanged = {
                     if (!playerState.isPlaying) {
                         playerState.startPlaying()
@@ -115,10 +137,26 @@ fun AvashoDetailBottomSheet(
                         playerState.stopPlaying()
                     }
                 },
-                playerState = playerState
+                onSaveClicked = {
+                    avashoDetailsViewModel.saveToDownloadFolder(
+                        filePath = avashoProcessedItem.filePath,
+                        fileName = avashoProcessedItem.fileName
+                    ).also { isSuccess ->
+                        if (isSuccess) {
+                            showMessage(
+                                snackBatState,
+                                coroutineScope,
+                                context.getString(string.msg_file_saved_successfully)
+                            )
+                        }
+                    }
+                }
             )
 
-            Divider(modifier = Modifier.height(1.dp), color = Color_Card_Stroke)
+            Divider(
+                color = Color_Card_Stroke,
+                modifier = Modifier.height(1.dp)
+            )
 
             Text(
                 text = avashoProcessedItem.text,
@@ -152,6 +190,10 @@ private fun CollapseStateToolbar(
         mutableStateOf(20.dp * (1 - progress))
     }
 
+    val buttonSize by remember(progress) {
+        mutableStateOf(48.dp * progress)
+    }
+
     val tintColorClose by remember(progress) {
         mutableStateOf(Color_White.copy(1 - progress))
     }
@@ -171,27 +213,27 @@ private fun CollapseStateToolbar(
 
     Column(modifier = modifier.fillMaxWidth()) {
         Divider(
+            color = Color_State_Layer_1,
             modifier = Modifier
                 .padding(top = 8.dp)
                 .height(5.dp)
                 .width(42.dp)
                 .align(CenterHorizontally)
-                .clip(shape = RoundedCornerShape(4.dp)),
-            color = Color_State_Layer_1
+                .clip(shape = RoundedCornerShape(4.dp))
         )
         Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 8.dp, end = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
         ) {
             IconButton(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .size(48.dp * progress),
                 onClick = {
                     halfToolbarAction()
-                }
+                },
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .size(buttonSize)
             ) {
                 ViraIcon(
                     drawable = drawable.ic_arrow_down,
@@ -205,13 +247,12 @@ private fun CollapseStateToolbar(
             Text(
                 text = fileName,
                 style = textStyle,
+                color = Color_Text_1,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = 8.dp),
-                color = Color_Text_1
+                    .padding(end = 8.dp)
             )
             IconButton(
-                modifier = Modifier.padding(end = 8.dp),
                 onClick = {
                     safeClick {
                         // 1f means that the bottomSheet is expanded
@@ -222,7 +263,8 @@ private fun CollapseStateToolbar(
 
                         collapseToolbarAction()
                     }
-                }
+                },
+                modifier = Modifier.padding(end = 8.dp)
             ) {
                 ViraIcon(
                     drawable = drawable.ic_menu_dot_2,
@@ -246,11 +288,17 @@ private fun CollapseStatePlayer(
     playerState: VoicePlayerState,
     onPlayingChanged: (Boolean) -> Unit,
     onProgressChanged: (Float) -> Unit,
+    onSaveClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val duration by remember(playerState.duration) {
         mutableFloatStateOf(playerState.duration.toFloat() / 1000)
     }
+
+    val bottomBarHeight by remember(animationProgress) {
+        mutableStateOf(104.dp * animationProgress)
+    }
+
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -261,21 +309,22 @@ private fun CollapseStatePlayer(
                 text = formatDuration(playerState.duration.toLong()),
                 textAlign = TextAlign.Start,
                 style = MaterialTheme.typography.caption,
+                color = Color_Text_3,
                 modifier = Modifier
                     .padding(start = 10.dp)
-                    .weight(1f),
-                color = Color_Text_3
+                    .weight(1f)
             )
             Text(
                 text = formatDuration(playerState.remainingTime.toLong()),
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.caption,
+                color = Color_Text_3,
                 modifier = Modifier
                     .padding(end = 10.dp)
-                    .weight(1f),
-                color = Color_Text_3
+                    .weight(1f)
             )
         }
+
         CompositionLocalProvider(LocalLayoutDirection provides Ltr) {
             Slider(
                 colors = SliderDefaults.colors(
@@ -289,11 +338,12 @@ private fun CollapseStatePlayer(
                 valueRange = 0f .. duration
             )
         }
+
         Row(
+            horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp, start = 20.dp, end = 20.dp),
-            horizontalArrangement = Arrangement.Center
+                .padding(bottom = 12.dp, start = 20.dp, end = 20.dp)
         ) {
             IconButton(
                 modifier = Modifier.padding(end = 24.dp),
@@ -304,7 +354,7 @@ private fun CollapseStatePlayer(
                             return@safeClick
                         }
 
-                        // TODO download
+                        onSaveClicked()
                     }
                 }
             ) {
@@ -377,13 +427,11 @@ private fun CollapseStatePlayer(
         }
 
         BottomBar(
-            modifier = Modifier.height(104.dp * animationProgress),
             onShareClick = {
                 // TODO share
             },
-            onSaveClick = {
-                // TODO save
-            }
+            onSaveClick = onSaveClicked,
+            modifier = Modifier.height(bottomBarHeight)
         )
     }
 }
@@ -403,9 +451,6 @@ fun BottomBar(
 
         Row(modifier = modifier.fillMaxWidth()) {
             TextButton(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp),
                 contentPadding = PaddingValues(
                     top = 16.dp,
                     bottom = 16.dp,
@@ -420,7 +465,10 @@ fun BottomBar(
                 colors = ButtonDefaults.buttonColors(
                     contentColor = Color_Primary_300,
                     backgroundColor = Color_Primary_Opacity_15
-                )
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp)
             ) {
                 Row(
                     horizontalArrangement = Arrangement.Center,
@@ -443,9 +491,6 @@ fun BottomBar(
             Spacer(modifier = Modifier.size(16.dp))
 
             TextButton(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp),
                 contentPadding = PaddingValues(
                     top = 16.dp,
                     bottom = 16.dp,
@@ -460,7 +505,10 @@ fun BottomBar(
                 colors = ButtonDefaults.buttonColors(
                     contentColor = Color_Primary_300,
                     backgroundColor = Color_Primary_Opacity_15
-                )
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp)
             ) {
                 Row(
                     horizontalArrangement = Arrangement.Center,
@@ -490,6 +538,7 @@ fun BottomBar(
 private fun AvashoDetailBottomSheetPreview() {
     ViraPreview {
         AvashoDetailBottomSheet(
+            snackBatState = SnackbarHostState(),
             animationProgress = 0f,
             collapseToolbarAction = {},
             halfToolbarAction = {},

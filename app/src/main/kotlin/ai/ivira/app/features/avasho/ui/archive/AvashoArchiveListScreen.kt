@@ -2,6 +2,8 @@ package ai.ivira.app.features.avasho.ui.archive
 
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
+import ai.ivira.app.features.ava_negar.ui.SnackBar
+import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Delete
@@ -26,7 +28,9 @@ import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoFileCreationScreen
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.BLue_a200_Opacity_40
+import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Red
@@ -71,8 +75,10 @@ import androidx.compose.material.ModalBottomSheetValue.Expanded
 import androidx.compose.material.ModalBottomSheetValue.HalfExpanded
 import androidx.compose.material.ModalBottomSheetValue.Hidden
 import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.SwipeableDefaults
 import androidx.compose.material.Text
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -95,6 +101,7 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -103,6 +110,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -121,7 +129,11 @@ fun AvashoArchiveListScreen(
                 text = it.text
             )
         }
+
+    val context = LocalContext.current
     val infiniteTransition = rememberInfiniteTransition(label = "columnBrushTransition")
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
 
     val archiveFiles by viewModel.allArchiveFiles.collectAsStateWithLifecycle(listOf())
     val networkStatus by viewModel.networkStatus.collectAsStateWithLifecycle()
@@ -168,10 +180,16 @@ fun AvashoArchiveListScreen(
         )
     }
 
+    var shouldShowSnackBarWithoutPadding by remember {
+        mutableStateOf(true)
+    }
+
     LaunchedEffect(bottomSheetState.targetValue) {
         snapshotFlow { bottomSheetState.targetValue }
             .collect { targetValue ->
                 bottomSheetTargetValue = targetValue
+
+                shouldShowSnackBarWithoutPadding = targetValue != Hidden
             }
     }
 
@@ -217,6 +235,24 @@ fun AvashoArchiveListScreen(
             }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.uiViewState.collectLatest {
+            if (it is UiError && it.isSnack) {
+                showMessage(
+                    snackbarHostState,
+                    coroutineScope,
+                    it.message
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(bottomSheetState.isVisible) {
+        if (bottomSheetState.isVisible) {
+            snackbarHostState.currentSnackbarData?.dismiss()
+        }
+    }
+
     BackHandler(bottomSheetState.isVisible) {
         bottomSheetInitialValue = when (bottomSheetState.currentValue) {
             Expanded -> {
@@ -251,224 +287,258 @@ fun AvashoArchiveListScreen(
             RoundedCornerShape(0.dp)
         }
 
-    ModalBottomSheetLayout(
-        sheetShape = modalBottomSheetBorderShape,
-        sheetBackgroundColor = Color_BG_Bottom_Sheet,
-        scrimColor = Color.Black.copy(alpha = 0.5f),
-        sheetState = bottomSheetState,
-        modifier = Modifier.fillMaxSize(),
-        sheetContent = {
-            when (fileSheetState) {
-                Details -> {
-                    selectedAvashoItem?.let { processItem ->
-                        AvashoDetailBottomSheet(
-                            animationProgress = calculatedProgress,
-                            collapseToolbarAction = {
-                                coroutineScope.launch {
-                                    bottomSheetState.hide()
-                                }
-                            },
-                            halfToolbarAction = {
-                                coroutineScope.launch {
-                                    bottomSheetState.show()
-                                }
-                            },
-                            avashoProcessedItem = processItem,
-                            isBottomSheetExpanded = bottomSheetState.isVisible
-                        )
-                    }
-                }
-                Process -> {
-                    selectedAvashoItem?.let { avashoItem ->
-                        ProcessedWithDownloadBottomSheet(
-                            title = avashoItem.fileName,
-                            saveAudioFile = {},
-                            shareItemAction = {},
-                            renameItemAction = {
-                                setBottomSheetType(Rename)
-                                coroutineScope.launch {
-                                    bottomSheetState.show()
-                                }
-                            },
-                            deleteItemAction = {
-                                setBottomSheetType(Delete)
-                                coroutineScope.launch {
-                                    bottomSheetState.show()
-                                }
-                            },
-                            downloadAudioFile = {
-                                if (!File(avashoItem.filePath).exists()) {
-                                    if (viewModel.isInDownloadQueue(avashoItem.id)) {
-                                        viewModel.cancelDownload(avashoItem.id)
-                                    } else {
-                                        viewModel.addFileToDownloadQueue(avashoItem)
+    Scaffold(
+        backgroundColor = MaterialTheme.colors.background,
+        modifier = Modifier.background(Color_BG),
+        scaffoldState = scaffoldState,
+        snackbarHost = { snackBarState ->
+            if (shouldShowSnackBarWithoutPadding) {
+                SnackBar(snackBarState, 32.dp)
+            } else {
+                SnackBarWithPaddingBottom(snackBarState, true, 400f)
+            }
+        }
+    ) { scaffoldPadding ->
+        ModalBottomSheetLayout(
+            sheetShape = modalBottomSheetBorderShape,
+            sheetBackgroundColor = Color_BG_Bottom_Sheet,
+            scrimColor = Color.Black.copy(alpha = 0.5f),
+            sheetState = bottomSheetState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(scaffoldPadding),
+            sheetContent = {
+                when (fileSheetState) {
+                    Details -> {
+                        selectedAvashoItem?.let { processItem ->
+                            AvashoDetailBottomSheet(
+                                snackBatState = snackbarHostState,
+                                animationProgress = calculatedProgress,
+                                collapseToolbarAction = {
+                                    coroutineScope.launch {
+                                        bottomSheetState.hide()
                                     }
+                                },
+                                halfToolbarAction = {
+                                    coroutineScope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                },
+                                avashoProcessedItem = processItem,
+                                isBottomSheetExpanded = bottomSheetState.isVisible
+                            )
+                        }
+                    }
+                    Process -> {
+                        selectedAvashoItem?.let { avashoItem ->
+                            ProcessedWithDownloadBottomSheet(
+                                title = avashoItem.fileName,
+                                saveAudioFile = {
+                                    viewModel.saveToDownloadFolder(
+                                        filePath = avashoItem.filePath,
+                                        fileName = avashoItem.fileName
+                                    ).also { isSuccess ->
+
+                                        coroutineScope.launch {
+                                            bottomSheetState.hide()
+                                        }
+
+                                        if (isSuccess) {
+                                            showMessage(
+                                                snackbarHostState,
+                                                coroutineScope,
+                                                context.getString(string.msg_file_saved_successfully)
+                                            )
+                                        }
+                                    }
+                                },
+                                shareItemAction = {},
+                                renameItemAction = {
+                                    setBottomSheetType(Rename)
+                                    coroutineScope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                },
+                                deleteItemAction = {
+                                    setBottomSheetType(Delete)
+                                    coroutineScope.launch {
+                                        bottomSheetState.show()
+                                    }
+                                },
+                                downloadAudioFile = {
+                                    if (!File(avashoItem.filePath).exists()) {
+                                        if (viewModel.isInDownloadQueue(avashoItem.id)) {
+                                            viewModel.cancelDownload(avashoItem.id)
+                                        } else {
+                                            viewModel.addFileToDownloadQueue(avashoItem)
+                                        }
+                                        coroutineScope.launch {
+                                            bottomSheetState.hide()
+                                        }
+                                    }
+                                },
+                                isFileDownloading = viewModel.isInDownloadQueue(avashoItem.id),
+                                isFileDownloaded = File(avashoItem.filePath).exists()
+
+                            )
+                        }
+                    }
+                    Rename -> {
+                        selectedAvashoItem?.let { selectedItem ->
+                            RenameFileBottomSheet(
+                                fileName = selectedItem.fileName,
+                                shouldShowKeyBoard = true,
+                                reNameAction = { name ->
+                                    viewModel.updateTitle(
+                                        title = name,
+                                        id = selectedItem.id
+                                    )
                                     coroutineScope.launch {
                                         bottomSheetState.hide()
                                     }
                                 }
-                            },
-                            isFileDownloading = viewModel.isInDownloadQueue(avashoItem.id),
-                            isFileDownloaded = File(avashoItem.filePath).exists()
-
-                        )
-                    }
-                }
-                Rename -> {
-                    selectedAvashoItem?.let { selectedItem ->
-                        RenameFileBottomSheet(
-                            fileName = selectedItem.fileName,
-                            shouldShowKeyBoard = true,
-                            reNameAction = { name ->
-                                viewModel.updateTitle(
-                                    title = name,
-                                    id = selectedItem.id
-                                )
-                                coroutineScope.launch {
-                                    bottomSheetState.hide()
-                                }
-                            }
-                        )
-                    }
-                }
-                Delete -> {
-                    selectedAvashoItem?.let { selectedItem ->
-                        FileItemConfirmationDeleteBottomSheet(
-                            deleteAction = {
-                                kotlin.runCatching {
-                                    viewModel.removeProcessedFile(selectedItem.id)
-                                    File(
-                                        selectedAvashoItem?.filePath.orEmpty()
-                                    ).delete()
-                                }
-                                coroutineScope.launch {
-                                    bottomSheetState.hide()
-                                }
-                            },
-                            cancelAction = { coroutineScope.launch { bottomSheetState.hide() } },
-                            fileName = selectedItem.fileName
-                        )
-                    }
-                }
-            }
-        }
-    ) {
-        Scaffold(
-            backgroundColor = MaterialTheme.colors.background,
-            topBar = {
-                ArchiveAppBar(
-                    onBackClick = {
-                        safeClick {
-                            navController.navigateUp()
+                            )
                         }
                     }
-                )
-            }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                if (archiveFiles.isEmpty()) {
-                    ArchiveEmptyBody()
-                } else {
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        val noNetworkAvailable = networkStatus is Unavailable
-                        val hasVpnConnection = networkStatus.let { it is Available && it.hasVpn }
-                        val isNetworkAvailableWithoutVpn = networkStatus.let { it is Available && !it.hasVpn }
-                        val isBannerError = uiViewState.let { it is UiError && !it.isSnack }
-                        val isFailureDownload = downloadState is FailureDownload
-
-                        if (noNetworkAvailable || hasVpnConnection || isBannerError || isFailureDownload) {
-                            if (archiveFiles.isNotEmpty()) {
-                                ErrorBanner(
-                                    errorMessage = if (uiViewState is UiError) {
-                                        (uiViewState as UiError).message
-                                    } else if (hasVpnConnection) {
-                                        stringResource(id = string.msg_vpn_is_connected_error)
-                                    } else {
-                                        stringResource(id = string.msg_internet_disconnected)
+                    Delete -> {
+                        selectedAvashoItem?.let { selectedItem ->
+                            FileItemConfirmationDeleteBottomSheet(
+                                deleteAction = {
+                                    kotlin.runCatching {
+                                        viewModel.removeProcessedFile(selectedItem.id)
+                                        File(
+                                            selectedAvashoItem?.filePath.orEmpty()
+                                        ).delete()
                                     }
-                                )
+                                    coroutineScope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                },
+                                cancelAction = { coroutineScope.launch { bottomSheetState.hide() } },
+                                fileName = selectedItem.fileName
+                            )
+                        }
+                    }
+                }
+            }
+        ) {
+            Scaffold(
+                backgroundColor = MaterialTheme.colors.background,
+                topBar = {
+                    ArchiveAppBar(
+                        onBackClick = {
+                            safeClick {
+                                navController.navigateUp()
                             }
                         }
+                    )
+                }
+            ) { paddingValues ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    if (archiveFiles.isEmpty()) {
+                        ArchiveEmptyBody()
+                    } else {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            val noNetworkAvailable = networkStatus is Unavailable
+                            val hasVpnConnection = networkStatus.let { it is Available && it.hasVpn }
+                            val isNetworkAvailableWithoutVpn = networkStatus.let { it is Available && !it.hasVpn }
+                            val isBannerError = uiViewState.let { it is UiError && !it.isSnack }
+                            val isFailureDownload = downloadState is FailureDownload
 
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            items(archiveFiles) {
-                                when (it) {
-                                    is AvashoProcessedFileView -> AvashoArchiveProcessedFileElement(
-                                        archiveViewProcessed = it,
-                                        isDownloadFailure = downloadFailureList.contains(it.id),
-                                        isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
-                                        isNetworkAvailable = isNetworkAvailableWithoutVpn,
-                                        onItemClick = callback@{ item ->
-                                            selectedAvashoItem = item
-                                            if (File(item.filePath).exists()) {
-                                                setBottomSheetType(Details)
+                            if (noNetworkAvailable || hasVpnConnection || isBannerError || isFailureDownload) {
+                                if (archiveFiles.isNotEmpty()) {
+                                    ErrorBanner(
+                                        errorMessage = if (uiViewState is UiError) {
+                                            (uiViewState as UiError).message
+                                        } else if (hasVpnConnection) {
+                                            stringResource(id = string.msg_vpn_is_connected_error)
+                                        } else {
+                                            stringResource(id = string.msg_internet_disconnected)
+                                        }
+                                    )
+                                }
+                            }
+
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(archiveFiles) {
+                                    when (it) {
+                                        is AvashoProcessedFileView -> AvashoArchiveProcessedFileElement(
+                                            archiveViewProcessed = it,
+                                            isDownloadFailure = downloadFailureList.contains(it.id),
+                                            isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
+                                            isNetworkAvailable = isNetworkAvailableWithoutVpn,
+                                            onItemClick = callback@{ item ->
+                                                selectedAvashoItem = item
+                                                if (File(item.filePath).exists()) {
+                                                    setBottomSheetType(Details)
+                                                    coroutineScope.launch {
+                                                        if (!bottomSheetState.isVisible) {
+                                                            bottomSheetState.show()
+                                                        } else {
+                                                            bottomSheetState.hide()
+                                                        }
+                                                    }
+                                                    return@callback
+                                                }
+
+                                                if (viewModel.isInDownloadQueue(item.id)) {
+                                                    viewModel.cancelDownload(item.id)
+                                                } else {
+                                                    viewModel.addFileToDownloadQueue(item)
+                                                }
+                                            },
+                                            onMenuClick = { avashoSelectedItem ->
+                                                selectedAvashoItem = avashoSelectedItem
+                                                setBottomSheetType(Process)
                                                 coroutineScope.launch {
                                                     if (!bottomSheetState.isVisible) {
                                                         bottomSheetState.show()
-                                                    } else {
-                                                        bottomSheetState.hide()
                                                     }
                                                 }
-                                                return@callback
                                             }
+                                        )
 
-                                            if (viewModel.isInDownloadQueue(item.id)) {
-                                                viewModel.cancelDownload(item.id)
-                                            } else {
-                                                viewModel.addFileToDownloadQueue(item)
-                                            }
-                                        },
-                                        onMenuClick = { avashoSelectedItem ->
-                                            selectedAvashoItem = avashoSelectedItem
-                                            setBottomSheetType(Process)
-                                            coroutineScope.launch {
-                                                if (!bottomSheetState.isVisible) {
-                                                    bottomSheetState.show()
-                                                }
-                                            }
+                                        is AvashoTrackingFileView -> {
+                                            AvashoArchiveTrackingFileElement(
+                                                archiveTrackingView = it,
+                                                brush = columnBrush(infiniteTransition),
+                                                estimateTime = { it.computeFileEstimateProcess() },
+                                                audioImageStatus = Converting
+                                            )
                                         }
-                                    )
 
-                                    is AvashoTrackingFileView -> {
-                                        AvashoArchiveTrackingFileElement(
-                                            archiveTrackingView = it,
-                                            brush = columnBrush(infiniteTransition),
-                                            estimateTime = { it.computeFileEstimateProcess() },
-                                            audioImageStatus = Converting
-                                        )
-                                    }
-
-                                    is AvashoUploadingFileView -> {
-                                        AvashoArchiveUploadingFileElement(
-                                            avashoUploadingFileView = it,
-                                            isNetworkAvailable = !noNetworkAvailable && !hasVpnConnection,
-                                            isErrorState = uiViewState.let { uiStatus ->
-                                                (uiStatus is UiError) && !uiStatus.isSnack
-                                            },
-                                            onTryAgainClick = { uploadingItem ->
-                                                viewModel.startUploading(uploadingItem)
-                                            }
-                                        )
+                                        is AvashoUploadingFileView -> {
+                                            AvashoArchiveUploadingFileElement(
+                                                avashoUploadingFileView = it,
+                                                isNetworkAvailable = !noNetworkAvailable && !hasVpnConnection,
+                                                isErrorState = uiViewState.let { uiStatus ->
+                                                    (uiStatus is UiError) && !uiStatus.isSnack
+                                                },
+                                                onTryAgainClick = { uploadingItem ->
+                                                    viewModel.startUploading(uploadingItem)
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                    Fab(
+                        modifier = Modifier.align(Alignment.BottomStart),
+                        onMainFabClick = {
+                            navController.navigate(route = AvaShoFileCreationScreen.route)
+                        }
+                    )
                 }
-                Fab(
-                    modifier = Modifier.align(Alignment.BottomStart),
-                    onMainFabClick = {
-                        navController.navigate(route = AvaShoFileCreationScreen.route)
-                    }
-                )
             }
         }
     }

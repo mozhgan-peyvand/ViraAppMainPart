@@ -1,5 +1,6 @@
 package ai.ivira.app.features.avasho.ui.archive
 
+import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus
 import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.FailureUpload
 import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.Idle
@@ -17,6 +18,7 @@ import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleD
 import ai.ivira.app.features.avasho.ui.archive.model.toAvashoProcessedFileView
 import ai.ivira.app.features.avasho.ui.archive.model.toAvashoTrackingFileView
 import ai.ivira.app.features.avasho.ui.archive.model.toAvashoUploadingFileView
+import ai.ivira.app.utils.common.file.FileOperationHelper
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatus.Available
@@ -25,6 +27,7 @@ import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.data.api_result.AppResult.Error
 import ai.ivira.app.utils.data.api_result.AppResult.Success
+import ai.ivira.app.utils.ui.StorageUtils
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiIdle
@@ -32,6 +35,7 @@ import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.combine
+import android.app.Application
 import android.media.MediaMetadataRetriever
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.ModalBottomSheetValue.Hidden
@@ -52,6 +56,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import saman.zamani.persiandate.PersianDate
+import java.io.File
 import javax.inject.Inject
 
 // fixme these two are duplicated, in ArchiveListViewModel
@@ -64,12 +69,15 @@ private const val TEXT_LENGTH_LIMIT = 1000
 class AvashoArchiveListViewModel @Inject constructor(
     private val avashoRepository: AvashoRepository,
     private val uiException: UiException,
+    private val storageUtils: StorageUtils,
+    private val fileOperationHelper: FileOperationHelper,
+    private val application: Application,
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
     private var retriever: MediaMetadataRetriever? = null
 
-    private val _uiViewStat = MutableSharedFlow<UiStatus>()
-    val uiViewState: SharedFlow<UiStatus> = _uiViewStat
+    private val _uiViewState = MutableSharedFlow<UiStatus>()
+    val uiViewState: SharedFlow<UiStatus> = _uiViewState
 
     private var uploadingList = listOf<AvashoUploadingFileView>()
 
@@ -130,7 +138,7 @@ class AvashoArchiveListViewModel @Inject constructor(
                     uploadState != FailureUpload &&
                     uploadingList.isNotEmpty()
                 ) {
-                    _uiViewStat.emit(UiLoading)
+                    _uiViewState.emit(UiLoading)
                     _uploadStatus.value = Uploading
 
                     indexOfItemThatShouldBeUploaded.run {
@@ -173,7 +181,7 @@ class AvashoArchiveListViewModel @Inject constructor(
         val trackingList = avashoArchiveFilesEntity.tracking
 
         if (trackingList.isEmpty() && uploadingList.isEmpty()) {
-            _uiViewStat.emit(UiIdle)
+            _uiViewState.emit(UiIdle)
         }
 
         buildList {
@@ -396,7 +404,7 @@ class AvashoArchiveListViewModel @Inject constructor(
         when (result) {
             is Success -> {
                 failureCount = 0
-                _uiViewStat.emit(UiSuccess)
+                _uiViewState.emit(UiSuccess)
                 delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
                 _uploadStatus.value = Idle
 
@@ -412,7 +420,7 @@ class AvashoArchiveListViewModel @Inject constructor(
                     _uploadStatus.value = Idle
                 } else {
                     _uploadStatus.value = FailureUpload
-                    _uiViewStat.emit(UiError(uiException.getErrorMessage(result.error)))
+                    _uiViewState.emit(UiError(uiException.getErrorMessage(result.error)))
                 }
             }
         }
@@ -424,5 +432,21 @@ class AvashoArchiveListViewModel @Inject constructor(
 
     fun removeProcessedFile(id: Int) = viewModelScope.launch {
         avashoRepository.deleteProcessFile(id)
+    }
+
+    fun saveToDownloadFolder(filePath: String, fileName: String): Boolean {
+        if (storageUtils.getAvailableSpace() <= File(filePath).length()) {
+            viewModelScope.launch {
+                _uiViewState.emit(
+                    UiError(application.getString(R.string.msg_not_enough_space), true)
+                )
+            }
+            return false
+        }
+
+        return fileOperationHelper.copyFileToDownloadFolder(
+            filePath = filePath,
+            fileName = fileName
+        )
     }
 }

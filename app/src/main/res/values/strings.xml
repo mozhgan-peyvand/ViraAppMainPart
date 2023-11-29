@@ -231,4 +231,6 @@
     <string name="lbl_mb">MB</string>
     <string name="lbl_save_audio_file">ذخیره فایل صوتی</string>
     <string name="lbl_download_audio_file">دانلود فایل صوتی</string>
+    <string name="msg_not_enough_space">فضای کافی وجود ندارد</string>
+    <string name="msg_file_saved_successfully">فایل در downloads ذخیره شد</string>
 </resources>
