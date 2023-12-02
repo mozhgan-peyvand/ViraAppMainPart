@@ -4,6 +4,7 @@ import ai.ivira.app.BuildConfig
 import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
 import ai.ivira.app.features.home.data.entity.VersionDto
 import ai.ivira.app.features.home.data.entity.VersionEntity
+import ai.ivira.app.utils.common.di.qualifier.EncryptedSharedPref
 import ai.ivira.app.utils.data.NetworkHandler
 import ai.ivira.app.utils.data.api_result.AppException
 import ai.ivira.app.utils.data.api_result.AppResult
@@ -33,6 +34,7 @@ class VersionRepository @Inject constructor(
     private val versionLocalDataSource: VersionLocalDataSource,
     private val versionRemoteDataSource: VersionRemoteDataSource,
     private val sharedPref: SharedPreferences,
+    @EncryptedSharedPref private val encryptedSharedPref: SharedPreferences,
     private val networkHandler: NetworkHandler
 ) {
     init {
@@ -77,7 +79,7 @@ class VersionRepository @Inject constructor(
         return if (networkHandler.hasNetworkConnection()) {
             when (val result = versionRemoteDataSource.getUpdateGatewayToken().toAppResult()) {
                 is Success -> {
-                    sharedPref.edit {
+                    encryptedSharedPref.edit {
                         this.putString(UPDATE_GATEWAY_TOKEN, result.data)
                     }
 
@@ -188,5 +190,5 @@ class VersionRepository @Inject constructor(
         versionLocalDataSource.insertReleaseNote(list)
     }
 
-    private fun gatewayToken() = sharedPref.getString(UPDATE_GATEWAY_TOKEN, "").orEmpty()
+    private fun gatewayToken() = encryptedSharedPref.getString(UPDATE_GATEWAY_TOKEN, "").orEmpty()
 }
