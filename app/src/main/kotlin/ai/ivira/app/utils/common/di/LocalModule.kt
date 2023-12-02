@@ -1,11 +1,17 @@
 package ai.ivira.app.utils.common.di
 
 import ai.ivira.app.features.ava_negar.data.DataStoreRepository
+import ai.ivira.app.utils.common.di.qualifier.EncryptedSharedPref
 import ai.ivira.app.utils.data.db.Migration
 import ai.ivira.app.utils.data.db.ViraDb
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV
+import androidx.security.crypto.EncryptedSharedPreferences.PrefValueEncryptionScheme
+import androidx.security.crypto.MasterKey.Builder
+import androidx.security.crypto.MasterKey.KeyScheme.AES256_GCM
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,6 +25,23 @@ object LocalModule {
     @Provides
     fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
         return context.getSharedPreferences("vira", Context.MODE_PRIVATE)
+    }
+
+    @Provides
+    @Singleton
+    @EncryptedSharedPref
+    fun provideEncryptedSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        val masterKey = Builder(context)
+            .setKeyScheme(AES256_GCM)
+            .build()
+
+        return EncryptedSharedPreferences.create(
+            context,
+            "e-vira",
+            masterKey,
+            AES256_SIV,
+            PrefValueEncryptionScheme.AES256_GCM
+        )
     }
 
     @Singleton
