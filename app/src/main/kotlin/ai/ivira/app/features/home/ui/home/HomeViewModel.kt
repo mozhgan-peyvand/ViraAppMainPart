@@ -74,7 +74,7 @@ class HomeViewModel @Inject constructor(
             System.currentTimeMillis()
         )
         val hasEnoughTimePassed =
-            previousPermissionRequest + SHOWING_PERMISSION_REQUEST_INTERVAL > System.currentTimeMillis()
+            previousPermissionRequest + SHOWING_PERMISSION_REQUEST_INTERVAL < System.currentTimeMillis()
 
         shouldShowNotificationBottomSheet = hasEnoughTimePassed
         // endregion
