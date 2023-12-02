@@ -1334,6 +1334,13 @@ fun DecreaseEstimateTime(
     }
     LaunchedEffect(token) {
         while (getEstimationTime.intValue > 0) {
+            if (getEstimationTime.intValue < 14) {
+                delay(1000)
+                getEstimationTime.intValue -= 1
+                callBack(getEstimationTime.intValue)
+                continue
+            }
+
             delay(10000)
             getEstimationTime.intValue -= 10
             callBack(getEstimationTime.intValue)
