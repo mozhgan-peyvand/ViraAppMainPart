@@ -47,7 +47,10 @@ fun SnackBarWithPaddingBottom(
 }
 
 @Composable
-fun SnackBar(snackbarHostState: SnackbarHostState) {
+fun SnackBar(
+    snackbarHostState: SnackbarHostState,
+    maxLine: Int = 1
+) {
     SnackbarHost(
         hostState = snackbarHostState,
         modifier = Modifier.padding(horizontal = 20.dp),
@@ -58,7 +61,7 @@ fun SnackBar(snackbarHostState: SnackbarHostState) {
                     .background(Color_Surface_Inverse, RoundedCornerShape(5.dp))
             ) {
                 Text(
-                    maxLines = 1,
+                    maxLines = maxLine,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     text = it.message,

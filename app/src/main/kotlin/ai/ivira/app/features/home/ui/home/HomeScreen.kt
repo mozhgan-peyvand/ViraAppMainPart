@@ -3,11 +3,24 @@ package ai.ivira.app.features.home.ui.home
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
+import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.AvaSho
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNama
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNegar
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NotificationPermission
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UpdateApp
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ViraSiar
+import ai.ivira.app.features.home.ui.home.version.sheets.UpToDateBottomSheet
+import ai.ivira.app.features.home.ui.home.version.sheets.UpdateBottomSheet
+import ai.ivira.app.features.home.ui.home.version.sheets.UpdateLoadingBottomSheet
 import ai.ivira.app.utils.common.CommonConstants.LANDING_URL
+import ai.ivira.app.utils.data.NetworkStatus
+import ai.ivira.app.utils.ui.UiError
+import ai.ivira.app.utils.ui.UiLoading
+import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.hasNotificationPermission
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
@@ -20,6 +33,7 @@ import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.shareText
 import ai.ivira.app.utils.ui.sheets.AccessNotificationBottomSheet
+import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Blue_Grey_900_2
 import ai.ivira.app.utils.ui.theme.Blue_gray_900
 import ai.ivira.app.utils.ui.theme.Color_BG
@@ -37,6 +51,8 @@ import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.Manifest.permission
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
@@ -66,12 +82,14 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -85,6 +103,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 
@@ -108,22 +127,46 @@ private fun HomeScreen(
 ) {
     val eventHandler = LocalEventHandler.current
     val coroutineScope = rememberCoroutineScope()
-    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
     val context = LocalContext.current
 
-    val modalBottomSheetState =
-        rememberModalBottomSheetState(
-            initialValue = ModalBottomSheetValue.Hidden,
-            skipHalfExpanded = true
-        )
+    val changeLogList by homeViewModel.changeLogList.collectAsStateWithLifecycle()
+    val uiState by homeViewModel.uiViewState.collectAsStateWithLifecycle()
+    val networkStatus by homeViewModel.networkStatus.collectAsStateWithLifecycle()
+    val modalBottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
+
+    val showUpdateBottomSheet by homeViewModel.showUpdateBottomSheet.collectAsStateWithLifecycle()
 
     val (sheetSelected, setSelectedSheet) = rememberSaveable {
-        mutableStateOf(HomeItemBottomSheetType.AvaSho)
+        mutableStateOf(AvaSho)
     }
 
     BackHandler(scaffoldState.drawerState.isOpen) {
         coroutineScope.launch {
             scaffoldState.drawerState.close()
+        }
+    }
+
+    BackHandler(modalBottomSheetState.isVisible) {
+        coroutineScope.launch {
+            modalBottomSheetState.hide()
+        }
+    }
+
+    LaunchedEffect(uiState) {
+        if (uiState is UiError) {
+            showMessage(
+                snackbarHostState,
+                coroutineScope,
+                context.getString(string.msg_updating_failed_please_try_again_later)
+            )
+
+            // fixme should remove it, replace stateFlow with sharedFlow in viewModel
+            homeViewModel.clearUiState()
         }
     }
 
@@ -150,8 +193,31 @@ private fun HomeScreen(
             !context.hasNotificationPermission() &&
             homeViewModel.shouldShowNotificationBottomSheet
         ) {
-            setSelectedSheet(HomeItemBottomSheetType.NotificationPermission)
+            setSelectedSheet(NotificationPermission)
             coroutineScope.launch {
+                if (!modalBottomSheetState.isVisible) {
+                    modalBottomSheetState.show()
+                }
+            }
+        }
+    }
+
+    // fixme hamburger icon of drawer is clickable when bottomSheet is open
+    //  because ModalBottomSheet is child of Scaffold
+    LaunchedEffect(scaffoldState.drawerState.isOpen) {
+        if (modalBottomSheetState.isVisible) {
+            coroutineScope.launch {
+                modalBottomSheetState.hide()
+            }
+        }
+    }
+
+    LaunchedEffect(showUpdateBottomSheet) {
+        if (homeViewModel.canShowBottomSheet && showUpdateBottomSheet) {
+            setSelectedSheet(UpdateApp)
+
+            coroutineScope.launch {
+                modalBottomSheetState.hide()
                 if (!modalBottomSheetState.isVisible) {
                     modalBottomSheetState.show()
                 }
@@ -193,6 +259,31 @@ private fun HomeScreen(
                     coroutineScope.launch {
                         scaffoldState.drawerState.close()
                     }
+                },
+                onUpdateClick = {
+                    coroutineScope.launch {
+                        scaffoldState.drawerState.close()
+                    }
+
+                    if (networkStatus is NetworkStatus.Unavailable) {
+                        showMessage(
+                            snackbarHostState,
+                            coroutineScope,
+                            context.getString(string.msg_internet_disconnected)
+                        )
+                        return@DrawerHeader
+                    }
+
+                    setSelectedSheet(UpdateApp)
+                    coroutineScope.launch {
+                        if (!modalBottomSheetState.isVisible) {
+                            modalBottomSheetState.show()
+                        } else {
+                            modalBottomSheetState.hide()
+                        }
+                    }
+
+                    homeViewModel.getUpdateList()
                 }
             )
         },
@@ -200,19 +291,22 @@ private fun HomeScreen(
         drawerScrimColor = Color.Transparent,
         drawerElevation = 0.dp,
         drawerShape = RoundedCornerShape(0.dp),
-        drawerGesturesEnabled = scaffoldState.drawerState.isOpen
+        drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
+        snackbarHost = { snackBarHost ->
+            SnackBar(
+                snackbarHostState = snackBarHost,
+                maxLine = 2
+            )
+        }
     ) { innerPadding ->
         ModalBottomSheetLayout(
             sheetState = modalBottomSheetState,
-            sheetShape = RoundedCornerShape(
-                topEnd = 16.dp,
-                topStart = 16.dp
-            ),
+            sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
             sheetBackgroundColor = Color_BG_Bottom_Sheet,
             scrimColor = Color.Black.copy(alpha = 0.5f),
             sheetContent = sheetContent@{
                 when (sheetSelected) {
-                    HomeItemBottomSheetType.AvaSho -> {
+                    AvaSho -> {
                         HomeItemBottomSheet(
                             iconRes = drawable.img_ava_sho,
                             title = stringResource(id = string.lbl_ava_sho),
@@ -227,7 +321,7 @@ private fun HomeScreen(
                         )
                     }
 
-                    HomeItemBottomSheetType.NeviseNama -> {
+                    NeviseNama -> {
                         HomeItemBottomSheet(
                             iconRes = drawable.img_nevise_nama,
                             title = stringResource(id = string.lbl_nevise_nama),
@@ -242,7 +336,7 @@ private fun HomeScreen(
                         )
                     }
 
-                    HomeItemBottomSheetType.NeviseNegar -> {
+                    NeviseNegar -> {
                         HomeItemBottomSheet(
                             iconRes = drawable.img_nevise_negar,
                             title = stringResource(id = string.lbl_nevise_negar),
@@ -257,7 +351,7 @@ private fun HomeScreen(
                         )
                     }
 
-                    HomeItemBottomSheetType.ViraSiar -> {
+                    ViraSiar -> {
                         HomeItemBottomSheet(
                             iconRes = drawable.img_virasiar,
                             title = stringResource(id = string.lbl_virasiar),
@@ -272,7 +366,49 @@ private fun HomeScreen(
                         )
                     }
 
-                    HomeItemBottomSheetType.NotificationPermission -> {
+                    UpdateApp -> {
+                        if (showUpdateBottomSheet || uiState is UiSuccess) {
+                            if (changeLogList.isNotEmpty()) {
+                                UpdateBottomSheet(
+                                    item = changeLogList,
+                                    onUpdateClick = {
+                                        coroutineScope.launch {
+                                            modalBottomSheetState.hide()
+                                        }
+                                        kotlin.runCatching {
+                                            val intent = Intent(Intent.ACTION_VIEW)
+                                            intent.data = Uri.parse(LANDING_URL)
+                                            context.startActivity(intent)
+                                        }
+                                    },
+                                    onLaterClick = {
+                                        homeViewModel.showLater()
+                                        coroutineScope.launch {
+                                            modalBottomSheetState.hide()
+                                        }
+                                    }
+                                )
+                            } else {
+                                UpToDateBottomSheet(
+                                    onUnderstoodClick = {
+                                        coroutineScope.launch {
+                                            modalBottomSheetState.hide()
+                                        }
+                                    }
+                                )
+                            }
+                        } else if (uiState is UiLoading) {
+                            UpdateLoadingBottomSheet()
+                        } else if (uiState is UiLoading) {
+                            coroutineScope.launch {
+                                modalBottomSheetState.hide()
+                            }
+                        }
+
+                        homeViewModel.doNotShowUpdateBottomSheetUntilNextLaunch()
+                    }
+
+                    NotificationPermission -> {
                         if (!isSdkVersion33orHigher()) return@sheetContent
                         val notificationPermissionLauncher = rememberLauncherForActivityResult(
                             RequestPermission()
@@ -324,14 +460,13 @@ private fun HomeScreen(
             HomeBody(
                 paddingValues = innerPadding,
                 onAvanegarClick = {
-                    // navigate to ava negar
                     homeViewModel.navigate()
                 },
                 onItemClick = { homeItem ->
                     eventHandler.selectItem(HomeAnalytics.selectComingSoonItem(homeItem))
                     when (homeItem) {
-                        HomeItemBottomSheetType.AvaSho -> {
-                            setSelectedSheet(HomeItemBottomSheetType.AvaSho)
+                        AvaSho -> {
+                            setSelectedSheet(AvaSho)
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
                                 if (!modalBottomSheetState.isVisible) {
@@ -342,8 +477,8 @@ private fun HomeScreen(
                             }
                         }
 
-                        HomeItemBottomSheetType.NeviseNegar -> {
-                            setSelectedSheet(HomeItemBottomSheetType.NeviseNegar)
+                        NeviseNegar -> {
+                            setSelectedSheet(NeviseNegar)
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
                                 if (!modalBottomSheetState.isVisible) {
@@ -354,8 +489,8 @@ private fun HomeScreen(
                             }
                         }
 
-                        HomeItemBottomSheetType.ViraSiar -> {
-                            setSelectedSheet(HomeItemBottomSheetType.ViraSiar)
+                        ViraSiar -> {
+                            setSelectedSheet(ViraSiar)
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
                                 if (!modalBottomSheetState.isVisible) {
@@ -366,8 +501,8 @@ private fun HomeScreen(
                             }
                         }
 
-                        HomeItemBottomSheetType.NeviseNama -> {
-                            setSelectedSheet(HomeItemBottomSheetType.NeviseNama)
+                        NeviseNama -> {
+                            setSelectedSheet(NeviseNama)
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
                                 if (!modalBottomSheetState.isVisible) {
@@ -377,6 +512,8 @@ private fun HomeScreen(
                                 }
                             }
                         }
+
+                        UpdateApp -> {}
 
                         NotificationPermission -> {}
                     }
@@ -390,10 +527,10 @@ private fun HomeScreen(
 @Composable
 fun HomeAppBar(openDrawer: () -> Unit) {
     Box(
+        contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, top = 20.dp, bottom = 22.dp),
-        contentAlignment = Alignment.Center
+            .padding(start = 16.dp, top = 20.dp, bottom = 22.dp)
     ) {
         ViraImage(
             drawable = drawable.ic_app_logo_name_linear,
@@ -424,32 +561,30 @@ private fun HomeBody(
     val homeItem = remember { HomeItemScreen.items }
 
     Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .background(Color_BG),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color_BG)
     ) {
         Card(
-            modifier = modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth(),
-            elevation = 0.dp,
             shape = RoundedCornerShape(16.dp),
+            elevation = 0.dp,
             onClick = {
                 safeClick {
                     onAvanegarClick()
                 }
-            }
+            },
+            modifier = modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
         ) {
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .background(Color.Transparent)
-                    .padding(
-                        end = 24.dp
-                    )
-                    .heightIn(min = 128.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(end = 24.dp)
+                    .heightIn(min = 128.dp)
             ) {
                 ViraImage(
                     drawable = drawable.img_ava_negar_2,
@@ -475,45 +610,47 @@ private fun HomeBody(
                     )
                 }
                 Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .clip(CircleShape)
                         .size(48.dp)
-                        .background(Color_Primary_200),
-                    contentAlignment = Alignment.Center
+                        .background(Color_Primary_200)
                 ) {
                     ViraImage(
                         drawable = drawable.ic_arrow_crooked,
-                        contentDescription = "ic_arrow"
+                        contentDescription = null
                     )
                 }
             }
         }
 
         Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 36.dp, bottom = 16.dp, start = 16.dp, end = 16.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(top = 36.dp, bottom = 16.dp, start = 16.dp, end = 16.dp)
         ) {
             Divider(
-                Modifier
-                    .weight(1f)
-                    .height(1.dp),
-                color = Color_OutLine
-            )
-            Text(
-                text = stringResource(id = string.coming_soon_vira),
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.subtitle2,
-                color = Color_Text_2,
-                textAlign = TextAlign.Center
-            )
-            Divider(
+                color = Color_OutLine,
                 modifier = Modifier
                     .weight(1f)
-                    .height(1.dp),
-                color = Color_OutLine
+                    .height(1.dp)
+            )
+
+            Text(
+                text = stringResource(id = string.coming_soon_vira),
+                style = MaterialTheme.typography.subtitle2,
+                color = Color_Text_2,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f)
+            )
+
+            Divider(
+                color = Color_OutLine,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(1.dp)
             )
         }
 
@@ -540,24 +677,24 @@ fun HomeBodyItem(
     onItemClick: (HomeItemBottomSheetType) -> Unit
 ) {
     Box(
+        contentAlignment = Alignment.TopCenter,
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Transparent)
             .padding(top = 4.dp)
-            .heightIn(min = 148.dp),
-        contentAlignment = Alignment.TopCenter
+            .heightIn(min = 148.dp)
     ) {
         Card(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 32.dp),
+            elevation = 0.dp,
+            backgroundColor = Color_Card,
             onClick = {
                 safeClick {
                     onItemClick(item.homeItemType)
                 }
             },
-            elevation = 0.dp,
-            backgroundColor = Color_Card
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 32.dp)
         ) {
             Column(
                 verticalArrangement = Arrangement.Center,
@@ -582,21 +719,15 @@ fun HomeBodyItem(
 
                 Surface(
                     shape = CircleShape,
-                    border = BorderStroke(
-                        0.5.dp,
-                        color = Color_Card_Stroke
-                    )
+                    border = BorderStroke(0.5.dp, color = Color_Card_Stroke)
                 ) {
                     Text(
                         text = stringResource(id = string.lbl_coming_soon),
+                        style = MaterialTheme.typography.overline,
+                        color = Color_Text_3,
                         modifier = Modifier
                             .background(Blue_Grey_900_2)
-                            .padding(
-                                horizontal = 17.dp,
-                                vertical = 10.dp
-                            ),
-                        style = MaterialTheme.typography.overline,
-                        color = Color_Text_3
+                            .padding(horizontal = 17.dp, vertical = 10.dp)
                     )
                 }
             }

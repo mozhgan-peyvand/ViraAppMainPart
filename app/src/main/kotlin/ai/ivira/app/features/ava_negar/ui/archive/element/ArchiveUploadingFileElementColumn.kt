@@ -84,7 +84,8 @@ fun ArchiveUploadingFileElementColumn(
                             archiveUploadingFileView
                         )
                     }
-                }) {
+                }
+                ) {
                     ViraIcon(
                         drawable = R.drawable.ic_dots_menu,
                         modifier = Modifier.padding(12.dp),

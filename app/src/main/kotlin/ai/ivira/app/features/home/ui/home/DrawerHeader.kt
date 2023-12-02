@@ -28,11 +28,13 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun DrawerHeader(
     aboutUsOnClick: () -> Unit,
-    inviteFriendOnclick: () -> Unit
+    inviteFriendOnclick: () -> Unit,
+    onUpdateClick: () -> Unit
 ) {
     DrawerHeaderBody(
-        aboutUsOnClick = { aboutUsOnClick() },
-        inviteFriendOnclick = { inviteFriendOnclick() }
+        aboutUsOnClick = aboutUsOnClick,
+        inviteFriendOnclick = inviteFriendOnclick,
+        onUpdateClick = onUpdateClick
     )
 }
 
@@ -40,6 +42,7 @@ fun DrawerHeader(
 private fun DrawerHeaderBody(
     aboutUsOnClick: () -> Unit,
     inviteFriendOnclick: () -> Unit,
+    onUpdateClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -73,10 +76,17 @@ private fun DrawerHeaderBody(
             icon = drawable.ic_envelope,
             onItemClick = { inviteFriendOnclick() }
         )
+
         DrawerBody(
             title = stringResource(id = string.lbl_about_vira),
             icon = drawable.ic_info,
             onItemClick = { aboutUsOnClick() }
+        )
+
+        DrawerBody(
+            title = stringResource(id = string.lbl_update_app),
+            icon = drawable.ic_update,
+            onItemClick = { onUpdateClick() }
         )
     }
 }
@@ -122,6 +132,6 @@ fun DrawerBody(
 @Composable
 private fun DrawerLayoutPreview() {
     ViraPreview {
-        DrawerHeader(aboutUsOnClick = {}, inviteFriendOnclick = {})
+        DrawerHeader(aboutUsOnClick = {}, inviteFriendOnclick = {}, onUpdateClick = {})
     }
 }
