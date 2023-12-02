@@ -12,22 +12,27 @@ plugins {
 }
 
 project.ext {
+    versionEpoch = 3 // must NOT CHANGE, added for historical reasons
     versionMajor = 1
     versionMinor = 0
     versionPatch = 0
-    versionUploadFailed = 0
+    versionOffset = 0
+
     versionMinSdk = 21
     versionCompileSdk = 34
     versionTargetSdk = 33
+
     applicationId = 'ai.ivira.app'
 }
 
 int generateVersionCode() {
-    return project.ext.versionMinSdk * 1000000 +
-            project.ext.versionMajor * 100000 +
-            project.ext.versionMinor * 10000 +
-            project.ext.versionPatch * 100 +
-            project.ext.versionUploadFailed
+    def offsetPart = "$versionOffset"
+    def patchPart = String.format("%2d", versionPatch).replace(" ", "0")
+    def minorPart = String.format("%2d", versionMinor).replace(" ", "0")
+    def majorPart = String.format("%2d", versionMajor).replace(" ", "0")
+    def epochPart = "$versionEpoch"
+
+    return Integer.parseInt("$epochPart$majorPart$minorPart$patchPart$offsetPart")
 }
 
 String generateVersionName() {
