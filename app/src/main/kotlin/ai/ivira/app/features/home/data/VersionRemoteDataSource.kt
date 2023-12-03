@@ -9,8 +9,8 @@ import ai.ivira.app.utils.data.api_result.ApiResult.Success
 import javax.inject.Inject
 
 class VersionRemoteDataSource @Inject constructor(
-    private val versionService: VersionService
-
+    private val versionService: VersionService,
+    private val helper: VersionDataHelper
 ) {
     init {
         System.loadLibrary("vira")
@@ -18,15 +18,15 @@ class VersionRemoteDataSource @Inject constructor(
 
     suspend fun getUpdateGatewayToken(): ApiResult<String> {
         val body = PostUpdateGatewayToken(
-            system = gws(),
+            system = helper.gws(),
             authenticationPack = UpdateGatewayAuthenticationPack(
-                username = gwu(),
-                password = gwp()
+                username = helper.gwu(),
+                password = helper.gwp()
             )
         )
 
         val result = versionService.getUpdateGatewayToken(
-            url = gw(),
+            url = helper.gw(),
             param = body
         )
 
@@ -38,7 +38,7 @@ class VersionRemoteDataSource @Inject constructor(
 
     suspend fun getUpdateVersionList(token: String): ApiResult<List<SettingNetwork>> {
         val result = versionService.getUpdateList(
-            url = up(),
+            url = helper.up(),
             gatewayToken = token
         )
 
@@ -47,10 +47,4 @@ class VersionRemoteDataSource @Inject constructor(
             is Error -> Error(result.error)
         }
     }
-
-    private external fun gw(): String
-    private external fun up(): String
-    private external fun gwu(): String
-    private external fun gwp(): String
-    private external fun gws(): String
 }

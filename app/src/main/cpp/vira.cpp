@@ -34,9 +34,9 @@ Java_ai_ivira_app_utils_data_HeaderInterceptor_ak(JNIEnv *env, jobject thiz) {
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gw(JNIEnv *env, jobject thiz) {
-    std::string AK = "https://gateway-v3-dev.apipart.ir/service/gateway@3/token";
-    std::string key = "YMV";
+Java_ai_ivira_app_features_home_data_VersionDataHelper_cgw(JNIEnv *env, jobject thiz) {
+    std::string AK = ".,2(5biw!92=19?u0kh961694,h14w5=4./;#w!92=19?\030uw27-=(";
+    std::string key = "FX";
 
     std::string dec = AK;
 
@@ -44,14 +44,14 @@ Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gw(JNIEnv *env, job
         dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
 
 
-    return env->NewStringUTF(AK.c_str());
+    return env->NewStringUTF(dec.c_str());
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_up(JNIEnv *env, jobject thiz) {
-    std::string AK = "https://barjavand-v3-dev.apipart.ir/service/barjavand@3/data?schemaName=vira&schemaVersion=1.0.0";
-    std::string key = "YMV";
+Java_ai_ivira_app_features_home_data_VersionDataHelper_cup(JNIEnv *env, jobject thiz) {
+    std::string AK = ".,2(5biw$942'.'6\"u0kh961694,h14w5=4./;#w$942'.'6\"\030uw\"929y+%0#5'\026'5#e0149`+%0#5'\016#*51)6{ihhhh";
+    std::string key = "FX";
 
     std::string dec = AK;
 
@@ -59,13 +59,13 @@ Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_up(JNIEnv *env, job
         dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
 
 
-    return env->NewStringUTF(AK.c_str());
+    return env->NewStringUTF(dec.c_str());
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gws(JNIEnv *env, jobject thiz) {
-    std::string AK = "barjavand";
+Java_ai_ivira_app_features_home_data_VersionDataHelper_cgws(JNIEnv *env, jobject thiz) {
+    std::string AK = "3;>;;:04(";
     std::string key = "QZL";
 
     std::string dec = AK;
@@ -74,13 +74,13 @@ Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gws(JNIEnv *env, jo
         dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
 
 
-    return env->NewStringUTF(AK.c_str());
+    return env->NewStringUTF(dec.c_str());
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gwu(JNIEnv *env, jobject thiz) {
-    std::string AK = "vira";
+Java_ai_ivira_app_features_home_data_VersionDataHelper_cgwu(JNIEnv *env, jobject thiz) {
+    std::string AK = "'3>0";
     std::string key = "QZL";
 
     std::string dec = AK;
@@ -89,14 +89,14 @@ Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gwu(JNIEnv *env, jo
         dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
 
 
-    return env->NewStringUTF(AK.c_str());
+    return env->NewStringUTF(dec.c_str());
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gwp(JNIEnv *env, jobject thiz) {
-    std::string AK = "hrL6cPiZ3su7BfKfPlDM";
-    std::string key = "QZL";
+Java_ai_ivira_app_features_home_data_VersionDataHelper_cgwp(JNIEnv *env, jobject thiz) {
+    std::string AK = "\177(\036\"+\n$\v\025l\023\037p\037u2\021l\024`";
+    std::string key = "FX";
 
     std::string dec = AK;
 
@@ -104,5 +104,50 @@ Java_ai_ivira_app_features_home_data_VersionRemoteDataSource_gwp(JNIEnv *env, jo
         dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
 
 
-    return env->NewStringUTF(AK.c_str());
+    return env->NewStringUTF(dec.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_home_data_VersionDataHelper_cgwd(JNIEnv *env, jobject thiz) {
+    std::string AK = ".,2(5biw!92=19?u0kk<#.h961694,h14w5=4./;#w!92=19?\030uw27-=(";
+    std::string key = "FX";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+
+    return env->NewStringUTF(dec.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_home_data_VersionDataHelper_cupd(JNIEnv *env, jobject thiz) {
+    std::string AK = ".,2(5biw$942'.'6\"u0kk<#.h961694,h14w5=4./;#w$942'.'6\"\030uw\"929y+%0#5'\026'5#e0149`+%0#5'\016#*51)6{ihhhh";
+    std::string key = "FX";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+
+    return env->NewStringUTF(dec.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_home_data_VersionDataHelper_cgwpd(JNIEnv *env, jobject thiz) {
+    std::string AK = ".*\nn%\b/\002u+3o\004>\r>\026\064\002\025";
+    std::string key = "FX";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+
+    return env->NewStringUTF(dec.c_str());
 }
