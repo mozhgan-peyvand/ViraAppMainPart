@@ -5,6 +5,8 @@ import ai.ivira.app.utils.data.api_result.ApiError.HttpError
 import ai.ivira.app.utils.data.api_result.ApiError.IOError
 import ai.ivira.app.utils.data.api_result.ApiError.JsonParseException
 import ai.ivira.app.utils.data.api_result.ApiError.UnknownApiError
+import ai.ivira.app.utils.data.exceptions.EmptyBodyException
+import ai.ivira.app.utils.data.exceptions.RemoteDataSourceException
 import java.io.IOException
 
 sealed interface ApiError {
@@ -13,6 +15,16 @@ sealed interface ApiError {
     data class JsonParseException(val throwable: Throwable) : ApiError
     data class UnknownApiError(val throwable: Throwable) : ApiError
     object EmptyBodyError : ApiError
+
+    fun getException(): Throwable {
+        return when (this) {
+            EmptyBodyError -> EmptyBodyException()
+            is HttpError -> RemoteDataSourceException(code, body)
+            is IOError -> exception
+            is JsonParseException -> throwable
+            is UnknownApiError -> throwable
+        }
+    }
 }
 
 fun ApiError.toAppException(): AppException =

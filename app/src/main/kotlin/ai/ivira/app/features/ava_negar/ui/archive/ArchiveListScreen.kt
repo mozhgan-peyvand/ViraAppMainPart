@@ -2,6 +2,7 @@ package ai.ivira.app.features.ava_negar.ui.archive
 
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.AvanegarSentry
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Processed
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Tracking
@@ -727,11 +728,13 @@ private fun AvaNegarArchiveListScreen(
                                     }
                                 }
                             } else {
+                                val hasError = uiViewState is UiError && isThereAnyTrackingOrUploading
+                                AvanegarSentry.queueIsFull(hasError)
                                 showMessage(
                                     snackbarHostState,
                                     coroutineScope,
                                     context.getString(
-                                        if (uiViewState is UiError && isThereAnyTrackingOrUploading) {
+                                        if (hasError) {
                                             R.string.msg_wait_for_connection_to_server
                                         } else {
                                             R.string.msg_wait_process_finish_or_cancel_it
@@ -882,11 +885,13 @@ private fun AvaNegarArchiveListScreen(
                                     )
                                 }
                             } else {
+                                val hasError = uiViewState is UiError && isThereAnyTrackingOrUploading
+                                AvanegarSentry.queueIsFull(hasError)
                                 showMessage(
                                     snackbarHostState,
                                     coroutineScope,
                                     context.getString(
-                                        if (uiViewState is UiError && isThereAnyTrackingOrUploading) {
+                                        if (hasError) {
                                             R.string.msg_wait_for_connection_to_server
                                         } else {
                                             R.string.msg_wait_process_finish_or_cancel_it

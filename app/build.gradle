@@ -9,6 +9,7 @@ plugins {
     id 'com.google.devtools.ksp'
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
+    id 'io.sentry.android.gradle' version '3.12.0'
 }
 
 project.ext {
@@ -46,6 +47,11 @@ def getGitHash = { ->
         standardOutput = stdout
     }
     return stdout.toString().trim()
+}
+
+sentry {
+    includeProguardMapping = false
+    autoUploadProguardMapping = false
 }
 
 android {
@@ -127,6 +133,7 @@ android {
     buildFeatures {
         compose true
     }
+    // source is used to configure sentry, if changed that also must be changed! (specially source)
     flavorDimensions "source", "store"
     productFlavors {
         dev {
@@ -269,4 +276,7 @@ dependencies {
 
     //EncryptedSharedPreferences
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+
+    implementation("io.sentry:sentry-android:7.0.0")
+
 }

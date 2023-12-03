@@ -3,6 +3,7 @@ package ai.ivira.app
 import ai.ivira.app.features.ava_negar.data.AvanegarTracker
 import ai.ivira.app.utils.common.notification.FirebaseTopic.Vira
 import ai.ivira.app.utils.common.notification.ViraFirebaseMessagingService.Companion.TAG
+import ai.ivira.app.utils.ui.initializers.SentryInitializer
 import android.app.Application
 import android.content.SharedPreferences
 import androidx.core.content.edit
@@ -22,6 +23,9 @@ class ViraApp : Application() {
     lateinit var avanegarTracker: AvanegarTracker
 
     @Inject
+    lateinit var sentryInitializer: SentryInitializer
+
+    @Inject
     lateinit var sharePerf: SharedPreferences
     override fun onCreate() {
         super.onCreate()
@@ -29,6 +33,9 @@ class ViraApp : Application() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
+
+        sentryInitializer.init()
+
         getFirebaseToken()
         ensureViraTopicSubscribed()
     }

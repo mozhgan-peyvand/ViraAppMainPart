@@ -1,6 +1,7 @@
 package ai.ivira.app.features.ava_negar.ui.record
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.AvanegarSentry
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.record.RecordFileResult.Companion.FILE_NAME
 import ai.ivira.app.features.ava_negar.ui.record.sheets.BackToArchiveListConfirmationBottomSheet
@@ -134,9 +135,11 @@ private fun AvaNegarVoiceRecordingScreen(
     val recorder by viewModel::recorder
     val playerState by viewModel::playerState
 
-    val actionConvertToText = remember<() -> Unit> {
-        {
+    val actionConvertToText = remember<(isStopped: Boolean) -> Unit> {
+        { isStopped ->
             val name = viewModel.getCurrentDefaultName()
+            AvanegarSentry.breadCrumbVoiceFinish(isStopped, name)
+            AvanegarSentry.convertToTextRecorded()
             viewModel.updateCurrentDefaultName()
             navController.previousBackStackEntry
                 ?.savedStateHandle
@@ -256,7 +259,7 @@ private fun AvaNegarVoiceRecordingScreen(
                         actionConvertFile = {
                             eventHandler.selectItem(AvanegarAnalytics.selectConvertToText)
                             bottomSheetState.hide(coroutineScope)
-                            actionConvertToText()
+                            actionConvertToText(state is VoiceRecordingViewState.Stopped)
                         },
                         actionDeleteFile = {
                             recorder.removeCurrentRecording()
@@ -375,6 +378,7 @@ private fun AvaNegarVoiceRecordingScreen(
                 playerState = playerState,
                 startRecord = start@{
                     if (state is VoiceRecordingViewState.Stopped) {
+                        AvanegarSentry.breadCrumbVoiceStarted(willRecord = false, hasPaused = true)
                         bottomSheetContentType =
                             VoiceRecordingBottomSheetType.StartAgainConfirmation
                         bottomSheetState.hideAndShow(coroutineScope)
@@ -382,6 +386,7 @@ private fun AvaNegarVoiceRecordingScreen(
                     }
 
                     if (state is VoiceRecordingViewState.Paused) {
+                        AvanegarSentry.breadCrumbVoiceStarted(willRecord = true, hasPaused = true)
                         eventHandler.selectItem(
                             AvanegarAnalytics.selectRecordIcon(willRecord = true, hasPaused = true)
                         )
@@ -389,6 +394,7 @@ private fun AvaNegarVoiceRecordingScreen(
                         viewModel.startTimer()
                         state = VoiceRecordingViewState.Recording(hasPaused = true)
                     } else {
+                        AvanegarSentry.breadCrumbVoiceStarted(willRecord = true, hasPaused = false)
                         eventHandler.selectItem(
                             AvanegarAnalytics.selectRecordIcon(willRecord = true, hasPaused = false)
                         )
@@ -454,7 +460,7 @@ private fun AvaNegarVoiceRecordingScreen(
                         }
                     )
                 },
-                convertToText = {
+                convertToText = { stopped ->
                     if (state != VoiceRecordingViewState.Stopped) {
                         stopPlayback(
                             recorder = recorder,
@@ -469,7 +475,7 @@ private fun AvaNegarVoiceRecordingScreen(
                     }
                     eventHandler.selectItem(AvanegarAnalytics.selectConvertToText)
                     bottomSheetState.hide(coroutineScope)
-                    actionConvertToText()
+                    actionConvertToText(stopped)
                 },
                 modifier = Modifier.weight(1f)
             )
@@ -519,7 +525,7 @@ private fun VoiceRecordingBody(
     startRecord: () -> Unit,
     stopRecord: () -> Unit,
     pauseRecord: () -> Unit,
-    convertToText: () -> Unit,
+    convertToText: (isStopped: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -696,7 +702,7 @@ private fun VoiceRecordingControlsSection(
     startRecord: () -> Unit,
     stopRecord: () -> Unit,
     pauseRecord: () -> Unit,
-    onConvertClick: () -> Unit,
+    onConvertClick: (isStopped: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -711,7 +717,7 @@ private fun VoiceRecordingControlsSection(
                 icon = R.drawable.ic_repeat,
                 contentDescription = stringResource(R.string.desc_convert_to_text),
                 title = stringResource(id = R.string.lbl_convert_to_text),
-                onClick = onConvertClick,
+                onClick = { onConvertClick(isStopped) },
                 modifier = Modifier.weight(1f)
             )
         }

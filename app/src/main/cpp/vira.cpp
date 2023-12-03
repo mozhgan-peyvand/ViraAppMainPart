@@ -151,3 +151,18 @@ Java_ai_ivira_app_features_home_data_VersionDataHelper_cgwpd(JNIEnv *env, jobjec
 
     return env->NewStringUTF(dec.c_str());
 }
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_utils_ui_initializers_SentryInitializer_dsn(JNIEnv *env, jobject thiz) {
+    std::string AK = "?,>'+pxw|`krdk+g=.ck~cm\177\065<s4:|nhz4kx1j}c\030\071\062\066>%!d'98#<:y18xi|";
+    std::string key = "WXJ";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+
+    return env->NewStringUTF(dec.c_str());
+}

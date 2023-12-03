@@ -1,5 +1,6 @@
 package ai.ivira.app.features.ava_negar.data
 
+import ai.ivira.app.features.ava_negar.AvanegarSentry
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarProcessedFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarTrackingFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarUploadingFileEntity
@@ -7,12 +8,15 @@ import ai.ivira.app.features.ava_negar.data.entity.LastTrackFailure
 import ai.ivira.app.utils.common.file.UploadProgressCallback
 import ai.ivira.app.utils.common.file.toMultiPart
 import ai.ivira.app.utils.data.NetworkHandler
+import ai.ivira.app.utils.data.api_result.ApiResult
 import ai.ivira.app.utils.data.api_result.AppException
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.data.api_result.AppResult.Error
 import ai.ivira.app.utils.data.api_result.AppResult.Success
+import ai.ivira.app.utils.data.api_result.toAppException
 import ai.ivira.app.utils.data.api_result.toAppResult
 import ai.ivira.app.utils.data.asPlainTextRequestBody
+import android.media.MediaMetadataRetriever
 import android.os.SystemClock
 import saman.zamani.persiandate.PersianDate
 import java.io.File
@@ -48,10 +52,10 @@ class AvanegarRepository @Inject constructor(
             val result = avanegarRemoteDataSource.audioToTextBelowSixtySecond(
                 multiPartFile = file.toMultiPart(id, listener),
                 language = "fa".asPlainTextRequestBody
-            ).toAppResult()
+            )
 
             when (result) {
-                is Success -> {
+                is ApiResult.Success -> {
                     avanegarLocalDataSource.deleteUploadingFile(id)
                     avanegarLocalDataSource.insertProcessedFile(
                         AvanegarProcessedFileEntity(
@@ -67,8 +71,13 @@ class AvanegarRepository @Inject constructor(
                     Success(id)
                 }
 
-                is Error -> {
-                    Error(result.error)
+                is ApiResult.Error -> {
+                    AvanegarSentry.catchServerException(
+                        exception = result.error.getException(),
+                        hasNetwork = networkHandler.hasNetworkConnection(),
+                        hasVpn = networkHandler.hasVpnConnection()
+                    )
+                    Error(result.error.toAppException())
                 }
             }
         } else {
@@ -86,10 +95,10 @@ class AvanegarRepository @Inject constructor(
             val result = avanegarRemoteDataSource.audioToTextAboveSixtySecond(
                 multiPartFile = file.toMultiPart(id, listener),
                 language = "fa".asPlainTextRequestBody
-            ).toAppResult()
+            )
 
             when (result) {
-                is Success -> {
+                is ApiResult.Success -> {
                     avanegarLocalDataSource.deleteUploadingFile(id)
                     avanegarLocalDataSource.insertUnprocessedFile(
                         AvanegarTrackingFileEntity(
@@ -105,7 +114,14 @@ class AvanegarRepository @Inject constructor(
                     Success(id)
                 }
 
-                is Error -> Error(result.error)
+                is ApiResult.Error -> {
+                    AvanegarSentry.catchServerException(
+                        exception = result.error.getException(),
+                        hasNetwork = networkHandler.hasNetworkConnection(),
+                        hasVpn = networkHandler.hasVpnConnection()
+                    )
+                    Error(result.error.toAppException())
+                }
             }
         } else {
             Error(AppException.NetworkConnectionException())
@@ -139,6 +155,22 @@ class AvanegarRepository @Inject constructor(
                 }
 
                 is Error -> {
+                    avanegarLocalDataSource.getUnprocessedFile(fileToken)?.let { tracked ->
+                        val fileDuration = kotlin.runCatching {
+                            MediaMetadataRetriever().let { retriever ->
+                                retriever.setDataSource(tracked.filePath)
+                                val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                                retriever.release()
+                                duration?.toLongOrNull()
+                            }
+                        }.getOrNull() ?: -1L
+                        AvanegarSentry.catchTrackException(
+                            fileDuration = fileDuration,
+                            processTime = tracked.processEstimation,
+                            createdTime = tracked.createdAt,
+                            lastFailedTime = tracked.lastFailure?.lastFailedRequest
+                        )
+                    }
                     avanegarLocalDataSource.updateLastTrackingFileFailure(
                         LastTrackFailure(
                             lastFailedRequest = PersianDate().time,
