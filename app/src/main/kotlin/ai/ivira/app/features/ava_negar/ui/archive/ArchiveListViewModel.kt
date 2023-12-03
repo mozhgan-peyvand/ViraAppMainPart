@@ -1,5 +1,6 @@
 package ai.ivira.app.features.ava_negar.ui.archive
 
+import ai.ivira.app.features.ava_negar.AvanegarSentry
 import ai.ivira.app.features.ava_negar.data.AvanegarArchiveFilesEntity
 import ai.ivira.app.features.ava_negar.data.AvanegarRepository
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarUploadingFileEntity
@@ -268,6 +269,7 @@ class ArchiveListViewModel @Inject constructor(
 
             val fileDuration = getFileDuration(absolutePath)
             if (fileDuration <= 0L) {
+                AvanegarSentry.unableToGetAudioDuration(absolutePath)
                 eventHandler.specialEvent(AvanegarAnalytics.unableToReadFileDuration)
                 _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
                 return@launch
@@ -402,6 +404,7 @@ class ArchiveListViewModel @Inject constructor(
 
         val duration = getFileDuration(context, uri)
         if (duration <= 0L) {
+            AvanegarSentry.unableToGetAudioDuration("$uri")
             eventHandler.specialEvent(AvanegarAnalytics.unableToReadFileDuration)
             _uiViewStat.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
             return false
