@@ -717,7 +717,7 @@ private fun AvaNegarArchiveListScreen(
                         isListEmpty = archiveFiles.isEmpty(),
                         onUploadClick = {
                             if (isUploadingAllowed) {
-                                eventHandler.selectItem(AvanegarAnalytics.selectUploadFile)
+                                eventHandler.specialEvent(AvanegarAnalytics.selectUploadFile)
                                 snackbarHostState.currentSnackbarData?.dismiss()
                                 setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
                                 coroutineScope.launch {
@@ -730,6 +730,7 @@ private fun AvaNegarArchiveListScreen(
                             } else {
                                 val hasError = uiViewState is UiError && isThereAnyTrackingOrUploading
                                 AvanegarSentry.queueIsFull(hasError)
+                                eventHandler.specialEvent(AvanegarAnalytics.uploadNotAllowed(true))
                                 showMessage(
                                     snackbarHostState,
                                     coroutineScope,
@@ -837,7 +838,7 @@ private fun AvaNegarArchiveListScreen(
                     onClick = {
                         safeClick {
                             if (isUploadingAllowed) {
-                                eventHandler.selectItem(
+                                eventHandler.specialEvent(
                                     AvanegarAnalytics.selectRecordAudio(
                                         if (context.hasRecordAudioPermission()) "1" else "0"
                                     )
@@ -887,6 +888,7 @@ private fun AvaNegarArchiveListScreen(
                             } else {
                                 val hasError = uiViewState is UiError && isThereAnyTrackingOrUploading
                                 AvanegarSentry.queueIsFull(hasError)
+                                eventHandler.specialEvent(AvanegarAnalytics.uploadNotAllowed(false))
                                 showMessage(
                                     snackbarHostState,
                                     coroutineScope,

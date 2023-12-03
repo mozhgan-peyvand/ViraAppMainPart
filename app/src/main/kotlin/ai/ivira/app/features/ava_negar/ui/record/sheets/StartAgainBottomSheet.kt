@@ -77,7 +77,7 @@ fun StartAgainBottomSheet(
                 contentPadding = PaddingValues(vertical = 14.dp),
                 onClick = {
                     safeClick {
-                        eventHandler.selectItem(AvanegarAnalytics.selectStartOver)
+                        eventHandler.specialEvent(AvanegarAnalytics.selectStartOver)
                         actionStartAgain()
                     }
                 },

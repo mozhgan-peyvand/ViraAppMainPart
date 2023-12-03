@@ -261,6 +261,7 @@ private fun HomeScreen(
                     }
                 },
                 onUpdateClick = {
+                    eventHandler.specialEvent(HomeAnalytics.checkUpdate)
                     coroutineScope.launch {
                         scaffoldState.drawerState.close()
                     }
@@ -372,6 +373,7 @@ private fun HomeScreen(
                                 UpdateBottomSheet(
                                     item = changeLogList,
                                     onUpdateClick = {
+                                        eventHandler.specialEvent(HomeAnalytics.updateApp)
                                         coroutineScope.launch {
                                             modalBottomSheetState.hide()
                                         }
@@ -382,6 +384,7 @@ private fun HomeScreen(
                                         }
                                     },
                                     onLaterClick = {
+                                        eventHandler.specialEvent(HomeAnalytics.showUpdateLater)
                                         homeViewModel.showLater()
                                         coroutineScope.launch {
                                             modalBottomSheetState.hide()
@@ -460,12 +463,13 @@ private fun HomeScreen(
             HomeBody(
                 paddingValues = innerPadding,
                 onAvanegarClick = {
+                    eventHandler.specialEvent(HomeAnalytics.openAvanegar)
                     homeViewModel.navigate()
                 },
                 onItemClick = { homeItem ->
-                    eventHandler.selectItem(HomeAnalytics.selectComingSoonItem(homeItem))
                     when (homeItem) {
                         AvaSho -> {
+                            eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
                             setSelectedSheet(AvaSho)
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
@@ -478,6 +482,7 @@ private fun HomeScreen(
                         }
 
                         NeviseNegar -> {
+                            eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
                             setSelectedSheet(NeviseNegar)
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
@@ -490,6 +495,7 @@ private fun HomeScreen(
                         }
 
                         ViraSiar -> {
+                            eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
                             setSelectedSheet(ViraSiar)
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
@@ -502,6 +508,7 @@ private fun HomeScreen(
                         }
 
                         NeviseNama -> {
+                            eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
                             setSelectedSheet(NeviseNama)
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()

@@ -4,7 +4,6 @@ import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
 import ai.ivira.app.utils.ui.analytics.events.OnboardingEvent
 import ai.ivira.app.utils.ui.analytics.events.OnboardingEvent.Type
 import ai.ivira.app.utils.ui.analytics.events.ScreenViewEvent
-import ai.ivira.app.utils.ui.analytics.events.SelectItemEvent
 import ai.ivira.app.utils.ui.analytics.events.SpecialEvent
 
 object HomeAnalytics {
@@ -33,18 +32,21 @@ object HomeAnalytics {
         get() = OnboardingEvent(Type.End, HomeOnboarding)
     // endregion onboarding
 
-    // region selectItem
-    fun selectComingSoonItem(type: HomeItemBottomSheetType): SelectItemEvent {
-        return SelectItemEvent(
-            itemName = COMING_SOON_EVENT,
-            contentType = type.value
-        )
-    }
-    // endregion selectItem
-
     // region specialEvents
+    val openAvanegar: SpecialEvent
+        get() = SpecialEvent("open_avanegar")
     val introduceToFriends: SpecialEvent
         get() = SpecialEvent(INTRODUCE_TO_FRIENDS)
+    val checkUpdate: SpecialEvent
+        get() = SpecialEvent("check_update")
+    val showUpdateLater: SpecialEvent
+        get() = SpecialEvent("show_update_later")
+    val updateApp: SpecialEvent
+        get() = SpecialEvent("update_app")
+
+    fun selectComingSoonItem(type: HomeItemBottomSheetType): SpecialEvent {
+        return SpecialEvent("coming_soon_${type.value}")
+    }
     // endregion specialEvents
 
     object HomeOnboarding : OnboardingEvent.Origin {
