@@ -257,7 +257,7 @@ private fun AvaNegarVoiceRecordingScreen(
                 BackConfirm -> {
                     BackToArchiveListConfirmationBottomSheet(
                         actionConvertFile = {
-                            eventHandler.selectItem(AvanegarAnalytics.selectConvertToText)
+                            eventHandler.specialEvent(AvanegarAnalytics.selectConvertToText)
                             bottomSheetState.hide(coroutineScope)
                             actionConvertToText(state is VoiceRecordingViewState.Stopped)
                         },
@@ -387,7 +387,7 @@ private fun AvaNegarVoiceRecordingScreen(
 
                     if (state is VoiceRecordingViewState.Paused) {
                         AvanegarSentry.breadCrumbVoiceStarted(willRecord = true, hasPaused = true)
-                        eventHandler.selectItem(
+                        eventHandler.specialEvent(
                             AvanegarAnalytics.selectRecordIcon(willRecord = true, hasPaused = true)
                         )
                         recorder.resume()
@@ -395,7 +395,7 @@ private fun AvaNegarVoiceRecordingScreen(
                         state = VoiceRecordingViewState.Recording(hasPaused = true)
                     } else {
                         AvanegarSentry.breadCrumbVoiceStarted(willRecord = true, hasPaused = false)
-                        eventHandler.selectItem(
+                        eventHandler.specialEvent(
                             AvanegarAnalytics.selectRecordIcon(willRecord = true, hasPaused = false)
                         )
                         // What if we don't have record permission
@@ -416,7 +416,7 @@ private fun AvaNegarVoiceRecordingScreen(
                 pauseRecord = {
                     // Pause: Duplicate 2
                     if (recorder.isPauseResumeSupported()) {
-                        eventHandler.selectItem(
+                        eventHandler.specialEvent(
                             AvanegarAnalytics.selectRecordIcon(
                                 willRecord = false,
                                 hasPaused = (state as? VoiceRecordingViewState.Recording)?.hasPaused
@@ -434,7 +434,7 @@ private fun AvaNegarVoiceRecordingScreen(
                             }
                         )
                     } else {
-                        eventHandler.selectItem(AvanegarAnalytics.selectStopRecord)
+                        eventHandler.specialEvent(AvanegarAnalytics.selectStopRecord)
                         stopPlayback(
                             recorder = recorder,
                             onSuccess = {
@@ -448,7 +448,7 @@ private fun AvaNegarVoiceRecordingScreen(
                     }
                 },
                 stopRecord = {
-                    eventHandler.selectItem(AvanegarAnalytics.selectStopRecord)
+                    eventHandler.specialEvent(AvanegarAnalytics.selectStopRecord)
                     stopPlayback(
                         recorder = recorder,
                         onSuccess = {
@@ -473,7 +473,7 @@ private fun AvaNegarVoiceRecordingScreen(
                             }
                         )
                     }
-                    eventHandler.selectItem(AvanegarAnalytics.selectConvertToText)
+                    eventHandler.specialEvent(AvanegarAnalytics.selectConvertToText)
                     bottomSheetState.hide(coroutineScope)
                     actionConvertToText(stopped)
                 },

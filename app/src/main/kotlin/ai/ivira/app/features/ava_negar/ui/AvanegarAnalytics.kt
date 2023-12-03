@@ -9,16 +9,13 @@ import ai.ivira.app.utils.ui.analytics.events.SelectItemEvent
 import ai.ivira.app.utils.ui.analytics.events.ShareEvent
 import ai.ivira.app.utils.ui.analytics.events.SpecialEvent
 
-private const val s = "record_icon"
-
 object AvanegarAnalytics {
+    const val ORIGIN_RECORD = "record"
+    const val ORIGIN_UPLOAD = "upload"
     private const val ORIGIN_AVANEGAR = "Avanegar"
     private const val LIST_VIEW_TYPE = "view_type"
     private const val VIEW_TYPE_COLUMN = "column"
     private const val VIEW_TYPE_GRID = "grid"
-    private const val CREATE_FILE = "create_file"
-    private const val FAB_UPLOAD = "upload"
-    private const val FAB_RECORD = "record"
     private const val RECORD_AUDIO_PERMISSION = "permission"
     private const val CHOOSE_FILE = "choose_file"
     private const val FILE_CREATED_ABOVE60_EVENT = "file_created_above60"
@@ -71,22 +68,6 @@ object AvanegarAnalytics {
         )
     }
 
-    val selectUploadFile: SelectItemEvent
-        get() = SelectItemEvent(
-            itemName = CREATE_FILE,
-            contentType = FAB_UPLOAD,
-            EventParams.ORIGIN to ORIGIN_AVANEGAR
-        )
-
-    fun selectRecordAudio(permission: String): SelectItemEvent {
-        return SelectItemEvent(
-            itemName = CREATE_FILE,
-            contentType = FAB_RECORD,
-            EventParams.ORIGIN to ORIGIN_AVANEGAR,
-            RECORD_AUDIO_PERMISSION to permission
-        )
-    }
-
     val selectChooseFile: SelectItemEvent
         get() = SelectItemEvent(CHOOSE_FILE, null)
 
@@ -100,23 +81,6 @@ object AvanegarAnalytics {
 
     val selectGif: SelectItemEvent
         get() = SelectItemEvent(SELECT_GIF, null)
-
-    fun selectRecordIcon(willRecord: Boolean, hasPaused: Boolean): SelectItemEvent {
-        return SelectItemEvent(
-            itemName = "record_icon",
-            contentType = null,
-            "record_status" to "$willRecord:$hasPaused"
-        )
-    }
-
-    val selectStopRecord: SelectItemEvent
-        get() = SelectItemEvent("stop_record", null)
-    val selectConvertToText: SelectItemEvent
-        get() = SelectItemEvent("convert_to_text", null)
-    val selectStartOver: SelectItemEvent
-        get() = SelectItemEvent("record_start_over", null)
-    val selectDiscardRecorded: SelectItemEvent
-        get() = SelectItemEvent("discard_recorded", null)
     // endregion selectItem
 
     // region specialEvents
@@ -128,6 +92,46 @@ object AvanegarAnalytics {
         get() = SpecialEvent(FILE_DURATION_LIMIT_EXCEED_EVENT)
     val unableToReadFileDuration: SpecialEvent
         get() = SpecialEvent(UNABLE_TO_READ_AUDIO_DURATION)
+
+    fun uploadNotAllowed(isUpload: Boolean): SpecialEvent {
+        val origin = if (isUpload) ORIGIN_UPLOAD else ORIGIN_RECORD
+        return SpecialEvent(
+            eventName = "avanegar_upload_not_allowed",
+            params = arrayOf(
+                EventParams.ORIGIN to origin
+            )
+        )
+    }
+
+    val selectUploadFile: SpecialEvent
+        get() = SpecialEvent(eventName = "avaneagr_upload_icon")
+
+    fun selectRecordAudio(permission: String): SpecialEvent {
+        return SpecialEvent(
+            eventName = "avanegar_record_icon",
+            params = arrayOf(
+                RECORD_AUDIO_PERMISSION to permission
+            )
+        )
+    }
+
+    fun selectRecordIcon(willRecord: Boolean, hasPaused: Boolean): SpecialEvent {
+        return SpecialEvent(
+            eventName = "record_icon",
+            params = arrayOf(
+                "record_status" to "$willRecord:$hasPaused"
+            )
+        )
+    }
+
+    val selectStopRecord: SpecialEvent
+        get() = SpecialEvent("stop_record")
+    val selectConvertToText: SpecialEvent
+        get() = SpecialEvent("convert_to_text")
+    val selectStartOver: SpecialEvent
+        get() = SpecialEvent("record_start_over")
+    val selectDiscardRecorded: SpecialEvent
+        get() = SpecialEvent("discard_recorded")
     // endregion specialEvents
 
     // region Share

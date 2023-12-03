@@ -78,7 +78,7 @@ fun BackToArchiveListConfirmationBottomSheet(
                 contentPadding = PaddingValues(vertical = 14.dp),
                 onClick = {
                     safeClick {
-                        eventHandler.selectItem(AvanegarAnalytics.selectConvertToText)
+                        eventHandler.specialEvent(AvanegarAnalytics.selectConvertToText)
                         actionConvertFile()
                     }
                 },
@@ -98,7 +98,7 @@ fun BackToArchiveListConfirmationBottomSheet(
                 contentPadding = PaddingValues(vertical = 14.dp),
                 onClick = {
                     safeClick {
-                        eventHandler.selectItem(AvanegarAnalytics.selectDiscardRecorded)
+                        eventHandler.specialEvent(AvanegarAnalytics.selectDiscardRecorded)
                         actionDeleteFile()
                     }
                 },
