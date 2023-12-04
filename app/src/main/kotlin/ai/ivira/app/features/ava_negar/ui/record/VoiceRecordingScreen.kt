@@ -34,6 +34,7 @@ import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.os.SystemClock
 import android.view.WindowManager
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -51,7 +52,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
@@ -63,6 +63,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,6 +74,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -82,14 +84,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.app.ComponentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.CoroutineScope
 import pl.droidsonroids.gif.GifDrawable
 import pl.droidsonroids.gif.GifImageView
-import timber.log.Timber
 
 @Composable
 fun AvaNegarVoiceRecordingScreenRoute(navController: NavHostController) {
@@ -121,7 +120,7 @@ private fun AvaNegarVoiceRecordingScreen(
         saver = Saver(
             save = { it.value.name },
             restore = { name ->
-                mutableStateOf(VoiceRecordingBottomSheetType.values().first { it.name == name })
+                mutableStateOf(VoiceRecordingBottomSheetType.entries.first { it.name == name })
             }
         )
     ) {
@@ -134,6 +133,12 @@ private fun AvaNegarVoiceRecordingScreen(
 
     val recorder by viewModel::recorder
     val playerState by viewModel::playerState
+
+    val disableClick by remember(state) {
+        derivedStateOf {
+            (state as? VoiceRecordingViewState.Stopped)?.showPreview == false
+        }
+    }
 
     val actionConvertToText = remember<(isStopped: Boolean) -> Unit> {
         { isStopped ->
@@ -156,37 +161,95 @@ private fun AvaNegarVoiceRecordingScreen(
         }
     }
 
-    if (state is VoiceRecordingViewState.Stopped) {
-        playerState.tryInitWith(recorder.currentFile)
+    val actionStartRecording: (shouldReset: Boolean) -> Unit = remember {
+        startRecording@{ shouldReset ->
+            val name = "rec_${System.currentTimeMillis()}_${SystemClock.elapsedRealtime()}"
+            if (!recorder.start(name)) {
+                bottomSheetContentType = VoiceRecordingBottomSheetType.MicrophoneIsBeingUsedAlready
+                bottomSheetState.hideAndShow(coroutineScope)
+                return@startRecording
+            }
+            if (shouldReset) {
+                viewModel.resetTimer()
+            }
+            viewModel.startTimer()
+            state = VoiceRecordingViewState.Recording(false)
+        }
+    }
+
+    val actionStopRecording: (showPreview: Boolean) -> Unit = remember {
+        stopRecording@{ showPreview ->
+            if (!recorder.stop()) {
+                context.showText(R.string.msg_general_recorder_stop_error)
+                return@stopRecording
+            }
+            viewModel.pauseTimer()
+            state = VoiceRecordingViewState.Stopped(showPreview)
+        }
+    }
+
+    val actionPauseRecording: (sendEvent: Boolean) -> Unit = remember {
+        pauseRecording@{ sendEvent ->
+            if (!recorder.isPauseResumeSupported()) {
+                if (sendEvent) {
+                    eventHandler.specialEvent(AvanegarAnalytics.selectStopRecord)
+                }
+                actionStopRecording(true)
+                return@pauseRecording
+            }
+
+            val hasPaused = (state as? VoiceRecordingViewState.Recording)?.hasPaused ?: false
+            eventHandler.specialEvent(
+                AvanegarAnalytics.selectRecordIcon(willRecord = false, hasPaused = hasPaused)
+            )
+            if (!recorder.pause()) {
+                context.showText(R.string.msg_general_recorder_pause_error)
+                return@pauseRecording
+            }
+
+            viewModel.pauseTimer()
+            state = VoiceRecordingViewState.Paused
+        }
+    }
+
+    val actionBackClick: () -> Unit = remember {
+        callback@{
+            if (bottomSheetState.isVisible) {
+                bottomSheetState.hide(coroutineScope)
+                return@callback
+            }
+            when (state) {
+                VoiceRecordingViewState.Idle -> {
+                    recorder.removeCurrentRecording()
+                    navController.popBackStack()
+                }
+
+                is VoiceRecordingViewState.Recording -> {
+                    actionPauseRecording(false)
+
+                    bottomSheetContentType = BackConfirm
+                    bottomSheetState.hideAndShow(coroutineScope)
+                }
+
+                VoiceRecordingViewState.Paused,
+                is VoiceRecordingViewState.Stopped -> {
+                    bottomSheetContentType = BackConfirm
+                    bottomSheetState.hideAndShow(coroutineScope)
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(state) {
+        if (state is VoiceRecordingViewState.Stopped) {
+            playerState.tryInitWith(recorder.currentFile)
+        }
     }
 
     OnLifecycleEvent(
         onPause = onPause@{
             if (state is VoiceRecordingViewState.Recording) {
-                // Pause: Duplicate 1
-                if (recorder.isPauseResumeSupported()) {
-                    pausePlayback(
-                        recorder = recorder,
-                        onSuccess = {
-                            viewModel.pauseTimer()
-                            state = VoiceRecordingViewState.Paused
-                        },
-                        onFailure = {
-                            context.showText(R.string.msg_general_recorder_pause_error)
-                        }
-                    )
-                } else {
-                    stopPlayback(
-                        recorder = recorder,
-                        onSuccess = {
-                            viewModel.pauseTimer()
-                            state = VoiceRecordingViewState.Stopped
-                        },
-                        onFailure = {
-                            context.showText(R.string.msg_general_recorder_stop_error)
-                        }
-                    )
-                }
+                actionPauseRecording(false)
                 return@onPause
             }
             if (state is VoiceRecordingViewState.Stopped) {
@@ -206,50 +269,7 @@ private fun AvaNegarVoiceRecordingScreen(
         }
     }
 
-    BackHandler(state != VoiceRecordingViewState.Idle) {
-        // BackHandler: Duplicate 1
-        handleBackClick(
-            state = state,
-            coroutineScope = coroutineScope,
-            bottomSheetState = bottomSheetState,
-            updateBottomSheetType = {
-                bottomSheetContentType = it
-            },
-            goBack = {
-                recorder.removeCurrentRecording()
-                navController.popBackStack()
-            },
-            pauseAndShowBackConfirm = {
-                // Pause: Duplicate 3
-                if (recorder.isPauseResumeSupported()) {
-                    pausePlayback(
-                        recorder = recorder,
-                        onSuccess = {
-                            viewModel.pauseTimer()
-                            state = VoiceRecordingViewState.Paused
-                        },
-                        onFailure = {
-                            context.showText(R.string.msg_general_recorder_pause_error)
-                        }
-                    )
-                } else {
-                    stopPlayback(
-                        recorder = recorder,
-                        onSuccess = {
-                            viewModel.pauseTimer()
-                            state = VoiceRecordingViewState.Stopped
-                        },
-                        onFailure = {
-                            context.showText(R.string.msg_general_recorder_stop_error)
-                        }
-                    )
-                }
-
-                bottomSheetContentType = BackConfirm
-                bottomSheetState.hideAndShow(coroutineScope)
-            }
-        )
-    }
+    BackHandler(enabled = state != VoiceRecordingViewState.Idle, onBack = actionBackClick)
 
     ModalBottomSheetLayout(
         sheetContent = {
@@ -278,19 +298,7 @@ private fun AvaNegarVoiceRecordingScreen(
                             playerState.reset()
                             recorder.removeCurrentRecording()
                             bottomSheetState.hide(coroutineScope)
-                            startPlayback(
-                                recorder = recorder,
-                                onSuccess = {
-                                    viewModel.resetTimer()
-                                    viewModel.startTimer()
-                                    state = VoiceRecordingViewState.Recording(false)
-                                },
-                                onFailure = {
-                                    bottomSheetContentType =
-                                        VoiceRecordingBottomSheetType.MicrophoneIsBeingUsedAlready
-                                    bottomSheetState.hideAndShow(coroutineScope)
-                                }
-                            )
+                            actionStartRecording(true)
                         }
                     )
                 }
@@ -309,68 +317,32 @@ private fun AvaNegarVoiceRecordingScreen(
         scrimColor = MaterialTheme.colors.background.copy(alpha = 0.5f),
         sheetBackgroundColor = Color_BG_Bottom_Sheet
     ) {
-        Column {
-            VoiceRecordingTopAppBar(
-                onBackClick = {
-                    // BackHandler: Duplicate 2
-                    handleBackClick(
-                        state = state,
-                        coroutineScope = coroutineScope,
-                        bottomSheetState = bottomSheetState,
-                        updateBottomSheetType = {
-                            bottomSheetContentType = it
-                        },
-                        goBack = {
-                            recorder.removeCurrentRecording()
-                            navController.popBackStack()
-                        },
-                        pauseAndShowBackConfirm = {
-                            // Pause: Duplicate 4
-                            if (recorder.isPauseResumeSupported()) {
-                                pausePlayback(
-                                    recorder = recorder,
-                                    onSuccess = {
-                                        viewModel.pauseTimer()
-                                        state = VoiceRecordingViewState.Paused
-                                    },
-                                    onFailure = {
-                                        context.showText(R.string.msg_general_recorder_pause_error)
-                                    }
-                                )
-                            } else {
-                                stopPlayback(
-                                    recorder = recorder,
-                                    onSuccess = {
-                                        viewModel.pauseTimer()
-                                        state = VoiceRecordingViewState.Stopped
-                                    },
-                                    onFailure = {
-                                        context.showText(R.string.msg_general_recorder_stop_error)
-                                    }
-                                )
-                            }
+        Column(
+            modifier = Modifier.then(if (disableClick) Modifier.pointerInput(Unit) { } else Modifier)
+        ) {
+            VoiceRecordingTopAppBar(onBackClick = actionBackClick)
 
-                            bottomSheetContentType = BackConfirm
-                            bottomSheetState.hideAndShow(coroutineScope)
-                        }
-                    )
-                }
-            )
-
-            val isStopped: Boolean
-            val isRecording: Boolean
-            val hasPaused: Boolean
-            if (state is VoiceRecordingViewState.Recording) {
-                isStopped = false
-                isRecording = true
-                hasPaused = (state as VoiceRecordingViewState.Recording).hasPaused
-            } else {
-                isRecording = false
-                hasPaused = state is VoiceRecordingViewState.Paused
-                isStopped = state is VoiceRecordingViewState.Stopped
+            val isStopped by remember(state) {
+                mutableStateOf(state is VoiceRecordingViewState.Stopped)
+            }
+            val isRecording by remember(state) {
+                mutableStateOf(state is VoiceRecordingViewState.Recording)
+            }
+            val showPreview by remember(state) {
+                mutableStateOf((state as? VoiceRecordingViewState.Stopped)?.showPreview == true)
+            }
+            val hasPaused by remember(state) {
+                val hasPaused = state is VoiceRecordingViewState.Paused ||
+                    (state as? VoiceRecordingViewState.Recording)?.hasPaused == true
+                // if user clicks convertToText while paused, if we do not set hasPaused to true
+                // for a short time play preview is seen then navigateUp is done, so we add
+                // this condition to avoid that
+                val clickedConvertWithoutStop = (isStopped && !showPreview)
+                mutableStateOf(hasPaused || clickedConvertWithoutStop)
             }
             VoiceRecordingBody(
                 isStopped = isStopped,
+                showPreview = showPreview,
                 isRecording = isRecording,
                 hasPaused = hasPaused,
                 isPauseSupported = recorder.isPauseResumeSupported(),
@@ -399,79 +371,19 @@ private fun AvaNegarVoiceRecordingScreen(
                             AvanegarAnalytics.selectRecordIcon(willRecord = true, hasPaused = false)
                         )
                         // What if we don't have record permission
-                        startPlayback(
-                            recorder = recorder,
-                            onSuccess = {
-                                viewModel.startTimer()
-                                state = VoiceRecordingViewState.Recording(hasPaused = false)
-                            },
-                            onFailure = {
-                                bottomSheetContentType =
-                                    VoiceRecordingBottomSheetType.MicrophoneIsBeingUsedAlready
-                                bottomSheetState.hideAndShow(coroutineScope)
-                            }
-                        )
+                        actionStartRecording(false)
                     }
                 },
                 pauseRecord = {
-                    // Pause: Duplicate 2
-                    if (recorder.isPauseResumeSupported()) {
-                        eventHandler.specialEvent(
-                            AvanegarAnalytics.selectRecordIcon(
-                                willRecord = false,
-                                hasPaused = (state as? VoiceRecordingViewState.Recording)?.hasPaused
-                                    ?: false
-                            )
-                        )
-                        pausePlayback(
-                            recorder = recorder,
-                            onSuccess = {
-                                viewModel.pauseTimer()
-                                state = VoiceRecordingViewState.Paused
-                            },
-                            onFailure = {
-                                context.showText(R.string.msg_general_recorder_pause_error)
-                            }
-                        )
-                    } else {
-                        eventHandler.specialEvent(AvanegarAnalytics.selectStopRecord)
-                        stopPlayback(
-                            recorder = recorder,
-                            onSuccess = {
-                                viewModel.pauseTimer()
-                                state = VoiceRecordingViewState.Stopped
-                            },
-                            onFailure = {
-                                context.showText(R.string.msg_general_recorder_stop_error)
-                            }
-                        )
-                    }
+                    actionPauseRecording(true)
                 },
                 stopRecord = {
                     eventHandler.specialEvent(AvanegarAnalytics.selectStopRecord)
-                    stopPlayback(
-                        recorder = recorder,
-                        onSuccess = {
-                            viewModel.pauseTimer()
-                            state = VoiceRecordingViewState.Stopped
-                        },
-                        onFailure = {
-                            context.showText(R.string.msg_general_recorder_stop_error)
-                        }
-                    )
+                    actionStopRecording(true)
                 },
                 convertToText = { stopped ->
-                    if (state != VoiceRecordingViewState.Stopped) {
-                        stopPlayback(
-                            recorder = recorder,
-                            onSuccess = {
-                                viewModel.pauseTimer()
-                                state = VoiceRecordingViewState.Stopped
-                            },
-                            onFailure = {
-                                context.showText(R.string.msg_general_recorder_stop_error)
-                            }
-                        )
+                    if (state !is VoiceRecordingViewState.Stopped) {
+                        actionStopRecording(false)
                     }
                     eventHandler.specialEvent(AvanegarAnalytics.selectConvertToText)
                     bottomSheetState.hide(coroutineScope)
@@ -519,6 +431,7 @@ private fun VoiceRecordingBody(
     isRecording: Boolean,
     hasPaused: Boolean,
     isStopped: Boolean,
+    showPreview: Boolean,
     isPauseSupported: Boolean,
     timer: Int,
     playerState: VoicePlayerState,
@@ -532,6 +445,7 @@ private fun VoiceRecordingBody(
         VoiceRecordingPreviewSection(
             isRecording = isRecording,
             isStopped = isStopped,
+            showPreview = showPreview,
             playerState = playerState,
             modifier = Modifier.weight(1.75f)
         )
@@ -539,6 +453,7 @@ private fun VoiceRecordingBody(
             isRecording = isRecording,
             hasPaused = hasPaused,
             isStopped = isStopped,
+            showPreview = showPreview,
             time = timer,
             modifier = modifier.weight(1f)
         )
@@ -559,6 +474,7 @@ private fun VoiceRecordingBody(
 private fun VoiceRecordingPreviewSection(
     isRecording: Boolean,
     isStopped: Boolean,
+    showPreview: Boolean,
     playerState: VoicePlayerState,
     modifier: Modifier = Modifier
 ) {
@@ -570,7 +486,7 @@ private fun VoiceRecordingPreviewSection(
         modifier = modifier
             .fillMaxWidth()
             .then(
-                if (isStopped) {
+                if (isStopped && showPreview) {
                     Modifier.padding(
                         bottom = 54.dp,
                         start = 16.dp,
@@ -581,7 +497,7 @@ private fun VoiceRecordingPreviewSection(
                 }
             )
     ) {
-        if (isStopped) {
+        if (isStopped && showPreview) {
             val progress by playerState::progress
             val isPlaying by playerState::isPlaying
 
@@ -638,6 +554,7 @@ private fun VoiceRecordingHintSection(
     isRecording: Boolean,
     hasPaused: Boolean,
     isStopped: Boolean,
+    showPreview: Boolean,
     modifier: Modifier = Modifier,
     time: Int = 0
 ) {
@@ -648,7 +565,7 @@ private fun VoiceRecordingHintSection(
             .fillMaxWidth()
             .padding(top = 8.dp)
     ) {
-        if (isStopped) {
+        if (isStopped && showPreview) {
             Text(
                 text = stringResource(id = R.string.lbl_recording_finished),
                 style = MaterialTheme.typography.subtitle2
@@ -856,77 +773,6 @@ private fun ControlButton(
         } else {
             Spacer(modifier = Modifier.size(1.dp))
         }
-    }
-}
-
-private fun handleBackClick(
-    state: VoiceRecordingViewState,
-    coroutineScope: CoroutineScope,
-    bottomSheetState: ModalBottomSheetState,
-    updateBottomSheetType: (VoiceRecordingBottomSheetType) -> Unit,
-    goBack: () -> Unit,
-    pauseAndShowBackConfirm: () -> Unit
-) {
-    if (bottomSheetState.isVisible) {
-        bottomSheetState.hide(coroutineScope)
-    } else {
-        when (state) {
-            VoiceRecordingViewState.Idle -> {
-                goBack()
-            }
-
-            is VoiceRecordingViewState.Recording -> {
-                pauseAndShowBackConfirm()
-            }
-
-            VoiceRecordingViewState.Paused,
-            VoiceRecordingViewState.Stopped -> {
-                updateBottomSheetType(BackConfirm)
-                bottomSheetState.hideAndShow(coroutineScope)
-            }
-        }
-    }
-}
-
-private fun startPlayback(
-    recorder: Recorder,
-    onSuccess: () -> Unit,
-    onFailure: () -> Unit
-) {
-    val name = "rec_${System.currentTimeMillis()}_${SystemClock.elapsedRealtime()}"
-    val started = recorder.start(name)
-    if (started) {
-        Timber.tag(Recorder.TAG).d("success for: $name")
-        onSuccess()
-    } else {
-        Timber.tag(Recorder.TAG).d("failure for: $name")
-        onFailure()
-    }
-}
-
-private fun pausePlayback(
-    recorder: Recorder,
-    onSuccess: () -> Unit,
-    onFailure: () -> Unit
-) {
-    val isSuccess = recorder.pause()
-    if (isSuccess) {
-        onSuccess()
-    } else {
-        onFailure()
-    }
-}
-
-private fun stopPlayback(
-    recorder: Recorder,
-    onSuccess: () -> Unit,
-    onFailure: () -> Unit
-) {
-    val isSuccess = recorder.stop()
-    if (isSuccess) {
-        onSuccess()
-    } else {
-        onFailure()
     }
 }
 
