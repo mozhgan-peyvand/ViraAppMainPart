@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -49,11 +50,12 @@ fun SnackBarWithPaddingBottom(
 @Composable
 fun SnackBar(
     snackbarHostState: SnackbarHostState,
+    paddingBottom: Dp = 0.dp,
     maxLine: Int = 1
 ) {
     SnackbarHost(
         hostState = snackbarHostState,
-        modifier = Modifier.padding(horizontal = 20.dp),
+        modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = paddingBottom),
         snackbar = {
             Column(
                 modifier = Modifier
