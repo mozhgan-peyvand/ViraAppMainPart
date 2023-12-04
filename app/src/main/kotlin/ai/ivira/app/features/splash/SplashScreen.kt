@@ -23,10 +23,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
-private const val DELAY_TO_NAVIGATE = 500L
 
 @Composable
 fun SplashScreenRoute(navController: NavController) {
@@ -80,7 +77,6 @@ private fun SplashScreen(
     LaunchedEffect(lottieProgress) {
         launch(IO) {
             if (lottieProgress == 1f) {
-                delay(DELAY_TO_NAVIGATE)
                 viewModel.startNavigation()
             }
         }
