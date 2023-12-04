@@ -1,5 +1,6 @@
 package ai.ivira.app.features.home.ui.home
 
+import ai.ivira.app.BuildConfig
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
@@ -381,7 +382,7 @@ private fun HomeScreen(
                                         }
                                         kotlin.runCatching {
                                             val intent = Intent(Intent.ACTION_VIEW)
-                                            intent.data = Uri.parse(LANDING_URL)
+                                            intent.data = Uri.parse(BuildConfig.SHARE_URL)
                                             context.startActivity(intent)
                                         }
                                     },
