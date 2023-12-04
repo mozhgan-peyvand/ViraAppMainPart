@@ -298,6 +298,8 @@ private fun HomeScreen(
                 snackbarHostState = snackBarHost,
                 maxLine = 2
             )
+
+            Spacer(modifier = Modifier.size(64.dp))
         }
     ) { innerPadding ->
         ModalBottomSheetLayout(
