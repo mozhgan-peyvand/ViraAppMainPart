@@ -24,6 +24,7 @@ import ai.ivira.app.utils.data.NetworkStatus.Available
 import ai.ivira.app.utils.data.NetworkStatus.Unavailable
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
+import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoFileCreationScreen
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
@@ -64,6 +65,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
@@ -83,6 +85,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -115,26 +118,20 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 private const val TRACKING_FILE_ANIMATION_DURATION_COLUMN = 1300
+private const val SELECTED_ITEM_KEY = "selectedItemId"
 
 @Composable
 fun AvashoArchiveListScreen(
     navController: NavHostController,
     viewModel: AvashoArchiveListViewModel = hiltViewModel()
 ) {
-    navController.currentBackStackEntry
-        ?.savedStateHandle?.remove<SpeechResult>(SpeechResult.FILE_NAME)?.let {
-            viewModel.addToQueue(
-                fileName = it.fileName,
-                speakerType = it.speakerType,
-                text = it.text
-            )
-        }
-
-    val context = LocalContext.current
+    var selectedFileId by remember { mutableIntStateOf(-1) }
+    var selectedFileIndex by remember { mutableIntStateOf(-1) }
+    val listState = rememberLazyListState()
     val infiniteTransition = rememberInfiniteTransition(label = "columnBrushTransition")
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
-
+    val context = LocalContext.current
     val archiveFiles by viewModel.allArchiveFiles.collectAsStateWithLifecycle(listOf())
     val networkStatus by viewModel.networkStatus.collectAsStateWithLifecycle()
     val uiViewState by viewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
@@ -145,6 +142,33 @@ fun AvashoArchiveListScreen(
     var calculatedProgress by remember { mutableFloatStateOf(0f) }
     var bottomSheetTargetValue by rememberSaveable {
         mutableStateOf(HalfExpanded)
+    }
+
+    navController.currentBackStackEntry?.savedStateHandle?.remove<SpeechResult>(SpeechResult.FILE_NAME)
+        ?.let {
+            viewModel.addToQueue(
+                fileName = it.fileName,
+                speakerType = it.speakerType,
+                text = it.text
+            )
+        }
+
+    navController.currentBackStackEntry?.savedStateHandle?.get<Int>(SELECTED_ITEM_KEY)?.let { id ->
+        selectedFileId = id
+    }
+
+    LaunchedEffect(archiveFiles.isNotEmpty(), selectedFileId != -1) {
+        if (archiveFiles.isNotEmpty() && selectedFileId != -1) {
+            val item = viewModel.processArchiveFileList.value.firstOrNull {
+                it.id == selectedFileId
+            }
+            selectedFileIndex = archiveFiles.indexOfFirst {
+                it == item
+            }
+            coroutineScope.launch {
+                listState.animateScrollToItem(selectedFileIndex)
+            }
+        }
     }
 
     val (fileSheetState, setBottomSheetType) = rememberSaveable {
@@ -286,7 +310,6 @@ fun AvashoArchiveListScreen(
         } else {
             RoundedCornerShape(0.dp)
         }
-
     Scaffold(
         backgroundColor = MaterialTheme.colors.background,
         modifier = Modifier.background(Color_BG),
@@ -427,9 +450,16 @@ fun AvashoArchiveListScreen(
                 topBar = {
                     ArchiveAppBar(
                         onBackClick = {
-                            safeClick {
-                                navController.navigateUp()
+                            navController.navigateUp()
+                        },
+                        onSearch = {
+                            if (selectedFileId != -1) {
+                                selectedFileIndex = -1
+                                navController.currentBackStackEntry?.savedStateHandle?.remove<Int>(
+                                    SELECTED_ITEM_KEY
+                                )
                             }
+                            navController.navigate(ScreenRoutes.AvashoSearchScreen.route)
                         }
                     )
                 }
@@ -464,6 +494,7 @@ fun AvashoArchiveListScreen(
                             }
 
                             LazyColumn(
+                                state = listState,
                                 modifier = Modifier.fillMaxWidth(),
                                 contentPadding = PaddingValues(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -478,6 +509,12 @@ fun AvashoArchiveListScreen(
                                             onItemClick = callback@{ item ->
                                                 selectedAvashoItem = item
                                                 if (File(item.filePath).exists()) {
+                                                    if (selectedFileId != -1) {
+                                                        selectedFileId = -1
+                                                        navController.currentBackStackEntry?.savedStateHandle?.remove<Int>(
+                                                            SELECTED_ITEM_KEY
+                                                        )
+                                                    }
                                                     setBottomSheetType(Details)
                                                     coroutineScope.launch {
                                                         if (!bottomSheetState.isVisible) {
@@ -503,7 +540,8 @@ fun AvashoArchiveListScreen(
                                                         bottomSheetState.show()
                                                     }
                                                 }
-                                            }
+                                            },
+                                            selectedItem = selectedFileId
                                         )
 
                                         is AvashoTrackingFileView -> {
@@ -638,8 +676,9 @@ private fun ArchiveEmptyBody(
 
 @Composable
 private fun ArchiveAppBar(
-    modifier: Modifier = Modifier,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onSearch: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
@@ -668,9 +707,22 @@ private fun ArchiveAppBar(
             text = stringResource(id = string.lbl_ava_sho),
             style = MaterialTheme.typography.subtitle2,
             color = MaterialTheme.colors.onSurface,
-            modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
+            modifier = Modifier.weight(1f)
         )
+        IconButton(
+            onClick = {
+                safeClick {
+                    onSearch()
+                }
+            }
+        ) {
+            ViraIcon(
+                drawable = drawable.ic_search,
+                contentDescription = stringResource(id = string.desc_search),
+                modifier = Modifier.padding(12.dp)
+            )
+        }
     }
 }
 

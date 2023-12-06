@@ -75,4 +75,7 @@ class AvashoLocalDataSource @Inject constructor(
     suspend fun deleteProcessFile(id: Int) {
         dao.deleteProcessedFile(id)
     }
+
+    suspend fun searchAvashoArchiveItem(searchText: String) =
+        dao.searchAvashoArchiveItem(searchText)
 }

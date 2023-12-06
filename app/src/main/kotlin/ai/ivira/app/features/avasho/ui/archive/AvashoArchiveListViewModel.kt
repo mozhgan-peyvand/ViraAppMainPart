@@ -111,6 +111,9 @@ class AvashoArchiveListViewModel @Inject constructor(
 
     private var failureCount = 0
 
+    var processArchiveFileList = mutableStateOf<List<AvashoProcessedFileView>>(emptyList())
+        private set
+
     val allArchiveFiles = combine(
         networkStatusTracker.networkStatus,
         _uploadStatus,
@@ -201,6 +204,8 @@ class AvashoArchiveListViewModel @Inject constructor(
                         downloadedBytes = downloadingFile?.downloadedBytes,
                         retriever = retriever
                     )
+                }.also {
+                    processArchiveFileList.value = it
                 }
             )
         }

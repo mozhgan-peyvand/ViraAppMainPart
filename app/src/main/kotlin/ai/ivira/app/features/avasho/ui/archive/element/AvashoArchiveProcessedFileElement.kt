@@ -14,6 +14,7 @@ import ai.ivira.app.utils.ui.millisecondsToTime
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.theme.Color_Card
+import ai.ivira.app.utils.ui.theme.Color_On_Surface_Variant
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Text_2
@@ -21,6 +22,7 @@ import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,10 +54,16 @@ fun AvashoArchiveProcessedFileElement(
     isNetworkAvailable: Boolean,
     isDownloadFailure: Boolean,
     isInDownloadQueue: Boolean,
+    selectedItem: Int,
     onItemClick: (AvashoProcessedFileView) -> Unit,
     onMenuClick: (AvashoProcessedFileView) -> Unit
 ) {
     val isDownloaded = File(archiveViewProcessed.filePath).exists()
+    val selectedItemTextColor =
+        if (archiveViewProcessed.id == selectedItem) Color_On_Surface_Variant else Color.Unspecified
+
+    val selectedItemBackgroundColor =
+        if (archiveViewProcessed.id == selectedItem) Color_Primary_300 else Color.Unspecified
 
     Card(
         backgroundColor = Color_Card,
@@ -91,7 +100,9 @@ fun AvashoArchiveProcessedFileElement(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.subtitle2,
-                    text = archiveViewProcessed.fileName
+                    text = archiveViewProcessed.fileName,
+                    color = selectedItemTextColor,
+                    modifier = Modifier.background(selectedItemBackgroundColor)
                 )
 
                 if (!isNetworkAvailable && isDownloadFailure) {
@@ -241,6 +252,7 @@ private fun AvashoArchiveProcessedFileElementPreview() {
                 isNetworkAvailable = true,
                 isDownloadFailure = false,
                 isInDownloadQueue = true,
+                selectedItem = 0,
                 onItemClick = {},
                 onMenuClick = {}
             )

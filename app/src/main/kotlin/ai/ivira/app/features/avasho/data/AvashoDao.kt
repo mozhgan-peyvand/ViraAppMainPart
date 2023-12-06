@@ -65,4 +65,9 @@ interface AvashoDao {
 
     @Query("DELETE FROM AvashoProcessedFileEntity WHERE id = :id")
     suspend fun deleteProcessedFile(id: Int)
+
+    @Query(
+        "SELECT * FROM AvashoProcessedFileEntity WHERE fileName LIKE '%' || :searchText || '%' COLLATE NOCASE"
+    )
+    suspend fun searchAvashoArchiveItem(searchText: String): List<AvashoProcessedFileEntity>
 }

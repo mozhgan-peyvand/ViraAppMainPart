@@ -142,5 +142,8 @@ class AvashoRepository @Inject constructor(
         avashoLocalDataSource.deleteProcessFile(id)
     }
 
+    suspend fun searchAvashoArchiveItem(searchText: String) =
+        avashoLocalDataSource.searchAvashoArchiveItem(searchText)
+
     private external fun bu(): String
 }
