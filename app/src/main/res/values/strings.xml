@@ -208,4 +208,5 @@
     <string name="lbl_show_later">بعدا نمایش بده</string>
     <string name="lbl_bullet">•</string>
     <string name="msg_updating_failed_please_try_again_later">متاسفانه درخواست به روزرسانی شما با خطا مواجه شد، لطفا مدتی منتظر بمانید و سپس دوباره امتحان کنید.</string>
+    <string name="msg_vpn_is_connected_error">جهت ادامه کار فیلترشکن خود را خاموش کنید</string>
 </resources>

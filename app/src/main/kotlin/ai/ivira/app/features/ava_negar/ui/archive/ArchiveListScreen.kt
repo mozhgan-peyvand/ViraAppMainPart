@@ -757,6 +757,10 @@ private fun AvaNegarArchiveListScreen(
                         mutableStateOf(networkStatus is NetworkStatus.Unavailable)
                     }
 
+                    val hasVpnConnection by remember(networkStatus) {
+                        mutableStateOf(networkStatus.let { it is NetworkStatus.Available && it.hasVpn })
+                    }
+
                     val isBannerError by remember(uiViewState) {
                         mutableStateOf(uiViewState.let { it is UiError && !it.isSnack })
                     }
@@ -765,10 +769,12 @@ private fun AvaNegarArchiveListScreen(
                         mutableStateOf(archiveFiles.isNotEmpty() && isThereAnyTrackingOrUploading)
                     }
 
-                    if ((noNetworkAvailable || isBannerError) && shouldShowError) {
+                    if ((noNetworkAvailable || hasVpnConnection || isBannerError) && shouldShowError) {
                         ErrorBanner(
                             errorMessage = if (uiViewState is UiError) {
                                 (uiViewState as UiError).message
+                            } else if (hasVpnConnection) {
+                                stringResource(id = R.string.msg_vpn_is_connected_error)
                             } else {
                                 stringResource(id = R.string.msg_internet_disconnected)
                             }
@@ -781,7 +787,7 @@ private fun AvaNegarArchiveListScreen(
                             .fillMaxWidth(),
                         archiveViewList = archiveFiles,
                         failureList = failureList,
-                        isNetworkAvailable = !noNetworkAvailable,
+                        isNetworkAvailable = !noNetworkAvailable && !hasVpnConnection,
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                         isGrid = isGrid,
                         uploadingId = uploadingId,

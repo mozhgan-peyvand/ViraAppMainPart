@@ -144,30 +144,32 @@ class ArchiveListViewModel @Inject constructor(
         if (networkStatus is NetworkStatus.Unavailable) {
             job?.cancel()
             _isUploading.emit(Idle)
-        } else if (
-            uploadingFileStatus != Uploading &&
-            uploadingFileStatus != FailureUpload &&
-            uploadList.isNotEmpty()
-        ) {
-            _uiViewStat.emit(UiLoading)
-            _isUploading.value = Uploading
+        } else if (networkStatus is NetworkStatus.Available && !networkStatus.hasVpn) {
+            if (
+                uploadingFileStatus != Uploading &&
+                uploadingFileStatus != FailureUpload &&
+                uploadList.isNotEmpty()
+            ) {
+                _uiViewStat.emit(UiLoading)
+                _isUploading.value = Uploading
 
-            indexOfItemThatShouldBeDownloaded.run {
-                _uploadingId.value = uploadList[this].id
-                val item = uploadList[this]
-                val fileDuration = uploadList[this].fileDuration
+                indexOfItemThatShouldBeDownloaded.run {
+                    _uploadingId.value = uploadList[this].id
+                    val item = uploadList[this]
+                    val fileDuration = uploadList[this].fileDuration
 
-                // 0L means that file duration was is null
-                if (fileDuration < SIXTY_SECOND) {
-                    audioToTextBelowSixtySecond(
-                        item,
-                        createProgressListener()
-                    )
-                } else {
-                    audioToTextAboveSixtySecond(
-                        item,
-                        createProgressListener()
-                    )
+                    // 0L means that file duration was is null
+                    if (fileDuration < SIXTY_SECOND) {
+                        audioToTextBelowSixtySecond(
+                            item,
+                            createProgressListener()
+                        )
+                    } else {
+                        audioToTextAboveSixtySecond(
+                            item,
+                            createProgressListener()
+                        )
+                    }
                 }
             }
         }
