@@ -507,14 +507,14 @@ fun AvashoArchiveListScreen(
                                             isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
                                             isNetworkAvailable = isNetworkAvailableWithoutVpn,
                                             onItemClick = callback@{ item ->
+                                                if (selectedFileId != -1) {
+                                                    selectedFileId = -1
+                                                    navController.currentBackStackEntry?.savedStateHandle?.remove<Int>(
+                                                        SELECTED_ITEM_KEY
+                                                    )
+                                                }
                                                 selectedAvashoItem = item
                                                 if (File(item.filePath).exists()) {
-                                                    if (selectedFileId != -1) {
-                                                        selectedFileId = -1
-                                                        navController.currentBackStackEntry?.savedStateHandle?.remove<Int>(
-                                                            SELECTED_ITEM_KEY
-                                                        )
-                                                    }
                                                     setBottomSheetType(Details)
                                                     coroutineScope.launch {
                                                         if (!bottomSheetState.isVisible) {
