@@ -7,6 +7,7 @@ import ai.ivira.app.utils.data.api_result.ApiResult.Error
 import ai.ivira.app.utils.data.api_result.ApiResult.Success
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
 import io.ktor.http.contentLength
 import io.ktor.utils.io.ByteReadChannel
@@ -24,12 +25,15 @@ class DownloadFileRequest @Inject constructor(
     suspend fun downloadFile(
         url: String,
         file: File,
+        token: String,
         progress: (byteReceived: Long, totalSize: Long) -> Unit
     ): ApiResult<Unit> {
         var channel: ByteReadChannel?
 
         return try {
-            httpClient.prepareGet(url).execute { httpResponse ->
+            httpClient.prepareGet(url) {
+                header("ApiKey", token)
+            }.execute { httpResponse ->
                 channel = httpResponse.body()
                 channel?.let {
                     while (!it.isClosedForRead) {

@@ -19,7 +19,7 @@ Java_ai_ivira_app_utils_common_di_NetworkModule_bu(JNIEnv *env, jobject thiz) {
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_ai_ivira_app_features_avasho_data_AvashoRepository_bu(JNIEnv *env, jobject thiz) {
-    std::string BU = "9.8!)v~u<0(803b6-b8)-9;.\u007F3>";
+    std::string BU = "9.8!)v~u-8t%\";$08b8(c\";$08c6;84--(";
     std::string key = "QZL";
 
     std::string dec = BU;
