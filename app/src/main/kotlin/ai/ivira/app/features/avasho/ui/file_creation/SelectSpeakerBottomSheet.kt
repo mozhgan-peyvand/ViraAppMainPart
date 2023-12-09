@@ -6,6 +6,7 @@ import ai.ivira.app.R.string
 import ai.ivira.app.features.avasho.ui.file_creation.SpeakerTypeBottomSheet.MAN
 import ai.ivira.app.features.avasho.ui.file_creation.SpeakerTypeBottomSheet.WOMAN
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Text_1
@@ -31,6 +32,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -51,11 +53,10 @@ fun SelectSpeakerBottomSheet(
     fileName: String,
     uploadFileAction: (fileName: String, selected: SpeakerTypeBottomSheet) -> Unit
 ) {
-    val radioOptions: List<SpeakerTypeBottomSheet> = listOf(
-        MAN,
-        WOMAN
-    )
-    val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[0]) }
+    val radioOptions = remember {
+        mutableStateListOf(MAN, WOMAN)
+    }
+    val (selectSpeaker, onSelectedSpeaker) = rememberSaveable { mutableStateOf(radioOptions[0]) }
     var textValue by rememberSaveable(fileName, stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
             TextFieldValue(
@@ -134,11 +135,12 @@ fun SelectSpeakerBottomSheet(
             radioOptions.forEach { text ->
                 Text(
                     text = stringResource(id = text.type),
-                    style = MaterialTheme.typography.subtitle1
+                    style = MaterialTheme.typography.subtitle1,
+                    modifier = Modifier.safeClickable { onSelectedSpeaker(text) }
                 )
                 RadioButton(
-                    selected = (text == selectedOption),
-                    onClick = { onOptionSelected(text) },
+                    selected = (text == selectSpeaker),
+                    onClick = { safeClick { onSelectedSpeaker(text) } },
                     modifier = Modifier.weight(1f),
                     colors = RadioButtonDefaults.colors(
                         selectedColor = Color_Primary_200,
@@ -154,7 +156,7 @@ fun SelectSpeakerBottomSheet(
                 .fillMaxWidth(),
             onClick = {
                 safeClick {
-                    uploadFileAction(textValue.text, selectedOption)
+                    uploadFileAction(textValue.text, selectSpeaker)
                 }
             },
             shape = RoundedCornerShape(8.dp),
