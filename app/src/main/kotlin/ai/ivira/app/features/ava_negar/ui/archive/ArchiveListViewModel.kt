@@ -182,7 +182,8 @@ class ArchiveListViewModel @Inject constructor(
             it.fileDuration > 0L && File(it.filePath).exists()
         }
 
-        _isUploadingAllowed.value = trackingList.isEmpty() && uploadList.isEmpty()
+        _isUploadingAllowed.value =
+            trackingList.isEmpty() && uploadList.isEmpty() && _failureList.value.isEmpty()
 
         if (trackingList.isEmpty() && uploadList.isEmpty()) {
             _uiViewStat.emit(UiIdle)
