@@ -14,13 +14,10 @@ class VersionDataHelper @Inject constructor() {
 
     fun up(): String = cup()
 
-    fun gwp(): String = cgwp()
-
     fun gws(): String = cgws()
 
     private external fun cgwu(): String
     private external fun cgw(): String
     private external fun cup(): String
-    private external fun cgwp(): String
     private external fun cgws(): String
 }
