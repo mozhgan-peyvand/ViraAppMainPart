@@ -140,6 +140,10 @@ private fun HomeScreen(
         skipHalfExpanded = true
     )
 
+    val hasVpnConnection by remember(networkStatus) {
+        mutableStateOf(networkStatus.let { it is NetworkStatus.Available && it.hasVpn })
+    }
+
     val showUpdateBottomSheet by homeViewModel.showUpdateBottomSheet.collectAsStateWithLifecycle()
 
     val (sheetSelected, setSelectedSheet) = rememberSaveable {
@@ -272,6 +276,15 @@ private fun HomeScreen(
                             snackbarHostState,
                             coroutineScope,
                             context.getString(string.msg_internet_disconnected)
+                        )
+                        return@DrawerHeader
+                    }
+
+                    if (hasVpnConnection) {
+                        showMessage(
+                            snackbarHostState,
+                            coroutineScope,
+                            context.getString(string.msg_vpn_is_connected_error)
                         )
                         return@DrawerHeader
                     }

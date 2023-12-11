@@ -86,8 +86,6 @@
     <!--region error message -->
     <string name="msg_there_is_a_problem">مشکلی به وجود آمده است</string>
     <string name="msg_invalid_input_data">داده های ورودی معتبر نمی باشد</string>
-    <string name="msg_token_not_provided">توکن ارتباط با gateway یافت نشد</string>
-    <string name="msg_invalid_token">توکن ارتباط با gateway معتبر نیست!</string>
     <string name="msg_url_not_found">آدرس درخواست داده شده وجود ندارد!</string>
     <string name="msg_connection_error">اتصال به اینترنت برقرار نمی باشد</string>
     <string name="msg_server_error">ارتباط با سرور موقتا برقرار نمی باشد</string>

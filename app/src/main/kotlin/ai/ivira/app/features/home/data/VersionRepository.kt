@@ -4,14 +4,11 @@ import ai.ivira.app.BuildConfig
 import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
 import ai.ivira.app.features.home.data.entity.VersionDto
 import ai.ivira.app.features.home.data.entity.VersionEntity
-import ai.ivira.app.utils.common.di.qualifier.EncryptedSharedPref
 import ai.ivira.app.utils.data.NetworkHandler
 import ai.ivira.app.utils.data.api_result.AppException
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.data.api_result.AppResult.Success
 import ai.ivira.app.utils.data.api_result.toAppResult
-import ai.ivira.app.utils.ui.ApiErrorCodes.InvalidToken
-import ai.ivira.app.utils.ui.ApiErrorCodes.TokenNotProvided
 import android.content.SharedPreferences
 import android.text.format.DateUtils
 import androidx.core.content.edit
@@ -23,7 +20,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val UPDATE_GATEWAY_TOKEN = "updateGatewayToken"
 private const val CHECK_UPDATE_PERIODICALLY_KEY = "checkUpdatePeriodicallyKey"
 private const val LAST_UPDATE_CHECK = "lastUpdateCheck"
 private const val SHOWING_UPDATE_LATER_INTERVAL = 48 * DateUtils.HOUR_IN_MILLIS
@@ -34,7 +30,6 @@ class VersionRepository @Inject constructor(
     private val versionLocalDataSource: VersionLocalDataSource,
     private val versionRemoteDataSource: VersionRemoteDataSource,
     private val sharedPref: SharedPreferences,
-    @EncryptedSharedPref private val encryptedSharedPref: SharedPreferences,
     private val networkHandler: NetworkHandler
 ) {
     init {
@@ -75,31 +70,10 @@ class VersionRepository @Inject constructor(
         return showUpdateBottomSheetAgain || hasEnoughTimePassedToShowUpdate
     }
 
-    private suspend fun getUpdateGatewayToken(): AppResult<String> {
-        return if (networkHandler.hasNetworkConnection()) {
-            when (val result = versionRemoteDataSource.getUpdateGatewayToken().toAppResult()) {
-                is Success -> {
-                    encryptedSharedPref.edit {
-                        this.putString(UPDATE_GATEWAY_TOKEN, result.data)
-                    }
-
-                    Success(result.data)
-                }
-
-                is AppResult.Error -> {
-                    AppResult.Error(result.error)
-                }
-            }
-        } else {
-            AppResult.Error(AppException.NetworkConnectionException())
-        }
-    }
-
     suspend fun getChangeLogFromRemote(): AppResult<Unit> {
         return if (networkHandler.hasNetworkConnection()) {
             when (
-                val result = versionRemoteDataSource.getUpdateVersionList(gatewayToken())
-                    .toAppResult()
+                val result = versionRemoteDataSource.getUpdateVersionList().toAppResult()
             ) {
                 is Success -> {
                     val data = result.data.map { settingNetwork ->
@@ -119,46 +93,7 @@ class VersionRepository @Inject constructor(
                 }
 
                 is AppResult.Error -> {
-                    if (result.error is AppException.RemoteDataSourceException && (
-                            result.error.body.contains(TokenNotProvided.value) ||
-                                result.error.body.contains(InvalidToken.value)
-                            )
-                    ) {
-                        when (getUpdateGatewayToken()) {
-                            is Success -> {
-                                val newResult = versionRemoteDataSource.getUpdateVersionList(
-                                    gatewayToken()
-                                ).toAppResult()
-
-                                when (newResult) {
-                                    is Success -> {
-                                        val data = newResult.data.map { settingNetwork ->
-                                            settingNetwork.toVersionEntity()
-                                        }
-
-                                        insertChangeLogToDatabase(data)
-
-                                        versionLocalDataSource.deleteReleaseNote()
-                                        newResult.data.map { settingNetwork ->
-                                            insertReleaseNoteToDatabase(settingNetwork.value.releaseNote.map {
-                                                it.toReleaseNoteEntity(settingNetwork.value.versionNumber)
-                                            })
-                                        }
-
-                                        updateChecked()
-                                        Success(Unit)
-                                    }
-                                    is AppResult.Error -> AppResult.Error(result.error)
-                                }
-                            }
-
-                            is AppResult.Error -> {
-                                AppResult.Error(result.error)
-                            }
-                        }
-                    } else {
-                        AppResult.Error(result.error)
-                    }
+                    AppResult.Error(result.error)
                 }
             }
         } else {
@@ -189,6 +124,4 @@ class VersionRepository @Inject constructor(
     private suspend fun insertReleaseNoteToDatabase(list: List<ReleaseNoteEntity>) {
         versionLocalDataSource.insertReleaseNote(list)
     }
-
-    private fun gatewayToken() = encryptedSharedPref.getString(UPDATE_GATEWAY_TOKEN, "").orEmpty()
 }

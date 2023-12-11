@@ -6,8 +6,6 @@ import ai.ivira.app.utils.data.api_result.AppException.IOException
 import ai.ivira.app.utils.data.api_result.AppException.NetworkConnectionException
 import ai.ivira.app.utils.data.api_result.AppException.RemoteDataSourceException
 import ai.ivira.app.utils.ui.ApiErrorCodes.InvalidInputData
-import ai.ivira.app.utils.ui.ApiErrorCodes.InvalidToken
-import ai.ivira.app.utils.ui.ApiErrorCodes.TokenNotProvided
 import ai.ivira.app.utils.ui.ApiErrorCodes.UrlNotFound
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -25,8 +23,6 @@ class UiException @Inject constructor(
             is RemoteDataSourceException -> {
                 when (appException.body) {
                     InvalidInputData.value -> context.getString(R.string.msg_invalid_input_data)
-                    TokenNotProvided.value -> context.getString(R.string.msg_token_not_provided)
-                    InvalidToken.value -> context.getString(R.string.msg_invalid_token)
                     UrlNotFound.value -> context.getString(R.string.msg_url_not_found)
                     else -> defaultMessage
                 }
