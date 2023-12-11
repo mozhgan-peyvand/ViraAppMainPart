@@ -2,12 +2,15 @@ package ai.ivira.app.features.ava_negar.ui.archive
 
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
+import ai.ivira.app.R.drawable
+import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.AvanegarSentry
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Processed
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Tracking
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Uploading
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
+import ai.ivira.app.features.ava_negar.ui.archive.ArchiveBottomSheetType.AudioAccessPermissionDenied
 import ai.ivira.app.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementColumn
 import ai.ivira.app.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementGrid
 import ai.ivira.app.features.ava_negar.ui.archive.element.ArchiveTrackingFileElementGrid
@@ -42,6 +45,7 @@ import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.hasPermission
 import ai.ivira.app.utils.ui.hasRecordAudioPermission
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
+import ai.ivira.app.utils.ui.isScrollingUp
 import ai.ivira.app.utils.ui.isSdkVersion33orHigher
 import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
@@ -64,6 +68,7 @@ import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.Manifest
+import android.Manifest.permission
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -73,12 +78,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -94,10 +102,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
@@ -185,6 +195,8 @@ private fun AvaNegarArchiveListScreen(
     var fileUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     val isGrid by archiveListViewModel.isGrid.collectAsStateWithLifecycle()
     val uploadingId by archiveListViewModel.uploadingId.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
+    val isVisible by listState.isScrollingUp()
 
     val (selectedSheet, setSelectedSheet) = rememberSaveable {
         mutableStateOf(
@@ -791,6 +803,7 @@ private fun AvaNegarArchiveListScreen(
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                         isGrid = isGrid,
                         uploadingId = uploadingId,
+                        listState = listState,
                         brush = if (isGrid) gridBrush() else columnBrush(),
                         onTryAgainCLick = { archiveListViewModel.startUploading(it) },
                         onMenuClick = { item ->
@@ -830,9 +843,7 @@ private fun AvaNegarArchiveListScreen(
                         }
                     )
                 }
-
-                FloatingActionButton(
-                    backgroundColor = MaterialTheme.colors.primary,
+                AnimatedVisibility(
                     modifier = Modifier
                         .align(BottomStart)
                         .padding(
@@ -841,79 +852,104 @@ private fun AvaNegarArchiveListScreen(
                             top = 8.dp,
                             bottom = 16.dp
                         ),
-                    onClick = {
-                        safeClick {
-                            if (isUploadingAllowed) {
-                                eventHandler.specialEvent(
-                                    AvanegarAnalytics.selectRecordAudio(
-                                        if (context.hasRecordAudioPermission()) "1" else "0"
-                                    )
-                                )
+                    visible = isVisible,
+                    enter = slideInVertically(
+                        // Enters by sliding down from offset -fullHeight to 0.
+                        initialOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(
+                            durationMillis = 250,
+                            easing = EaseInOut
+                        )
+                    ),
+                    exit = slideOutVertically(
+                        targetOffsetY = { fullHeight -> fullHeight },
+                        animationSpec = tween(
+                            durationMillis = 150,
+                            easing = EaseInOut
+                        )
+                    )
 
-                                snackbarHostState.currentSnackbarData?.dismiss()
-
-                                if (context.packageManager.hasSystemFeature(
-                                        PackageManager.FEATURE_MICROPHONE
+                ) {
+                    FloatingActionButton(
+                        backgroundColor = MaterialTheme.colors.primary,
+                        onClick = {
+                            safeClick {
+                                if (isUploadingAllowed) {
+                                    eventHandler.specialEvent(
+                                        AvanegarAnalytics.selectRecordAudio(
+                                            if (context.hasRecordAudioPermission()) "1" else "0"
+                                        )
                                     )
-                                ) {
-                                    // PermissionCheck Duplicate 2
-                                    if (context.hasRecordAudioPermission()) {
-                                        gotoRecordAudioScreen(navHostController)
-                                    } else {
-                                        // needs improvement, just need to save if permission is alreadyRequested
-                                        // and everytime check shouldShow
-                                        if (archiveListViewModel.hasDeniedPermissionPermanently(
-                                                Manifest.permission.RECORD_AUDIO
-                                            )
-                                        ) {
-                                            setSelectedSheet(
-                                                ArchiveBottomSheetType.AudioAccessPermissionDenied
-                                            )
-                                            coroutineScope.launch {
-                                                if (!modalBottomSheetState.isVisible) {
-                                                    modalBottomSheetState.show()
-                                                } else {
-                                                    modalBottomSheetState.hide()
-                                                }
-                                            }
+
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+
+                                    if (context.packageManager.hasSystemFeature(
+                                            PackageManager.FEATURE_MICROPHONE
+                                        )
+                                    ) {
+                                        // PermissionCheck Duplicate 2
+                                        if (context.hasRecordAudioPermission()) {
+                                            gotoRecordAudioScreen(navHostController)
                                         } else {
-                                            recordAudioPermLauncher.launch(
-                                                Manifest.permission.RECORD_AUDIO
-                                            )
+                                            // needs improvement, just need to save if permission is alreadyRequested
+                                            // and everytime check shouldShow
+                                            if (archiveListViewModel.hasDeniedPermissionPermanently(
+                                                    permission.RECORD_AUDIO
+                                                )
+                                            ) {
+                                                setSelectedSheet(
+                                                    AudioAccessPermissionDenied
+                                                )
+                                                coroutineScope.launch {
+                                                    if (!modalBottomSheetState.isVisible) {
+                                                        modalBottomSheetState.show()
+                                                    } else {
+                                                        modalBottomSheetState.hide()
+                                                    }
+                                                }
+                                            } else {
+                                                recordAudioPermLauncher.launch(
+                                                    permission.RECORD_AUDIO
+                                                )
+                                            }
                                         }
+                                    } else {
+                                        showMessage(
+                                            snackbarHostState,
+                                            coroutineScope,
+                                            context.getString(
+                                                string.msg_no_microphone_found_on_phone
+                                            )
+                                        )
                                     }
                                 } else {
+                                    val hasError = uiViewState is UiError && isThereAnyTrackingOrUploading
+                                    AvanegarSentry.queueIsFull(hasError)
+                                    eventHandler.specialEvent(
+                                        AvanegarAnalytics.uploadNotAllowed(
+                                            false
+                                        )
+                                    )
                                     showMessage(
                                         snackbarHostState,
                                         coroutineScope,
                                         context.getString(
-                                            R.string.msg_no_microphone_found_on_phone
+                                            if (hasError) {
+                                                string.msg_wait_for_connection_to_server
+                                            } else {
+                                                string.msg_wait_process_finish_or_cancel_it
+                                            }
                                         )
                                     )
                                 }
-                            } else {
-                                val hasError = uiViewState is UiError && isThereAnyTrackingOrUploading
-                                AvanegarSentry.queueIsFull(hasError)
-                                eventHandler.specialEvent(AvanegarAnalytics.uploadNotAllowed(false))
-                                showMessage(
-                                    snackbarHostState,
-                                    coroutineScope,
-                                    context.getString(
-                                        if (hasError) {
-                                            R.string.msg_wait_for_connection_to_server
-                                        } else {
-                                            R.string.msg_wait_process_finish_or_cancel_it
-                                        }
-                                    )
-                                )
                             }
                         }
+                    ) {
+                        ViraIcon(
+                            drawable = drawable.ic_mic,
+                            contentDescription = stringResource(id = string.desc_record)
+                        )
                     }
-                ) {
-                    ViraIcon(
-                        drawable = R.drawable.ic_mic,
-                        contentDescription = stringResource(id = R.string.desc_record)
-                    )
                 }
             }
         }
@@ -1028,6 +1064,7 @@ private fun ArchiveBody(
     isGrid: Boolean,
     brush: Brush,
     uploadingId: String,
+    listState: LazyListState,
     onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (id: Int, title: String) -> Unit,
@@ -1046,6 +1083,7 @@ private fun ArchiveBody(
             isGrid = isGrid,
             brush = brush,
             uploadingId = uploadingId,
+            listState = listState,
             onTryAgainCLick = { onTryAgainCLick(it) },
             onMenuClick = { onMenuClick(it) },
             onItemClick = { id, title -> onItemClick(id, title) }
@@ -1153,6 +1191,7 @@ private fun ArchiveList(
     isGrid: Boolean,
     brush: Brush,
     uploadingId: String,
+    listState: LazyListState,
     onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (id: Int, title: String) -> Unit,
@@ -1221,6 +1260,7 @@ private fun ArchiveList(
         }
     } else {
         LazyColumn(
+            state = listState,
             modifier = modifier.fillMaxWidth(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
