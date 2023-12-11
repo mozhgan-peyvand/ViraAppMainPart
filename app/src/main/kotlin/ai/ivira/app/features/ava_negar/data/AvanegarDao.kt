@@ -56,20 +56,24 @@ interface AvanegarDao {
     @Query(
         """
         SELECT * FROM (
-            SELECT 0 AS id,'' AS uploadingId, title, 0 AS fileDuration, '' AS text, createdAt, filePath, token, 0 AS isSeen, 'tracking' as archiveType,
-            processEstimation, bootElapsedTime, lastFailedRequest, lastTrackedBootElapsed
+            SELECT 0 AS id, '' AS uploadingId, title, 0 AS fileDuration, '' AS text, 
+                insertSystemTime, filePath, token, 0 AS isSeen, 'tracking' as archiveType,
+                processEstimation, insertBootTime, lastFailureSystemTime, lastFailureBootTime
             FROM AvanegarTrackingFileEntity
         )
         UNION
         SELECT * FROM (
-            SELECT id,'' AS uploadingId, title, 0 AS fileDuration, text, createdAt, filePath, '' AS token, isSeen, 'processed' as archiveType,
-            0 AS processEstimation, 0 AS bootElapsedTime, 0 AS lastFailedRequest, 0 AS lastTrackedBootElapsed
+            SELECT id, '' AS uploadingId, title, 0 AS fileDuration, text, createdAt AS insertSystemTime,
+                filePath, '' AS token, isSeen, 'processed' as archiveType, 0 AS processEstimation,
+                0 AS insertBootTime, 0 AS lastFailureSystemTime, 0 AS lastFailureBootTime
             FROM AvanegarProcessedFileEntity
         )
         UNION
         SELECT * FROM (
-            SELECT 0 AS id, id AS uploadingId, title, fileDuration,'' AS text, createdAt, filePath,  '' AS token,  0 AS isSeen, 'uploading' as archiveType,
-            0 AS processEstimation, 0 AS bootElapsedTime, 0 AS lastFailedRequest, 0 AS lastTrackedBootElapsed
+            SELECT 0 AS id, id AS uploadingId, title, fileDuration, '' AS text,
+                createdAt AS insertSystemTime, filePath, '' AS token, 0 AS isSeen,
+                'uploading' as archiveType, 0 AS processEstimation, 0 AS insertBootTime,
+                0 AS lastFailureSystemTime, 0 AS lastFailureBootTime
             FROM AvanegarUploadingFileEntity
         )
     """
@@ -96,10 +100,14 @@ interface AvanegarDao {
     suspend fun getSearch(searchText: String): List<AvanegarProcessedFileEntity>
 
     @Query(
-        "UPDATE AvanegarTrackingFileEntity SET lastFailedRequest=:lastFailedRequest, lastTrackedBootElapsed=:lastTrackedBootElapsed"
+        """
+            UPDATE AvanegarTrackingFileEntity 
+            SET lastFailureSystemTime=:lastFailureSystemTime,
+                lastFailureBootTime=:lastFailureBootTime
+        """
     )
     suspend fun updateLastTrackingFileFailure(
-        lastFailedRequest: Long?,
-        lastTrackedBootElapsed: Long?
+        lastFailureSystemTime: Long?,
+        lastFailureBootTime: Long?
     )
 }

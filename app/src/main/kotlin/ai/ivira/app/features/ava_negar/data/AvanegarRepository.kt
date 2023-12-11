@@ -4,10 +4,10 @@ import ai.ivira.app.features.ava_negar.AvanegarSentry
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarProcessedFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarTrackingFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarUploadingFileEntity
-import ai.ivira.app.features.ava_negar.data.entity.LastTrackFailure
 import ai.ivira.app.utils.common.file.UploadProgressCallback
 import ai.ivira.app.utils.common.file.toMultiPart
 import ai.ivira.app.utils.data.NetworkHandler
+import ai.ivira.app.utils.data.TrackTime
 import ai.ivira.app.utils.data.api_result.ApiResult
 import ai.ivira.app.utils.data.api_result.AppException
 import ai.ivira.app.utils.data.api_result.AppResult
@@ -106,8 +106,10 @@ class AvanegarRepository @Inject constructor(
                             processEstimation = result.data.processEstimation?.roundToInt(),
                             filePath = file.absolutePath,
                             title = title,
-                            createdAt = PersianDate().time, // TODO: improve
-                            bootElapsedTime = SystemClock.elapsedRealtime(),
+                            insertAt = TrackTime(
+                                systemTime = PersianDate().time, // TODO: improve
+                                bootTime = SystemClock.elapsedRealtime()
+                            ),
                             lastFailure = null
                         )
                     )
@@ -167,14 +169,14 @@ class AvanegarRepository @Inject constructor(
                         AvanegarSentry.catchTrackException(
                             fileDuration = fileDuration,
                             processTime = tracked.processEstimation,
-                            createdTime = tracked.createdAt,
-                            lastFailedTime = tracked.lastFailure?.lastFailedRequest
+                            createdTime = tracked.insertAt.systemTime,
+                            lastFailedTime = tracked.lastFailure?.systemTime
                         )
                     }
                     avanegarLocalDataSource.updateLastTrackingFileFailure(
-                        LastTrackFailure(
-                            lastFailedRequest = PersianDate().time,
-                            lastTrackedBootElapsed = SystemClock.elapsedRealtime()
+                        TrackTime(
+                            systemTime = PersianDate().time,
+                            bootTime = SystemClock.elapsedRealtime()
                         )
                     )
                     Error(result.error)

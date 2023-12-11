@@ -1,5 +1,6 @@
 package ai.ivira.app.features.ava_negar.data.entity
 
+import ai.ivira.app.utils.data.TrackTime
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -11,13 +12,8 @@ data class AvanegarTrackingFileEntity(
     val processEstimation: Int?,
     val filePath: String,
     val title: String,
-    val createdAt: Long,
-    val bootElapsedTime: Long,
-    @Embedded
-    val lastFailure: LastTrackFailure?
-)
-
-data class LastTrackFailure(
-    val lastFailedRequest: Long,
-    val lastTrackedBootElapsed: Long
+    @Embedded("insert")
+    val insertAt: TrackTime,
+    @Embedded("lastFailure")
+    val lastFailure: TrackTime?
 )

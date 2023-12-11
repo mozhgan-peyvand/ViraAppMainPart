@@ -99,8 +99,8 @@ class AvanegarTracker @Inject constructor(
                     return@loop
                 }
 
-                if (currentBootTime > tracking.bootElapsedTime) {
-                    val diff = (currentBootTime - tracking.bootElapsedTime) / 1000
+                if (currentBootTime > tracking.insertAt.bootTime) {
+                    val diff = (currentBootTime - tracking.insertAt.bootTime) / 1000
                     if (tracking.processEstimation <= diff) {
                         log("bootTime more, sending request")
                         sendTrackingRequest(tracking.token)
@@ -108,8 +108,8 @@ class AvanegarTracker @Inject constructor(
                         log("bootTime more but not enough: $diff")
                     }
                 } else {
-                    if (timePersian > tracking.createdAt) {
-                        val diff = (timePersian - tracking.createdAt) / 1000
+                    if (timePersian > tracking.insertAt.systemTime) {
+                        val diff = (timePersian - tracking.insertAt.systemTime) / 1000
                         if (tracking.processEstimation <= diff) {
                             log("time more sending request")
                             sendTrackingRequest(tracking.token)
@@ -150,8 +150,8 @@ class AvanegarTracker @Inject constructor(
             item.put(
                 "creationTime",
                 JSONObject().also { created ->
-                    created.put("timestamp", tracking.createdAt)
-                    created.put("bootElapsedTime", tracking.bootElapsedTime)
+                    created.put("timestamp", tracking.insertAt.systemTime)
+                    created.put("bootElapsedTime", tracking.insertAt.bootTime)
                 }
             )
             item.put(
@@ -160,11 +160,11 @@ class AvanegarTracker @Inject constructor(
                     JSONObject().also { lastFailure ->
                         lastFailure.put(
                             "timestamp",
-                            tracking.lastFailure.lastFailedRequest
+                            tracking.lastFailure.systemTime
                         )
                         lastFailure.put(
                             "bootElapsedTime",
-                            tracking.lastFailure.lastTrackedBootElapsed
+                            tracking.lastFailure.bootTime
                         )
                     }
                 }

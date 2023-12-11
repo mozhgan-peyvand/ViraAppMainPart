@@ -3,7 +3,7 @@ package ai.ivira.app.features.ava_negar.data
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarProcessedFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarTrackingFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarUploadingFileEntity
-import ai.ivira.app.features.ava_negar.data.entity.LastTrackFailure
+import ai.ivira.app.utils.data.TrackTime
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -45,7 +45,7 @@ class AvanegarLocalDataSource @Inject constructor(
         // TODO: do manual todo for all files
         // for some reason, sort was not applied with union, then we sort it manually
         AvanegarArchiveFilesEntity(
-            tracking = tracking.sortedByDescending { it.createdAt },
+            tracking = tracking.sortedByDescending { it.insertAt.systemTime },
             processed = processed.sortedByDescending { it.createdAt },
             uploading = uploading.sortedBy { it.createdAt }
         )
@@ -85,10 +85,10 @@ class AvanegarLocalDataSource @Inject constructor(
 
     suspend fun editText(text: String, id: Int) = dao.editText(text, id)
 
-    suspend fun updateLastTrackingFileFailure(lastTrackFailure: LastTrackFailure?) {
+    suspend fun updateLastTrackingFileFailure(time: TrackTime?) {
         dao.updateLastTrackingFileFailure(
-            lastTrackFailure?.lastFailedRequest,
-            lastTrackFailure?.lastTrackedBootElapsed
+            time?.systemTime,
+            time?.bootTime
         )
     }
 }
