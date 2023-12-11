@@ -1,5 +1,7 @@
+<!-- @formatter:off -->
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
+    <option name="FORMATTER_TAGS_ENABLED" value="true" />
     <JetCodeStyleSettings>
       <option name="SPACE_AROUND_RANGE" value="true" />
       <option name="LINE_BREAK_AFTER_MULTILINE_WHEN_ENTRY" value="false" />
@@ -152,3 +154,4 @@
     </codeStyleSettings>
   </code_scheme>
 </component>
+<!-- @formatter:on -->
