@@ -24,6 +24,7 @@ import ai.ivira.app.utils.data.NetworkStatus.Available
 import ai.ivira.app.utils.data.NetworkStatus.Unavailable
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
+import ai.ivira.app.utils.ui.isScrollingUp
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoFileCreationScreen
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
@@ -42,6 +43,7 @@ import ai.ivira.app.utils.ui.theme.Color_White
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.InfiniteTransition
 import androidx.compose.animation.core.RepeatMode.Reverse
@@ -49,6 +51,8 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -64,9 +68,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
@@ -94,7 +98,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -574,7 +577,8 @@ fun AvashoArchiveListScreen(
                         modifier = Modifier.align(Alignment.BottomStart),
                         onMainFabClick = {
                             navController.navigate(route = AvaShoFileCreationScreen.route)
-                        }
+                        },
+                        listState = listState
                     )
                 }
             }
@@ -728,21 +732,39 @@ private fun ArchiveAppBar(
 
 @Composable
 private fun Fab(
-    modifier: Modifier = Modifier,
-    onMainFabClick: () -> Unit
+    listState: LazyListState,
+    onMainFabClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    val density = LocalDensity.current
+    val isVisible by listState.isScrollingUp()
+    AnimatedVisibility(
         modifier = modifier.padding(
             start = 16.dp,
             end = 16.dp,
             top = 8.dp,
             bottom = 16.dp
+        ),
+        visible = isVisible,
+        enter = slideInVertically(
+            // Enters by sliding down from offset -fullHeight to 0.
+            initialOffsetY = { fullHeight -> fullHeight },
+            animationSpec = tween(
+                durationMillis = 250,
+                easing = EaseInOut
+            )
+        ),
+        exit = slideOutVertically(
+            targetOffsetY = { fullHeight -> fullHeight },
+            animationSpec = tween(
+                durationMillis = 150,
+                easing = EaseInOut
+            )
         )
+
     ) {
         FloatingActionButton(
             backgroundColor = MaterialTheme.colors.primary,
-            modifier = Modifier.clip(CircleShape),
             onClick = {
                 safeClick {
                     onMainFabClick()
