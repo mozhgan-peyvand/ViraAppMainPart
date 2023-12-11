@@ -1,5 +1,6 @@
 package ai.ivira.app.utils.ui
 
+import android.os.SystemClock
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -60,8 +61,8 @@ fun Modifier.safeClickable(
 }
 
 fun safeClick(event: () -> Unit) {
-    if (System.currentTimeMillis() - lastEventTimeMs >= 300L) {
-        lastEventTimeMs = System.currentTimeMillis()
+    if (SystemClock.elapsedRealtime() - lastEventTimeMs >= 300L) {
+        lastEventTimeMs = SystemClock.elapsedRealtime()
         event.invoke()
     }
 }
