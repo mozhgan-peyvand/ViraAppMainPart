@@ -198,7 +198,7 @@
     <string name="lbl_enable_notification_for_recording">برای بهترین تجربه استفاده از ویرا پیشنهاد می‌کنیم اعلانات مربوط به این اپلیکیشن را فعال کنید.</string>
 
     <string name="lbl_vira_is_updated">نسخه  ویرا شما به روز است</string>
-    <string name="lbl_have_latest_version_wait_for_update">شما اخرین نسخه ویرا بر روی گوشی خود نصب دارید  منتظر اپدیت های جدید نرم افزار ما باشید</string>
+    <string name="lbl_have_latest_version_wait_for_update">آخرین نسخه ی ویرا بر روی گوشی شما نصب است \nمنتظر آپدیت های جدید نرم افزار ما باشید</string>
     <string name="lbl_new_vira_version">نسخه جدید ویرا</string>
     <string name="lbl_new_features_released_please_update_app">دراین  نسخه  امکانات جدیدی اضافه شده است  لطفا اپلیکیشن خود را به روز رسانی کنید</string>
     <string name="lbl_app_changes">تغییرات برنامه</string>
