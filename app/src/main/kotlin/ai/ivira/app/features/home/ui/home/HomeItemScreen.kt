@@ -1,7 +1,6 @@
 package ai.ivira.app.features.home.ui.home
 
-import ai.ivira.app.R.drawable
-import ai.ivira.app.R.string
+import ai.ivira.app.R
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.AvaSho
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNama
@@ -27,31 +26,31 @@ data class HomeItemScreen(
             get() {
                 return listOf(
                     HomeItemScreen(
-                        icon = drawable.img_ava_sho_2,
-                        title = string.lbl_ava_sho,
+                        icon = R.drawable.img_ava_sho_2,
+                        title = R.string.lbl_ava_sho,
                         textColor = Indigo_300,
-                        description = string.lbl_ava_sho_desc,
+                        description = R.string.lbl_ava_sho_desc,
                         homeItemType = AvaSho
                     ),
                     HomeItemScreen(
-                        icon = drawable.img_nevise_negar_2,
+                        icon = R.drawable.img_nevise_negar_2,
                         textColor = Indigo_300_2,
-                        title = string.lbl_nevise_negar,
-                        description = string.lbl_nevise_negar_desc,
+                        title = R.string.lbl_nevise_negar,
+                        description = R.string.lbl_nevise_negar_desc,
                         homeItemType = NeviseNegar
                     ),
                     HomeItemScreen(
-                        icon = drawable.img_vira_siar_2,
-                        title = string.lbl_virasiar,
+                        icon = R.drawable.img_vira_siar_2,
+                        title = R.string.lbl_virasiar,
                         textColor = Light_green_300,
-                        description = string.lbl_virasiar_desc,
+                        description = R.string.lbl_virasiar_desc,
                         homeItemType = ViraSiar
                     ),
                     HomeItemScreen(
-                        icon = drawable.img_nevise_nama_2,
-                        title = string.lbl_nevise_nama,
+                        icon = R.drawable.img_nevise_nama_2,
+                        title = R.string.lbl_nevise_nama,
                         textColor = Teal_200,
-                        description = string.lbl_nevise_nama_desc,
+                        description = R.string.lbl_nevise_nama_desc,
                         homeItemType = NeviseNama
                     )
                 )

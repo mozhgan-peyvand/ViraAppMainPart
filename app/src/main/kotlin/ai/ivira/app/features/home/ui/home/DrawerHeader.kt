@@ -1,7 +1,6 @@
 package ai.ivira.app.features.home.ui.home
 
-import ai.ivira.app.R.drawable
-import ai.ivira.app.R.string
+import ai.ivira.app.R
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClickable
@@ -61,31 +60,31 @@ private fun DrawerHeaderBody(
             verticalAlignment = Alignment.CenterVertically
         ) {
             ViraImage(
-                drawable = drawable.ic_vira,
+                drawable = R.drawable.ic_vira,
                 contentDescription = null
             )
             Spacer(modifier = Modifier.size(8.dp))
 
             ViraImage(
-                drawable = drawable.ic_app_name,
+                drawable = R.drawable.ic_app_name,
                 contentDescription = null
             )
         }
         DrawerBody(
-            title = stringResource(id = string.lbl_invite_friends),
-            icon = drawable.ic_envelope,
+            title = stringResource(id = R.string.lbl_invite_friends),
+            icon = R.drawable.ic_envelope,
             onItemClick = { inviteFriendOnclick() }
         )
 
         DrawerBody(
-            title = stringResource(id = string.lbl_about_vira),
-            icon = drawable.ic_info,
+            title = stringResource(id = R.string.lbl_about_vira),
+            icon = R.drawable.ic_info,
             onItemClick = { aboutUsOnClick() }
         )
 
         DrawerBody(
-            title = stringResource(id = string.lbl_update_app),
-            icon = drawable.ic_update,
+            title = stringResource(id = R.string.lbl_update_app),
+            icon = R.drawable.ic_update,
             onItemClick = { onUpdateClick() }
         )
     }
@@ -122,7 +121,7 @@ fun DrawerBody(
             color = Color_Text_1
         )
         ViraImage(
-            drawable = drawable.ic_next,
+            drawable = R.drawable.ic_next,
             contentDescription = null
         )
     }

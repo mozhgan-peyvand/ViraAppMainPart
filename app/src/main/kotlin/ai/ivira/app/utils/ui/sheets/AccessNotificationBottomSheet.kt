@@ -1,7 +1,6 @@
 package ai.ivira.app.utils.ui.sheets
 
 import ai.ivira.app.R
-import ai.ivira.app.R.string
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -57,9 +56,9 @@ fun AccessNotificationBottomSheet(
         Text(
             text = stringResource(
                 id = if (isPermissionDeniedPermanently()) {
-                    string.lbl_enable_notification_for_recording_when_screen_is_locked
+                    R.string.lbl_enable_notification_for_recording_when_screen_is_locked
                 } else {
-                    string.lbl_enable_notification_for_recording
+                    R.string.lbl_enable_notification_for_recording
                 }
             ),
             style = MaterialTheme.typography.body2,

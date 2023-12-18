@@ -1,7 +1,6 @@
 package ai.ivira.app.features.home.ui.home.version.sheets
 
 import ai.ivira.app.R
-import ai.ivira.app.R.string
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -68,7 +67,7 @@ fun UpToDateBottomSheet(
             }
         ) {
             Text(
-                text = stringResource(id = string.lbl_understood),
+                text = stringResource(id = R.string.lbl_understood),
                 style = MaterialTheme.typography.button,
                 color = Color_White
             )

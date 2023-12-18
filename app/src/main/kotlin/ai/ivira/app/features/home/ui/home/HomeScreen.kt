@@ -1,8 +1,7 @@
 package ai.ivira.app.features.home.ui.home
 
 import ai.ivira.app.BuildConfig
-import ai.ivira.app.R.drawable
-import ai.ivira.app.R.string
+import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.home.ui.HomeAnalytics
@@ -167,7 +166,7 @@ private fun HomeScreen(
             showMessage(
                 snackbarHostState,
                 coroutineScope,
-                context.getString(string.msg_updating_failed_please_try_again_later)
+                context.getString(R.string.msg_updating_failed_please_try_again_later)
             )
 
             // fixme should remove it, replace stateFlow with sharedFlow in viewModel
@@ -254,9 +253,9 @@ private fun HomeScreen(
                     shareText(
                         context,
                         buildString {
-                            append(context.getString(string.lbl_introduce_text))
+                            append(context.getString(R.string.lbl_introduce_text))
                             append("\n")
-                            append(context.getString(string.lbl_download))
+                            append(context.getString(R.string.lbl_download))
                             append("\n")
                             append(LANDING_URL)
                         }
@@ -275,7 +274,7 @@ private fun HomeScreen(
                         showMessage(
                             snackbarHostState,
                             coroutineScope,
-                            context.getString(string.msg_internet_disconnected)
+                            context.getString(R.string.msg_internet_disconnected)
                         )
                         return@DrawerHeader
                     }
@@ -284,7 +283,7 @@ private fun HomeScreen(
                         showMessage(
                             snackbarHostState,
                             coroutineScope,
-                            context.getString(string.msg_vpn_is_connected_error)
+                            context.getString(R.string.msg_vpn_is_connected_error)
                         )
                         return@DrawerHeader
                     }
@@ -324,10 +323,10 @@ private fun HomeScreen(
                 when (sheetSelected) {
                     AvaSho -> {
                         HomeItemBottomSheet(
-                            iconRes = drawable.img_ava_sho,
-                            title = stringResource(id = string.lbl_ava_sho),
+                            iconRes = R.drawable.img_ava_sho,
+                            title = stringResource(id = R.string.lbl_ava_sho),
                             textBody = stringResource(
-                                id = string.avasho_item_bottomsheet_explain
+                                id = R.string.avasho_item_bottomsheet_explain
                             ),
                             action = {
                                 coroutineScope.launch {
@@ -339,10 +338,10 @@ private fun HomeScreen(
 
                     NeviseNama -> {
                         HomeItemBottomSheet(
-                            iconRes = drawable.img_nevise_nama,
-                            title = stringResource(id = string.lbl_nevise_nama),
+                            iconRes = R.drawable.img_nevise_nama,
+                            title = stringResource(id = R.string.lbl_nevise_nama),
                             textBody = stringResource(
-                                id = string.nevise_nama_item_bottomsheet_explain
+                                id = R.string.nevise_nama_item_bottomsheet_explain
                             ),
                             action = {
                                 coroutineScope.launch {
@@ -354,10 +353,10 @@ private fun HomeScreen(
 
                     NeviseNegar -> {
                         HomeItemBottomSheet(
-                            iconRes = drawable.img_nevise_negar,
-                            title = stringResource(id = string.lbl_nevise_negar),
+                            iconRes = R.drawable.img_nevise_negar,
+                            title = stringResource(id = R.string.lbl_nevise_negar),
                             textBody = stringResource(
-                                id = string.nevise_negar_item_bottomsheet_explain
+                                id = R.string.nevise_negar_item_bottomsheet_explain
                             ),
                             action = {
                                 coroutineScope.launch {
@@ -369,10 +368,10 @@ private fun HomeScreen(
 
                     ViraSiar -> {
                         HomeItemBottomSheet(
-                            iconRes = drawable.img_virasiar,
-                            title = stringResource(id = string.lbl_virasiar),
+                            iconRes = R.drawable.img_virasiar,
+                            title = stringResource(id = R.string.lbl_virasiar),
                             textBody = stringResource(
-                                id = string.vira_sayar_item_bottomsheet_explain
+                                id = R.string.vira_sayar_item_bottomsheet_explain
                             ),
                             action = {
                                 coroutineScope.launch {
@@ -555,7 +554,7 @@ fun HomeAppBar(openDrawer: () -> Unit) {
             .padding(start = 16.dp, top = 20.dp, bottom = 22.dp)
     ) {
         ViraImage(
-            drawable = drawable.ic_app_logo_name_linear,
+            drawable = R.drawable.ic_app_logo_name_linear,
             contentDescription = null
         )
 
@@ -564,7 +563,7 @@ fun HomeAppBar(openDrawer: () -> Unit) {
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
             ViraIcon(
-                drawable = drawable.ic_menu,
+                drawable = R.drawable.ic_menu,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
                 tint = Color_Text_2
@@ -609,7 +608,7 @@ private fun HomeBody(
                     .heightIn(min = 128.dp)
             ) {
                 ViraImage(
-                    drawable = drawable.img_ava_negar_2,
+                    drawable = R.drawable.img_ava_negar_2,
                     contentDescription = null,
                     modifier = Modifier
                         .padding(start = 30.dp)
@@ -621,12 +620,12 @@ private fun HomeBody(
                         .padding(start = 8.dp)
                 ) {
                     Text(
-                        text = stringResource(id = string.lbl_ava_negar),
+                        text = stringResource(id = R.string.lbl_ava_negar),
                         style = MaterialTheme.typography.h6,
                         color = Color_Text_1
                     )
                     Text(
-                        text = stringResource(id = string.lbl_ava_negar_desc),
+                        text = stringResource(id = R.string.lbl_ava_negar_desc),
                         color = Light_blue_50,
                         style = MaterialTheme.typography.labelMedium
                     )
@@ -639,7 +638,7 @@ private fun HomeBody(
                         .background(Color_Primary_200)
                 ) {
                     ViraImage(
-                        drawable = drawable.ic_arrow_crooked,
+                        drawable = R.drawable.ic_arrow_crooked,
                         contentDescription = null
                     )
                 }
@@ -661,7 +660,7 @@ private fun HomeBody(
             )
 
             Text(
-                text = stringResource(id = string.coming_soon_vira),
+                text = stringResource(id = R.string.coming_soon_vira),
                 style = MaterialTheme.typography.subtitle2,
                 color = Color_Text_2,
                 textAlign = TextAlign.Center,
@@ -744,7 +743,7 @@ fun HomeBodyItem(
                     border = BorderStroke(0.5.dp, color = Color_Card_Stroke)
                 ) {
                     Text(
-                        text = stringResource(id = string.lbl_coming_soon),
+                        text = stringResource(id = R.string.lbl_coming_soon),
                         style = MaterialTheme.typography.overline,
                         color = Color_Text_3,
                         modifier = Modifier

@@ -2,15 +2,12 @@ package ai.ivira.app.features.ava_negar.ui.archive
 
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
-import ai.ivira.app.R.drawable
-import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.AvanegarSentry
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Processed
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Tracking
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Uploading
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
-import ai.ivira.app.features.ava_negar.ui.archive.ArchiveBottomSheetType.AudioAccessPermissionDenied
 import ai.ivira.app.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementColumn
 import ai.ivira.app.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementGrid
 import ai.ivira.app.features.ava_negar.ui.archive.element.ArchiveTrackingFileElementGrid
@@ -68,7 +65,6 @@ import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.Manifest
-import android.Manifest.permission
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -894,11 +890,11 @@ private fun AvaNegarArchiveListScreen(
                                             // needs improvement, just need to save if permission is alreadyRequested
                                             // and everytime check shouldShow
                                             if (archiveListViewModel.hasDeniedPermissionPermanently(
-                                                    permission.RECORD_AUDIO
+                                                    Manifest.permission.RECORD_AUDIO
                                                 )
                                             ) {
                                                 setSelectedSheet(
-                                                    AudioAccessPermissionDenied
+                                                    ArchiveBottomSheetType.AudioAccessPermissionDenied
                                                 )
                                                 coroutineScope.launch {
                                                     if (!modalBottomSheetState.isVisible) {
@@ -909,7 +905,7 @@ private fun AvaNegarArchiveListScreen(
                                                 }
                                             } else {
                                                 recordAudioPermLauncher.launch(
-                                                    permission.RECORD_AUDIO
+                                                    Manifest.permission.RECORD_AUDIO
                                                 )
                                             }
                                         }
@@ -918,7 +914,7 @@ private fun AvaNegarArchiveListScreen(
                                             snackbarHostState,
                                             coroutineScope,
                                             context.getString(
-                                                string.msg_no_microphone_found_on_phone
+                                                R.string.msg_no_microphone_found_on_phone
                                             )
                                         )
                                     }
@@ -935,9 +931,9 @@ private fun AvaNegarArchiveListScreen(
                                         coroutineScope,
                                         context.getString(
                                             if (hasError) {
-                                                string.msg_wait_for_connection_to_server
+                                                R.string.msg_wait_for_connection_to_server
                                             } else {
-                                                string.msg_wait_process_finish_or_cancel_it
+                                                R.string.msg_wait_process_finish_or_cancel_it
                                             }
                                         )
                                     )
@@ -946,8 +942,8 @@ private fun AvaNegarArchiveListScreen(
                         }
                     ) {
                         ViraIcon(
-                            drawable = drawable.ic_mic,
-                            contentDescription = stringResource(id = string.desc_record)
+                            drawable = R.drawable.ic_mic,
+                            contentDescription = stringResource(id = R.string.desc_record)
                         )
                     }
                 }

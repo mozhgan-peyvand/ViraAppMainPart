@@ -1,7 +1,6 @@
 package ai.ivira.app.features.ava_negar.ui.record
 
 import ai.ivira.app.R
-import ai.ivira.app.utils.common.ifFailure
 import android.app.Application
 import android.media.MediaPlayer
 import android.widget.Toast
@@ -82,7 +81,7 @@ class VoicePlayerState(
                     }
                 }
             }
-        }.ifFailure {
+        }.onFailure {
             Toast.makeText(
                 application.applicationContext,
                 R.string.mgs_general_error_playing_file,

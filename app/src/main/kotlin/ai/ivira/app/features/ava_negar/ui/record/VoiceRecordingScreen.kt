@@ -8,7 +8,6 @@ import ai.ivira.app.features.ava_negar.ui.record.sheets.BackToArchiveListConfirm
 import ai.ivira.app.features.ava_negar.ui.record.sheets.MicrophoneNotAvailableBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.sheets.StartAgainBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.sheets.VoiceRecordingBottomSheetType
-import ai.ivira.app.features.ava_negar.ui.record.sheets.VoiceRecordingBottomSheetType.BackConfirm
 import ai.ivira.app.features.ava_negar.ui.record.widgets.RecordingAnimation
 import ai.ivira.app.features.ava_negar.ui.record.widgets.TextWithIcon
 import ai.ivira.app.utils.ui.OnLifecycleEvent
@@ -124,7 +123,7 @@ private fun AvaNegarVoiceRecordingScreen(
             }
         )
     ) {
-        mutableStateOf(BackConfirm)
+        mutableStateOf(VoiceRecordingBottomSheetType.BackConfirm)
     }
     val coroutineScope = rememberCoroutineScope()
 
@@ -227,13 +226,13 @@ private fun AvaNegarVoiceRecordingScreen(
                 is VoiceRecordingViewState.Recording -> {
                     actionPauseRecording(false)
 
-                    bottomSheetContentType = BackConfirm
+                    bottomSheetContentType = VoiceRecordingBottomSheetType.BackConfirm
                     bottomSheetState.hideAndShow(coroutineScope)
                 }
 
                 VoiceRecordingViewState.Paused,
                 is VoiceRecordingViewState.Stopped -> {
-                    bottomSheetContentType = BackConfirm
+                    bottomSheetContentType = VoiceRecordingBottomSheetType.BackConfirm
                     bottomSheetState.hideAndShow(coroutineScope)
                 }
             }
@@ -274,7 +273,7 @@ private fun AvaNegarVoiceRecordingScreen(
     ModalBottomSheetLayout(
         sheetContent = {
             when (bottomSheetContentType) {
-                BackConfirm -> {
+                VoiceRecordingBottomSheetType.BackConfirm -> {
                     BackToArchiveListConfirmationBottomSheet(
                         actionConvertFile = {
                             eventHandler.specialEvent(AvanegarAnalytics.selectConvertToText)

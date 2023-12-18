@@ -2,8 +2,6 @@ package ai.ivira.app.features.ava_negar.ui.record
 
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.Recorder.OnMaxDurationReached
-import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewState.Idle
-import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewState.Stopped
 import ai.ivira.app.utils.common.safeGetInt
 import android.app.Application
 import android.content.SharedPreferences
@@ -46,7 +44,7 @@ class VoiceRecordingViewModel @Inject constructor(
             initialValue = 0
         )
 
-    val state: MutableState<VoiceRecordingViewState> = mutableStateOf(Idle)
+    val state: MutableState<VoiceRecordingViewState> = mutableStateOf(VoiceRecordingViewState.Idle)
 
     private var timerJob: Job? = null
 
@@ -96,7 +94,7 @@ class VoiceRecordingViewModel @Inject constructor(
     // when this is called, we are sure that the mediaRecorder is stopped
     override fun maxFileReached() {
         pauseTimer()
-        state.value = Stopped(showPreview = true)
+        state.value = VoiceRecordingViewState.Stopped(showPreview = true)
     }
 
     override fun onCleared() {
