@@ -1,8 +1,6 @@
 package ai.ivira.app.features.ava_negar.ui.archive.sheets
 
 import ai.ivira.app.R
-import ai.ivira.app.R.drawable
-import ai.ivira.app.R.string
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClickable
@@ -159,8 +157,8 @@ private fun DetailItemBottomSheetPreview() {
 private fun ArchiveItemBodyBottomSheetPreview() {
     ViraPreview {
         ArchiveItemBodyBottomSheet(
-            text = string.lbl_share_file,
-            icon = drawable.icon_share,
+            text = R.string.lbl_share_file,
+            icon = R.drawable.icon_share,
             onItemClick = {},
             textColor = Color_Text_2
 

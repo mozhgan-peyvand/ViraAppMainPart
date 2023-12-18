@@ -2,7 +2,6 @@ package ai.ivira.app.features.ava_negar.ui.onboarding
 
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
-import ai.ivira.app.features.ava_negar.ui.onboarding.OnboardingItem.First
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
@@ -266,6 +265,6 @@ private fun AvaNegarOnboardingScreenPreview() {
 @Composable
 private fun AvaNegarOnBoardingItemBodyPreview() {
     ViraPreview {
-        AvaNegarOnBoardingItemBody(onBoardingItem = First(LocalContext.current))
+        AvaNegarOnBoardingItemBody(onBoardingItem = OnboardingItem.First(LocalContext.current))
     }
 }

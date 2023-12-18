@@ -2,7 +2,6 @@ package ai.ivira.app.features.ava_negar.ui.record
 
 import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewModel.Companion.MAX_FILE_DURATION_MS
 import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewModel.Companion.RECORDING_OFFSET_MS
-import ai.ivira.app.utils.common.ifFailure
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build.VERSION
@@ -74,7 +73,7 @@ class Recorder @Inject constructor(
         return kotlin.runCatching {
             mediaRecorder?.prepare()
             mediaRecorder?.start()
-        }.ifFailure {
+        }.onFailure {
             Timber.tag(TAG).d(it)
         }.isSuccess
     }
@@ -85,7 +84,7 @@ class Recorder @Inject constructor(
             if (isPauseResumeSupported()) {
                 recorder.pause()
             }
-        }.ifFailure {
+        }.onFailure {
             Timber.tag(TAG).d(it)
         }.isSuccess
     }
@@ -96,7 +95,7 @@ class Recorder @Inject constructor(
             if (isPauseResumeSupported()) {
                 recorder.resume()
             }
-        }.ifFailure {
+        }.onFailure {
             Timber.tag(TAG).d(it)
         }.isSuccess
     }
@@ -108,7 +107,7 @@ class Recorder @Inject constructor(
             recorder.reset()
             recorder.release()
             mediaRecorder = null
-        }.ifFailure {
+        }.onFailure {
             Timber.tag(TAG).d(it)
         }.isSuccess
     }

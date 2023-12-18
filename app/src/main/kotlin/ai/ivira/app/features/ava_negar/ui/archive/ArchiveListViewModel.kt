@@ -1,5 +1,6 @@
 package ai.ivira.app.features.ava_negar.ui.archive
 
+import ai.ivira.app.BuildConfig
 import ai.ivira.app.features.ava_negar.AvanegarSentry
 import ai.ivira.app.features.ava_negar.data.AvanegarArchiveFilesEntity
 import ai.ivira.app.features.ava_negar.data.AvanegarRepository
@@ -21,7 +22,6 @@ import ai.ivira.app.utils.common.event.ViraEvent
 import ai.ivira.app.utils.common.event.ViraPublisher
 import ai.ivira.app.utils.common.file.FileCache
 import ai.ivira.app.utils.common.file.UploadProgressCallback
-import ai.ivira.app.utils.common.ifFailure
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
@@ -396,7 +396,7 @@ class ArchiveListViewModel @Inject constructor(
             val time: String? =
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
             time?.toLong()
-        }.ifFailure { it?.printStackTrace() }.getOrNull().orZero()
+        }.onFailure { if (BuildConfig.DEBUG) it.printStackTrace() }.getOrNull().orZero()
     }
 
     suspend fun checkIfUriDurationIsOk(context: Context, uri: Uri?): Boolean {

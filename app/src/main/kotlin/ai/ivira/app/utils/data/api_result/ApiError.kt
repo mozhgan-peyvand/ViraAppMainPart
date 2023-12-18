@@ -14,7 +14,7 @@ sealed interface ApiError {
     data class IOError(val exception: IOException) : ApiError
     data class JsonParseException(val throwable: Throwable) : ApiError
     data class UnknownApiError(val throwable: Throwable) : ApiError
-    object EmptyBodyError : ApiError
+    data object EmptyBodyError : ApiError
 
     fun getException(): Throwable {
         return when (this) {

@@ -1,7 +1,6 @@
 package ai.ivira.app.features.home.ui.home.version.sheets
 
 import ai.ivira.app.R
-import ai.ivira.app.R.string
 import ai.ivira.app.features.home.ui.home.version.UpdateItem
 import ai.ivira.app.features.home.ui.home.version.model.ReleaseNoteView
 import ai.ivira.app.features.home.ui.home.version.model.VersionView
@@ -106,7 +105,7 @@ fun UpdateBottomSheet(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = stringResource(id = string.lbl_show_later),
+                    text = stringResource(id = R.string.lbl_show_later),
                     style = MaterialTheme.typography.button,
                     color = Color_White
                 )
@@ -123,7 +122,7 @@ fun UpdateBottomSheet(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = stringResource(id = string.lbl_update_app),
+                    text = stringResource(id = R.string.lbl_update_app),
                     style = MaterialTheme.typography.button,
                     color = Color_White
                 )
