@@ -1,43 +1,43 @@
 package ai.ivira.app.features.avasho.data.entity
 
+import ai.ivira.app.utils.data.TrackTime
+
 data class AvashoArchiveUnionEntity(
     val id: Int,
     val uploadingId: String,
     val token: String,
     val text: String,
     val fileName: String,
-    val createdAt: Long,
+    val insertSystemTime: Long,
+    val insertBootTime: Long,
     val fileUrl: String,
     val filePath: String,
-    val checksum: String,
     val isDownloading: Boolean,
     val speaker: String,
     val archiveType: String,
     val processEstimation: Int?,
-    val bootElapsedTime: Long,
-    val lastFailedRequest: Long?,
-    val lastTrackedBootElapsed: Long?
+    val lastFailureSystemTime: Long?,
+    val lastFailureBootTime: Long?
 ) {
     fun toAvanegarProcessedFileEntity() = AvashoProcessedFileEntity(
         id = id,
         fileName = fileName,
         text = text,
-        createdAt = createdAt,
+        createdAt = insertSystemTime,
         fileUrl = fileUrl,
         filePath = filePath,
-        checksum = checksum,
         isDownloading = isDownloading
     )
 
     fun toAvashoTrackingFileEntity() = AvashoTrackingFileEntity(
         token = token,
         title = fileName,
-        createdAt = createdAt,
+        text = text,
         processEstimation = processEstimation,
-        bootElapsedTime = bootElapsedTime,
-        lastFailure = if (lastFailedRequest != null && lastTrackedBootElapsed != null) {
-            if (lastTrackedBootElapsed != 0L && lastFailedRequest != 0L) {
-                AvashoLastTrackFailure(lastFailedRequest, lastTrackedBootElapsed)
+        insertAt = TrackTime(insertSystemTime, insertBootTime),
+        lastFailure = if (lastFailureSystemTime != null && lastFailureBootTime != null) {
+            if (lastFailureBootTime != 0L && lastFailureSystemTime != 0L) {
+                TrackTime(lastFailureSystemTime, lastFailureBootTime)
             } else {
                 null
             }
@@ -51,6 +51,6 @@ data class AvashoArchiveUnionEntity(
         title = fileName,
         text = text,
         speaker = speaker,
-        createdAt = createdAt
+        createdAt = insertSystemTime
     )
 }

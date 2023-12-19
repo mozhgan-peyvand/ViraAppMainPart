@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey
 data class AvashoProcessedFileEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
-    val checksum: String,
     val fileUrl: String,
     val filePath: String,
     val fileName: String,

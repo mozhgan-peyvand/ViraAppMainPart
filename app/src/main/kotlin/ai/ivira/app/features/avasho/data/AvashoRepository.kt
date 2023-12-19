@@ -1,13 +1,15 @@
 package ai.ivira.app.features.avasho.data
 
-import ai.ivira.app.features.avasho.data.entity.AvashoProcessedFileEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoTrackingFileEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoUploadingFileEntity
 import ai.ivira.app.utils.common.file.AVASHO_FOLDER_PATH
 import ai.ivira.app.utils.common.file.FileOperationHelper
 import ai.ivira.app.utils.data.NetworkHandler
+import ai.ivira.app.utils.data.TrackTime
+import ai.ivira.app.utils.data.api_result.ApiResult
 import ai.ivira.app.utils.data.api_result.AppException.NetworkConnectionException
 import ai.ivira.app.utils.data.api_result.AppResult
+import ai.ivira.app.utils.data.api_result.toAppException
 import ai.ivira.app.utils.data.api_result.toAppResult
 import android.os.SystemClock
 import saman.zamani.persiandate.PersianDate
@@ -23,8 +25,9 @@ class AvashoRepository @Inject constructor(
         System.loadLibrary("vira")
     }
 
-    fun getAllArchiveFiles() =
-        avashoLocalDataSource.getAllArchiveFiles()
+    fun getAllArchiveFiles() = avashoLocalDataSource.getAllArchiveFiles()
+
+    fun getTrackingFiles() = avashoLocalDataSource.getTrackingFiles()
 
     suspend fun convertToSpeechShort(
         id: String,
@@ -32,35 +35,27 @@ class AvashoRepository @Inject constructor(
         speakerType: String,
         fileName: String
     ): AppResult<String> {
-        return if (networkHandler.hasNetworkConnection()) {
-            val result = avashoRemoteDataSource.getSpeechFile(
-                text = text,
-                speakerType = speakerType
-            ).toAppResult()
+        if (!networkHandler.hasNetworkConnection()) {
+            return AppResult.Error(NetworkConnectionException())
+        }
+        val result = avashoRemoteDataSource.getSpeechFile(
+            text = text,
+            speakerType = speakerType
+        ).toAppResult()
 
-            when (result) {
-                is AppResult.Success -> {
-                    avashoLocalDataSource.deleteUploadingFile(id)
-                    avashoLocalDataSource.insertProcessedSpeechToDataBase(
-                        AvashoProcessedFileEntity(
-                            id = 0,
-                            checksum = result.data.checksum,
-                            fileUrl = "${bu()}${result.data.filePath}",
-                            fileName = fileName,
-                            filePath = "",
-                            text = text,
-                            createdAt = PersianDate().time,
-                            isDownloading = false
-                        )
-                    )
-                    AppResult.Success(fileName)
-                }
-                is AppResult.Error -> {
-                    AppResult.Error(result.error)
-                }
+        return when (result) {
+            is AppResult.Success -> {
+                avashoLocalDataSource.insertProcessedFromUploading(
+                    uploadingId = id,
+                    fileUrl = "${bu()}${result.data.filePath}",
+                    text = text,
+                    fileName = fileName
+                )
+                AppResult.Success(fileName)
             }
-        } else {
-            AppResult.Error(NetworkConnectionException())
+            is AppResult.Error -> {
+                AppResult.Error(result.error)
+            }
         }
     }
 
@@ -78,16 +73,19 @@ class AvashoRepository @Inject constructor(
 
             when (result) {
                 is AppResult.Success -> {
-                    avashoLocalDataSource.deleteUploadingFile(id)
-                    avashoLocalDataSource.insertTrackingSpeechToDatabase(
-                        AvashoTrackingFileEntity(
+                    avashoLocalDataSource.insertTrackingFromUploading(
+                        uploadingId = id,
+                        tracking = AvashoTrackingFileEntity(
                             token = result.data.token,
                             processEstimation = result.data.estimatedProcessTime
                                 .filter { it.isDigit() }
-                                .toInt(),
-                            createdAt = PersianDate().time,
+                                .toIntOrNull(),
                             title = fileName,
-                            bootElapsedTime = SystemClock.elapsedRealtime(),
+                            text = text,
+                            insertAt = TrackTime(
+                                systemTime = PersianDate().time,
+                                bootTime = SystemClock.elapsedRealtime()
+                            ),
                             lastFailure = null
                         )
                     )
@@ -102,8 +100,33 @@ class AvashoRepository @Inject constructor(
         }
     }
 
-    suspend fun insertUploadingSpeechToDatabase(avashoUploadingFileEntity: AvashoUploadingFileEntity) {
-        avashoLocalDataSource.insertUploadingSpeechToDatabase(avashoUploadingFileEntity)
+    suspend fun insertUploadingSpeech(avashoUploadingFileEntity: AvashoUploadingFileEntity) {
+        avashoLocalDataSource.insertUploadingSpeech(avashoUploadingFileEntity)
+    }
+
+    suspend fun trackLargeTextResult(fileToken: String): AppResult<Unit> {
+        if (!networkHandler.hasNetworkConnection()) {
+            return AppResult.Error(NetworkConnectionException())
+        }
+
+        return when (val result = avashoRemoteDataSource.trackLargeTextResult(fileToken)) {
+            is ApiResult.Success -> {
+                avashoLocalDataSource.insertProcessedFromTracking(
+                    token = fileToken,
+                    fileUrl = "${bu()}${result.data}"
+                )
+                AppResult.Success(Unit)
+            }
+            is ApiResult.Error -> {
+                avashoLocalDataSource.updateTrackingFileLastFailure(
+                    TrackTime(
+                        systemTime = PersianDate().time,
+                        bootTime = SystemClock.elapsedRealtime()
+                    )
+                )
+                AppResult.Error(result.error.toAppException())
+            }
+        }
     }
 
     suspend fun downloadFile(

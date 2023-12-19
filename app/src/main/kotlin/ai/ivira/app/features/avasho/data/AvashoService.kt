@@ -7,8 +7,10 @@ import ai.ivira.app.features.avasho.data.entity.TextToSpeechRequestNetwork
 import ai.ivira.app.utils.data.ViraNetwork
 import ai.ivira.app.utils.data.api_result.ApiResult
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface AvashoService {
     @POST("sahab/gateway/service/speech-synthesys@3/speech-synthesys")
@@ -24,4 +26,10 @@ interface AvashoService {
         @Header("ApiKey") token: String,
         @Body getSpeechBody: TextToSpeechLongRequestNetwork
     ): ApiResult<ViraNetwork<TextToSpeechItemLongNetwork>>
+
+    @GET("sahab/gateway/service/speech-synthesys@3/trackingFile/{token}")
+    suspend fun trackLargeTextResult(
+        @Header("ApiKey") token: String,
+        @Path("token") fileToken: String
+    ): ApiResult<ViraNetwork<TextToSpeechItemNetwork>>
 }

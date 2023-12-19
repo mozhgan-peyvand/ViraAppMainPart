@@ -1,5 +1,6 @@
 package ai.ivira.app.features.avasho.data.entity
 
+import ai.ivira.app.utils.data.TrackTime
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -9,14 +10,10 @@ data class AvashoTrackingFileEntity(
     @PrimaryKey
     val token: String,
     val title: String,
+    val text: String,
     val processEstimation: Int?,
-    val createdAt: Long,
-    val bootElapsedTime: Long,
-    @Embedded
-    val lastFailure: AvashoLastTrackFailure?
-)
-
-data class AvashoLastTrackFailure(
-    val lastFailedRequest: Long,
-    val lastTrackedBootElapsed: Long
+    @Embedded("insert")
+    val insertAt: TrackTime,
+    @Embedded("lastFailure")
+    val lastFailure: TrackTime?
 )

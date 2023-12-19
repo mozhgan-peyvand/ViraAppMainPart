@@ -53,6 +53,18 @@ class AvashoRemoteDataSource @Inject constructor(
         }
     }
 
+    suspend fun trackLargeTextResult(fileToken: String): ApiResult<String> {
+        val result = service.trackLargeTextResult(
+            token = sak(),
+            fileToken = fileToken
+        )
+
+        return when (result) {
+            is Error -> Error(result.error)
+            is Success -> Success(result.data.data.filePath)
+        }
+    }
+
     suspend fun downloadFile(
         url: String,
         file: File,

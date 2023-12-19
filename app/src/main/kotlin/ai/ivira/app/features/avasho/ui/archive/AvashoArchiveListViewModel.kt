@@ -255,7 +255,7 @@ class AvashoArchiveListViewModel @Inject constructor(
         }
 
         viewModelScope.launch(IO) {
-            avashoRepository.insertUploadingSpeechToDatabase(
+            avashoRepository.insertUploadingSpeech(
                 AvashoUploadingFileEntity(
                     id = id,
                     title = fileName,

@@ -15,22 +15,25 @@ interface AvashoDao {
     @Query(
         """
         SELECT * FROM (
-            SELECT 0 AS id, '' AS uploadingId, token, '' AS text, title AS fileName, createdAt, '' AS fileUrl, '' AS filePath, '' AS checksum, 0 AS isDownloading, '' AS speaker, 'tracking' as archiveType,
-            processEstimation, bootElapsedTime, lastFailedRequest, lastTrackedBootElapsed
+            SELECT 0 AS id, '' AS uploadingId, token, text, title AS fileName, insertSystemTime, 
+            insertBootTime, '' AS fileUrl, '' AS filePath, 0 AS isDownloading, '' AS speaker,
+            'tracking' as archiveType, processEstimation, lastFailureSystemTime, lastFailureBootTime
            FROM AvashoTrackingFileEntity
         )
         UNION
         
         SELECT * FROM (
-            SELECT id, '' AS uploadingId,'' AS token, text, fileName, createdAt, fileUrl, filePath,  checksum, isDownloading, '' AS speaker, 'processed' as archiveType,
-            0 AS processEstimation, 0 AS bootElapsedTime, 0 AS lastFailedRequest, 0 AS lastTrackedBootElapsed       
+            SELECT id, '' AS uploadingId, '' AS token, text, fileName, createdAt, 0 AS insertBootTime,
+            fileUrl, filePath, isDownloading, '' AS speaker, 'processed' as archiveType, 
+            0 AS processEstimation, 0 AS lastFailureSystemTime, 0 AS lastFailureBootTime       
             FROM AvashoProcessedFileEntity
         )
         UNION
         
         SELECT * FROM (
-            SELECT 0 AS id, id AS uploadingId, '' AS Token, text, title AS fileName, createdAt, '' AS fileUrl, '' AS filePath, '' AS checksum, 0 AS isDownloading, speaker, 'uploading' as archiveType,
-            0 AS processEstimation, 0 AS bootElapsedTime, 0 AS lastFailedRequest, 0 AS lastTrackedBootElapsed
+            SELECT 0 AS id, id AS uploadingId, '' AS token, text, title AS fileName, createdAt, 
+            0 AS insertBootTime, '' AS fileUrl, '' AS filePath, 0 AS isDownloading, speaker, 
+            'uploading' as archiveType, 0 AS processEstimation, 0 AS lastFailureSystemTime, 0 AS lastTrackedBootElapsed
             FROM AvashoUploadingFileEntity
         )
         
@@ -38,8 +41,28 @@ interface AvashoDao {
     )
     fun getArchiveFiles(): Flow<List<AvashoArchiveUnionEntity>>
 
+    @Query("SELECT * FROM AvashoTrackingFileEntity")
+    fun getTrackingFiles(): Flow<List<AvashoTrackingFileEntity>>
+
+    @Query("SELECT * FROM AvashoTrackingFileEntity WHERE token=:token")
+    suspend fun getTrackingFile(token: String): AvashoTrackingFileEntity?
+
+    @Query(
+        """
+            SELECT * FROM AvashoProcessedFileEntity 
+            WHERE fileName LIKE '%' || :searchText || '%' COLLATE NOCASE
+        """
+    )
+    suspend fun searchAvashoArchiveItem(searchText: String): List<AvashoProcessedFileEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertProcessedSpeechToDataBase(file: AvashoProcessedFileEntity)
+    suspend fun insertProcessed(file: AvashoProcessedFileEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertUploadingSpeech(avashoUploadingFileEntity: AvashoUploadingFileEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTrackingSpeech(avashoTrackingFileEntity: AvashoTrackingFileEntity)
 
     @Query("UPDATE AvashoProcessedFileEntity SET filePath=:filePath WHERE id=:id")
     suspend fun updateFilePath(id: Int, filePath: String)
@@ -47,27 +70,27 @@ interface AvashoDao {
     @Query("UPDATE AvashoProcessedFileEntity SET isDownloading=:isDownloading WHERE id=:id")
     suspend fun updateDownloadStatus(id: Int, isDownloading: Boolean)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUploadingSpeechToDatabase(
-        avashoUploadingFileEntity: AvashoUploadingFileEntity
-    )
+    @Query("UPDATE AvashoProcessedFileEntity SET fileName=:title WHERE id=:id")
+    suspend fun updateTitle(title: String, id: Int)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTrackingSpeechToDatabase(
-        avashoTrackingFileEntity: AvashoTrackingFileEntity
+    @Query(
+        """
+            UPDATE AvashoTrackingFileEntity 
+            SET lastFailureSystemTime=:lastFailureSystemTime,
+                lastFailureBootTime=:lastFailureBootTime
+        """
+    )
+    suspend fun updateTrackingFileLastFailure(
+        lastFailureSystemTime: Long?,
+        lastFailureBootTime: Long?
     )
 
     @Query("DELETE FROM AvashoUploadingFileEntity WHERE id =:id")
     suspend fun deleteUploadingFile(id: String)
 
-    @Query("UPDATE AvashoProcessedFileEntity SET fileName=:title WHERE id=:id")
-    suspend fun updateTitle(title: String, id: Int)
+    @Query("DELETE FROM AvashoTrackingFileEntity WHERE token =:token")
+    suspend fun deleteTrackingFile(token: String)
 
     @Query("DELETE FROM AvashoProcessedFileEntity WHERE id = :id")
     suspend fun deleteProcessedFile(id: Int)
-
-    @Query(
-        "SELECT * FROM AvashoProcessedFileEntity WHERE fileName LIKE '%' || :searchText || '%' COLLATE NOCASE"
-    )
-    suspend fun searchAvashoArchiveItem(searchText: String): List<AvashoProcessedFileEntity>
 }
