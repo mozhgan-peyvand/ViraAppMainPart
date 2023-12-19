@@ -38,8 +38,8 @@ fun AvanegarTrackingFileEntity.toAvanegarTrackingFileView() = AvanegarTrackingFi
     filePath = filePath,
     title = title,
     processEstimation = processEstimation,
-    createdAt = convertDate(createdAt),
-    bootElapsedTime = bootElapsedTime,
+    createdAt = convertDate(insertAt.systemTime),
+    bootElapsedTime = insertAt.bootTime,
     lastFailure = lastFailure != null
 )
 

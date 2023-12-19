@@ -54,6 +54,7 @@ object LocalModule {
                 "vira.db"
             )
             .addMigrations(Migration.migration1_2())
+            .addMigrations(Migration.migration2_3())
             .fallbackToDestructiveMigration()
             .build()
     }
