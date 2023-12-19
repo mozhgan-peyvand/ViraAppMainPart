@@ -1,6 +1,6 @@
 package ai.ivira.app.utils.ui.navigation
 
-import ai.ivira.app.features.avasho.ui.archive.AvashoArchiveListScreen
+import ai.ivira.app.features.avasho.ui.archive.AvashoArchiveListScreenRoute
 import ai.ivira.app.features.avasho.ui.file_creation.AvashoFileCreationScreen
 import ai.ivira.app.features.avasho.ui.search.AvashoSearchScreenRouter
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoArchiveScreen
@@ -12,7 +12,7 @@ import androidx.navigation.compose.composable
 
 fun NavGraphBuilder.avashoNavGraph(navController: NavHostController) {
     composable(route = AvaShoArchiveScreen.route) {
-        AvashoArchiveListScreen(navController)
+        AvashoArchiveListScreenRoute(navController)
     }
 
     navigateWithSlideAnimation(route = AvaShoFileCreationScreen.route) {

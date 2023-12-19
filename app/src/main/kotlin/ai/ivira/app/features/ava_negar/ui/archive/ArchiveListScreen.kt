@@ -161,6 +161,7 @@ const val TRACKING_FILE_ANIMATION_DURATION_Grid = 1500
 
 @Composable
 fun AvaNegarArchiveListScreenRoute(navController: NavHostController) {
+    val activity = LocalContext.current as ComponentActivity
     val eventHandler = LocalEventHandler.current
     LaunchedEffect(Unit) {
         eventHandler.screenViewEvent(AvanegarAnalytics.screenViewArchiveList)
@@ -168,7 +169,7 @@ fun AvaNegarArchiveListScreenRoute(navController: NavHostController) {
 
     AvaNegarArchiveListScreen(
         navHostController = navController,
-        archiveListViewModel = hiltViewModel()
+        archiveListViewModel = hiltViewModel(viewModelStoreOwner = activity)
     )
 }
 

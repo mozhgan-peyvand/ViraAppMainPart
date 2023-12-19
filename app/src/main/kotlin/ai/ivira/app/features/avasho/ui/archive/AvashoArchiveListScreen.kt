@@ -42,6 +42,7 @@ import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Color_White
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOut
@@ -124,9 +125,19 @@ private const val TRACKING_FILE_ANIMATION_DURATION_COLUMN = 1300
 private const val SELECTED_ITEM_KEY = "selectedItemId"
 
 @Composable
-fun AvashoArchiveListScreen(
+fun AvashoArchiveListScreenRoute(navController: NavHostController) {
+    val activity = LocalContext.current as ComponentActivity
+
+    AvashoArchiveListScreen(
+        navController = navController,
+        viewModel = hiltViewModel(viewModelStoreOwner = activity)
+    )
+}
+
+@Composable
+private fun AvashoArchiveListScreen(
     navController: NavHostController,
-    viewModel: AvashoArchiveListViewModel = hiltViewModel()
+    viewModel: AvashoArchiveListViewModel
 ) {
     var selectedFileId by remember { mutableIntStateOf(-1) }
     var selectedFileIndex by remember { mutableIntStateOf(-1) }
@@ -815,6 +826,9 @@ private fun columnBrush(infiniteTransition: InfiniteTransition): Brush {
 @Composable
 private fun AvashoArchiveListScreenPreview() {
     ViraPreview {
-        AvashoArchiveListScreen(navController = rememberNavController())
+        AvashoArchiveListScreen(
+            navController = rememberNavController(),
+            viewModel = hiltViewModel()
+        )
     }
 }
