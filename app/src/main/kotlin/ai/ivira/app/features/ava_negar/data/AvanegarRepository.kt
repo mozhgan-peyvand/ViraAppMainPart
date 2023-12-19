@@ -1,7 +1,6 @@
 package ai.ivira.app.features.ava_negar.data
 
 import ai.ivira.app.features.ava_negar.AvanegarSentry
-import ai.ivira.app.features.ava_negar.data.entity.AvanegarProcessedFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarTrackingFileEntity
 import ai.ivira.app.features.ava_negar.data.entity.AvanegarUploadingFileEntity
 import ai.ivira.app.utils.common.file.UploadProgressCallback
@@ -56,16 +55,11 @@ class AvanegarRepository @Inject constructor(
 
             when (result) {
                 is ApiResult.Success -> {
-                    avanegarLocalDataSource.deleteUploadingFile(id)
-                    avanegarLocalDataSource.insertProcessedFile(
-                        AvanegarProcessedFileEntity(
-                            id = 0,
-                            title = title,
-                            text = result.data,
-                            createdAt = PersianDate().time, // TODO: improve,
-                            filePath = file.absolutePath,
-                            isSeen = false
-                        )
+                    avanegarLocalDataSource.insertProcessedFromUploading(
+                        uploadingId = id,
+                        title = title,
+                        text = result.data,
+                        filePath = file.absolutePath
                     )
 
                     Success(id)
@@ -138,20 +132,7 @@ class AvanegarRepository @Inject constructor(
 
             when (result) {
                 is Success -> {
-                    val tracked = avanegarLocalDataSource.getUnprocessedFile(fileToken)
-                    if (tracked != null) {
-                        avanegarLocalDataSource.deleteUnprocessedFile(fileToken)
-                        avanegarLocalDataSource.insertProcessedFile(
-                            AvanegarProcessedFileEntity(
-                                id = 0,
-                                title = tracked.title,
-                                text = result.data,
-                                createdAt = PersianDate().time, // TODO: improve,
-                                filePath = tracked.filePath,
-                                isSeen = false
-                            )
-                        )
-                    }
+                    avanegarLocalDataSource.insertProcessedFromTracking(fileToken, result.data)
 
                     Success(true)
                 }
