@@ -7,8 +7,7 @@ import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.AvaSho
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNama
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Imazh
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNegar
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NotificationPermission
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UpdateApp
@@ -35,17 +34,15 @@ import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.shareText
 import ai.ivira.app.utils.ui.sheets.AccessNotificationBottomSheet
 import ai.ivira.app.utils.ui.showMessage
-import ai.ivira.app.utils.ui.theme.Blue_Grey_900_2
 import ai.ivira.app.utils.ui.theme.Blue_gray_900
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Card
-import ai.ivira.app.utils.ui.theme.Color_Card_Stroke
 import ai.ivira.app.utils.ui.theme.Color_OutLine
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
-import ai.ivira.app.utils.ui.theme.Color_Text_3
+import ai.ivira.app.utils.ui.theme.Indigo_300
 import ai.ivira.app.utils.ui.theme.Light_blue_50
 import ai.ivira.app.utils.ui.theme.labelMedium
 import ai.ivira.app.utils.ui.widgets.ViraIcon
@@ -57,7 +54,6 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -71,9 +67,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -84,7 +80,6 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarHostState
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
@@ -99,6 +94,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -147,7 +143,7 @@ private fun HomeScreen(
     val showUpdateBottomSheet by homeViewModel.showUpdateBottomSheet.collectAsStateWithLifecycle()
 
     val (sheetSelected, setSelectedSheet) = rememberSaveable {
-        mutableStateOf(AvaSho)
+        mutableStateOf(Imazh)
     }
 
     BackHandler(scaffoldState.drawerState.isOpen) {
@@ -322,14 +318,12 @@ private fun HomeScreen(
             scrimColor = Color.Black.copy(alpha = 0.5f),
             sheetContent = sheetContent@{
                 when (sheetSelected) {
-                    AvaSho -> {}
-
-                    NeviseNama -> {
+                    Imazh -> {
                         HomeItemBottomSheet(
-                            iconRes = R.drawable.img_nevise_nama,
-                            title = stringResource(id = R.string.lbl_nevise_nama),
+                            iconRes = R.drawable.img_imazh_1,
+                            title = stringResource(id = R.string.lbl_imazh),
                             textBody = stringResource(
-                                id = R.string.nevise_nama_item_bottomsheet_explain
+                                id = R.string.imazh_item_bottomsheet_explain
                             ),
                             action = {
                                 coroutineScope.launch {
@@ -468,13 +462,11 @@ private fun HomeScreen(
                     eventHandler.specialEvent(HomeAnalytics.openAvanegar)
                     homeViewModel.navigate()
                 },
+                onAvashoClick = {
+                    navController.navigate(AvaShoArchiveScreen.route)
+                },
                 onItemClick = { homeItem ->
                     when (homeItem) {
-                        AvaSho -> {
-                            eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
-                            navController.navigate(AvaShoArchiveScreen.route)
-                        }
-
                         NeviseNegar -> {
                             eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
                             setSelectedSheet(NeviseNegar)
@@ -501,9 +493,9 @@ private fun HomeScreen(
                             }
                         }
 
-                        NeviseNama -> {
+                        Imazh -> {
                             eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
-                            setSelectedSheet(NeviseNama)
+                            setSelectedSheet(Imazh)
                             coroutineScope.launch {
                                 modalBottomSheetState.hide()
                                 if (!modalBottomSheetState.isVisible) {
@@ -556,6 +548,7 @@ fun HomeAppBar(openDrawer: () -> Unit) {
 private fun HomeBody(
     paddingValues: PaddingValues,
     onAvanegarClick: () -> Unit,
+    onAvashoClick: () -> Unit,
     onItemClick: (HomeItemBottomSheetType) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -619,6 +612,64 @@ private fun HomeBody(
                 ) {
                     ViraImage(
                         drawable = R.drawable.ic_arrow_crooked,
+                        colorFilter = ColorFilter.tint(Color.Black),
+                        contentDescription = null
+                    )
+                }
+            }
+        }
+        Card(
+            modifier = modifier
+                .padding(start = 16.dp, end = 16.dp)
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            elevation = 0.dp,
+            onClick = {
+                safeClick {
+                    onAvashoClick()
+                }
+            }
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .background(Color.Transparent)
+                    .padding(end = 24.dp)
+                    .heightIn(min = 128.dp)
+            ) {
+                ViraImage(
+                    drawable = drawable.img_ava_sho_2,
+                    contentDescription = stringResource(id = R.string.lbl_ava_sho_desc),
+                    modifier = Modifier
+                        .padding(start = 30.dp)
+                        .size(width = 68.dp, height = 80.dp)
+                )
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 20.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = string.lbl_ava_sho),
+                        style = MaterialTheme.typography.h6,
+                        color = Color_Text_1
+                    )
+                    Text(
+                        text = stringResource(id = string.lbl_ava_sho_desc),
+                        color = Indigo_300,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(48.dp)
+                        .background(Color_Primary_200)
+                ) {
+                    ViraImage(
+                        drawable = drawable.ic_arrow_crooked,
+                        colorFilter = ColorFilter.tint(Color.Black),
                         contentDescription = null
                     )
                 }
@@ -630,7 +681,7 @@ private fun HomeBody(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 36.dp, bottom = 16.dp, start = 16.dp, end = 16.dp)
+                .padding(top = 36.dp, start = 16.dp, end = 16.dp)
         ) {
             Divider(
                 color = Color_OutLine,
@@ -655,12 +706,9 @@ private fun HomeBody(
             )
         }
 
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(128.dp),
-            contentPadding = PaddingValues(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(horizontal = 8.dp)
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(homeItem) { item ->
                 HomeBodyItem(
@@ -677,74 +725,44 @@ fun HomeBodyItem(
     item: HomeItemScreen,
     onItemClick: (HomeItemBottomSheetType) -> Unit
 ) {
-    Box(
-        contentAlignment = Alignment.TopCenter,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
-            .padding(top = 4.dp)
-            .heightIn(min = 148.dp)
-    ) {
-        Card(
-            elevation = 0.dp,
-            backgroundColor = Color_Card,
-            onClick = {
-                safeClick {
-                    onItemClick(item.homeItemType)
-                }
-            },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 32.dp)
-        ) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(top = 32.dp, bottom = 8.dp)
-            ) {
-                Text(
-                    text = stringResource(id = item.title),
-                    style = MaterialTheme.typography.subtitle1,
-                    color = Color_Text_1
-                )
-
-                Spacer(modifier = Modifier.size(4.dp))
-
-                Text(
-                    text = stringResource(id = item.description),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = item.textColor
-                )
-
-                Spacer(modifier = Modifier.size(16.dp))
-                if (item.homeItemType != AvaSho) {
-                    Surface(
-                        shape = CircleShape,
-                        border = BorderStroke(
-                            0.5.dp,
-                            color = Color_Card_Stroke
-                        )
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.lbl_coming_soon),
-                            style = MaterialTheme.typography.overline,
-                            color = Color_Text_3,
-                            modifier = Modifier
-                                .background(Blue_Grey_900_2)
-                                .padding(horizontal = 17.dp, vertical = 10.dp)
-                        )
-                    }
-                } else {
-                    Spacer(modifier = Modifier.size(40.dp))
-                }
+    Card(
+        elevation = 0.dp,
+        backgroundColor = Color_Card,
+        onClick = {
+            safeClick {
+                onItemClick(item.homeItemType)
             }
-        }
+        },
+        modifier = Modifier
+            .background(Color.Transparent)
+            .heightIn(min = 148.dp)
+            .widthIn(min = 156.dp)
+            .padding(top = 32.dp)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
+        ) {
+            ViraImage(
+                drawable = item.icon,
+                contentDescription = null,
+                modifier = Modifier.size(64.dp)
+            )
+            Text(
+                text = stringResource(id = item.title),
+                style = MaterialTheme.typography.subtitle1,
+                color = Color_Text_1
+            )
 
-        ViraImage(
-            drawable = item.icon,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp)
-        )
+            Spacer(modifier = Modifier.size(4.dp))
+
+            Text(
+                text = stringResource(id = item.description),
+                style = MaterialTheme.typography.labelMedium,
+                color = item.textColor
+            )
+        }
     }
 }
 
@@ -755,7 +773,8 @@ private fun HomeBodyPreview() {
         HomeBody(
             paddingValues = PaddingValues(0.dp),
             onAvanegarClick = {},
-            onItemClick = {}
+            onItemClick = {},
+            onAvashoClick = {}
         )
     }
 }
