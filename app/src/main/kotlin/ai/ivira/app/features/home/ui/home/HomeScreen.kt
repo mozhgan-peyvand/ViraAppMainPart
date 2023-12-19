@@ -638,7 +638,7 @@ private fun HomeBody(
                     .heightIn(min = 128.dp)
             ) {
                 ViraImage(
-                    drawable = drawable.img_ava_sho_2,
+                    drawable = R.drawable.img_ava_sho_2,
                     contentDescription = stringResource(id = R.string.lbl_ava_sho_desc),
                     modifier = Modifier
                         .padding(start = 30.dp)
@@ -650,12 +650,12 @@ private fun HomeBody(
                         .padding(start = 20.dp)
                 ) {
                     Text(
-                        text = stringResource(id = string.lbl_ava_sho),
+                        text = stringResource(id = R.string.lbl_ava_sho),
                         style = MaterialTheme.typography.h6,
                         color = Color_Text_1
                     )
                     Text(
-                        text = stringResource(id = string.lbl_ava_sho_desc),
+                        text = stringResource(id = R.string.lbl_ava_sho_desc),
                         color = Indigo_300,
                         style = MaterialTheme.typography.labelMedium
                     )
@@ -668,7 +668,7 @@ private fun HomeBody(
                         .background(Color_Primary_200)
                 ) {
                     ViraImage(
-                        drawable = drawable.ic_arrow_crooked,
+                        drawable = R.drawable.ic_arrow_crooked,
                         colorFilter = ColorFilter.tint(Color.Black),
                         contentDescription = null
                     )
