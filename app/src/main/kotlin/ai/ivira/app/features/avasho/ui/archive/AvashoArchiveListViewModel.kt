@@ -98,6 +98,8 @@ class AvashoArchiveListViewModel @Inject constructor(
 
     private var indexOfItemThatShouldBeUploaded = 0
 
+    private var playingAvashoItemId = mutableStateOf<Int>(-1)
+
     val networkStatus = networkStatusTracker.networkStatus.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -382,6 +384,10 @@ class AvashoArchiveListViewModel @Inject constructor(
         return downloadQueue.value.any { it.id == id }
     }
 
+    fun isItemPlaying(id: Int): Boolean {
+        return playingAvashoItemId.value != -1 && playingAvashoItemId.value == id
+    }
+
     private suspend fun resetEverything() {
         job?.cancel()
         job = null
@@ -453,5 +459,9 @@ class AvashoArchiveListViewModel @Inject constructor(
             filePath = filePath,
             fileName = fileName
         )
+    }
+
+    fun changePlayingItem(id: Int) {
+        playingAvashoItemId.value = id
     }
 }

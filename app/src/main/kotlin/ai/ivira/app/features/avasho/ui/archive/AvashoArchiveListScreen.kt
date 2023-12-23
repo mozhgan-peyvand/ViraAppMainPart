@@ -362,6 +362,15 @@ private fun AvashoArchiveListScreen(
                                         bottomSheetState.show()
                                     }
                                 },
+                                changePlayingItemAction = { isPlaying ->
+                                    viewModel.changePlayingItem(
+                                        if (isPlaying) {
+                                            processItem.id
+                                        } else {
+                                            -1
+                                        }
+                                    )
+                                },
                                 avashoProcessedItem = processItem,
                                 isBottomSheetExpanded = bottomSheetState.isVisible
                             )
@@ -530,6 +539,7 @@ private fun AvashoArchiveListScreen(
                                             isDownloadFailure = downloadFailureList.contains(it.id),
                                             isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
                                             isNetworkAvailable = isNetworkAvailableWithoutVpn,
+                                            isPlaying = viewModel.isItemPlaying(it.id),
                                             onItemClick = callback@{ item ->
                                                 if (selectedFileId != -1) {
                                                     selectedFileId = -1

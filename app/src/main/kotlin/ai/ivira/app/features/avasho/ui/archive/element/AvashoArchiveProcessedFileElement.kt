@@ -5,6 +5,7 @@ import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Cancel
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Download
+import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Pause
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Play
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Retry
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
@@ -54,6 +55,7 @@ fun AvashoArchiveProcessedFileElement(
     isNetworkAvailable: Boolean,
     isDownloadFailure: Boolean,
     isInDownloadQueue: Boolean,
+    isPlaying: Boolean,
     selectedItem: Int,
     onItemClick: (AvashoProcessedFileView) -> Unit,
     onMenuClick: (AvashoProcessedFileView) -> Unit
@@ -81,7 +83,12 @@ fun AvashoArchiveProcessedFileElement(
         ) {
             AudioImage(
                 audioImageStatus = if (isDownloaded) {
-                    Play // play or pause
+                    // play or pause
+                    if (isPlaying) {
+                        Pause
+                    } else {
+                        Play
+                    }
                 } else if (isInDownloadQueue) {
                     Cancel
                 } else if (isDownloadFailure) {
@@ -252,6 +259,7 @@ private fun AvashoArchiveProcessedFileElementPreview() {
                 isNetworkAvailable = true,
                 isDownloadFailure = false,
                 isInDownloadQueue = true,
+                isPlaying = true,
                 selectedItem = 0,
                 onItemClick = {},
                 onMenuClick = {}

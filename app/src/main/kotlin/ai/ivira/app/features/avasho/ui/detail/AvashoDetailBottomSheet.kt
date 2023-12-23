@@ -82,6 +82,7 @@ fun AvashoDetailBottomSheet(
     animationProgress: Float,
     collapseToolbarAction: () -> Unit,
     halfToolbarAction: () -> Unit,
+    changePlayingItemAction: (Boolean) -> Unit,
     avashoProcessedItem: AvashoProcessedFileView,
     isBottomSheetExpanded: Boolean,
     avashoDetailsViewModel: AvashoDetailsBottomSheetViewModel = hiltViewModel()
@@ -90,6 +91,10 @@ fun AvashoDetailBottomSheet(
     val coroutineScope = rememberCoroutineScope()
     val playerState by avashoDetailsViewModel::playerState
     val verticalScroll = if (isBottomSheetExpanded) Modifier.verticalScroll(rememberScrollState()) else Modifier
+
+    LaunchedEffect(playerState.isPlaying) {
+        changePlayingItemAction(playerState.isPlaying)
+    }
 
     LaunchedEffect(
         isBottomSheetExpanded
@@ -545,6 +550,7 @@ private fun AvashoDetailBottomSheetPreview() {
             animationProgress = 0f,
             collapseToolbarAction = {},
             halfToolbarAction = {},
+            changePlayingItemAction = {},
             avashoProcessedItem = AvashoProcessedFileView(
                 0,
                 "",
