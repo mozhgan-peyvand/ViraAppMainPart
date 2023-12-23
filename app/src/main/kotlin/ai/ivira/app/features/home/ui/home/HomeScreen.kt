@@ -28,6 +28,7 @@ import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AboutUs
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoArchiveScreen
+import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoOnboardingScreen
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -185,6 +186,21 @@ private fun HomeScreen(
             }
 
             homeViewModel.shouldNavigate.value = false
+        }
+    }
+
+    LaunchedEffect(
+        homeViewModel.avashoOnboardingHasBeenShown.value,
+        homeViewModel.shouldNavigateToAvasho.value
+    ) {
+        if (homeViewModel.shouldNavigateToAvasho.value) {
+            if (!homeViewModel.avashoOnboardingHasBeenShown.value) {
+                navController.navigate(AvaShoOnboardingScreen.route)
+            } else {
+                navController.navigate(AvaShoArchiveScreen.route)
+            }
+
+            homeViewModel.shouldNavigateToAvasho.value = false
         }
     }
 
@@ -463,7 +479,7 @@ private fun HomeScreen(
                     homeViewModel.navigate()
                 },
                 onAvashoClick = {
-                    navController.navigate(AvaShoArchiveScreen.route)
+                    homeViewModel.navigateToAvasho()
                 },
                 onItemClick = { homeItem ->
                     when (homeItem) {

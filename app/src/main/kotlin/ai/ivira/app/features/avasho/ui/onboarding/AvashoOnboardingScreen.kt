@@ -1,9 +1,7 @@
-package ai.ivira.app.features.ava_negar.ui.onboarding
+package ai.ivira.app.features.avasho.ui.onboarding
 
 import ai.ivira.app.R
-import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.utils.ui.BulletParagraph
-import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
@@ -55,36 +53,29 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.HorizontalPagerIndicator
 
 @Composable
-fun AvaNegarOnboardingScreenRoute(navController: NavHostController) {
-    val eventHandler = LocalEventHandler.current
-    LaunchedEffect(Unit) {
-        eventHandler.screenViewEvent(AvanegarAnalytics.screenViewOnboarding)
-    }
-
-    AvaNegarOnboardingScreen(
+fun AvashoOnboardingScreenRoute(navController: NavHostController) {
+    AvashoOnboardingScreen(
         navController = navController,
         viewModel = hiltViewModel()
     )
 }
 
 @Composable
-private fun AvaNegarOnboardingScreen(
+private fun AvashoOnboardingScreen(
     navController: NavHostController,
-    viewModel: OnboardingViewModel
+    viewModel: AvashoOnboardingViewModel
 ) {
-    val eventHandler = LocalEventHandler.current
     val context = LocalContext.current
     val pages = listOf(
-        OnboardingItem.First(context),
-        OnboardingItem.Second(context),
-        OnboardingItem.Third(context)
+        AvashoOnboardingItem.First(context),
+        AvashoOnboardingItem.Second(context)
     )
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     LaunchedEffect(viewModel.shouldNavigate.value) {
         if (viewModel.shouldNavigate.value) {
-            navController.navigate(ScreenRoutes.AvaNegarArchiveList.route) {
-                popUpTo(ScreenRoutes.AvaNegarOnboarding.route) {
+            navController.navigate(ScreenRoutes.AvaShoArchiveScreen.route) {
+                popUpTo(ScreenRoutes.AvaShoOnboardingScreen.route) {
                     inclusive = true
                     saveState = true
                 }
@@ -101,20 +92,19 @@ private fun AvaNegarOnboardingScreen(
             .padding(bottom = 16.dp)
     ) {
         Row(modifier = Modifier.weight(0.1f)) {
-            AnimatedVisibility(pagerState.currentPage != 2) {
+            AnimatedVisibility(pagerState.currentPage == 0) {
                 TextButton(
                     contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
                     border = BorderStroke(width = 1.dp, color = Color_Card_Stroke),
                     shape = RoundedCornerShape(32.dp),
-                    modifier = Modifier
-                        .padding(top = 12.dp, end = 20.dp)
-                        .background(Color_Card, RoundedCornerShape(32.dp)),
                     onClick = {
                         safeClick {
-                            eventHandler.onboardingEvent(AvanegarAnalytics.onboardingEnd)
-                            viewModel.navigateArchiveListScreen()
+                            viewModel.navigateToArchiveListScreen()
                         }
-                    }
+                    },
+                    modifier = Modifier
+                        .padding(top = 12.dp, end = 20.dp)
+                        .background(Color_Card, RoundedCornerShape(32.dp))
                 ) {
                     Text(
                         text = stringResource(R.string.lbl_skip),
@@ -134,9 +124,9 @@ private fun AvaNegarOnboardingScreen(
                 state = pagerState,
                 modifier = Modifier.weight(0.6f)
             ) { position ->
-                AvaNegarOnBoardingItemBody(
-                    modifier = Modifier.fillMaxSize(),
-                    onBoardingItem = pages[position]
+                AvashoOnBoardingItemBody(
+                    onBoardingItem = pages[position],
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
@@ -152,22 +142,21 @@ private fun AvaNegarOnboardingScreen(
         )
 
         FinishButton(
-            modifier = Modifier
-                .padding(horizontal = 28.dp)
-                .weight(0.1f),
             pagerState = pagerState,
             onClick = {
-                eventHandler.onboardingEvent(AvanegarAnalytics.onboardingEnd)
-                viewModel.navigateArchiveListScreen()
-            }
+                viewModel.navigateToArchiveListScreen()
+            },
+            modifier = Modifier
+                .padding(horizontal = 28.dp)
+                .weight(0.1f)
         )
     }
 }
 
 @Composable
-private fun AvaNegarOnBoardingItemBody(
-    modifier: Modifier = Modifier,
-    onBoardingItem: OnboardingItem
+private fun AvashoOnBoardingItemBody(
+    onBoardingItem: AvashoOnboardingItem,
+    modifier: Modifier = Modifier
 ) {
     Column(
         verticalArrangement = Arrangement.Top,
@@ -232,23 +221,19 @@ private fun FinishButton(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .padding(start = 20.dp, end = 20.dp)
-            .fillMaxWidth(),
         verticalAlignment = Alignment.Bottom,
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.End,
+        modifier = modifier
+            .padding(horizontal = 20.dp)
+            .fillMaxWidth()
     ) {
-        AnimatedVisibility(
-            visible = pagerState.currentPage == 2
-        ) {
+        AnimatedVisibility(visible = pagerState.currentPage == 1) {
             Button(
                 contentPadding = PaddingValues(vertical = 14.dp),
-                modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    safeClick {
-                        onClick()
-                    }
-                }
+                    safeClick { onClick() }
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = stringResource(id = R.string.lbl_start),
@@ -262,16 +247,16 @@ private fun FinishButton(
 
 @ViraDarkPreview
 @Composable
-private fun AvaNegarOnboardingScreenPreview() {
+private fun AvashoOnboardingScreenPreview() {
     ViraPreview {
-        AvaNegarOnboardingScreenRoute(rememberNavController())
+        AvashoOnboardingScreenRoute(rememberNavController())
     }
 }
 
 @ViraDarkPreview
 @Composable
-private fun AvaNegarOnBoardingItemBodyPreview() {
+private fun AvashoOnBoardingItemBodyPreview() {
     ViraPreview {
-        AvaNegarOnBoardingItemBody(onBoardingItem = OnboardingItem.First(LocalContext.current))
+        AvashoOnBoardingItemBody(onBoardingItem = AvashoOnboardingItem.First(LocalContext.current))
     }
 }

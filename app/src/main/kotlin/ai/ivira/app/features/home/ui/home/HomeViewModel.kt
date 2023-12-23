@@ -2,6 +2,7 @@ package ai.ivira.app.features.home.ui.home
 
 import ai.ivira.app.features.ava_negar.data.DataStoreRepository
 import ai.ivira.app.features.ava_negar.data.PreferencesKey.onBoardingKey
+import ai.ivira.app.features.avasho.ui.onboarding.AVASHO_ONBOARDING_COMPLETED
 import ai.ivira.app.features.home.data.VersionRepository
 import ai.ivira.app.features.home.ui.home.version.model.VersionView
 import ai.ivira.app.features.home.ui.home.version.model.toVersionView
@@ -51,10 +52,12 @@ class HomeViewModel @Inject constructor(
         initialValue = NetworkStatus.Unavailable
     )
 
+    private var prefListener: SharedPreferences.OnSharedPreferenceChangeListener
     private val _changeLogList = MutableStateFlow<List<VersionView>>(listOf())
     val changeLogList = _changeLogList.asStateFlow()
 
     var shouldNavigate = mutableStateOf(false)
+    var shouldNavigateToAvasho = mutableStateOf(false)
     var shouldShowNotificationBottomSheet = false
         private set
 
@@ -65,6 +68,9 @@ class HomeViewModel @Inject constructor(
         private set
 
     var onboardingHasBeenShown = mutableStateOf(false)
+        private set
+
+    var avashoOnboardingHasBeenShown = mutableStateOf(false)
         private set
 
     init {
@@ -84,6 +90,22 @@ class HomeViewModel @Inject constructor(
                 onboardingHasBeenShown.value = completed
             }
         }
+
+        avashoOnboardingHasBeenShown.value = sharedPref.getBoolean(
+            AVASHO_ONBOARDING_COMPLETED,
+            false
+        )
+
+        prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == AVASHO_ONBOARDING_COMPLETED) {
+                avashoOnboardingHasBeenShown.value = sharedPref.getBoolean(
+                    AVASHO_ONBOARDING_COMPLETED,
+                    false
+                )
+            }
+        }
+
+        sharedPref.registerOnSharedPreferenceChangeListener(prefListener)
 
         viewModelScope.launch(IO) {
             versionRepository.getChangeLogFromLocal().collect { changeLogList ->
@@ -108,6 +130,10 @@ class HomeViewModel @Inject constructor(
 
     fun navigate() {
         shouldNavigate.value = true
+    }
+
+    fun navigateToAvasho() {
+        shouldNavigateToAvasho.value = true
     }
 
     fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) {
@@ -162,5 +188,10 @@ class HomeViewModel @Inject constructor(
 
     fun clearUiState() {
         _uiViewState.value = UiIdle
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        sharedPref.unregisterOnSharedPreferenceChangeListener(prefListener)
     }
 }

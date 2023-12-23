@@ -143,14 +143,25 @@
     <string name="lbl_avanegar_onboarding_third_description_fourth">تبدیل همزمان گفتار به متن</string>
     <string name="lbl_avanegar_onboarding_third_description_fifth">تنظیم نحوه ی نمایش اعداد</string>
 
+    <!-- AvaSho  -->
+    <string name="lbl_avasho_onboarding_first_title">آواشو</string>
+    <string name="lbl_avasho_onboarding_first_description">تنها سرویس تبدیل گفتار به متن فارسی مبتنی بر فناوری هوش مصنوعی با قابلیت تشخیص تمامی لهجه های بومی ایرانی</string>
+    <string name="lbl_avasho_onboarding_second_title">ویژگی های سرویس آواشو</string>
+    <string name="lbl_avasho_onboarding_second_description_first">تبدیل متن به گفتار از طریق تایپ متن  بارگذاری و فایل متنی</string>
+    <string name="lbl_avasho_onboarding_second_description_second">قابلیت انتخاب نوع گوینده (گوینده مرد و  زن)</string>
+    <string name="lbl_avasho_onboarding_second_description_third">دایره واژگان بیش از 300 هزار کلمه</string>
+    <string name="lbl_avasho_onboarding_second_description_fourth">تبدیل متن به گفتار با لحن طبیعی انسان</string>
+    <string name="lbl_avasho_onboarding_second_description_fifth">خوانش و پردازش بلادرنگ</string>
+
     <!-- Main -->
     <string name="lbl_avanegar_service">سرویس تبدیل گفتار به متن، ‌آوانگار</string>
     <string name="lbl_avanegar_service_details">تنها سرویس تبدیل گفتار به متن فارسی با قابلیت تشخیص تمامی لهجه های بومی ایرانی</string>
+    <string name="lbl_convert_text_to_speech_service">سرویس تبدیل متن به گفتار، ‌آواشو</string>
+    <string name="lbl_convert_text_to_speech_service_details">تنها سرویس تبدیل متن به گفتار فارسی مبتنی بر فناوری هوش مصنوعی با قابلیت خوانش بلادرنگ متون با لحن طبیعی انسان</string>
     <string name="lbl_soon_in_vira">به‌زودی در ویرا</string>
-    <string name="lbl_soon_in_vira_description_first">آواشو : &#160; تبدیل متن به گفتار با لحن طبیعی انسان</string>
+    <string name="lbl_soon_in_vira_description_first">ایماژ: &#160; ایجاد تصویر از توضیح متنی</string>
     <string name="lbl_soon_in_vira_description_second">نویسه نگار : &#160; استخراج متن از تصویر و فایل</string>
     <string name="lbl_soon_in_vira_description_third">ویراسیار : &#160; ویرایشگر هوشمند متون فارسی</string>
-    <string name="lbl_soon_in_vira_description_fourth">نویسه نما: &#160; ایجاد تصویر از توضیح متنی</string>
     <!-- endregion -->
 
     <string name="lbl_assistant">دستیار هوشمند</string>
