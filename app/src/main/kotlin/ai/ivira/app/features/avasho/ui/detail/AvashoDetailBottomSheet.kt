@@ -252,31 +252,21 @@ private fun CollapseStateToolbar(
                     .weight(1f)
                     .padding(end = 8.dp)
             )
-            IconButton(
-                onClick = {
-                    safeClick {
-                        // 1f means that the bottomSheet is expanded
-                        if (progress == 1f) {
-                            // TODO open menu bottomSheet
-                            return@safeClick
+            if (progress != 1f) {
+                IconButton(
+                    onClick = {
+                        safeClick {
+                            collapseToolbarAction()
                         }
-
-                        collapseToolbarAction()
-                    }
-                },
-                modifier = Modifier.padding(end = 8.dp)
-            ) {
-                ViraIcon(
-                    drawable = drawable.ic_menu_dot_2,
-                    contentDescription = null,
-                    tint = Color_White.copy(progress)
-                )
-
-                ViraIcon(
-                    drawable = drawable.ic_close,
-                    contentDescription = null,
-                    tint = tintColorClose
-                )
+                    },
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    ViraIcon(
+                        drawable = drawable.ic_close,
+                        contentDescription = null,
+                        tint = tintColorClose
+                    )
+                }
             }
         }
     }
