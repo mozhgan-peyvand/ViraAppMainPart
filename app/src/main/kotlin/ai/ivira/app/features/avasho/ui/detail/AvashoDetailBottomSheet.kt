@@ -9,6 +9,7 @@ import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.shareMp3
 import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_Card_Stroke
 import ai.ivira.app.utils.ui.theme.Color_Primary
@@ -136,6 +137,12 @@ fun AvashoDetailBottomSheet(
                     } else {
                         playerState.stopPlaying()
                     }
+                },
+                onShareClick = {
+                    shareMp3(
+                        context = context,
+                        file = File(avashoProcessedItem.filePath)
+                    )
                 },
                 onSaveClicked = {
                     avashoDetailsViewModel.saveToDownloadFolder(
@@ -279,6 +286,7 @@ private fun CollapseStatePlayer(
     onPlayingChanged: (Boolean) -> Unit,
     onProgressChanged: (Float) -> Unit,
     onSaveClicked: () -> Unit,
+    onShareClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val duration by remember(playerState.duration) {
@@ -398,7 +406,7 @@ private fun CollapseStatePlayer(
                             return@safeClick
                         }
 
-                        // TODO share
+                        onShareClick()
                     }
                 }
             ) {
@@ -418,7 +426,7 @@ private fun CollapseStatePlayer(
 
         BottomBar(
             onShareClick = {
-                // TODO share
+                onShareClick()
             },
             onSaveClick = onSaveClicked,
             modifier = Modifier.height(bottomBarHeight)

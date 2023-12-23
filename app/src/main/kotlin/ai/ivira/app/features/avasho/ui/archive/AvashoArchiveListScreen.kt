@@ -30,6 +30,7 @@ import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoFileCreationScreen
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.shareMp3
 import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.BLue_a200_Opacity_40
 import ai.ivira.app.utils.ui.theme.Color_BG
@@ -389,7 +390,16 @@ private fun AvashoArchiveListScreen(
                                         }
                                     }
                                 },
-                                shareItemAction = {},
+                                shareItemAction = {
+                                    coroutineScope.launch {
+                                        bottomSheetState.hide()
+                                    }
+
+                                    shareMp3(
+                                        context = context,
+                                        file = File(avashoItem.filePath)
+                                    )
+                                },
                                 renameItemAction = {
                                     setBottomSheetType(Rename)
                                     coroutineScope.launch {
