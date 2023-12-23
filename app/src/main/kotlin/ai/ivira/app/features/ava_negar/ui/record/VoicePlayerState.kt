@@ -38,17 +38,23 @@ class VoicePlayerState(
 
     var remainingTime by mutableIntStateOf(0)
         private set
+    var elapsedTime by mutableIntStateOf(0)
+        private set
 
     init {
         mediaPlayer.setOnPreparedListener { mp ->
             duration = mp.duration.coerceAtLeast(0)
             remainingTime = duration
+            elapsedTime = 0
         }
         mediaPlayer.setOnCompletionListener {
             kotlin.runCatching {
                 isPlaying = false
+                playJob?.cancel()
+                playJob = null
                 remainingTime = duration
                 progress = 0f
+                elapsedTime = 0
             }
         }
     }
@@ -80,6 +86,7 @@ class VoicePlayerState(
                         progress = currentPosition / 1000.0f
                         delay(1000)
                         remainingTime = duration - currentPosition
+                        elapsedTime = currentPosition
                     }
                 }
             }
@@ -97,6 +104,7 @@ class VoicePlayerState(
             val newTime = (position * 1000).toInt()
             progress = position
             remainingTime = duration - newTime
+            elapsedTime = newTime
             mediaPlayer.seekTo(newTime)
         }
     }
@@ -115,6 +123,7 @@ class VoicePlayerState(
         progress = 0f
         isPlaying = false
         remainingTime = duration
+        elapsedTime = 0
     }
 
     fun clear() {
@@ -131,6 +140,7 @@ class VoicePlayerState(
     fun seekForward() {
         val newTime = (currentPosition + SEEK_TIME_MS).coerceAtMost(duration)
         remainingTime = (duration - newTime).coerceAtLeast(0)
+        elapsedTime = newTime.coerceAtLeast(0)
         if (remainingTime <= 0) {
             mediaPlayer.seekTo(0)
             mediaPlayer.pause()
@@ -144,6 +154,7 @@ class VoicePlayerState(
     fun seekBackward() {
         val newTime = (currentPosition - SEEK_TIME_MS).coerceAtLeast(0)
         remainingTime = (duration - newTime).coerceIn(0, duration)
+        elapsedTime = newTime.coerceIn(0, duration)
         mediaPlayer.seekTo(newTime)
         progress = newTime / 1000.0f
     }

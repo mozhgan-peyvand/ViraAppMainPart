@@ -318,7 +318,7 @@ private fun CollapseStatePlayer(
                     .weight(1f)
             )
             Text(
-                text = formatDuration(playerState.remainingTime.toLong()),
+                text = formatDuration(playerState.elapsedTime.toLong()),
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.caption,
                 color = Color_Text_3,
