@@ -36,8 +36,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.IconButton
@@ -87,6 +89,7 @@ fun AvashoDetailBottomSheet(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val playerState by avashoDetailsViewModel::playerState
+    val verticalScroll = if (isBottomSheetExpanded) Modifier.verticalScroll(rememberScrollState()) else Modifier
 
     LaunchedEffect(
         isBottomSheetExpanded
@@ -169,7 +172,9 @@ fun AvashoDetailBottomSheet(
                 text = avashoProcessedItem.text,
                 style = MaterialTheme.typography.body2,
                 color = Color_Text_2,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .then(verticalScroll)
             )
         }
 
