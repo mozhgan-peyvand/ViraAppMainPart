@@ -8,10 +8,9 @@ import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoFileCreationScreen
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvashoSearchScreen
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
 
 fun NavGraphBuilder.avashoNavGraph(navController: NavHostController) {
-    composable(route = AvaShoArchiveScreen.route) {
+    navigateWithSlideAnimation(route = AvaShoArchiveScreen.route) {
         AvashoArchiveListScreenRoute(navController)
     }
 
@@ -19,7 +18,7 @@ fun NavGraphBuilder.avashoNavGraph(navController: NavHostController) {
         AvashoFileCreationScreen(navController)
     }
 
-    composable(AvashoSearchScreen.route) {
+    navigateWithSlideAnimation(route = AvashoSearchScreen.route) {
         AvashoSearchScreenRouter(navController)
     }
 }
