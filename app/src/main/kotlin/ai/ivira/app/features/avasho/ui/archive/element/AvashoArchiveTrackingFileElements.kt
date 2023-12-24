@@ -1,14 +1,17 @@
 package ai.ivira.app.features.avasho.ui.archive.element
 
+import ai.ivira.app.R
 import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.archive.DecreaseEstimateTime
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Converting
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoTrackingFileView
 import ai.ivira.app.utils.ui.computeSecondAndMinute
 import ai.ivira.app.utils.ui.computeTextBySecondAndMinute
+import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.ViraTheme
+import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,7 +44,8 @@ fun AvashoArchiveTrackingFileElement(
     archiveTrackingView: AvashoTrackingFileView,
     brush: Brush,
     audioImageStatus: AudioImageStatus,
-    estimateTime: () -> Double
+    estimateTime: () -> Double,
+    onMenuClick: (AvashoTrackingFileView) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -122,6 +126,16 @@ fun AvashoArchiveTrackingFileElement(
                 )
             }
         }
+
+        ViraImage(
+            drawable = R.drawable.ic_dots_menu,
+            contentDescription = null,
+            modifier = Modifier
+                .padding(end = 10.dp)
+                .safeClickable {
+                    onMenuClick(archiveTrackingView)
+                }
+        )
     }
 }
 
@@ -141,7 +155,8 @@ private fun AvashoArchiveTrackingFileElementPreview() {
                 ),
                 brush = Brush.horizontalGradient(),
                 audioImageStatus = Converting,
-                estimateTime = { 0.0 }
+                estimateTime = { 0.0 },
+                onMenuClick = {}
             )
         }
     }

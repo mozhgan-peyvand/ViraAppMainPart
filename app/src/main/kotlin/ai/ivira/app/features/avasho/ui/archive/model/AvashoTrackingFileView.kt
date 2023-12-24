@@ -7,7 +7,7 @@ import saman.zamani.persiandate.PersianDate
 
 data class AvashoTrackingFileView(
     val token: String,
-    val title: String,
+    override val title: String,
     val processEstimation: Int?,
     val createdAt: String,
     val bootElapsedTime: Long,

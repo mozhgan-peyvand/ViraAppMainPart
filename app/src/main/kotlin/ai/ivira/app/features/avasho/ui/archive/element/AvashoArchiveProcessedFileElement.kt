@@ -107,7 +107,7 @@ fun AvashoArchiveProcessedFileElement(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.subtitle2,
-                    text = archiveViewProcessed.fileName,
+                    text = archiveViewProcessed.title,
                     color = selectedItemTextColor,
                     modifier = Modifier.background(selectedItemBackgroundColor)
                 )
@@ -245,7 +245,7 @@ private fun AvashoArchiveProcessedFileElementPreview() {
             AvashoArchiveProcessedFileElement(
                 archiveViewProcessed = AvashoProcessedFileView(
                     id = 0,
-                    fileName = "عنوان",
+                    title = "عنوان",
                     text = "متن متن متن متن متن متن",
                     createdAt = "54654",
                     fileUrl = "SASAS",

@@ -51,7 +51,7 @@ fun AvashoSearchItemProcessedElement(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.subtitle2,
-                    text = archiveViewProcessed.fileName
+                    text = archiveViewProcessed.title
                 )
 
                 Spacer(modifier = Modifier.size(8.dp))

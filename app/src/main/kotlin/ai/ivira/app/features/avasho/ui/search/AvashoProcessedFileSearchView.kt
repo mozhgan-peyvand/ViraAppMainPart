@@ -6,12 +6,12 @@ import ai.ivira.app.features.avasho.ui.archive.model.AvashoArchiveView
 
 data class AvashoProcessedFileSearchView(
     val id: Int,
-    val fileName: String,
+    override val title: String,
     val createdAt: String
 ) : AvashoArchiveView
 
 fun AvashoProcessedFileEntity.toProcessFileSearchView() = AvashoProcessedFileSearchView(
     id = id,
-    fileName = fileName,
+    title = fileName,
     createdAt = convertDate(createdAt)
 )

@@ -1,15 +1,18 @@
 package ai.ivira.app.features.avasho.ui.archive.element
 
+import ai.ivira.app.R
 import ai.ivira.app.R.string
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Retry
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Upload
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoUploadingFileView
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.ViraTheme
+import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,7 +44,8 @@ fun AvashoArchiveUploadingFileElement(
     avashoUploadingFileView: AvashoUploadingFileView,
     isNetworkAvailable: Boolean,
     isErrorState: Boolean,
-    onTryAgainClick: (AvashoUploadingFileView) -> Unit
+    onTryAgainClick: (AvashoUploadingFileView) -> Unit,
+    onMenuClick: (AvashoUploadingFileView) -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -116,6 +120,16 @@ fun AvashoArchiveUploadingFileElement(
                 }
             }
         }
+
+        ViraImage(
+            drawable = R.drawable.ic_dots_menu,
+            contentDescription = null,
+            modifier = Modifier
+                .padding(end = 10.dp)
+                .safeClickable {
+                    onMenuClick(avashoUploadingFileView)
+                }
+        )
     }
 }
 
@@ -134,7 +148,8 @@ private fun AvashoArchiveUploadingFileElementPreview() {
                 ),
                 isNetworkAvailable = true,
                 isErrorState = false,
-                onTryAgainClick = {}
+                onTryAgainClick = {},
+                onMenuClick = {}
             )
         }
     }

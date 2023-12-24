@@ -165,6 +165,14 @@ class AvashoRepository @Inject constructor(
         avashoLocalDataSource.deleteProcessFile(id)
     }
 
+    suspend fun removeUploadingFile(id: String) {
+        avashoLocalDataSource.removeUploadingFile(id)
+    }
+
+    suspend fun removeTrackingFile(token: String) {
+        avashoLocalDataSource.removeTrackingFile(token)
+    }
+
     suspend fun searchAvashoArchiveItem(searchText: String) =
         avashoLocalDataSource.searchAvashoArchiveItem(searchText)
 

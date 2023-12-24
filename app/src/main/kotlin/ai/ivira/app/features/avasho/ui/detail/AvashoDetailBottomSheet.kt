@@ -130,7 +130,7 @@ fun AvashoDetailBottomSheet(
                 progress = animationProgress,
                 collapseToolbarAction = { collapseToolbarAction() },
                 halfToolbarAction = { halfToolbarAction() },
-                fileName = avashoProcessedItem.fileName
+                fileName = avashoProcessedItem.title
             )
 
             CollapseStatePlayer(
@@ -155,7 +155,7 @@ fun AvashoDetailBottomSheet(
                 onSaveClicked = {
                     avashoDetailsViewModel.saveToDownloadFolder(
                         filePath = avashoProcessedItem.filePath,
-                        fileName = avashoProcessedItem.fileName
+                        fileName = avashoProcessedItem.title
                     ).also { isSuccess ->
                         if (isSuccess) {
                             showMessage(

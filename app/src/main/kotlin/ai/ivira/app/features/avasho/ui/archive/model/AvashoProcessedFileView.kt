@@ -10,7 +10,7 @@ data class AvashoProcessedFileView(
     val id: Int,
     val fileUrl: String,
     val filePath: String,
-    val fileName: String,
+    override val title: String,
     val text: String,
     val createdAt: String,
     val fileSize: Long?,
@@ -28,7 +28,7 @@ fun AvashoProcessedFileEntity.toAvashoProcessedFileView(
     retriever: MediaMetadataRetriever?
 ) = AvashoProcessedFileView(
     id = id,
-    fileName = fileName,
+    title = fileName,
     text = text,
     createdAt = convertDate(createdAt),
     fileUrl = fileUrl,

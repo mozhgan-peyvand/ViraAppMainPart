@@ -9,6 +9,7 @@ import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.Uplo
 import ai.ivira.app.features.avasho.data.AvashoRepository
 import ai.ivira.app.features.avasho.data.entity.AvashoArchiveFilesEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoUploadingFileEntity
+import ai.ivira.app.features.avasho.ui.archive.model.AvashoArchiveView
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoUploadingFileView
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
@@ -105,7 +106,7 @@ class AvashoArchiveListViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = Unavailable
     )
-    var selectedAvashoItemBottomSheet = mutableStateOf<AvashoProcessedFileView?>(null)
+    var selectedAvashoItemBottomSheet = mutableStateOf<AvashoArchiveView?>(null)
     var bottomSheetInitialValue = mutableStateOf<ModalBottomSheetValue>(Hidden)
 
     private var job: Job? = null
@@ -333,7 +334,7 @@ class AvashoArchiveListViewModel @Inject constructor(
             val result = avashoRepository.downloadFile(
                 id = avashoProcessedFileView.id,
                 url = avashoProcessedFileView.fileUrl,
-                fileName = avashoProcessedFileView.fileName
+                fileName = avashoProcessedFileView.title
             ) { byteRead, totalSize ->
                 val percent = byteRead / totalSize.toFloat()
 
@@ -447,6 +448,14 @@ class AvashoArchiveListViewModel @Inject constructor(
 
     fun updateTitle(title: String, id: Int) = viewModelScope.launch {
         avashoRepository.updateTitle(title = title, id = id)
+    }
+
+    fun removeTrackingFile(token: String) = viewModelScope.launch {
+        avashoRepository.removeTrackingFile(token)
+    }
+
+    fun removeUploadingFile(id: String) = viewModelScope.launch {
+        avashoRepository.removeUploadingFile(id)
     }
 
     fun removeProcessedFile(id: Int) = viewModelScope.launch {

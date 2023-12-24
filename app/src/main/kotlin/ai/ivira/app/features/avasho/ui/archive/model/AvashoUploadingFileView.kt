@@ -4,7 +4,7 @@ import ai.ivira.app.features.avasho.data.entity.AvashoUploadingFileEntity
 
 data class AvashoUploadingFileView(
     val id: String,
-    val title: String,
+    override val title: String,
     val text: String,
     val speaker: String,
     val createdAt: Long

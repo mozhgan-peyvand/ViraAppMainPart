@@ -346,10 +346,11 @@ private fun AvashoArchiveListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(scaffoldPadding),
-            sheetContent = {
+            sheetContent = sheetContent@{
+                val avashoItem = selectedAvashoItem ?: return@sheetContent
                 when (fileSheetState) {
                     Details -> {
-                        selectedAvashoItem?.let { processItem ->
+                        if (avashoItem is AvashoProcessedFileView) {
                             AvashoDetailBottomSheet(
                                 snackBatState = snackbarHostState,
                                 animationProgress = calculatedProgress,
@@ -366,25 +367,25 @@ private fun AvashoArchiveListScreen(
                                 changePlayingItemAction = { isPlaying ->
                                     viewModel.changePlayingItem(
                                         if (isPlaying) {
-                                            processItem.id
+                                            avashoItem.id
                                         } else {
                                             -1
                                         }
                                     )
                                 },
-                                avashoProcessedItem = processItem,
+                                avashoProcessedItem = avashoItem,
                                 isBottomSheetExpanded = bottomSheetState.isVisible
                             )
                         }
                     }
                     Process -> {
-                        selectedAvashoItem?.let { avashoItem ->
+                        if (avashoItem is AvashoProcessedFileView) {
                             ProcessedWithDownloadBottomSheet(
-                                title = avashoItem.fileName,
+                                title = avashoItem.title,
                                 saveAudioFile = {
                                     viewModel.saveToDownloadFolder(
                                         filePath = avashoItem.filePath,
-                                        fileName = avashoItem.fileName
+                                        fileName = avashoItem.title
                                     ).also { isSuccess ->
 
                                         coroutineScope.launch {
@@ -441,14 +442,14 @@ private fun AvashoArchiveListScreen(
                         }
                     }
                     Rename -> {
-                        selectedAvashoItem?.let { selectedItem ->
+                        if (avashoItem is AvashoProcessedFileView) {
                             RenameFileBottomSheet(
-                                fileName = selectedItem.fileName,
+                                fileName = avashoItem.title,
                                 shouldShowKeyBoard = true,
                                 reNameAction = { name ->
                                     viewModel.updateTitle(
                                         title = name,
-                                        id = selectedItem.id
+                                        id = avashoItem.id
                                     )
                                     coroutineScope.launch {
                                         bottomSheetState.hide()
@@ -458,23 +459,35 @@ private fun AvashoArchiveListScreen(
                         }
                     }
                     Delete -> {
-                        selectedAvashoItem?.let { selectedItem ->
-                            FileItemConfirmationDeleteBottomSheet(
-                                deleteAction = {
-                                    kotlin.runCatching {
-                                        viewModel.removeProcessedFile(selectedItem.id)
-                                        File(
-                                            selectedAvashoItem?.filePath.orEmpty()
-                                        ).delete()
+                        FileItemConfirmationDeleteBottomSheet(
+                            deleteAction = {
+                                when (avashoItem) {
+                                    is AvashoProcessedFileView -> {
+                                        kotlin.runCatching {
+                                            viewModel.removeProcessedFile(avashoItem.id)
+                                            File(avashoItem.filePath).delete()
+                                        }
                                     }
-                                    coroutineScope.launch {
-                                        bottomSheetState.hide()
+
+                                    is AvashoUploadingFileView -> {
+                                        viewModel.removeUploadingFile(avashoItem.id)
                                     }
-                                },
-                                cancelAction = { coroutineScope.launch { bottomSheetState.hide() } },
-                                fileName = selectedItem.fileName
-                            )
-                        }
+
+                                    is AvashoTrackingFileView -> {
+                                        viewModel.removeTrackingFile(avashoItem.token)
+                                    }
+                                }
+                                coroutineScope.launch {
+                                    bottomSheetState.hide()
+                                }
+                            },
+                            cancelAction = {
+                                coroutineScope.launch {
+                                    bottomSheetState.hide()
+                                }
+                            },
+                            fileName = avashoItem.title
+                        )
                     }
                 }
             }
@@ -595,7 +608,16 @@ private fun AvashoArchiveListScreen(
                                                 archiveTrackingView = it,
                                                 brush = columnBrush(infiniteTransition),
                                                 estimateTime = { it.computeFileEstimateProcess() },
-                                                audioImageStatus = Converting
+                                                audioImageStatus = Converting,
+                                                onMenuClick = { trackingItem ->
+                                                    selectedAvashoItem = trackingItem
+                                                    setBottomSheetType(Delete)
+                                                    coroutineScope.launch {
+                                                        if (!bottomSheetState.isVisible) {
+                                                            bottomSheetState.show()
+                                                        }
+                                                    }
+                                                }
                                             )
                                         }
 
@@ -608,6 +630,15 @@ private fun AvashoArchiveListScreen(
                                                 },
                                                 onTryAgainClick = { uploadingItem ->
                                                     viewModel.startUploading(uploadingItem)
+                                                },
+                                                onMenuClick = { uploadingItem ->
+                                                    selectedAvashoItem = uploadingItem
+                                                    setBottomSheetType(Delete)
+                                                    coroutineScope.launch {
+                                                        if (!bottomSheetState.isVisible) {
+                                                            bottomSheetState.show()
+                                                        }
+                                                    }
                                                 }
                                             )
                                         }

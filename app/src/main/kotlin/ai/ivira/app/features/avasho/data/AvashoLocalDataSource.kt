@@ -127,6 +127,14 @@ class AvashoLocalDataSource @Inject constructor(
         dao.deleteProcessedFile(id)
     }
 
+    suspend fun removeUploadingFile(id: String) {
+        dao.deleteUploadingFile(id)
+    }
+
+    suspend fun removeTrackingFile(token: String) {
+        dao.deleteTrackingFile(token)
+    }
+
     suspend fun searchAvashoArchiveItem(searchText: String) =
         dao.searchAvashoArchiveItem(searchText)
 }
