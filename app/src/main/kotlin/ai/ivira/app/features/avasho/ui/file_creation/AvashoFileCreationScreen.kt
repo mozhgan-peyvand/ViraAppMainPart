@@ -173,7 +173,7 @@ fun AvashoFileCreationScreen(
     LaunchedEffect(focusRequester) {
         focusRequester.requestFocus()
     }
-    val fileName = rememberSaveable { mutableStateOf("") }
+    val fileName = rememberSaveable { mutableStateOf(viewModel.getCurrentDefaultName()) }
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = Hidden,
         skipHalfExpanded = true
@@ -210,8 +210,10 @@ fun AvashoFileCreationScreen(
                                             text = viewModel.textBody.value,
                                             speakerType = selectedItem.value
                                         )
-
                                     )
+                                if (nameFile == viewModel.getCurrentDefaultName()) {
+                                    viewModel.updateCurrentDefaultName()
+                                }
                                 navController.popBackStack()
                             }
                         )

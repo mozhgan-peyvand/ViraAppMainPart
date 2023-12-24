@@ -178,6 +178,7 @@
     <string name="lbl_version">v &#160;</string>
     <string name="lbl_email">info@ivira.ai</string>
     <string name="lbl_default_recorded_title">متن %d</string>
+    <string name="lbl_default_voice_title">صوت %d</string>
     <string name="lbl_microphone">میکروفون</string>
     <string name="lbl_microphone_is_being_used">میکروفون دستگاه توسط اپلیکیشن Record در حال استفاده است. برای ادامه باید این برنامه را ببندید.</string>
     <string name="lbl_understood">متوجه شدم</string>
