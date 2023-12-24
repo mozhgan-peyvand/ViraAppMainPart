@@ -37,11 +37,11 @@ import ai.ivira.app.utils.ui.theme.BLue_a200_Opacity_40
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Card
-import ai.ivira.app.utils.ui.theme.Color_Red
-import ai.ivira.app.utils.ui.theme.Color_Red_800
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Color_White
+import ai.ivira.app.utils.ui.widgets.ViraBannerInfo
+import ai.ivira.app.utils.ui.widgets.ViraBannerWithAnimation
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.activity.ComponentActivity
@@ -538,20 +538,26 @@ private fun AvashoArchiveListScreen(
                                 mutableStateOf(downloadState is FailureDownload)
                             }
 
-                            if (
-                                (noNetworkAvailable || hasVpnConnection || isBannerError || isFailureDownload) &&
-                                isThereTrackingOrUploading
-                            ) {
-                                ErrorBanner(
-                                    errorMessage = if (uiViewState is UiError) {
-                                        (uiViewState as UiError).message
-                                    } else if (hasVpnConnection) {
-                                        stringResource(id = string.msg_vpn_is_connected_error)
-                                    } else {
-                                        stringResource(id = string.msg_internet_disconnected)
-                                    }
-                                )
-                            }
+                            ViraBannerWithAnimation(
+                                isVisible = (noNetworkAvailable || hasVpnConnection || isBannerError || isFailureDownload) &&
+                                    isThereTrackingOrUploading,
+                                bannerInfo = if (uiViewState is UiError) {
+                                    ViraBannerInfo.Error(
+                                        message = (uiViewState as UiError).message,
+                                        iconRes = drawable.ic_failure_network
+                                    )
+                                } else if (hasVpnConnection) {
+                                    ViraBannerInfo.Warning(
+                                        message = stringResource(id = string.msg_vpn_is_connected_error),
+                                        iconRes = drawable.ic_warning_vpn
+                                    )
+                                } else {
+                                    ViraBannerInfo.Error(
+                                        message = stringResource(id = string.msg_internet_disconnected),
+                                        iconRes = drawable.ic_failure_network
+                                    )
+                                }
+                            )
 
                             LazyColumn(
                                 state = listState,
@@ -675,33 +681,6 @@ private fun AvashoArchiveListScreen(
                 }
             }
         }
-    }
-}
-
-// fixme it's duplicate, in [AvaNegarArchiveListScreen]
-@Composable
-private fun ErrorBanner(
-    errorMessage: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        horizontalArrangement = Arrangement.Center,
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Color_Red_800)
-            .padding(8.dp)
-    ) {
-        ViraIcon(
-            drawable = drawable.ic_failure_network,
-            contentDescription = null,
-            tint = Color_Red
-        )
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(
-            text = errorMessage,
-            style = MaterialTheme.typography.body2,
-            color = Color_Red
-        )
     }
 }
 

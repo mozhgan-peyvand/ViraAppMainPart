@@ -25,6 +25,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -56,6 +57,7 @@ private fun ViraBanner(
 ) {
     Row(
         horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
             .background(bannerInfo.bgColor)
@@ -113,7 +115,7 @@ fun PreviewViraBanner() {
     ViraPreview {
         ViraBanner(
             bannerInfo = ViraBannerInfo.Warning(
-                message = stringResource(id = R.string.lbl_wait_for_end_process),
+                message = stringResource(id = R.string.msg_vpn_is_connected_error),
                 iconRes = R.drawable.ic_warning_vpn
             )
         )
