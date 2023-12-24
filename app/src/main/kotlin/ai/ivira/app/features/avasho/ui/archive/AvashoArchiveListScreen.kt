@@ -158,6 +158,7 @@ private fun AvashoArchiveListScreen(
     var bottomSheetTargetValue by rememberSaveable {
         mutableStateOf(HalfExpanded)
     }
+    val isThereTrackingOrUploading by viewModel.isThereTrackingOrUploading.collectAsStateWithLifecycle()
 
     navController.currentBackStackEntry?.savedStateHandle?.remove<SpeechResult>(SpeechResult.FILE_NAME)
         ?.let {
@@ -506,24 +507,35 @@ private fun AvashoArchiveListScreen(
                         ArchiveEmptyBody()
                     } else {
                         Column(modifier = Modifier.fillMaxSize()) {
-                            val noNetworkAvailable = networkStatus is Unavailable
-                            val hasVpnConnection = networkStatus.let { it is Available && it.hasVpn }
-                            val isNetworkAvailableWithoutVpn = networkStatus.let { it is Available && !it.hasVpn }
-                            val isBannerError = uiViewState.let { it is UiError && !it.isSnack }
-                            val isFailureDownload = downloadState is FailureDownload
+                            val noNetworkAvailable by remember(networkStatus) {
+                                mutableStateOf(networkStatus is Unavailable)
+                            }
+                            val hasVpnConnection by remember(networkStatus) {
+                                mutableStateOf(networkStatus.let { it is Available && it.hasVpn })
+                            }
+                            val isNetworkAvailableWithoutVpn by remember(networkStatus) {
+                                mutableStateOf(networkStatus.let { it is Available && !it.hasVpn })
+                            }
+                            val isBannerError by remember(uiViewState) {
+                                mutableStateOf(uiViewState.let { it is UiError && !it.isSnack })
+                            }
+                            val isFailureDownload by remember(downloadState) {
+                                mutableStateOf(downloadState is FailureDownload)
+                            }
 
-                            if (noNetworkAvailable || hasVpnConnection || isBannerError || isFailureDownload) {
-                                if (archiveFiles.isNotEmpty()) {
-                                    ErrorBanner(
-                                        errorMessage = if (uiViewState is UiError) {
-                                            (uiViewState as UiError).message
-                                        } else if (hasVpnConnection) {
-                                            stringResource(id = string.msg_vpn_is_connected_error)
-                                        } else {
-                                            stringResource(id = string.msg_internet_disconnected)
-                                        }
-                                    )
-                                }
+                            if (
+                                (noNetworkAvailable || hasVpnConnection || isBannerError || isFailureDownload) &&
+                                isThereTrackingOrUploading
+                            ) {
+                                ErrorBanner(
+                                    errorMessage = if (uiViewState is UiError) {
+                                        (uiViewState as UiError).message
+                                    } else if (hasVpnConnection) {
+                                        stringResource(id = string.msg_vpn_is_connected_error)
+                                    } else {
+                                        stringResource(id = string.msg_internet_disconnected)
+                                    }
+                                )
                             }
 
                             LazyColumn(

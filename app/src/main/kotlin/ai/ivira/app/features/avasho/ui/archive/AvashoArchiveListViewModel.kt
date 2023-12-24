@@ -116,6 +116,9 @@ class AvashoArchiveListViewModel @Inject constructor(
     var processArchiveFileList = mutableStateOf<List<AvashoProcessedFileView>>(emptyList())
         private set
 
+    var isThereTrackingOrUploading = MutableStateFlow(false)
+        private set
+
     val allArchiveFiles = combine(
         networkStatusTracker.networkStatus,
         _uploadStatus,
@@ -193,7 +196,12 @@ class AvashoArchiveListViewModel @Inject constructor(
             addAll(
                 uploadingList.map {
                     it.toAvashoUploadingFileView()
-                }.also { this@AvashoArchiveListViewModel.uploadingList = it }
+                }.also {
+                    isThereTrackingOrUploading.value =
+                        trackingList.isNotEmpty() || uploadingList.isNotEmpty()
+
+                    this@AvashoArchiveListViewModel.uploadingList = it
+                }
             )
             addAll(trackingList.map { it.toAvashoTrackingFileView() })
 
