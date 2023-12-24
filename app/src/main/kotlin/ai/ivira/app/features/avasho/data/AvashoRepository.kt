@@ -137,7 +137,7 @@ class AvashoRepository @Inject constructor(
     ): AppResult<Unit> {
         return if (networkHandler.hasNetworkConnection()) {
             val file = fileOperationHelper.getFile(
-                fileName = fileName,
+                fileName = "${System.currentTimeMillis()}_$fileName",
                 path = AVASHO_FOLDER_PATH
             )
 
