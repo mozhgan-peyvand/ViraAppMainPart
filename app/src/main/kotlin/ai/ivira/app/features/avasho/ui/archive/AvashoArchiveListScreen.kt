@@ -1,5 +1,6 @@
 package ai.ivira.app.features.avasho.ui.archive
 
+import ai.ivira.app.R
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.SnackBar
@@ -159,6 +160,7 @@ private fun AvashoArchiveListScreen(
         mutableStateOf(HalfExpanded)
     }
     val isThereTrackingOrUploading by viewModel.isThereTrackingOrUploading.collectAsStateWithLifecycle()
+    val isUploadingAllowed by viewModel.isUploadingAllowed.collectAsStateWithLifecycle()
 
     navController.currentBackStackEntry?.savedStateHandle?.remove<SpeechResult>(SpeechResult.FILE_NAME)
         ?.let {
@@ -649,7 +651,23 @@ private fun AvashoArchiveListScreen(
                     }
                     Fab(
                         modifier = Modifier.align(Alignment.BottomStart),
-                        onMainFabClick = {
+                        onClick = onClick@{
+                            if (!isUploadingAllowed) {
+                                val hasError = uiViewState is UiError && isThereTrackingOrUploading
+                                showMessage(
+                                    snackbarHostState,
+                                    coroutineScope,
+                                    context.getString(
+                                        if (hasError) {
+                                            R.string.msg_wait_for_connection_to_server
+                                        } else {
+                                            R.string.msg_wait_process_finish_or_cancel_it
+                                        }
+                                    )
+                                )
+                                return@onClick
+                            }
+
                             navController.navigate(route = AvaShoFileCreationScreen.route)
                         },
                         listState = listState
@@ -807,7 +825,7 @@ private fun ArchiveAppBar(
 @Composable
 private fun Fab(
     listState: LazyListState,
-    onMainFabClick: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
@@ -841,7 +859,7 @@ private fun Fab(
             backgroundColor = MaterialTheme.colors.primary,
             onClick = {
                 safeClick {
-                    onMainFabClick()
+                    onClick()
                 }
             }
         ) {

@@ -97,6 +97,9 @@ class AvashoArchiveListViewModel @Inject constructor(
     private val _downloadStatus = MutableStateFlow<DownloadingFileStatus>(IdleDownload)
     val downloadStatus = _downloadStatus.asStateFlow()
 
+    private var _isUploadingAllowed = MutableStateFlow(true)
+    val isUploadingAllowed = _isUploadingAllowed.asStateFlow()
+
     private var indexOfItemThatShouldBeUploaded = 0
 
     private var playingAvashoItemId = mutableStateOf<Int>(-1)
@@ -188,6 +191,10 @@ class AvashoArchiveListViewModel @Inject constructor(
         // region archiveView
         val processedList = avashoArchiveFilesEntity.processed
         val trackingList = avashoArchiveFilesEntity.tracking
+
+        _isUploadingAllowed.update {
+            trackingList.isEmpty() && uploadingList.isEmpty()
+        }
 
         if (trackingList.isEmpty() && uploadingList.isEmpty()) {
             _uiViewState.emit(UiIdle)
