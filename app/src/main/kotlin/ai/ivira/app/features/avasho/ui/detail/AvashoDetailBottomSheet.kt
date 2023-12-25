@@ -21,6 +21,7 @@ import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Color_White
+import ai.ivira.app.utils.ui.widgets.AutoTextSize
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.foundation.background
@@ -487,11 +488,11 @@ fun BottomBar(
                         contentDescription = stringResource(id = string.lbl_save),
                         modifier = modifier.padding(end = 10.dp)
                     )
-                    Text(
+                    AutoTextSize(
                         text = stringResource(id = string.lbl_save),
                         style = MaterialTheme.typography.button,
                         color = Color_Primary_300,
-                        maxLines = 1
+                        textScale = 0.7f
                     )
                 }
             }
@@ -527,11 +528,11 @@ fun BottomBar(
                         contentDescription = stringResource(id = string.desc_share),
                         modifier = modifier.padding(end = 10.dp)
                     )
-                    Text(
+                    AutoTextSize(
                         text = stringResource(id = string.lbl_btn_share_text),
                         style = MaterialTheme.typography.button,
                         color = Color_Primary_300,
-                        maxLines = 1
+                        textScale = 0.7f
                     )
                 }
             }

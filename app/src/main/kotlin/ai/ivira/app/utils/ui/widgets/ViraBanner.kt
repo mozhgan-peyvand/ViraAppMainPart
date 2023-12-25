@@ -84,7 +84,6 @@ sealed class ViraBannerInfo(
     val bgColor: Color,
     val tint: Color
 ) {
-
     @Stable
     class Error(
         message: String,
