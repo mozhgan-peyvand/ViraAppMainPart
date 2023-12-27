@@ -26,6 +26,7 @@ class VoicePlayerState(
     private var currentFile: File? = null
     private var playJob: Job? = null
     private val currentPosition: Int get() = mediaPlayer.currentPosition
+    private var hasBeenReset: Boolean? = null
 
     var duration by mutableIntStateOf(0)
         private set
@@ -59,7 +60,14 @@ class VoicePlayerState(
         }
     }
 
-    fun tryInitWith(file: File?, forcePrepare: Boolean = false): Boolean {
+    fun tryInitWith(
+        file: File?,
+        forcePrepare: Boolean = false,
+        autoStart: Boolean = false
+    ): Boolean {
+
+        if (hasBeenReset == false) return true
+
         if (file == null || !file.exists()) return false
 
         return kotlin.runCatching {
@@ -71,7 +79,9 @@ class VoicePlayerState(
                 currentFile = file
                 mediaPlayer.setDataSource(application.applicationContext, file.toUri())
                 mediaPlayer.prepare()
+                if (autoStart) startPlaying()
             }
+            hasBeenReset = false
         }.isSuccess
     }
 
@@ -124,6 +134,7 @@ class VoicePlayerState(
         isPlaying = false
         remainingTime = duration
         elapsedTime = 0
+        hasBeenReset = true
     }
 
     fun clear() {

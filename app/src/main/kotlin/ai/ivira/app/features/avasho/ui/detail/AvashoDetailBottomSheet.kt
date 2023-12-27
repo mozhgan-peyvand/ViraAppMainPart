@@ -101,11 +101,13 @@ fun AvashoDetailBottomSheet(
     LaunchedEffect(
         isBottomSheetExpanded
     ) {
-        val emitSuccess = playerState.tryInitWith(File(avashoProcessedItem.filePath), true)
+        val emitSuccess = playerState.tryInitWith(
+            file = File(avashoProcessedItem.filePath),
+            forcePrepare = true,
+            autoStart = true
+        )
         if (emitSuccess) {
-            if (isBottomSheetExpanded) {
-                playerState.startPlaying()
-            } else {
+            if (!isBottomSheetExpanded) {
                 playerState.stopMediaPlayer()
                 playerState.reset()
             }
