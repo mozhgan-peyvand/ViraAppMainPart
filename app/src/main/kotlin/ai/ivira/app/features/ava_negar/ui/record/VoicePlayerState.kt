@@ -65,7 +65,6 @@ class VoicePlayerState(
         forcePrepare: Boolean = false,
         autoStart: Boolean = false
     ): Boolean {
-
         if (hasBeenReset == false) return true
 
         if (file == null || !file.exists()) return false

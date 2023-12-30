@@ -164,6 +164,11 @@
     <string name="lbl_soon_in_vira_description_third">ویراسیار : &#160; ویرایشگر هوشمند متون فارسی</string>
     <!-- endregion -->
 
+    <!-- region tooltop -->
+    <string name="tt_can_type_text_here">اینجا می‌توانید متن خود را\n برای تبدیل به صوت تایپ کنید و برای \n دریافت خروجی بهتر، علائم نگارشی را رعایت \n نموده و از ادبیات محاوره ای استفاده نکنید.</string>
+    <string name="tt_can_select_file_from_here">از این قسمت نیز می‌توانید\n فایل متنی خود را وارد کنید.</string>
+    <!--endregion-->
+
     <string name="lbl_assistant">دستیار هوشمند</string>
     <string name="lbl_vira">ویــــــــرا</string>
     <string name="lbl_coming_soon">به زودی</string>

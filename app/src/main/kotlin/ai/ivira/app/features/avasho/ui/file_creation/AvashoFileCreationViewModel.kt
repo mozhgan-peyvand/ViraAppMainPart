@@ -4,6 +4,7 @@ import ai.ivira.app.R
 import ai.ivira.app.utils.common.safeGetInt
 import android.app.Application
 import android.content.SharedPreferences
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
@@ -15,6 +16,7 @@ import javax.inject.Inject
 
 // UNDO_REDO_LIMIT: Duplicate 2
 private const val UNDO_REDO_LIMIT = 50
+private const val AVASHO_FILE_CREATION_TOOLTIP_KEY = "avashoFileCreationTooltipKey"
 
 @HiltViewModel
 class AvashoFileCreationViewModel @Inject constructor(
@@ -23,6 +25,10 @@ class AvashoFileCreationViewModel @Inject constructor(
 ) : AndroidViewModel(application) {
     private var textList = mutableListOf("")
     private val currentIndex = mutableIntStateOf(textList.size - 1)
+
+    private val _shouldShowTooltip = mutableStateOf(shouldShowTooltip())
+    val shouldShowTooltip: State<Boolean>
+        get() = _shouldShowTooltip
 
     private var _textBody = mutableStateOf("")
     var textBody = _textBody
@@ -76,6 +82,17 @@ class AvashoFileCreationViewModel @Inject constructor(
 
     fun canUndo(): Boolean {
         return currentIndex.intValue > 0
+    }
+
+    private fun shouldShowTooltip(): Boolean {
+        return sharedPref.getBoolean(AVASHO_FILE_CREATION_TOOLTIP_KEY, true)
+    }
+
+    fun doNotShowTooltipAgain() {
+        viewModelScope.launch {
+            _shouldShowTooltip.value = false
+            sharedPref.edit().putBoolean(AVASHO_FILE_CREATION_TOOLTIP_KEY, false).apply()
+        }
     }
 
     fun getCurrentDefaultName(): String {

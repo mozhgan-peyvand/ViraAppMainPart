@@ -1,5 +1,6 @@
 package ai.ivira.app.features.avasho.ui.file_creation
 
+import ai.ivira.app.R
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
@@ -7,6 +8,7 @@ import ai.ivira.app.features.ava_negar.ui.archive.sheets.ChooseFileContentBottom
 import ai.ivira.app.features.avasho.ui.file_creation.FileCreationBottomSheetType.ChooseFile
 import ai.ivira.app.features.avasho.ui.file_creation.FileCreationBottomSheetType.FileAccessPermissionDenied
 import ai.ivira.app.features.avasho.ui.file_creation.FileCreationBottomSheetType.OpenForChooseSpeaker
+import ai.ivira.app.utils.ui.ViraBalloon
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.openFileIntent
@@ -60,10 +62,12 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -71,6 +75,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -83,7 +88,9 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.skydoves.balloon.overlay.BalloonOverlayCircle
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val CHAR_COUNT = 2500
@@ -170,14 +177,19 @@ fun AvashoFileCreationScreen(
         )
     }
 
-    LaunchedEffect(focusRequester) {
-        focusRequester.requestFocus()
-    }
+    val shouldShowTooltip by viewModel.shouldShowTooltip
+
     val fileName = rememberSaveable { mutableStateOf(viewModel.getCurrentDefaultName()) }
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = Hidden,
         skipHalfExpanded = true
     )
+
+    LaunchedEffect(focusRequester, shouldShowTooltip) {
+        if (shouldShowTooltip) return@LaunchedEffect
+
+        focusRequester.requestFocus()
+    }
 
     BackHandler(bottomSheetState.isVisible) {
         coroutineScope.launch {
@@ -280,6 +292,10 @@ fun AvashoFileCreationScreen(
                 }
             }
         ) {
+            var shouldShowUploadTooltip by rememberSaveable {
+                mutableStateOf(false)
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -288,6 +304,7 @@ fun AvashoFileCreationScreen(
                 TopAppBar(
                     isUndoEnabled = viewModel.canUndo(),
                     isRedoEnabled = viewModel.canRedo(),
+                    shouldShowUploadTooltip = shouldShowUploadTooltip,
                     onUndoClick = {
                         focusManager.clearFocus()
                         keyboardController?.hide()
@@ -312,16 +329,27 @@ fun AvashoFileCreationScreen(
                                 bottomSheetState.hide()
                             }
                         }
+                    },
+                    onTooltipDismiss = {
+                        viewModel.doNotShowTooltipAgain()
+                        shouldShowUploadTooltip = false
+                        focusRequester.requestFocus()
                     }
                 )
 
                 Body(
                     text = viewModel.textBody.value,
                     focusRequester = focusRequester,
+                    shouldShowEditTextTooltip = shouldShowTooltip && !shouldShowUploadTooltip,
+                    scrollState = scrollState,
+                    onTooltipDismiss = {
+                        if (shouldShowTooltip) {
+                            shouldShowUploadTooltip = true
+                        }
+                    },
                     onTextChange = {
                         viewModel.addTextToList(it)
                     },
-                    scrollState = scrollState,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -358,12 +386,16 @@ fun AvashoFileCreationScreen(
 private fun TopAppBar(
     isUndoEnabled: Boolean,
     isRedoEnabled: Boolean,
+    shouldShowUploadTooltip: Boolean,
     onUndoClick: () -> Unit,
     onRedoClick: () -> Unit,
     onBackAction: () -> Unit,
     uploadAction: () -> Unit,
+    onTooltipDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val density = LocalDensity.current
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -394,18 +426,29 @@ private fun TopAppBar(
             style = MaterialTheme.typography.subtitle2,
             color = Color_White
         )
-        IconButton(
-            onClick = {
-                safeClick {
-                    uploadAction()
-                }
-            }
+
+        ViraBalloon(
+            text = stringResource(id = R.string.tt_can_select_file_from_here),
+            marginVertical = 16,
+            overLayShape = BalloonOverlayCircle(with(density) { 30.dp.roundToPx().toFloat() }),
+            onDismiss = { onTooltipDismiss() }
         ) {
-            ViraIcon(
-                drawable = drawable.ic_upload_txt_file,
-                modifier = Modifier.padding(8.dp),
-                contentDescription = stringResource(id = string.desc_upload)
-            )
+            IconButton(
+                onClick = {
+                    safeClick {
+                        uploadAction()
+                    }
+                }
+            ) {
+                ViraIcon(
+                    drawable = drawable.ic_upload_txt_file,
+                    contentDescription = stringResource(id = string.desc_upload)
+                )
+            }
+
+            if (shouldShowUploadTooltip) {
+                showAlignBottom()
+            }
         }
 
         IconButton(
@@ -442,10 +485,14 @@ private fun TopAppBar(
 private fun Body(
     text: String,
     focusRequester: FocusRequester,
-    onTextChange: (String) -> Unit,
+    shouldShowEditTextTooltip: Boolean,
     scrollState: ScrollState,
+    onTextChange: (String) -> Unit,
+    onTooltipDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -460,11 +507,29 @@ private fun Body(
                 value = text,
                 textStyle = MaterialTheme.typography.body1,
                 placeholder = {
-                    Text(
-                        text = stringResource(id = string.lbl_type_text_or_import_file),
-                        style = MaterialTheme.typography.body1,
-                        color = Color_Text_3
-                    )
+                    ViraBalloon(
+                        text = stringResource(id = R.string.tt_can_type_text_here),
+                        marginHorizontal = 26,
+                        marginVertical = 8,
+                        onDismiss = { onTooltipDismiss() }
+                    ) {
+                        Text(
+                            text = stringResource(id = string.lbl_type_text_or_import_file),
+                            style = MaterialTheme.typography.body1,
+                            color = Color_Text_3,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+
+                        LaunchedEffect(shouldShowEditTextTooltip) {
+                            if (shouldShowEditTextTooltip) {
+                                coroutineScope.launch {
+                                    // show tooltip with delay to let the tooltip finds its exact overlay position
+                                    delay(200)
+                                    showAlignBottom()
+                                }
+                            }
+                        }
+                    }
                 },
                 onValueChange = {
                     val generatedText = if (it.length <= CHAR_COUNT) {
