@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
@@ -173,15 +174,16 @@ fun AvashoDetailBottomSheet(
                 color = Color_Card_Stroke,
                 modifier = Modifier.height(1.dp)
             )
-
-            Text(
-                text = avashoProcessedItem.text,
-                style = MaterialTheme.typography.body2,
-                color = Color_Text_2,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .then(verticalScroll)
-            )
+            SelectionContainer {
+                Text(
+                    text = avashoProcessedItem.text,
+                    style = MaterialTheme.typography.body2,
+                    color = Color_Text_2,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .then(verticalScroll)
+                )
+            }
         }
 
         if (animationProgress < 1.0f && animationProgress > 0f) {
