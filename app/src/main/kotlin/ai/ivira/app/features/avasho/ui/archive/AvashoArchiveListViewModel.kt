@@ -222,8 +222,14 @@ class AvashoArchiveListViewModel @Inject constructor(
                         downloadedBytes = downloadingFile?.downloadedBytes,
                         retriever = retriever
                     )
-                }.also {
-                    processArchiveFileList.value = it
+                }.also { processedList ->
+                    processArchiveFileList.value = processedList
+
+                    for (i in processedList) {
+                        if (File(i.filePath).exists() || downloadQueue.value.contains(i)) continue
+
+                        addFileToDownloadQueue(i)
+                    }
                 }
             )
         }
@@ -323,9 +329,13 @@ class AvashoArchiveListViewModel @Inject constructor(
         }
     }
 
-    fun addFileToDownloadQueue(id: AvashoProcessedFileView) {
+    fun addFileToDownloadQueue(item: AvashoProcessedFileView) {
         downloadQueue.update { currentQueue ->
-            currentQueue.plus(id)
+            if (currentQueue.contains(item)) {
+                currentQueue
+            } else {
+                currentQueue.plus(item)
+            }
         }
 
         if (_downloadStatus.value == FailureDownload) {
