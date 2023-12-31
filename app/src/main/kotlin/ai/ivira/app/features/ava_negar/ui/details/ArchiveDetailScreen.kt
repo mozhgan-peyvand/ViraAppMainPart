@@ -30,8 +30,7 @@ import ai.ivira.app.utils.ui.theme.Color_White
 import ai.ivira.app.utils.ui.widgets.AutoTextSize
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
-import android.app.Activity
-import android.view.WindowManager
+import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
@@ -85,12 +84,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -130,6 +132,7 @@ private fun AvaNegarArchiveDetailScreen(
     viewModel.setItemId(itemId.orZero())
     val context = LocalContext.current
     val eventHandler = LocalEventHandler.current
+    val view = LocalView.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState(0)
@@ -159,6 +162,7 @@ private fun AvaNegarArchiveDetailScreen(
     val (selectedSheet, setSelectedSheet) = rememberSaveable {
         mutableStateOf(ArchiveDetailBottomSheetType.Menu)
     }
+    var isKeyboardVisible by remember { mutableStateOf(false) }
 
     var backPressedInterval: Long = 0
 
@@ -250,27 +254,35 @@ private fun AvaNegarArchiveDetailScreen(
     }
 
     LaunchedEffect(bottomSheetState.currentValue) {
-        if (bottomSheetState.isVisible) {
-            if (selectedSheet.name == ArchiveDetailBottomSheetType.Rename.name) {
-                (context as Activity).window.setSoftInputMode(
-                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
-                )
-                shouldShowKeyBoard = true
-            }
-        } else {
-            (context as Activity).window.setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
-            )
+        if (!bottomSheetState.isVisible) {
             shouldShowKeyBoard = false
+            return@LaunchedEffect
+        }
+
+        if (selectedSheet.name == ArchiveDetailBottomSheetType.Rename.name) {
+            shouldShowKeyBoard = true
         }
     }
 
     DisposableEffect(context) {
         onDispose {
             viewModel.saveEditedText()
-            (context as Activity).window.setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
-            )
+        }
+    }
+
+    DisposableEffect(Unit) {
+        val listener = ViewTreeObserver.OnPreDrawListener {
+            val insets = ViewCompat.getRootWindowInsets(view)
+
+            isKeyboardVisible = insets?.isVisible(WindowInsetsCompat.Type.ime()) ?: false
+
+            true
+        }
+
+        view.viewTreeObserver.addOnPreDrawListener(listener)
+
+        onDispose {
+            view.viewTreeObserver.removeOnPreDrawListener(listener)
         }
     }
 
@@ -413,7 +425,9 @@ private fun AvaNegarArchiveDetailScreen(
                     scrollStateValue = scrollState.value
                 )
             },
-            bottomBar = {
+            bottomBar = bottomBar@{
+                if (isKeyboardVisible) return@bottomBar
+
                 AvaNegarProcessedArchiveDetailBottomBar(
                     onShareClick = {
                         setSelectedSheet(ArchiveDetailBottomSheetType.Share)
