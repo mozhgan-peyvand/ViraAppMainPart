@@ -9,6 +9,7 @@ import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.Uplo
 import ai.ivira.app.features.avasho.data.AvashoRepository
 import ai.ivira.app.features.avasho.data.entity.AvashoArchiveFilesEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoUploadingFileEntity
+import ai.ivira.app.features.avasho.ui.AvashoAnalytics
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoArchiveView
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoUploadingFileView
@@ -35,6 +36,7 @@ import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.analytics.EventHandler
 import ai.ivira.app.utils.ui.combine
 import android.app.Application
 import android.media.MediaMetadataRetriever
@@ -73,6 +75,7 @@ class AvashoArchiveListViewModel @Inject constructor(
     private val storageUtils: StorageUtils,
     private val fileOperationHelper: FileOperationHelper,
     private val application: Application,
+    private val eventHandler: EventHandler,
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
     private var retriever: MediaMetadataRetriever? = null
@@ -330,11 +333,22 @@ class AvashoArchiveListViewModel @Inject constructor(
     }
 
     fun addFileToDownloadQueue(item: AvashoProcessedFileView) {
+        var itemAdded = false
         downloadQueue.update { currentQueue ->
             if (currentQueue.contains(item)) {
+                itemAdded = false
                 currentQueue
             } else {
+                itemAdded = true
                 currentQueue.plus(item)
+            }
+        }
+
+        if (itemAdded) {
+            if (item.text.length <= TEXT_LENGTH_LIMIT) {
+                eventHandler.specialEvent(AvashoAnalytics.createFileBelow1k)
+            } else {
+                eventHandler.specialEvent(AvashoAnalytics.createFileAbove1k)
             }
         }
 

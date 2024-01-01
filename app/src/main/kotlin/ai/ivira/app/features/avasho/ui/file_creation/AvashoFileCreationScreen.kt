@@ -1,14 +1,15 @@
 package ai.ivira.app.features.avasho.ui.file_creation
 
-import ai.ivira.app.R
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.ChooseFileContentBottomSheet
+import ai.ivira.app.features.avasho.ui.AvashoAnalytics
 import ai.ivira.app.features.avasho.ui.file_creation.FileCreationBottomSheetType.ChooseFile
 import ai.ivira.app.features.avasho.ui.file_creation.FileCreationBottomSheetType.FileAccessPermissionDenied
 import ai.ivira.app.features.avasho.ui.file_creation.FileCreationBottomSheetType.OpenForChooseSpeaker
 import ai.ivira.app.utils.ui.ViraBalloon
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.openFileIntent
@@ -120,6 +121,8 @@ fun AvashoFileCreationScreen(
             if (uri != null) {
                 coroutineScope.launch(Dispatchers.IO) {
                     try {
+                        // The reason this is added because **use** function closes inputStream!
+                        // noinspection Recycle
                         val inputStream = context.contentResolver.openInputStream(uri)
                         viewModel.appendToText(
                             inputStream?.bufferedReader()?.use {
@@ -184,6 +187,8 @@ fun AvashoFileCreationScreen(
         initialValue = Hidden,
         skipHalfExpanded = true
     )
+
+    val eventHandler = LocalEventHandler.current
 
     LaunchedEffect(focusRequester, shouldShowTooltip) {
         if (shouldShowTooltip) return@LaunchedEffect
@@ -320,6 +325,7 @@ fun AvashoFileCreationScreen(
                         navController.navigateUp()
                     },
                     uploadAction = {
+                        eventHandler.specialEvent(AvashoAnalytics.uploadIconClick)
                         focusManager.clearFocus()
                         setSelectedSheet(ChooseFile)
                         coroutineScope.launch {
@@ -428,7 +434,7 @@ private fun TopAppBar(
         )
 
         ViraBalloon(
-            text = stringResource(id = R.string.tt_can_select_file_from_here),
+            text = stringResource(id = string.tt_can_select_file_from_here),
             marginVertical = 16,
             overLayShape = BalloonOverlayCircle(with(density) { 30.dp.roundToPx().toFloat() }),
             onDismiss = { onTooltipDismiss() }
@@ -508,7 +514,7 @@ private fun Body(
                 textStyle = MaterialTheme.typography.body1,
                 placeholder = {
                     ViraBalloon(
-                        text = stringResource(id = R.string.tt_can_type_text_here),
+                        text = stringResource(id = string.tt_can_type_text_here),
                         marginHorizontal = 26,
                         marginVertical = 8,
                         onDismiss = { onTooltipDismiss() }

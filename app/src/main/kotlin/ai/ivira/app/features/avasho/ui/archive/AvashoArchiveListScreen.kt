@@ -1,12 +1,12 @@
 package ai.ivira.app.features.avasho.ui.archive
 
-import ai.ivira.app.R
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
+import ai.ivira.app.features.avasho.ui.AvashoAnalytics
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Delete
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Details
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Process
@@ -25,6 +25,7 @@ import ai.ivira.app.utils.data.NetworkStatus.Available
 import ai.ivira.app.utils.data.NetworkStatus.Unavailable
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.isScrollingUp
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoFileCreationScreen
@@ -225,6 +226,8 @@ private fun AvashoArchiveListScreen(
     var shouldShowSnackBarWithoutPadding by remember {
         mutableStateOf(true)
     }
+
+    val eventHandler = LocalEventHandler.current
 
     LaunchedEffect(bottomSheetState.targetValue) {
         snapshotFlow { bottomSheetState.targetValue }
@@ -472,10 +475,12 @@ private fun AvashoArchiveListScreen(
                                     }
 
                                     is AvashoUploadingFileView -> {
+                                        eventHandler.specialEvent(AvashoAnalytics.cancelUploadFile)
                                         viewModel.removeUploadingFile(avashoItem.id)
                                     }
 
                                     is AvashoTrackingFileView -> {
+                                        eventHandler.specialEvent(AvashoAnalytics.cancelTrackFile)
                                         viewModel.removeTrackingFile(avashoItem.token)
                                     }
                                 }
@@ -582,6 +587,7 @@ private fun AvashoArchiveListScreen(
                                                 }
                                                 selectedAvashoItem = item
                                                 if (File(item.filePath).exists()) {
+                                                    eventHandler.specialEvent(AvashoAnalytics.playItem)
                                                     setBottomSheetType(Details)
                                                     coroutineScope.launch {
                                                         if (!bottomSheetState.isVisible) {
@@ -665,9 +671,9 @@ private fun AvashoArchiveListScreen(
                                     coroutineScope,
                                     context.getString(
                                         if (hasError) {
-                                            R.string.msg_wait_for_connection_to_server
+                                            string.msg_wait_for_connection_to_server
                                         } else {
-                                            R.string.msg_wait_process_finish_or_cancel_it
+                                            string.msg_wait_process_finish_or_cancel_it
                                         }
                                     )
                                 )
@@ -807,7 +813,6 @@ private fun Fab(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val density = LocalDensity.current
     val isVisible by listState.isScrollingUp()
     AnimatedVisibility(
         modifier = modifier.padding(

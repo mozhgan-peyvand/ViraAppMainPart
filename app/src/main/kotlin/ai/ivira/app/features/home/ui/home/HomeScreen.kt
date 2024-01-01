@@ -479,6 +479,7 @@ private fun HomeScreen(
                     homeViewModel.navigate()
                 },
                 onAvashoClick = {
+                    eventHandler.specialEvent(HomeAnalytics.openAvasho)
                     homeViewModel.navigateToAvasho()
                 },
                 onItemClick = { homeItem ->
