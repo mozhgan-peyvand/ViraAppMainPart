@@ -1,6 +1,5 @@
 package ai.ivira.app.features.avasho.ui.file_creation
 
-import ai.ivira.app.R
 import ai.ivira.app.R.drawable
 import ai.ivira.app.R.string
 import ai.ivira.app.features.avasho.ui.file_creation.SpeakerTypeBottomSheet.MAN
@@ -78,7 +77,7 @@ fun SelectSpeakerBottomSheet(
             .padding(20.dp)
     ) {
         Text(
-            text = stringResource(id = R.string.lbl_determind_file_name),
+            text = stringResource(id = string.lbl_determind_file_name),
             style = MaterialTheme.typography.h6,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -123,14 +122,14 @@ fun SelectSpeakerBottomSheet(
         }
 
         Text(
-            text = stringResource(id = R.string.lbl_speaker_type),
+            text = stringResource(id = string.lbl_speaker_type),
             style = MaterialTheme.typography.h6,
             modifier = Modifier.padding(top = 28.dp)
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 28.dp)
+                .padding(vertical = 28.dp)
         ) {
             radioOptions.forEach { text ->
                 Text(
@@ -163,7 +162,7 @@ fun SelectSpeakerBottomSheet(
             enabled = textValue.text.isNotBlank()
         ) {
             Text(
-                text = stringResource(id = R.string.lbl_transform),
+                text = stringResource(id = string.lbl_transform),
                 style = MaterialTheme.typography.button,
                 color = Color_Text_1
             )
