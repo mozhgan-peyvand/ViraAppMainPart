@@ -39,11 +39,11 @@ import ai.ivira.app.utils.ui.theme.Blue_gray_900
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Card
+import ai.ivira.app.utils.ui.theme.Color_Home_Avasho_Subtitle
 import ai.ivira.app.utils.ui.theme.Color_OutLine
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
-import ai.ivira.app.utils.ui.theme.Indigo_300
 import ai.ivira.app.utils.ui.theme.Light_blue_50
 import ai.ivira.app.utils.ui.theme.labelMedium
 import ai.ivira.app.utils.ui.widgets.ViraIcon
@@ -672,7 +672,7 @@ private fun HomeBody(
                     )
                     Text(
                         text = stringResource(id = R.string.lbl_ava_sho_desc),
-                        color = Indigo_300,
+                        color = Color_Home_Avasho_Subtitle,
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
