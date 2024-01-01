@@ -1,7 +1,6 @@
 package ai.ivira.app.features.avasho.ui.archive.element
 
 import ai.ivira.app.R
-import ai.ivira.app.R.string
 import ai.ivira.app.features.ava_negar.ui.archive.DecreaseEstimateTime
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Converting
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoTrackingFileView
@@ -81,7 +80,7 @@ fun AvashoArchiveTrackingFileElement(
             Text(
                 color = Color_Text_2,
                 style = MaterialTheme.typography.caption,
-                text = stringResource(id = string.lbl_converting_to_audio)
+                text = stringResource(id = R.string.lbl_converting_to_audio)
             )
 
             if (getNewEstimateTime.intValue > 0) {
@@ -90,7 +89,7 @@ fun AvashoArchiveTrackingFileElement(
                         style = MaterialTheme.typography.caption,
                         color = Color_Text_2,
                         textAlign = TextAlign.Start,
-                        text = stringResource(id = string.lbl_converting_doing)
+                        text = stringResource(id = R.string.lbl_converting_doing)
                     )
 
                     Spacer(modifier = Modifier.size(16.dp))
@@ -115,9 +114,9 @@ fun AvashoArchiveTrackingFileElement(
                 Text(
                     text = stringResource(
                         id = if (archiveTrackingView.processEstimation != null) {
-                            string.lbl_wait_for_end_process
+                            R.string.lbl_wait_for_end_process
                         } else {
-                            string.lbl_converting
+                            R.string.lbl_converting
                         }
                     ),
                     style = MaterialTheme.typography.caption,

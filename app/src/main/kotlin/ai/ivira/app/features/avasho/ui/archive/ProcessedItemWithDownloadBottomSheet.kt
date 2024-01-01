@@ -1,7 +1,6 @@
 package ai.ivira.app.features.avasho.ui.archive
 
-import ai.ivira.app.R.drawable
-import ai.ivira.app.R.string
+import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.DetailItemBottomSheet
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
@@ -59,14 +58,14 @@ fun ProcessedWithDownloadBottomSheet(
         )
         if (!isFileDownloading && !isFileDownloaded) {
             AvashoArchiveProcessedItemBodyBottomSheet(
-                text = string.lbl_download_audio_file,
-                icon = drawable.ic_download_audio,
+                text = R.string.lbl_download_audio_file,
+                icon = R.drawable.ic_download_audio,
                 onItemClick = { downloadAudioFile() }
             )
         } else if (isFileDownloaded) {
             AvashoArchiveProcessedItemBodyBottomSheet(
-                text = string.lbl_save_audio_file,
-                icon = drawable.ic_download_audio,
+                text = R.string.lbl_save_audio_file,
+                icon = R.drawable.ic_download_audio,
                 onItemClick = { saveAudioFile() }
             )
             Divider(
@@ -76,8 +75,8 @@ fun ProcessedWithDownloadBottomSheet(
                 color = Color_OutLine
             )
             AvashoArchiveProcessedItemBodyBottomSheet(
-                text = string.lbl_share_file,
-                icon = drawable.ic_share_new,
+                text = R.string.lbl_share_file,
+                icon = R.drawable.ic_share_new,
                 onItemClick = {
                     shareItemAction()
                 }
@@ -90,8 +89,8 @@ fun ProcessedWithDownloadBottomSheet(
             color = Color_OutLine
         )
         AvashoArchiveProcessedItemBodyBottomSheet(
-            text = string.lbl_change_file_name,
-            icon = drawable.ic_rename,
+            text = R.string.lbl_change_file_name,
+            icon = R.drawable.ic_rename,
             onItemClick = { renameItemAction() }
         )
         Divider(
@@ -101,8 +100,8 @@ fun ProcessedWithDownloadBottomSheet(
             color = Color_OutLine
         )
         AvashoArchiveProcessedItemBodyBottomSheet(
-            text = string.lbl_delete_file,
-            icon = drawable.ic_removefile,
+            text = R.string.lbl_delete_file,
+            icon = R.drawable.ic_removefile,
             onItemClick = {
                 deleteItemAction()
             },

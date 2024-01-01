@@ -1,8 +1,6 @@
 package ai.ivira.app.features.avasho.ui.archive.element
 
 import ai.ivira.app.R
-import ai.ivira.app.R.drawable
-import ai.ivira.app.R.string
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Cancel
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Download
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Pause
@@ -116,7 +114,7 @@ fun AvashoArchiveProcessedFileElement(
                     Spacer(modifier = Modifier.size(8.dp))
 
                     Text(
-                        text = stringResource(id = string.msg_internet_connection_problem),
+                        text = stringResource(id = R.string.msg_internet_connection_problem),
                         style = MaterialTheme.typography.caption,
                         color = Color_Red
                     )
@@ -129,7 +127,7 @@ fun AvashoArchiveProcessedFileElement(
                             Text(
                                 // fixme set this correctly
                                 text = buildString {
-                                    append(stringResource(id = string.lbl_downloading_file))
+                                    append(stringResource(id = R.string.lbl_downloading_file))
                                     append(" ")
                                     append("(")
                                     append(
@@ -145,7 +143,7 @@ fun AvashoArchiveProcessedFileElement(
                                             archiveViewProcessed.fileSize?.toDouble().orZero()
                                         )
                                     )
-                                    append(stringResource(id = string.lbl_mb))
+                                    append(stringResource(id = R.string.lbl_mb))
                                     append(")")
                                 },
                                 style = MaterialTheme.typography.caption,
@@ -153,7 +151,7 @@ fun AvashoArchiveProcessedFileElement(
                             )
                         } else {
                             Text(
-                                text = stringResource(id = string.lbl_ready_for_download),
+                                text = stringResource(id = R.string.lbl_ready_for_download),
                                 style = MaterialTheme.typography.caption,
                                 color = Color_Text_2
                             )
@@ -176,7 +174,7 @@ fun AvashoArchiveProcessedFileElement(
                                             archiveViewProcessed.fileSize?.toDouble().orZero()
                                         )
                                     )
-                                    append(stringResource(id = string.lbl_mb))
+                                    append(stringResource(id = R.string.lbl_mb))
                                 }
                             )
                         }
@@ -225,7 +223,7 @@ fun AvashoArchiveProcessedFileElement(
                 }
             }
             ViraImage(
-                drawable = drawable.ic_dots_menu,
+                drawable = R.drawable.ic_dots_menu,
                 contentDescription = null,
                 modifier = Modifier
                     .padding(end = 10.dp)

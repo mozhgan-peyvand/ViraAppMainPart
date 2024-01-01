@@ -1,7 +1,6 @@
 package ai.ivira.app.features.avasho.ui.file_creation
 
-import ai.ivira.app.R.drawable
-import ai.ivira.app.R.string
+import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.ChooseFileContentBottomSheet
 import ai.ivira.app.features.avasho.ui.AvashoAnalytics
@@ -169,7 +168,7 @@ fun AvashoFileCreationScreen(
             showMessage(
                 snackbarHostState,
                 coroutineScope,
-                context.getString(string.lbl_need_to_access_file_permission)
+                context.getString(R.string.lbl_need_to_access_file_permission)
             )
         }
     }
@@ -291,7 +290,7 @@ fun AvashoFileCreationScreen(
                                     }
                                 }
                             },
-                            descriptionFileFormat = string.lbl_lbl_allow_text_format
+                            descriptionFileFormat = R.string.lbl_lbl_allow_text_format
                         )
                     }
                 }
@@ -379,7 +378,7 @@ fun AvashoFileCreationScreen(
                     }
                 ) {
                     Text(
-                        text = stringResource(id = string.lbl_convert_to_sound),
+                        text = stringResource(id = R.string.lbl_convert_to_sound),
                         style = MaterialTheme.typography.button
                     )
                 }
@@ -416,16 +415,16 @@ private fun TopAppBar(
             }
         ) {
             ViraIcon(
-                drawable = drawable.ic_arrow_forward,
+                drawable = R.drawable.ic_arrow_forward,
                 modifier = Modifier.padding(8.dp),
-                contentDescription = stringResource(id = string.desc_back)
+                contentDescription = stringResource(id = R.string.desc_back)
             )
         }
 
         Spacer(modifier = Modifier.size(8.dp))
 
         Text(
-            text = stringResource(id = string.lbl_file_creation),
+            text = stringResource(id = R.string.lbl_file_creation),
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
             modifier = Modifier.weight(1f),
@@ -434,7 +433,7 @@ private fun TopAppBar(
         )
 
         ViraBalloon(
-            text = stringResource(id = string.tt_can_select_file_from_here),
+            text = stringResource(id = R.string.tt_can_select_file_from_here),
             marginVertical = 16,
             overLayShape = BalloonOverlayCircle(with(density) { 30.dp.roundToPx().toFloat() }),
             onDismiss = { onTooltipDismiss() }
@@ -447,8 +446,8 @@ private fun TopAppBar(
                 }
             ) {
                 ViraIcon(
-                    drawable = drawable.ic_upload_txt_file,
-                    contentDescription = stringResource(id = string.desc_upload)
+                    drawable = R.drawable.ic_upload_txt_file,
+                    contentDescription = stringResource(id = R.string.desc_upload)
                 )
             }
 
@@ -466,8 +465,8 @@ private fun TopAppBar(
             }
         ) {
             ViraIcon(
-                drawable = drawable.ic_redo,
-                contentDescription = stringResource(id = string.desc_redo),
+                drawable = R.drawable.ic_redo,
+                contentDescription = stringResource(id = R.string.desc_redo),
                 modifier = Modifier.padding(12.dp)
             )
         }
@@ -479,8 +478,8 @@ private fun TopAppBar(
             }
         ) {
             ViraIcon(
-                drawable = drawable.ic_undo,
-                contentDescription = stringResource(id = string.desc_undo),
+                drawable = R.drawable.ic_undo,
+                contentDescription = stringResource(id = R.string.desc_undo),
                 modifier = Modifier.padding(12.dp)
             )
         }
@@ -514,13 +513,13 @@ private fun Body(
                 textStyle = MaterialTheme.typography.body1,
                 placeholder = {
                     ViraBalloon(
-                        text = stringResource(id = string.tt_can_type_text_here),
+                        text = stringResource(id = R.string.tt_can_type_text_here),
                         marginHorizontal = 26,
                         marginVertical = 8,
                         onDismiss = { onTooltipDismiss() }
                     ) {
                         Text(
-                            text = stringResource(id = string.lbl_type_text_or_import_file),
+                            text = stringResource(id = R.string.lbl_type_text_or_import_file),
                             style = MaterialTheme.typography.body1,
                             color = Color_Text_3,
                             modifier = Modifier.padding(horizontal = 8.dp)
@@ -570,7 +569,7 @@ private fun Body(
         ) {
             CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.labelMedium) {
                 Text(
-                    text = stringResource(id = string.lbl_character),
+                    text = stringResource(id = R.string.lbl_character),
                     color = Color_Primary_200
                 )
 

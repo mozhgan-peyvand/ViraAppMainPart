@@ -1,7 +1,6 @@
 package ai.ivira.app.features.avasho.ui.detail
 
-import ai.ivira.app.R.drawable
-import ai.ivira.app.R.string
+import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
 import ai.ivira.app.utils.ui.UiError
@@ -165,7 +164,7 @@ fun AvashoDetailBottomSheet(
                             showMessage(
                                 snackBatState,
                                 coroutineScope,
-                                context.getString(string.msg_file_saved_successfully)
+                                context.getString(R.string.msg_file_saved_successfully)
                             )
                         }
                     }
@@ -258,7 +257,7 @@ private fun CollapseStateToolbar(
                     .size(buttonSize)
             ) {
                 ViraIcon(
-                    drawable = drawable.ic_arrow_down,
+                    drawable = R.drawable.ic_arrow_down,
                     contentDescription = null,
                     tint = tintColorMenu
                 )
@@ -284,7 +283,7 @@ private fun CollapseStateToolbar(
                     modifier = Modifier.padding(end = 8.dp)
                 ) {
                     ViraIcon(
-                        drawable = drawable.ic_close,
+                        drawable = R.drawable.ic_close,
                         contentDescription = null,
                         tint = tintColorClose
                     )
@@ -372,14 +371,14 @@ private fun CollapseStatePlayer(
                 }
             ) {
                 ViraImage(
-                    drawable = drawable.ic_download_voice,
-                    contentDescription = stringResource(id = string.lbl_download),
+                    drawable = R.drawable.ic_download_voice,
+                    contentDescription = stringResource(id = R.string.lbl_download),
                     alpha = 1 - animationProgress
                 )
 
                 ViraImage(
-                    drawable = drawable.ic_ten_second_after,
-                    contentDescription = stringResource(id = string.lbl_move_ten_sec_forward),
+                    drawable = R.drawable.ic_ten_second_after,
+                    contentDescription = stringResource(id = R.string.lbl_move_ten_sec_forward),
                     alpha = animationProgress
                 )
             }
@@ -399,14 +398,14 @@ private fun CollapseStatePlayer(
             ) {
                 if (playerState.isPlaying) {
                     ViraImage(
-                        drawable = drawable.ic_pause,
-                        contentDescription = stringResource(id = string.desc_stop_playing),
+                        drawable = R.drawable.ic_pause,
+                        contentDescription = stringResource(id = R.string.desc_stop_playing),
                         modifier = modifier.fillMaxSize()
                     )
                 } else {
                     ViraImage(
-                        drawable = drawable.ic_play,
-                        contentDescription = stringResource(id = string.desc_start_playing),
+                        drawable = R.drawable.ic_play,
+                        contentDescription = stringResource(id = R.string.desc_start_playing),
                         modifier = modifier.fillMaxSize()
                     )
                 }
@@ -426,14 +425,14 @@ private fun CollapseStatePlayer(
                 }
             ) {
                 ViraImage(
-                    drawable = drawable.ic_share_speech,
-                    contentDescription = stringResource(id = string.lbl_share_file),
+                    drawable = R.drawable.ic_share_speech,
+                    contentDescription = stringResource(id = R.string.lbl_share_file),
                     alpha = 1 - animationProgress
                 )
 
                 ViraImage(
-                    drawable = drawable.ic_ten_second_before,
-                    contentDescription = stringResource(id = string.lbl_move_ten_sec_back),
+                    drawable = R.drawable.ic_ten_second_before,
+                    contentDescription = stringResource(id = R.string.lbl_move_ten_sec_back),
                     alpha = animationProgress
                 )
             }
@@ -488,12 +487,12 @@ fun BottomBar(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     ViraImage(
-                        drawable = drawable.ic_save,
-                        contentDescription = stringResource(id = string.lbl_save),
+                        drawable = R.drawable.ic_save,
+                        contentDescription = stringResource(id = R.string.lbl_save),
                         modifier = modifier.padding(end = 10.dp)
                     )
                     AutoTextSize(
-                        text = stringResource(id = string.lbl_save),
+                        text = stringResource(id = R.string.lbl_save),
                         style = MaterialTheme.typography.button,
                         color = Color_Primary_300,
                         textScale = 0.7f
@@ -528,12 +527,12 @@ fun BottomBar(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     ViraImage(
-                        drawable = drawable.ic_share,
-                        contentDescription = stringResource(id = string.desc_share),
+                        drawable = R.drawable.ic_share,
+                        contentDescription = stringResource(id = R.string.desc_share),
                         modifier = modifier.padding(end = 10.dp)
                     )
                     AutoTextSize(
-                        text = stringResource(id = string.lbl_btn_share_text),
+                        text = stringResource(id = R.string.lbl_btn_share_text),
                         style = MaterialTheme.typography.button,
                         color = Color_Primary_300,
                         textScale = 0.7f

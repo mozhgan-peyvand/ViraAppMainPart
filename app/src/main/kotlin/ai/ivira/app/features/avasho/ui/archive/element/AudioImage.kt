@@ -1,6 +1,6 @@
 package ai.ivira.app.features.avasho.ui.archive.element
 
-import ai.ivira.app.R.drawable
+import ai.ivira.app.R
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Cancel
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Converting
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Download
@@ -40,13 +40,13 @@ fun AudioImage(
     progress: Float = -1f
 ) {
     val icon = when (audioImageStatus) {
-        Play -> drawable.ic_play_audio
-        Pause -> drawable.ic_pause_transparent
-        Cancel -> drawable.ic_cancel
-        Download -> drawable.ic_download_audio
-        Upload -> drawable.ic_upload_audio
-        Converting -> drawable.ic_gear
-        Retry -> drawable.ic_retry
+        Play -> R.drawable.ic_play_audio
+        Pause -> R.drawable.ic_pause_transparent
+        Cancel -> R.drawable.ic_cancel
+        Download -> R.drawable.ic_download_audio
+        Upload -> R.drawable.ic_upload_audio
+        Converting -> R.drawable.ic_gear
+        Retry -> R.drawable.ic_retry
     }
     Box(
         contentAlignment = Alignment.Center,
@@ -74,14 +74,14 @@ fun AudioImage(
 
         with(LocalContentColor.current.copy(alpha = LocalContentAlpha.current)) {
             ViraIcon(
-                drawable = drawable.ic_transparent_circle,
+                drawable = R.drawable.ic_transparent_circle,
                 contentDescription = null,
                 tint = if (isEnabled) Color_Primary else this,
                 modifier = Modifier.fillMaxSize()
             )
 
             ViraIcon(
-                drawable = drawable.ic_transparent_circle,
+                drawable = R.drawable.ic_transparent_circle,
                 contentDescription = null,
                 tint = if (isEnabled) Color_Primary else this,
                 modifier = Modifier

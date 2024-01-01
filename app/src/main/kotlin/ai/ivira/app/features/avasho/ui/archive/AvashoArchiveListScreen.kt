@@ -1,7 +1,6 @@
 package ai.ivira.app.features.avasho.ui.archive
 
-import ai.ivira.app.R.drawable
-import ai.ivira.app.R.string
+import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
@@ -401,7 +400,7 @@ private fun AvashoArchiveListScreen(
                                             showMessage(
                                                 snackbarHostState,
                                                 coroutineScope,
-                                                context.getString(string.msg_file_saved_successfully)
+                                                context.getString(R.string.msg_file_saved_successfully)
                                             )
                                         }
                                     }
@@ -549,17 +548,17 @@ private fun AvashoArchiveListScreen(
                                 bannerInfo = if (uiViewState is UiError) {
                                     ViraBannerInfo.Error(
                                         message = (uiViewState as UiError).message,
-                                        iconRes = drawable.ic_failure_network
+                                        iconRes = R.drawable.ic_failure_network
                                     )
                                 } else if (hasVpnConnection) {
                                     ViraBannerInfo.Warning(
-                                        message = stringResource(id = string.msg_vpn_is_connected_error),
-                                        iconRes = drawable.ic_warning_vpn
+                                        message = stringResource(id = R.string.msg_vpn_is_connected_error),
+                                        iconRes = R.drawable.ic_warning_vpn
                                     )
                                 } else {
                                     ViraBannerInfo.Error(
-                                        message = stringResource(id = string.msg_internet_disconnected),
-                                        iconRes = drawable.ic_failure_network
+                                        message = stringResource(id = R.string.msg_internet_disconnected),
+                                        iconRes = R.drawable.ic_failure_network
                                     )
                                 }
                             )
@@ -671,9 +670,9 @@ private fun AvashoArchiveListScreen(
                                     coroutineScope,
                                     context.getString(
                                         if (hasError) {
-                                            string.msg_wait_for_connection_to_server
+                                            R.string.msg_wait_for_connection_to_server
                                         } else {
-                                            string.msg_wait_process_finish_or_cancel_it
+                                            R.string.msg_wait_process_finish_or_cancel_it
                                         }
                                     )
                                 )
@@ -704,7 +703,7 @@ private fun ArchiveEmptyBody(
             verticalArrangement = Arrangement.Bottom
         ) {
             ViraImage(
-                drawable = drawable.img_main_page,
+                drawable = R.drawable.img_main_page,
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier
@@ -715,7 +714,7 @@ private fun ArchiveEmptyBody(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = stringResource(id = string.lbl_dose_not_exist_any_file),
+                text = stringResource(id = R.string.lbl_dose_not_exist_any_file),
                 style = MaterialTheme.typography.subtitle1,
                 color = Color_Text_1,
                 modifier = Modifier
@@ -725,7 +724,7 @@ private fun ArchiveEmptyBody(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = stringResource(id = string.lbl_make_your_first_file),
+                text = stringResource(id = R.string.lbl_make_your_first_file),
                 style = MaterialTheme.typography.caption,
                 color = Color_Text_3,
                 modifier = Modifier
@@ -744,7 +743,7 @@ private fun ArchiveEmptyBody(
             Spacer(modifier = Modifier.width(80.dp))
 
             ViraImage(
-                drawable = drawable.ic_arrow,
+                drawable = R.drawable.ic_arrow,
                 contentDescription = null,
                 modifier = Modifier.fillMaxHeight(),
                 contentScale = ContentScale.FillHeight
@@ -776,16 +775,16 @@ private fun ArchiveAppBar(
             }
         ) {
             ViraIcon(
-                drawable = drawable.ic_arrow_forward,
+                drawable = R.drawable.ic_arrow_forward,
                 modifier = Modifier.padding(12.dp),
-                contentDescription = stringResource(id = string.desc_back)
+                contentDescription = stringResource(id = R.string.desc_back)
             )
         }
 
         Spacer(modifier = Modifier.size(8.dp))
 
         Text(
-            text = stringResource(id = string.lbl_ava_sho),
+            text = stringResource(id = R.string.lbl_ava_sho),
             style = MaterialTheme.typography.subtitle2,
             color = MaterialTheme.colors.onSurface,
             textAlign = TextAlign.Start,
@@ -799,8 +798,8 @@ private fun ArchiveAppBar(
             }
         ) {
             ViraIcon(
-                drawable = drawable.ic_search,
-                contentDescription = stringResource(id = string.desc_search),
+                drawable = R.drawable.ic_search,
+                contentDescription = stringResource(id = R.string.desc_search),
                 modifier = Modifier.padding(12.dp)
             )
         }
@@ -848,7 +847,7 @@ private fun Fab(
             }
         ) {
             ViraIcon(
-                drawable = drawable.ic_add,
+                drawable = R.drawable.ic_add,
                 contentDescription = null,
                 tint = Color_White
             )

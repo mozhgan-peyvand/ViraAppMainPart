@@ -1,7 +1,6 @@
 package ai.ivira.app.features.avasho.ui.archive.element
 
 import ai.ivira.app.R
-import ai.ivira.app.R.string
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Retry
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Upload
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoUploadingFileView
@@ -86,7 +85,7 @@ fun AvashoArchiveUploadingFileElement(
                 Spacer(modifier = Modifier.size(8.dp))
 
                 Text(
-                    text = stringResource(id = string.msg_internet_connection_problem),
+                    text = stringResource(id = R.string.msg_internet_connection_problem),
                     style = MaterialTheme.typography.caption,
                     color = Color_Red
                 )
@@ -97,7 +96,7 @@ fun AvashoArchiveUploadingFileElement(
                         overflow = TextOverflow.Ellipsis,
                         color = Color_Text_2,
                         style = MaterialTheme.typography.caption,
-                        text = stringResource(id = string.lbl_uploading)
+                        text = stringResource(id = R.string.lbl_uploading)
                     )
 
                     Spacer(modifier = Modifier.size(8.dp))
@@ -112,7 +111,7 @@ fun AvashoArchiveUploadingFileElement(
                 } else {
                     Text(
                         text = stringResource(
-                            id = string.msg_upload_will_start_after_connect_to_internet
+                            id = R.string.msg_upload_will_start_after_connect_to_internet
                         ),
                         style = MaterialTheme.typography.caption,
                         color = Color_Red

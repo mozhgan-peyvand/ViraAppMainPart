@@ -1,7 +1,6 @@
 package ai.ivira.app.features.avasho.ui.file_creation
 
-import ai.ivira.app.R.drawable
-import ai.ivira.app.R.string
+import ai.ivira.app.R
 import ai.ivira.app.features.avasho.ui.file_creation.SpeakerTypeBottomSheet.MAN
 import ai.ivira.app.features.avasho.ui.file_creation.SpeakerTypeBottomSheet.WOMAN
 import ai.ivira.app.utils.ui.safeClick
@@ -77,7 +76,7 @@ fun SelectSpeakerBottomSheet(
             .padding(20.dp)
     ) {
         Text(
-            text = stringResource(id = string.lbl_determind_file_name),
+            text = stringResource(id = R.string.lbl_determind_file_name),
             style = MaterialTheme.typography.h6,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -89,7 +88,7 @@ fun SelectSpeakerBottomSheet(
             verticalAlignment = Alignment.CenterVertically
         ) {
             ViraIcon(
-                drawable = drawable.ic_rename,
+                drawable = R.drawable.ic_rename,
                 contentDescription = null,
                 tint = Color_Text_3,
                 modifier = Modifier.padding(top = 6.dp, start = 10.dp)
@@ -103,7 +102,7 @@ fun SelectSpeakerBottomSheet(
                     .padding(vertical = 6.dp)
             ) {
                 Text(
-                    text = stringResource(id = string.lbl_file_name),
+                    text = stringResource(id = R.string.lbl_file_name),
                     color = Color_Text_3,
                     style = MaterialTheme.typography.caption
                 )
@@ -122,7 +121,7 @@ fun SelectSpeakerBottomSheet(
         }
 
         Text(
-            text = stringResource(id = string.lbl_speaker_type),
+            text = stringResource(id = R.string.lbl_speaker_type),
             style = MaterialTheme.typography.h6,
             modifier = Modifier.padding(top = 28.dp)
         )
@@ -162,7 +161,7 @@ fun SelectSpeakerBottomSheet(
             enabled = textValue.text.isNotBlank()
         ) {
             Text(
-                text = stringResource(id = string.lbl_transform),
+                text = stringResource(id = R.string.lbl_transform),
                 style = MaterialTheme.typography.button,
                 color = Color_Text_1
             )
