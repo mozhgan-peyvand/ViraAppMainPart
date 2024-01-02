@@ -1,6 +1,7 @@
 package ai.ivira.app
 
 import ai.ivira.app.features.ava_negar.data.AvanegarTracker
+import ai.ivira.app.features.avasho.data.AvashoTracker
 import ai.ivira.app.utils.common.notification.FirebaseTopic.Vira
 import ai.ivira.app.utils.common.notification.ViraFirebaseMessagingService.Companion.TAG
 import ai.ivira.app.utils.ui.initializers.SentryInitializer
@@ -21,6 +22,9 @@ class ViraApp : Application() {
     // this injection is here so that the tracking starts (it starts in init of this class)
     @Inject
     lateinit var avanegarTracker: AvanegarTracker
+
+    @Inject
+    lateinit var avashoTracker: AvashoTracker
 
     @Inject
     lateinit var sentryInitializer: SentryInitializer

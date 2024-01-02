@@ -4,6 +4,8 @@ import ai.ivira.app.R
 import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.features.home.ui.onboarding.MainOnboardingItem.First
 import ai.ivira.app.features.home.ui.onboarding.MainOnboardingItem.Second
+import ai.ivira.app.features.home.ui.onboarding.MainOnboardingItem.Third
+import ai.ivira.app.utils.ui.BulletParagraph
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
@@ -16,6 +18,7 @@ import ai.ivira.app.utils.ui.theme.Color_On_Surface_Variant
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
+import ai.ivira.app.utils.ui.widgets.AutoTextSize
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
@@ -74,11 +77,12 @@ private fun HomeOnboardingScreen(
 ) {
     val eventHandler = LocalEventHandler.current
     val context = LocalContext.current
-    val pagerState = rememberPagerState(pageCount = { 2 })
     val pages = listOf(
         First(context),
-        Second(context)
+        Second(context),
+        Third(context)
     )
+    val pagerState = rememberPagerState(pageCount = { pages.size })
 
     LaunchedEffect(viewModel.shouldNavigate.value) {
         if (viewModel.shouldNavigate.value) {
@@ -96,39 +100,41 @@ private fun HomeOnboardingScreen(
             .background(Color_BG)
             .padding(bottom = 16.dp)
     ) {
-        TextButton(
-            contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
-            border = BorderStroke(width = 1.dp, color = Color_Card_Stroke),
-            shape = RoundedCornerShape(32.dp),
-            modifier = Modifier
-                .padding(top = 12.dp, end = 20.dp)
-                .background(Color_Card, RoundedCornerShape(32.dp)),
-            onClick = {
-                safeClick {
-                    eventHandler.onboardingEvent(HomeAnalytics.onboardingEnd)
-                    viewModel.navigateToMainOnboarding()
+        Row(modifier = Modifier.weight(0.1f)) {
+            AnimatedVisibility(pagerState.currentPage != 2) {
+                TextButton(
+                    contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
+                    border = BorderStroke(width = 1.dp, color = Color_Card_Stroke),
+                    shape = RoundedCornerShape(32.dp),
+                    onClick = {
+                        safeClick {
+                            eventHandler.onboardingEvent(HomeAnalytics.onboardingEnd)
+                            viewModel.navigateToMainOnboarding()
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(top = 12.dp, end = 20.dp)
+                        .background(Color_Card, RoundedCornerShape(32.dp))
+                ) {
+                    Text(
+                        text = stringResource(R.string.lbl_skip),
+                        style = MaterialTheme.typography.button,
+                        color = Color_Text_1
+                    )
                 }
             }
-        ) {
-            Text(
-                text = stringResource(R.string.lbl_skip),
-                style = MaterialTheme.typography.button,
-                color = Color_Text_1
-            )
         }
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        CompositionLocalProvider(
-            LocalOverscrollConfiguration provides null
-        ) {
+        CompositionLocalProvider(LocalOverscrollConfiguration provides null) {
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.weight(0.6f)
             ) { position ->
                 MainOnBoardingItemBody(
-                    modifier = Modifier.fillMaxSize(),
-                    onBoardingItem = pages[position]
+                    onBoardingItem = pages[position],
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
@@ -137,21 +143,21 @@ private fun HomeOnboardingScreen(
 
         HorizontalPagerIndicator(
             pagerState = pagerState,
-            pageCount = 2,
+            pageCount = pages.size,
             activeColor = Color_Primary_200,
             inactiveColor = Color_On_Surface_Variant,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
         FinishButton(
-            modifier = Modifier
-                .padding(horizontal = 28.dp)
-                .weight(0.1f),
             pagerState = pagerState,
             onClick = {
                 eventHandler.onboardingEvent(HomeAnalytics.onboardingEnd)
                 viewModel.navigateToMainOnboarding()
-            }
+            },
+            modifier = Modifier
+                .padding(horizontal = 28.dp)
+                .weight(0.1f)
         )
     }
 }
@@ -162,16 +168,14 @@ private fun MainOnBoardingItemBody(
     onBoardingItem: MainOnboardingItem
 ) {
     Column(
-        modifier = modifier.padding(horizontal = 28.dp),
-        verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.padding(horizontal = 28.dp)
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.45f)
+            modifier = Modifier.fillMaxWidth()
         ) {
             ViraImage(
                 drawable = onBoardingItem.image,
@@ -184,11 +188,9 @@ private fun MainOnBoardingItemBody(
         Spacer(modifier = Modifier.size(24.dp))
 
         Column(
-            modifier = modifier
-                .weight(0.4f)
-                .fillMaxWidth(),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier.fillMaxWidth()
         ) {
             Text(
                 text = stringResource(id = onBoardingItem.title),
@@ -200,12 +202,23 @@ private fun MainOnBoardingItemBody(
 
             Spacer(modifier = Modifier.size(16.dp))
 
-            Text(
-                text = onBoardingItem.description,
-                style = MaterialTheme.typography.body1,
-                color = Color_Text_2,
-                modifier = Modifier.fillMaxWidth()
-            )
+            if (onBoardingItem.description.size == 1) {
+                AutoTextSize(
+                    text = onBoardingItem.description.first(),
+                    style = MaterialTheme.typography.body1,
+                    color = Color_Text_2,
+                    textScale = 0.9f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                onBoardingItem.description.forEach { text ->
+                    BulletParagraph(
+                        text = text,
+                        color = Color_Text_2,
+                        textStyle = MaterialTheme.typography.body1
+                    )
+                }
+            }
         }
     }
 }
@@ -217,14 +230,11 @@ private fun FinishButton(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth(),
         verticalAlignment = Alignment.Bottom,
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.End,
+        modifier = modifier.fillMaxWidth()
     ) {
-        AnimatedVisibility(
-            visible = pagerState.currentPage == 1
-        ) {
+        AnimatedVisibility(visible = pagerState.currentPage == 2) {
             Button(
                 contentPadding = PaddingValues(vertical = 14.dp),
                 modifier = Modifier.fillMaxWidth(),

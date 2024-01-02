@@ -26,6 +26,7 @@ class VoicePlayerState(
     private var currentFile: File? = null
     private var playJob: Job? = null
     private val currentPosition: Int get() = mediaPlayer.currentPosition
+    private var hasBeenReset: Boolean? = null
 
     var duration by mutableIntStateOf(0)
         private set
@@ -38,33 +39,49 @@ class VoicePlayerState(
 
     var remainingTime by mutableIntStateOf(0)
         private set
+    var elapsedTime by mutableIntStateOf(0)
+        private set
 
     init {
         mediaPlayer.setOnPreparedListener { mp ->
             duration = mp.duration.coerceAtLeast(0)
             remainingTime = duration
+            elapsedTime = 0
         }
         mediaPlayer.setOnCompletionListener {
             kotlin.runCatching {
                 isPlaying = false
+                playJob?.cancel()
+                playJob = null
                 remainingTime = duration
                 progress = 0f
+                elapsedTime = 0
             }
         }
     }
 
-    fun tryInitWith(file: File?) {
-        if (file == null || !file.exists()) return
+    fun tryInitWith(
+        file: File?,
+        forcePrepare: Boolean = false,
+        autoStart: Boolean = false
+    ): Boolean {
+        if (hasBeenReset == false) return true
 
-        if (file.absolutePath != currentFile?.absolutePath) {
-            if (currentFile != null) {
-                mediaPlayer.stop()
-                mediaPlayer.reset()
+        if (file == null || !file.exists()) return false
+
+        return kotlin.runCatching {
+            if (forcePrepare || file.absolutePath != currentFile?.absolutePath) {
+                if (currentFile != null) {
+                    mediaPlayer.stop()
+                    mediaPlayer.reset()
+                }
+                currentFile = file
+                mediaPlayer.setDataSource(application.applicationContext, file.toUri())
+                mediaPlayer.prepare()
+                if (autoStart) startPlaying()
             }
-            currentFile = file
-            mediaPlayer.setDataSource(application.applicationContext, file.toUri())
-            mediaPlayer.prepare()
-        }
+            hasBeenReset = false
+        }.isSuccess
     }
 
     fun startPlaying() {
@@ -78,6 +95,7 @@ class VoicePlayerState(
                         progress = currentPosition / 1000.0f
                         delay(1000)
                         remainingTime = duration - currentPosition
+                        elapsedTime = currentPosition
                     }
                 }
             }
@@ -95,6 +113,7 @@ class VoicePlayerState(
             val newTime = (position * 1000).toInt()
             progress = position
             remainingTime = duration - newTime
+            elapsedTime = newTime
             mediaPlayer.seekTo(newTime)
         }
     }
@@ -112,10 +131,45 @@ class VoicePlayerState(
         playJob?.cancel()
         progress = 0f
         isPlaying = false
+        remainingTime = duration
+        elapsedTime = 0
+        hasBeenReset = true
     }
 
     fun clear() {
         mediaPlayer.stop()
         mediaPlayer.release()
+    }
+
+    fun stopMediaPlayer() {
+        kotlin.runCatching {
+            mediaPlayer.stop()
+        }
+    }
+
+    fun seekForward() {
+        val newTime = (currentPosition + SEEK_TIME_MS).coerceAtMost(duration)
+        remainingTime = (duration - newTime).coerceAtLeast(0)
+        elapsedTime = newTime.coerceAtLeast(0)
+        if (remainingTime <= 0) {
+            mediaPlayer.seekTo(0)
+            mediaPlayer.pause()
+            reset()
+        } else {
+            mediaPlayer.seekTo(newTime)
+            progress = newTime / 1000.0f
+        }
+    }
+
+    fun seekBackward() {
+        val newTime = (currentPosition - SEEK_TIME_MS).coerceAtLeast(0)
+        remainingTime = (duration - newTime).coerceIn(0, duration)
+        elapsedTime = newTime.coerceIn(0, duration)
+        mediaPlayer.seekTo(newTime)
+        progress = newTime / 1000.0f
+    }
+
+    companion object {
+        const val SEEK_TIME_MS = 10000
     }
 }

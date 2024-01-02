@@ -8,20 +8,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class HeaderInterceptor @Inject constructor(
+class InvalidTokenInterceptor @Inject constructor(
     private val aiEventPublisher: ViraPublisher
 ) : Interceptor {
-    init {
-        System.loadLibrary("vira")
-    }
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val requestBuilder = request.newBuilder()
-
-        if (request.header("ApiKey") == null) {
-            requestBuilder.addHeader("ApiKey", ak())
-        }
 
         val response = chain.proceed(requestBuilder.build())
 
@@ -31,6 +23,4 @@ class HeaderInterceptor @Inject constructor(
         }
         return response
     }
-
-    private external fun ak(): String
 }

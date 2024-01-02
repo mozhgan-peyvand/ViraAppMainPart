@@ -33,3 +33,5 @@
 
 }
 # endregion disable tracing Compose compiler
+
+-dontwarn org.slf4j.impl.StaticLoggerBinder

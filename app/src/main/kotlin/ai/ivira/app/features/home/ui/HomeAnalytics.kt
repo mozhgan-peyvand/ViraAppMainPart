@@ -35,6 +35,8 @@ object HomeAnalytics {
     // region specialEvents
     val openAvanegar: SpecialEvent
         get() = SpecialEvent("open_avanegar")
+    val openAvasho: SpecialEvent
+        get() = SpecialEvent("avasho_open")
     val introduceToFriends: SpecialEvent
         get() = SpecialEvent(INTRODUCE_TO_FRIENDS)
     val checkUpdate: SpecialEvent

@@ -66,3 +66,8 @@ val BLue_a200_Opacity_40 = Color(0x6659ACFF)
 val Cyan_200 = Color(0xFF93C2ea)
 val Color_Info = Color(0xFFF17E2A)
 val Color_Info_Opacity_15 = Color(0xFF7E2A26).copy(alpha = 0.15f)
+
+val Color_Home_Avasho_Subtitle = Color(0XFFCACAFF)
+val Color_Surface_Tooltip = Deep_Purple_50
+val Color_Text_Tooltip = Color(0xFF1B1B1F)
+val Color_Transparent = Color(0x00FFFFFF)

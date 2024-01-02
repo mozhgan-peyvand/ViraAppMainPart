@@ -35,6 +35,34 @@ fun sharePdf(context: Context, file: File) {
     }
 }
 
+fun shareMp3(context: Context, file: File) {
+    val uri = FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.provider",
+        file
+    )
+
+    val intent = Intent(Intent.ACTION_SEND)
+    intent.type = "audio/mpeg"
+    intent.putExtra(Intent.EXTRA_STREAM, uri)
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    try {
+        context.startActivity(
+            Intent.createChooser(
+                intent,
+                context.getString(R.string.lbl_share_file)
+            )
+        )
+    } catch (e: Exception) {
+        Toast.makeText(
+            context,
+            context.getString(R.string.msg_convert_error),
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+}
+
 fun shareTXT(context: Context, file: File) {
     val uri = FileProvider.getUriForFile(
         context,

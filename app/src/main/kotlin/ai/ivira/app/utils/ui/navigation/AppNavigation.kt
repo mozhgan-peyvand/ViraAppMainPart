@@ -33,6 +33,7 @@ fun AppNavigation(navController: NavHostController) {
         navController = navController,
         startDestination = ScreenRoutes.SplashScreen.route
     ) {
+        avashoNavGraph(navController)
         composable(
             route = ScreenRoutes.SplashScreen.route,
             enterTransition = {
@@ -100,7 +101,7 @@ fun AppNavigation(navController: NavHostController) {
     }
 }
 
-private fun NavGraphBuilder.navigateWithSlideAnimation(
+fun NavGraphBuilder.navigateWithSlideAnimation(
     route: String,
     arguments: List<NamedNavArgument> = emptyList(),
     content: @Composable (NavBackStackEntry) -> Unit

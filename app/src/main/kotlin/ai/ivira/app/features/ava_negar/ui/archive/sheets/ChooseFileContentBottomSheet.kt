@@ -25,7 +25,9 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ChooseFileContentBottomSheet(
     onOpenFile: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    descriptionFileFormat: Int,
+    descriptionTimeNeed: Int? = null
 ) {
     val eventHandler = LocalEventHandler.current
 
@@ -52,15 +54,16 @@ fun ChooseFileContentBottomSheet(
             style = MaterialTheme.typography.body1
         )
         Text(
-            text = stringResource(id = R.string.lbl_allowed_format),
+            text = stringResource(id = descriptionFileFormat),
             style = MaterialTheme.typography.body1
-
         )
-        Text(
-            text = stringResource(id = R.string.lbl_limit_time),
-            style = MaterialTheme.typography.body1
+        descriptionTimeNeed?.let {
+            Text(
+                text = stringResource(id = descriptionTimeNeed),
+                style = MaterialTheme.typography.body1
+            )
+        }
 
-        )
         Button(
             contentPadding = PaddingValues(14.dp),
             modifier = Modifier
@@ -93,6 +96,10 @@ fun ChooseFileContentBottomSheet(
 @Composable
 private fun ChooseFileContentBottomSheetPreview() {
     ViraPreview {
-        ChooseFileContentBottomSheet(onOpenFile = {})
+        ChooseFileContentBottomSheet(
+            onOpenFile = {},
+            descriptionFileFormat = 0,
+            descriptionTimeNeed = 0
+        )
     }
 }

@@ -2,11 +2,9 @@ package ai.ivira.app.features.home.ui.home
 
 import ai.ivira.app.R
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.AvaSho
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNama
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Imazh
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNegar
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ViraSiar
-import ai.ivira.app.utils.ui.theme.Indigo_300
 import ai.ivira.app.utils.ui.theme.Indigo_300_2
 import ai.ivira.app.utils.ui.theme.Light_green_300
 import ai.ivira.app.utils.ui.theme.Teal_200
@@ -26,11 +24,11 @@ data class HomeItemScreen(
             get() {
                 return listOf(
                     HomeItemScreen(
-                        icon = R.drawable.img_ava_sho_2,
-                        title = R.string.lbl_ava_sho,
-                        textColor = Indigo_300,
-                        description = R.string.lbl_ava_sho_desc,
-                        homeItemType = AvaSho
+                        icon = R.drawable.img_imazh,
+                        title = R.string.lbl_imazh,
+                        textColor = Teal_200,
+                        description = R.string.lbl_imazh_desc,
+                        homeItemType = Imazh
                     ),
                     HomeItemScreen(
                         icon = R.drawable.img_nevise_negar_2,
@@ -45,13 +43,6 @@ data class HomeItemScreen(
                         textColor = Light_green_300,
                         description = R.string.lbl_virasiar_desc,
                         homeItemType = ViraSiar
-                    ),
-                    HomeItemScreen(
-                        icon = R.drawable.img_nevise_nama_2,
-                        title = R.string.lbl_nevise_nama,
-                        textColor = Teal_200,
-                        description = R.string.lbl_nevise_nama_desc,
-                        homeItemType = NeviseNama
                     )
                 )
             }

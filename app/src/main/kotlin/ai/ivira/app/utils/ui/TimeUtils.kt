@@ -44,3 +44,21 @@ fun computeTextBySecondAndMinute(second: Int, context: Context) =
     } else {
         context.getString(R.string.lbl_show_second)
     }
+
+fun millisecondsToTime(milliseconds: Long): String {
+    val minutes = (milliseconds / 1000 / 60).toString()
+    val seconds = (milliseconds / 1000 % 60).toString()
+
+    val secs: String = if (seconds.length >= 2) {
+        seconds.substring(0, 2)
+    } else {
+        "0$seconds"
+    }
+
+    val min: String = if (minutes.length >= 2) {
+        minutes.substring(0, 2)
+    } else {
+        "0$minutes"
+    }
+    return "$min:$secs"
+}

@@ -2,6 +2,7 @@ package ai.ivira.app.features.ava_negar.ui.onboarding
 
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
+import ai.ivira.app.utils.ui.BulletParagraph
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
@@ -73,12 +74,12 @@ private fun AvaNegarOnboardingScreen(
 ) {
     val eventHandler = LocalEventHandler.current
     val context = LocalContext.current
-    val pagerState = rememberPagerState(pageCount = { 3 })
     val pages = listOf(
         OnboardingItem.First(context),
         OnboardingItem.Second(context),
         OnboardingItem.Third(context)
     )
+    val pagerState = rememberPagerState(pageCount = { pages.size })
 
     LaunchedEffect(viewModel.shouldNavigate.value) {
         if (viewModel.shouldNavigate.value) {
@@ -144,7 +145,7 @@ private fun AvaNegarOnboardingScreen(
 
         HorizontalPagerIndicator(
             pagerState = pagerState,
-            pageCount = 3,
+            pageCount = pages.size,
             activeColor = Color_Primary_200,
             inactiveColor = Color_On_Surface_Variant,
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -169,16 +170,14 @@ private fun AvaNegarOnBoardingItemBody(
     onBoardingItem: OnboardingItem
 ) {
     Column(
-        modifier = modifier.padding(horizontal = 28.dp),
-        verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.padding(horizontal = 28.dp)
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.45f)
+            modifier = Modifier.fillMaxWidth()
         ) {
             ViraImage(
                 drawable = onBoardingItem.image,
@@ -191,11 +190,9 @@ private fun AvaNegarOnBoardingItemBody(
         Spacer(modifier = Modifier.size(24.dp))
 
         Column(
-            modifier = modifier
-                .weight(0.5f)
-                .fillMaxWidth(),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier.fillMaxWidth()
         ) {
             Text(
                 text = onBoardingItem.title,
@@ -207,13 +204,23 @@ private fun AvaNegarOnBoardingItemBody(
 
             Spacer(modifier = Modifier.size(16.dp))
 
-            AutoTextSize(
-                text = onBoardingItem.description,
-                style = MaterialTheme.typography.body1,
-                color = Color_Text_2,
-                modifier = Modifier.fillMaxWidth(),
-                textScale = 0.9f
-            )
+            if (onBoardingItem.description.size == 1) {
+                AutoTextSize(
+                    text = onBoardingItem.description.first(),
+                    style = MaterialTheme.typography.body1,
+                    color = Color_Text_2,
+                    textScale = 0.9f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                onBoardingItem.description.forEach { text ->
+                    BulletParagraph(
+                        text = text,
+                        color = Color_Text_2,
+                        textStyle = MaterialTheme.typography.body1
+                    )
+                }
+            }
         }
     }
 }

@@ -161,6 +161,7 @@ const val TRACKING_FILE_ANIMATION_DURATION_Grid = 1500
 
 @Composable
 fun AvaNegarArchiveListScreenRoute(navController: NavHostController) {
+    val activity = LocalContext.current as ComponentActivity
     val eventHandler = LocalEventHandler.current
     LaunchedEffect(Unit) {
         eventHandler.screenViewEvent(AvanegarAnalytics.screenViewArchiveList)
@@ -168,7 +169,7 @@ fun AvaNegarArchiveListScreenRoute(navController: NavHostController) {
 
     AvaNegarArchiveListScreen(
         navHostController = navController,
-        archiveListViewModel = hiltViewModel()
+        archiveListViewModel = hiltViewModel(viewModelStoreOwner = activity)
     )
 }
 
@@ -463,45 +464,51 @@ private fun AvaNegarArchiveListScreen(
             sheetContent = {
                 when (selectedSheet) {
                     ArchiveBottomSheetType.ChooseFile -> {
-                        ChooseFileContentBottomSheet(onOpenFile = {
-                            coroutineScope.launch {
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                } else {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
-
-                            // PermissionCheck Duplicate 1
-                            val permission = if (isSdkVersion33orHigher()) {
-                                Manifest.permission.READ_MEDIA_AUDIO
-                            } else {
-                                Manifest.permission.READ_EXTERNAL_STORAGE
-                            }
-
-                            if (context.hasPermission(permission)) {
-                                launchOpenFile.launch(openAudioSelector())
-                            } else if (archiveListViewModel.hasDeniedPermissionPermanently(
-                                    permission
-                                )
-                            ) {
-                                // needs improvement, just need to save if permission is alreadyRequested
-                                // and everytime check shouldShow
-
-                                setSelectedSheet(ArchiveBottomSheetType.FileAccessPermissionDenied)
+                        ChooseFileContentBottomSheet(
+                            descriptionFileFormat = R.string.lbl_allowed_format,
+                            descriptionTimeNeed = R.string.lbl_limit_time,
+                            onOpenFile = {
                                 coroutineScope.launch {
-                                    modalBottomSheetState.hide()
                                     if (!modalBottomSheetState.isVisible) {
                                         modalBottomSheetState.show()
                                     } else {
                                         modalBottomSheetState.hide()
                                     }
                                 }
-                            } else {
-                                // Asking for permission
-                                chooseAudioPermLauncher.launch(permission)
+
+                                // PermissionCheck Duplicate 1
+                                val permission = if (isSdkVersion33orHigher()) {
+                                    Manifest.permission.READ_MEDIA_AUDIO
+                                } else {
+                                    Manifest.permission.READ_EXTERNAL_STORAGE
+                                }
+
+                                if (context.hasPermission(permission)) {
+                                    launchOpenFile.launch(openAudioSelector())
+                                } else if (archiveListViewModel.hasDeniedPermissionPermanently(
+                                        permission
+                                    )
+                                ) {
+                                    // needs improvement, just need to save if permission is alreadyRequested
+                                    // and everytime check shouldShow
+
+                                    setSelectedSheet(
+                                        ArchiveBottomSheetType.FileAccessPermissionDenied
+                                    )
+                                    coroutineScope.launch {
+                                        modalBottomSheetState.hide()
+                                        if (!modalBottomSheetState.isVisible) {
+                                            modalBottomSheetState.show()
+                                        } else {
+                                            modalBottomSheetState.hide()
+                                        }
+                                    }
+                                } else {
+                                    // Asking for permission
+                                    chooseAudioPermLauncher.launch(permission)
+                                }
                             }
-                        })
+                        )
                     }
 
                     ArchiveBottomSheetType.RenameUploading -> {

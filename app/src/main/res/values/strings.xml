@@ -6,9 +6,9 @@
     <string name="lbl_ava_sho_desc">تبدیل متن به گفتار</string>
     <string name="lbl_virasiar">ویراسیار</string>
     <string name="lbl_virasiar_desc">ویراستار هوشمند متن</string>
-    <string name="lbl_nevise_nama">نویسه‌نما</string>
+    <string name="lbl_imazh">ایماژ</string>
     <string name="lbl_nevise_negar">نویسه‌نگار</string>
-    <string name="lbl_nevise_nama_desc">تولید تصویر از متن</string>
+    <string name="lbl_imazh_desc">تولید تصویر از متن</string>
     <string name="lbl_nevise_negar_desc">استخراج متن از تصویر</string>
     <string name="lbl_change_voice_to_text">تبدیل صوت به متن</string>
     <string name="coming_soon">به زودی</string>
@@ -44,6 +44,7 @@
     <string name="lbl_allowed_format">فرمت های مجاز : mp3</string>
     <string name="lbl_limit_time">حداکثر زمان فایل: 60 دقیقه</string>
     <string name="lbl_button_upload_new_file">بارگذاری فایل جدید</string>
+    <string name="lbl_lbl_allow_text_format">فرمت های مجاز:TXT</string>
 
     <string name="lbl_change_name">تغییر نام</string>
     <string name="lbl_choose_name">اگر چنانچه تمایل دارید میتوانید نام دلخواه برای فایل خود انتخاب کنید</string>
@@ -142,15 +143,31 @@
     <string name="lbl_avanegar_onboarding_third_description_fourth">تبدیل همزمان گفتار به متن</string>
     <string name="lbl_avanegar_onboarding_third_description_fifth">تنظیم نحوه ی نمایش اعداد</string>
 
+    <!-- AvaSho  -->
+    <string name="lbl_avasho_onboarding_first_title">آواشو</string>
+    <string name="lbl_avasho_onboarding_first_description">تنها سرویس تبدیل گفتار به متن فارسی مبتنی بر فناوری هوش مصنوعی با قابلیت تشخیص تمامی لهجه های بومی ایرانی</string>
+    <string name="lbl_avasho_onboarding_second_title">ویژگی های سرویس آواشو</string>
+    <string name="lbl_avasho_onboarding_second_description_first">تبدیل متن به گفتار از طریق تایپ متن  بارگذاری و فایل متنی</string>
+    <string name="lbl_avasho_onboarding_second_description_second">قابلیت انتخاب نوع گوینده (گوینده مرد و  زن)</string>
+    <string name="lbl_avasho_onboarding_second_description_third">دایره واژگان بیش از 300 هزار کلمه</string>
+    <string name="lbl_avasho_onboarding_second_description_fourth">تبدیل متن به گفتار با لحن طبیعی انسان</string>
+    <string name="lbl_avasho_onboarding_second_description_fifth">خوانش و پردازش بلادرنگ</string>
+
     <!-- Main -->
     <string name="lbl_avanegar_service">سرویس تبدیل گفتار به متن، ‌آوانگار</string>
     <string name="lbl_avanegar_service_details">تنها سرویس تبدیل گفتار به متن فارسی با قابلیت تشخیص تمامی لهجه های بومی ایرانی</string>
+    <string name="lbl_convert_text_to_speech_service">سرویس تبدیل متن به گفتار، ‌آواشو</string>
+    <string name="lbl_convert_text_to_speech_service_details">تنها سرویس تبدیل متن به گفتار فارسی مبتنی بر فناوری هوش مصنوعی با قابلیت خوانش بلادرنگ متون با لحن طبیعی انسان</string>
     <string name="lbl_soon_in_vira">به‌زودی در ویرا</string>
-    <string name="lbl_soon_in_vira_description_first">آواشو : &#160; تبدیل متن به گفتار با لحن طبیعی انسان</string>
+    <string name="lbl_soon_in_vira_description_first">ایماژ: &#160; ایجاد تصویر از توضیح متنی</string>
     <string name="lbl_soon_in_vira_description_second">نویسه نگار : &#160; استخراج متن از تصویر و فایل</string>
     <string name="lbl_soon_in_vira_description_third">ویراسیار : &#160; ویرایشگر هوشمند متون فارسی</string>
-    <string name="lbl_soon_in_vira_description_fourth">نویسه نما: &#160; ایجاد تصویر از توضیح متنی</string>
     <!-- endregion -->
+
+    <!-- region tooltop -->
+    <string name="tt_can_type_text_here">اینجا می‌توانید متن خود را\n برای تبدیل به صوت تایپ کنید و برای \n دریافت خروجی بهتر، علائم نگارشی را رعایت \n نموده و از ادبیات محاوره ای استفاده نکنید.</string>
+    <string name="tt_can_select_file_from_here">از این قسمت نیز می‌توانید\n فایل متنی خود را وارد کنید.</string>
+    <!--endregion-->
 
     <string name="lbl_assistant">دستیار هوشمند</string>
     <string name="lbl_vira">ویــــــــرا</string>
@@ -177,6 +194,7 @@
     <string name="lbl_version">v &#160;</string>
     <string name="lbl_email">info@ivira.ai</string>
     <string name="lbl_default_recorded_title">متن %d</string>
+    <string name="lbl_default_voice_title">صوت %d</string>
     <string name="lbl_microphone">میکروفون</string>
     <string name="lbl_microphone_is_being_used">میکروفون دستگاه توسط اپلیکیشن Record در حال استفاده است. برای ادامه باید این برنامه را ببندید.</string>
     <string name="lbl_understood">متوجه شدم</string>
@@ -186,16 +204,25 @@
     <string name="nevise_negar_item_bottomsheet_explain">سرویس نویسه نگار با قابلیت استخراج متن از تصویر و فایل pdf، در نسخه های بعد فعال خواهد شد.</string>
     <string name="avasho_item_bottomsheet_explain">سرویس آواشو با قابلیت تبدیل متن به گفتار با لحن طبیعی انسان، در نسخه های بعد فعال خواهد شد.</string>
     <string name="vira_sayar_item_bottomsheet_explain">سرویس ویراسیار با قابلیت ویرایش هوشمند متون فارسی، در نسخه های بعد فعال خواهد شد.</string>
-    <string name="nevise_nama_item_bottomsheet_explain">سرویس نویسه نما با قابلیت تولید تصویر از توضیح متنی، در نسخه های بعد فعال خواهد شد.</string>
+    <string name="imazh_item_bottomsheet_explain">سرویس ایماژ با قابلیت تولید تصویر از توضیح متنی، در نسخه های بعد فعال خواهد شد.</string>
     <string name="lbl_introduce_text">ابزارهای جذاب هوش مصنوعی همچون سرویس تبدیل گفتار به متن در اپلیکیشن ویرا</string>
     <string name="lbl_download">دانلود:</string>
     <string name="lbl_show_minute">دقیقه</string>
     <string name="lbl_show_second">ثانیه</string>
+    <string name="lbl_move_ten_sec_back">10 ثانیه به عقب</string>
+    <string name="lbl_move_ten_sec_forward">10 ثانیه به جلو</string>
     <string name="lbl_wait_for_end_process">در انتظار اتمام پردازش</string>
+    <string name="lbl_avasho">آواشو</string>
+    <string name="lbl_dose_not_exist_any_file">فایلی در آرشیو خود ندارید</string>
     <string name="lbl_pause_recording">توقف ضبط</string>
     <string name="lbl_notification">اعلانات</string>
     <string name="lbl_enable_notification_for_recording_when_screen_is_locked">برای جلوگیری از قطع ضبط صدا هنگام قفل شدن گوشی یا هنگام خروج از صفحات برنامه، لازم است اعلانات اپلیکیشن را فعال کنید.</string>
     <string name="lbl_enable_notification_for_recording">برای بهترین تجربه استفاده از ویرا پیشنهاد می‌کنیم اعلانات مربوط به این اپلیکیشن را فعال کنید.</string>
+    <string name="lbl_determind_file_name">تعیین نام فایل</string>
+    <string name="lbl_speaker_type">انتخاب گوینده صوت</string>
+    <string name="lbl_transform">تبدیل</string>
+    <string name="lbl_man_speaker">گوینده مرد</string>
+    <string name="lbl_woman_speaker">گوینده زن</string>
 
     <string name="lbl_vira_is_updated">نسخه  ویرا شما به روز است</string>
     <string name="lbl_have_latest_version_wait_for_update">آخرین نسخه ی ویرا بر روی گوشی شما نصب است \nمنتظر آپدیت های جدید نرم افزار ما باشید</string>
@@ -207,4 +234,20 @@
     <string name="lbl_bullet">•</string>
     <string name="msg_updating_failed_please_try_again_later">متاسفانه درخواست به روزرسانی شما با خطا مواجه شد، لطفا مدتی منتظر بمانید و سپس دوباره امتحان کنید.</string>
     <string name="msg_vpn_is_connected_error">جهت ادامه کار فیلترشکن خود را خاموش کنید</string>
+
+    <string name="lbl_file_creation">ایجاد فایل</string>
+    <string name="lbl_convert_to_sound">تبدیل به صوت</string>
+    <string name="lbl_type_text_or_import_file">متن خود را تایپ یا فایل متنی را وارد کنید…</string>
+    <string name="lbl_character">کاراکتر:</string>
+    <string name="lbl_converting_to_audio">درحال تبدیل به صوت…</string>
+    <string name="lbl_avasho_bottomSheet_expand_tenSecond_after">ده ثانیه جلو</string>
+    <string name="lbl_avasho_bottomSheet_expand_tenSecond_before">ده ثانیه عقب</string>
+
+    <string name="lbl_ready_for_download">فایل آماده دانلود</string>
+    <string name="lbl_downloading_file">درحال دانلود فایل</string>
+    <string name="lbl_mb">MB</string>
+    <string name="lbl_save_audio_file">ذخیره فایل صوتی</string>
+    <string name="lbl_download_audio_file">دانلود فایل صوتی</string>
+    <string name="msg_not_enough_space">فضای کافی وجود ندارد</string>
+    <string name="msg_file_saved_successfully">فایل در downloads ذخیره شد</string>
 </resources>

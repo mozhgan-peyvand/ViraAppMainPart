@@ -8,51 +8,27 @@ sealed class MainOnboardingItem(
     @DrawableRes
     val image: Int,
     val title: Int,
-    val description: String
+    val description: List<String>
 ) {
     data class First(private val context: Context) : MainOnboardingItem(
         image = R.drawable.img_mic_text,
         title = R.string.lbl_avanegar_service,
-        description = context.getString(R.string.lbl_avanegar_service_details)
+        description = listOf(context.getString(R.string.lbl_avanegar_service_details))
     )
 
     data class Second(private val context: Context) : MainOnboardingItem(
+        image = R.drawable.img_mic_text_grammer_1,
+        title = R.string.lbl_convert_text_to_speech_service,
+        description = listOf(context.getString(R.string.lbl_convert_text_to_speech_service_details))
+    )
+
+    data class Third(private val context: Context) : MainOnboardingItem(
         image = R.drawable.img_ai_tools,
         title = R.string.lbl_soon_in_vira,
-        description = buildString {
-            append(
-                context.getString(
-                    R.string.lbl_soon_in_vira_description_first
-                ).addBullet()
-            )
-
-            append("\n")
-
-            append(
-                context.getString(
-                    R.string.lbl_soon_in_vira_description_second
-                ).addBullet()
-            )
-
-            append("\n")
-
-            append(
-                context.getString(
-                    R.string.lbl_soon_in_vira_description_third
-                ).addBullet()
-            )
-
-            append("\n")
-
-            append(
-                context.getString(
-                    R.string.lbl_soon_in_vira_description_fourth
-                ).addBullet()
-            )
+        description = buildList {
+            add(context.getString(R.string.lbl_soon_in_vira_description_first))
+            add(context.getString(R.string.lbl_soon_in_vira_description_second))
+            add(context.getString(R.string.lbl_soon_in_vira_description_third))
         }
     )
-}
-
-fun String.addBullet(): String {
-    return "•   $this"
 }
