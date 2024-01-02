@@ -245,4 +245,19 @@
     <string name="lbl_download_audio_file">دانلود فایل صوتی</string>
     <string name="msg_not_enough_space">فضای کافی وجود ندارد</string>
     <string name="msg_file_saved_successfully">فایل در downloads ذخیره شد</string>
+
+    <string name="lbl_image_prompt">توصیف تصویر</string>
+    <string name="lbl_keyword">کلیدواژه</string>
+    <string name="lbl_add">افزودن</string>
+    <string name="lbl_image_style">سبک تصویر</string>
+    <string name="lbl_select">انتخاب</string>
+    <string name="lbl_negative_prompt">کلمات منفی</string>
+    <string name="lbl_generate_image">تولید تصویر</string>
+    <string name="msg_describe_your_image">تصویر مدنظر خود را توصیف کنید…</string>
+    <string name="lbl_details">جزئیات</string>
+    <string name="lbl_info">توضیحات</string>
+    <string name="lbl_change">تغییر</string>
+    <string name="lbl_history">تاریخچه</string>
+    <string name="lbl_random">تصادفی</string>
+
 </resources>

@@ -154,7 +154,7 @@ private fun HomeScreen(
 
     val showUpdateBottomSheet by homeViewModel.showUpdateBottomSheet.collectAsStateWithLifecycle()
 
-    var sheetSelected by rememberSaveable { mutableStateOf(Imazh) }
+    var sheetSelected by rememberSaveable { mutableStateOf(NeviseNegar) }
 
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -251,6 +251,15 @@ private fun HomeScreen(
             }
 
             homeViewModel.shouldNavigateToAvasho.value = false
+        }
+    }
+
+    LaunchedEffect(
+        homeViewModel.shouldNavigateToImazh.value
+    ) {
+        if (homeViewModel.shouldNavigateToImazh.value) {
+            navController.navigate(ImazhNewImageDescriptorScreen.route)
+            homeViewModel.shouldNavigateToImazh.value = false
         }
     }
 
@@ -401,20 +410,7 @@ private fun HomeScreen(
             scrimColor = Color.Black.copy(alpha = 0.5f),
             sheetContent = sheetContent@{
                 when (sheetSelected) {
-                    Imazh -> {
-                        HomeItemBottomSheet(
-                            iconRes = R.drawable.img_imazh_1,
-                            title = stringResource(id = R.string.lbl_imazh),
-                            textBody = stringResource(
-                                id = R.string.imazh_item_bottomsheet_explain
-                            ),
-                            action = {
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
-                        )
-                    }
+                    Imazh -> Unit // TODO: Must be removed
 
                     NeviseNegar -> {
                         HomeItemBottomSheet(
@@ -620,14 +616,7 @@ private fun HomeScreen(
                         }
 
                         Imazh -> {
-                            eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
-                            coroutineScope.launch {
-                                sheetSelected = Imazh
-                                modalBottomSheetState.hide()
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                }
-                            }
+                            homeViewModel.navigateToImazh()
                         }
 
                         NotificationPermission -> {}

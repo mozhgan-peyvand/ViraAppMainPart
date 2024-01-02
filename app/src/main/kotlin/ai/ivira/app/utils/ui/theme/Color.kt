@@ -65,6 +65,7 @@ val Blue_gray_900 = Color(0xFF1A1C21)
 val BLue_a200_Opacity_40 = Color(0x6659ACFF)
 val Cyan_200 = Color(0xFF93C2ea)
 val Color_Info = Color(0xFFF17E2A)
+val Color_Info_700 = Color(0xFFAB591E)
 val Color_Info_Opacity_15 = Color(0xFF7E2A26).copy(alpha = 0.15f)
 
 val Color_Home_Avasho_Subtitle = Color(0XFFCACAFF)
@@ -72,3 +73,4 @@ val Color_Surface_Tooltip = Deep_Purple_50
 val Color_Text_Tooltip = Color(0xFF1B1B1F)
 val Color_Transparent = Color(0x00FFFFFF)
 val Color_About_Us_Background_Gradiant_20 = Color(0x3341A8FF)
+val Color_Border = White_.copy(alpha = 0.17f)

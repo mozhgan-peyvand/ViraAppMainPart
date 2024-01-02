@@ -100,6 +100,7 @@ class HomeViewModel @Inject constructor(
 
     var shouldNavigate = mutableStateOf(false)
     var shouldNavigateToAvasho = mutableStateOf(false)
+    var shouldNavigateToImazh = mutableStateOf(false)
     var shouldShowNotificationBottomSheet = false
         private set
 
@@ -188,6 +189,10 @@ class HomeViewModel @Inject constructor(
 
     fun navigateToAvasho() {
         shouldNavigateToAvasho.value = true
+    }
+
+    fun navigateToImazh() {
+        shouldNavigateToImazh.value = true
     }
 
     fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) {
