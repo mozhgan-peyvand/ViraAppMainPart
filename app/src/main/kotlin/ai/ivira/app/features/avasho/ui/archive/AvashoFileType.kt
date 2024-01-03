@@ -4,5 +4,6 @@ enum class AvashoFileType {
     Details,
     Process,
     Rename,
+    DeleteConfirmation,
     Delete
 }
