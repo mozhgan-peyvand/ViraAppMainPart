@@ -23,7 +23,6 @@ import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Failu
 import ai.ivira.app.features.avasho.ui.detail.AvashoDetailBottomSheet
 import ai.ivira.app.features.avasho.ui.file_creation.SpeechResult
 import ai.ivira.app.utils.data.NetworkStatus.Available
-import ai.ivira.app.utils.data.NetworkStatus.Unavailable
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
@@ -542,14 +541,11 @@ private fun AvashoArchiveListScreen(
                         ArchiveEmptyBody()
                     } else {
                         Column(modifier = Modifier.fillMaxSize()) {
-                            val noNetworkAvailable by remember(networkStatus) {
-                                mutableStateOf(networkStatus is Unavailable)
+                            val isNetworkAvailable by remember(networkStatus) {
+                                mutableStateOf(networkStatus is Available)
                             }
                             val hasVpnConnection by remember(networkStatus) {
                                 mutableStateOf(networkStatus.let { it is Available && it.hasVpn })
-                            }
-                            val isNetworkAvailableWithoutVpn by remember(networkStatus) {
-                                mutableStateOf(networkStatus.let { it is Available && !it.hasVpn })
                             }
                             val isBannerError by remember(uiViewState) {
                                 mutableStateOf(uiViewState.let { it is UiError && !it.isSnack })
@@ -559,7 +555,7 @@ private fun AvashoArchiveListScreen(
                             }
 
                             ViraBannerWithAnimation(
-                                isVisible = (noNetworkAvailable || hasVpnConnection || isBannerError || isFailureDownload) &&
+                                isVisible = (!isNetworkAvailable || hasVpnConnection || isBannerError || isFailureDownload) &&
                                     isThereTrackingOrUploading,
                                 bannerInfo = if (uiViewState is UiError) {
                                     ViraBannerInfo.Error(
@@ -591,7 +587,7 @@ private fun AvashoArchiveListScreen(
                                             archiveViewProcessed = it,
                                             isDownloadFailure = downloadFailureList.contains(it.id),
                                             isInDownloadQueue = viewModel.isInDownloadQueue(it.id),
-                                            isNetworkAvailable = isNetworkAvailableWithoutVpn,
+                                            isNetworkAvailable = isNetworkAvailable,
                                             isPlaying = viewModel.isItemPlaying(it.id),
                                             onItemClick = callback@{ item ->
                                                 if (selectedFileId != -1) {
@@ -653,7 +649,7 @@ private fun AvashoArchiveListScreen(
                                         is AvashoUploadingFileView -> {
                                             AvashoArchiveUploadingFileElement(
                                                 avashoUploadingFileView = it,
-                                                isNetworkAvailable = !noNetworkAvailable && !hasVpnConnection,
+                                                isNetworkAvailable = isNetworkAvailable,
                                                 isErrorState = uiViewState.let { uiStatus ->
                                                     (uiStatus is UiError) && !uiStatus.isSnack
                                                 },
