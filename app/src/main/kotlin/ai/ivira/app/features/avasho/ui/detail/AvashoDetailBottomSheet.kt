@@ -495,7 +495,7 @@ fun BottomBar(
                         text = stringResource(id = R.string.lbl_save),
                         style = MaterialTheme.typography.button,
                         color = Color_Primary_300,
-                        textScale = 0.7f
+                        textScale = 0.9f
                     )
                 }
             }
@@ -535,7 +535,7 @@ fun BottomBar(
                         text = stringResource(id = R.string.lbl_btn_share_text),
                         style = MaterialTheme.typography.button,
                         color = Color_Primary_300,
-                        textScale = 0.7f
+                        textScale = 0.9f
                     )
                 }
             }
