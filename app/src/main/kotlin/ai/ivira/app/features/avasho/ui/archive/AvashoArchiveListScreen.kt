@@ -3,13 +3,15 @@ package ai.ivira.app.features.avasho.ui.archive
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
+import ai.ivira.app.features.ava_negar.ui.archive.DeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
 import ai.ivira.app.features.avasho.ui.AvashoAnalytics
-import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Delete
+import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.DeleteConfirmation
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Details
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Process
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Rename
+import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Delete
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Converting
 import ai.ivira.app.features.avasho.ui.archive.element.AvashoArchiveProcessedFileElement
 import ai.ivira.app.features.avasho.ui.archive.element.AvashoArchiveTrackingFileElement
@@ -422,7 +424,7 @@ private fun AvashoArchiveListScreen(
                                     }
                                 },
                                 deleteItemAction = {
-                                    setBottomSheetType(Delete)
+                                    setBottomSheetType(DeleteConfirmation)
                                     coroutineScope.launch {
                                         bottomSheetState.show()
                                     }
@@ -462,7 +464,7 @@ private fun AvashoArchiveListScreen(
                             )
                         }
                     }
-                    Delete -> {
+                    DeleteConfirmation -> {
                         FileItemConfirmationDeleteBottomSheet(
                             deleteAction = {
                                 when (avashoItem) {
@@ -493,6 +495,20 @@ private fun AvashoArchiveListScreen(
                                 }
                             },
                             fileName = avashoItem.title
+                        )
+                    }
+                    Delete -> {
+                        DeleteBottomSheet(
+                            fileName = avashoItem.title,
+                            onDelete = {
+                                setBottomSheetType(DeleteConfirmation)
+                                coroutineScope.launch {
+                                    bottomSheetState.hide()
+                                    if (!bottomSheetState.isVisible) {
+                                        bottomSheetState.show()
+                                    }
+                                }
+                            }
                         )
                     }
                 }
