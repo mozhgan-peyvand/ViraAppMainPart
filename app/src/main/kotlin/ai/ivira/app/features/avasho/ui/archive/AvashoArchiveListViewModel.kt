@@ -64,8 +64,6 @@ import javax.inject.Inject
 
 // fixme these two are duplicated, in ArchiveListViewModel
 private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
-private const val MAX_RETRY_COUNT = 3
-
 private const val TEXT_LENGTH_LIMIT = 1000
 
 @HiltViewModel
@@ -117,8 +115,6 @@ class AvashoArchiveListViewModel @Inject constructor(
 
     private var job: Job? = null
     private var downloadJob: Job? = null
-
-    private var failureCount = 0
 
     var processArchiveFileList = mutableStateOf<List<AvashoProcessedFileView>>(emptyList())
         private set
@@ -452,7 +448,6 @@ class AvashoArchiveListViewModel @Inject constructor(
         job = null
         when (result) {
             is Success -> {
-                failureCount = 0
                 _uiViewState.emit(UiSuccess)
                 delay(CHANGE_STATE_TO_IDLE_DELAY_TIME)
                 _uploadStatus.value = Idle
@@ -462,15 +457,9 @@ class AvashoArchiveListViewModel @Inject constructor(
                 }
             }
 
-            // onError we attempt to upload file 3 times, then emit failure and stop uploading
             is Error -> {
-                failureCount++
-                if (failureCount < MAX_RETRY_COUNT) {
-                    _uploadStatus.value = Idle
-                } else {
-                    _uploadStatus.value = FailureUpload
-                    _uiViewState.emit(UiError(uiException.getErrorMessage(result.error)))
-                }
+                _uploadStatus.value = FailureUpload
+                _uiViewState.emit(UiError(uiException.getErrorMessage(result.error)))
             }
         }
     }
