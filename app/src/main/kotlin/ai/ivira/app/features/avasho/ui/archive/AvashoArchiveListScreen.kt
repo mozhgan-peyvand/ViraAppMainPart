@@ -388,6 +388,7 @@ private fun AvashoArchiveListScreen(
                             ProcessedWithDownloadBottomSheet(
                                 title = avashoItem.title,
                                 saveAudioFile = {
+                                    eventHandler.specialEvent(AvashoAnalytics.downloadItem)
                                     viewModel.saveToDownloadFolder(
                                         filePath = avashoItem.filePath,
                                         fileName = avashoItem.title
@@ -407,6 +408,7 @@ private fun AvashoArchiveListScreen(
                                     }
                                 },
                                 shareItemAction = {
+                                    eventHandler.specialEvent(AvashoAnalytics.shareItem)
                                     coroutineScope.launch {
                                         bottomSheetState.hide()
                                     }
