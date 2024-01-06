@@ -24,21 +24,21 @@ data class HomeItemScreen(
             get() {
                 return listOf(
                     HomeItemScreen(
-                        icon = R.drawable.img_imazh,
+                        icon = R.drawable.img_imazh_disabled,
                         title = R.string.lbl_imazh,
                         textColor = Teal_200,
                         description = R.string.lbl_imazh_desc,
                         homeItemType = Imazh
                     ),
                     HomeItemScreen(
-                        icon = R.drawable.img_nevise_negar_2,
+                        icon = R.drawable.img_nevise_negar_disabled,
                         textColor = Indigo_300_2,
                         title = R.string.lbl_nevise_negar,
                         description = R.string.lbl_nevise_negar_desc,
                         homeItemType = NeviseNegar
                     ),
                     HomeItemScreen(
-                        icon = R.drawable.img_vira_siar_2,
+                        icon = R.drawable.img_virasiar_disabled,
                         title = R.string.lbl_virasiar,
                         textColor = Light_green_300,
                         description = R.string.lbl_virasiar_desc,
