@@ -2,8 +2,10 @@ package ai.ivira.app.features.avasho.ui.detail
 
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
+import ai.ivira.app.features.avasho.ui.AvashoAnalytics
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
 import ai.ivira.app.utils.ui.UiError
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
@@ -92,6 +94,7 @@ fun AvashoDetailBottomSheet(
     val coroutineScope = rememberCoroutineScope()
     val playerState by avashoDetailsViewModel::playerState
     val verticalScroll = if (isBottomSheetExpanded) Modifier.verticalScroll(rememberScrollState()) else Modifier
+    val eventHandler = LocalEventHandler.current
 
     LaunchedEffect(playerState.isPlaying) {
         changePlayingItemAction(playerState.isPlaying)
@@ -150,12 +153,14 @@ fun AvashoDetailBottomSheet(
                     }
                 },
                 onShareClick = {
+                    eventHandler.specialEvent(AvashoAnalytics.shareItem)
                     shareMp3(
                         context = context,
                         file = File(avashoProcessedItem.filePath)
                     )
                 },
                 onSaveClicked = {
+                    eventHandler.specialEvent(AvashoAnalytics.downloadItem)
                     avashoDetailsViewModel.saveToDownloadFolder(
                         filePath = avashoProcessedItem.filePath,
                         fileName = avashoProcessedItem.title

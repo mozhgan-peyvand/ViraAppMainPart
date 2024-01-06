@@ -20,5 +20,9 @@ object AvashoAnalytics {
         get() = SpecialEvent("${PREFIX}_cancel_track")
     val playItem: SpecialEvent
         get() = SpecialEvent("${PREFIX}_play_icon")
+    val downloadItem: SpecialEvent
+        get() = SpecialEvent("${PREFIX}_download_item")
+    val shareItem: SpecialEvent
+        get() = SpecialEvent("${PREFIX}_share_item")
     // endregion specialEvents
 }
