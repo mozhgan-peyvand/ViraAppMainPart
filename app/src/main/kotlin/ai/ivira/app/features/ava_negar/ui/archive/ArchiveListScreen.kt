@@ -810,7 +810,7 @@ private fun AvaNegarArchiveListScreen(
                             .fillMaxWidth(),
                         archiveViewList = archiveFiles,
                         failureList = failureList,
-                        isNetworkAvailable = !noNetworkAvailable && !hasVpnConnection,
+                        isNetworkAvailable = !noNetworkAvailable,
                         isUploading = uploadingFileState == UploadingFileStatus.Uploading,
                         isGrid = isGrid,
                         uploadingId = uploadingId,

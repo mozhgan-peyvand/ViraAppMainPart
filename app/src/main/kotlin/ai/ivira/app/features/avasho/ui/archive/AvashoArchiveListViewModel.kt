@@ -146,8 +146,6 @@ class AvashoArchiveListViewModel @Inject constructor(
             is Unavailable -> resetEverything()
 
             is Available -> {
-                if (networkStatus.hasVpn) resetEverything()
-
                 if (
                     uploadState != Uploading &&
                     uploadState != FailureUpload &&
