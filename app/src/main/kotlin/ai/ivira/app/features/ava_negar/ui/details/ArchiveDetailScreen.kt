@@ -27,7 +27,8 @@ import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
 import ai.ivira.app.utils.ui.theme.Color_Surface_Container_High
 import ai.ivira.app.utils.ui.theme.Color_White
-import ai.ivira.app.utils.ui.widgets.AutoTextSize
+import ai.ivira.app.utils.ui.widgets.TextAutoSize
+import ai.ivira.app.utils.ui.widgets.TextAutoSizeRange
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.view.ViewTreeObserver
@@ -91,6 +92,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -604,12 +606,15 @@ private fun AvaNegarProcessedArchiveDetailBottomBar(
                     contentDescription = stringResource(id = R.string.desc_copy),
                     modifier = modifier.padding(end = 10.dp)
                 )
-                AutoTextSize(
+                TextAutoSize(
                     text = stringResource(id = R.string.lbl_btn_copy_text),
                     style = MaterialTheme.typography.button,
                     color = Color_Primary_300,
                     maxLine = 1,
-                    textScale = 0.8f
+                    textScale = TextAutoSizeRange(
+                        min = 10.sp,
+                        max = MaterialTheme.typography.button.fontSize
+                    )
                 )
             }
         }
@@ -645,12 +650,15 @@ private fun AvaNegarProcessedArchiveDetailBottomBar(
                     contentDescription = stringResource(id = R.string.desc_share),
                     modifier = modifier.padding(end = 10.dp)
                 )
-                AutoTextSize(
+                TextAutoSize(
                     text = stringResource(id = R.string.lbl_btn_share_text),
                     style = MaterialTheme.typography.button,
                     color = Color_Primary_300,
                     maxLine = 1,
-                    textScale = 0.8f
+                    textScale = TextAutoSizeRange(
+                        min = 10.sp,
+                        max = MaterialTheme.typography.button.fontSize
+                    )
                 )
             }
         }

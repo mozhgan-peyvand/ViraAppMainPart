@@ -1,6 +1,7 @@
 package ai.ivira.app.utils.ui
 
-import ai.ivira.app.utils.ui.widgets.AutoTextSize
+import ai.ivira.app.utils.ui.widgets.TextAutoSize
+import ai.ivira.app.utils.ui.widgets.TextAutoSizeRange
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -38,10 +39,13 @@ fun BulletParagraph(
 
         Spacer(modifier = Modifier.size(8.dp))
 
-        AutoTextSize(
+        TextAutoSize(
             text = text,
             color = color,
-            textScale = 0.9f,
+            textScale = TextAutoSizeRange(
+                min = 10.sp,
+                max = textStyle.fontSize
+            ),
             style = textStyle,
             modifier = Modifier
                 .weight(1f)

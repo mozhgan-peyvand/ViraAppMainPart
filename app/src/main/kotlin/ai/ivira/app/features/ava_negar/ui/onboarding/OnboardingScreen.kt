@@ -15,7 +15,8 @@ import ai.ivira.app.utils.ui.theme.Color_On_Surface_Variant
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
-import ai.ivira.app.utils.ui.widgets.AutoTextSize
+import ai.ivira.app.utils.ui.widgets.TextAutoSize
+import ai.ivira.app.utils.ui.widgets.TextAutoSizeRange
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
@@ -49,6 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -205,11 +207,14 @@ private fun AvaNegarOnBoardingItemBody(
             Spacer(modifier = Modifier.size(16.dp))
 
             if (onBoardingItem.description.size == 1) {
-                AutoTextSize(
+                TextAutoSize(
                     text = onBoardingItem.description.first(),
                     style = MaterialTheme.typography.body1,
                     color = Color_Text_2,
-                    textScale = 0.9f,
+                    textScale = TextAutoSizeRange(
+                        min = 10.sp,
+                        max = MaterialTheme.typography.body1.fontSize
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
             } else {

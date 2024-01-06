@@ -22,7 +22,8 @@ import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Color_White
-import ai.ivira.app.utils.ui.widgets.AutoTextSize
+import ai.ivira.app.utils.ui.widgets.TextAutoSize
+import ai.ivira.app.utils.ui.widgets.TextAutoSizeRange
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.foundation.background
@@ -75,6 +76,7 @@ import androidx.compose.ui.text.lerp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import java.io.File
@@ -496,11 +498,14 @@ fun BottomBar(
                         contentDescription = stringResource(id = R.string.lbl_save),
                         modifier = modifier.padding(end = 10.dp)
                     )
-                    AutoTextSize(
+                    TextAutoSize(
                         text = stringResource(id = R.string.lbl_save),
                         style = MaterialTheme.typography.button,
                         color = Color_Primary_300,
-                        textScale = 0.9f
+                        textScale = TextAutoSizeRange(
+                            min = 10.sp,
+                            max = MaterialTheme.typography.button.fontSize
+                        )
                     )
                 }
             }
@@ -536,11 +541,14 @@ fun BottomBar(
                         contentDescription = stringResource(id = R.string.desc_share),
                         modifier = modifier.padding(end = 10.dp)
                     )
-                    AutoTextSize(
+                    TextAutoSize(
                         text = stringResource(id = R.string.lbl_btn_share_text),
                         style = MaterialTheme.typography.button,
                         color = Color_Primary_300,
-                        textScale = 0.9f
+                        textScale = TextAutoSizeRange(
+                            min = 10.sp,
+                            max = MaterialTheme.typography.button.fontSize
+                        )
                     )
                 }
             }
