@@ -30,6 +30,7 @@ class AvanegarTracker @Inject constructor(
     companion object {
         private const val TAG = "AvanegarTracker"
         private const val NO_ESTIMATE_DELAY_MS = 30 * DateUtils.SECOND_IN_MILLIS
+        private const val TRACK_DELAY_AFTER_FAILURE_MS = 15 * DateUtils.SECOND_IN_MILLIS
     }
 
     private val coroutineScope = ProcessLifecycleOwner.get().lifecycleScope
@@ -97,7 +98,8 @@ class AvanegarTracker @Inject constructor(
     private suspend fun trackFileFallbackMode(
         job: Job,
         tracking: AvanegarTrackingFileEntity,
-        initialDelayMs: Long = 0
+        initialDelayMs: Long = 0,
+        loopDelay: Long = NO_ESTIMATE_DELAY_MS
     ) {
         delay(if (initialDelayMs > 0) initialDelayMs else NO_ESTIMATE_DELAY_MS)
         while (true) {
@@ -111,7 +113,7 @@ class AvanegarTracker @Inject constructor(
                 }
                 break
             }
-            delay(NO_ESTIMATE_DELAY_MS)
+            delay(loopDelay)
         }
     }
 
@@ -134,7 +136,7 @@ class AvanegarTracker @Inject constructor(
             return
         }
 
-        trackFileFallbackMode(job, tracking)
+        trackFileFallbackMode(job, tracking, loopDelay = TRACK_DELAY_AFTER_FAILURE_MS)
     }
 
     private suspend fun trackFileWithDelay(
@@ -155,6 +157,8 @@ class AvanegarTracker @Inject constructor(
                     currentlyTracking.remove(tracking.token)
                     finished.add(tracking.token)
                 }
+            } else {
+                trackFileFallbackMode(job, tracking, loopDelay = TRACK_DELAY_AFTER_FAILURE_MS)
             }
             return
         }
@@ -164,18 +168,33 @@ class AvanegarTracker @Inject constructor(
             val bootTimeDiffMs = SystemClock.elapsedRealtime() - tracking.lastFailure.bootTime
             if (bootTimeDiffMs in 1 until NO_ESTIMATE_DELAY_MS) {
                 val initialDelayMs = NO_ESTIMATE_DELAY_MS - bootTimeDiffMs
-                trackFileFallbackMode(job, tracking, initialDelayMs = initialDelayMs)
+                trackFileFallbackMode(
+                    job,
+                    tracking,
+                    initialDelayMs = initialDelayMs,
+                    loopDelay = TRACK_DELAY_AFTER_FAILURE_MS
+                )
                 return
             }
 
             val systemTimeDiffMs = PersianDate().time - tracking.lastFailure.systemTime
             if (systemTimeDiffMs in 1 until NO_ESTIMATE_DELAY_MS) {
                 val initialDelayMs = NO_ESTIMATE_DELAY_MS - systemTimeDiffMs
-                trackFileFallbackMode(job, tracking, initialDelayMs = initialDelayMs)
+                trackFileFallbackMode(
+                    job,
+                    tracking,
+                    initialDelayMs = initialDelayMs,
+                    loopDelay = TRACK_DELAY_AFTER_FAILURE_MS
+                )
                 return
             }
         }
-        trackFileFallbackMode(job, tracking)
+        trackFileFallbackMode(
+            job,
+            tracking,
+            initialDelayMs = 10, // basically immediately send request
+            loopDelay = TRACK_DELAY_AFTER_FAILURE_MS
+        )
     }
     // endregion trackFile with estimation
 
