@@ -1,3 +1,3 @@
 @echo off
 
-copy /-F .\pre-commit ..\..\.git\hooks
+copy /-Y .\pre-commit ..\..\.git\hooks
