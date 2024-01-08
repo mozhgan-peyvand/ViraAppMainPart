@@ -40,6 +40,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -79,13 +80,8 @@ private fun AvaNegarSearchScreen(
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val searchResult by viewModel.searchResult.collectAsStateWithLifecycle()
     val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
-    val focusRequester = remember { FocusRequester() }
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
-
-    LaunchedEffect(focusRequester) {
-        focusRequester.requestFocus()
-    }
 
     Scaffold(
         backgroundColor = MaterialTheme.colors.background,
@@ -98,7 +94,6 @@ private fun AvaNegarSearchScreen(
         AvaNegarSearchBody(
             searchText = searchText,
             searchResult = searchResult,
-            focusRequester = focusRequester,
             arrowForwardAction = {
                 navHostController.popBackStack()
             },
@@ -123,7 +118,6 @@ private fun AvaNegarSearchScreen(
 private fun AvaNegarSearchBody(
     searchText: String,
     searchResult: List<AvanegarProcessedFileView>,
-    focusRequester: FocusRequester,
     arrowForwardAction: () -> Unit,
     onValueChangeAction: (String) -> Unit,
     clearState: () -> Unit,
@@ -145,7 +139,6 @@ private fun AvaNegarSearchBody(
     Column(modifier = modifier.fillMaxSize()) {
         SearchToolbar(
             searchText = searchText,
-            focusRequester = focusRequester,
             arrowForwardAction = arrowForwardAction,
             onValueChangeAction = onValueChangeAction,
             clearState = clearState
@@ -189,11 +182,16 @@ private fun AvaNegarSearchBody(
 @Composable
 private fun SearchToolbar(
     searchText: String,
-    focusRequester: FocusRequester,
     arrowForwardAction: () -> Unit,
     onValueChangeAction: (String) -> Unit,
     clearState: () -> Unit
 ) {
+    val focusRequester = remember { FocusRequester() }
+
+    SideEffect {
+        focusRequester.requestFocus()
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()

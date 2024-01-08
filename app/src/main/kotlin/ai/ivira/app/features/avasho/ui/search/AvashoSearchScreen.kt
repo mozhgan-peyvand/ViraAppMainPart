@@ -35,7 +35,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -71,13 +71,9 @@ private fun AvashoSearchScreen(
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val searchResult by viewModel.searchResult.collectAsStateWithLifecycle()
     val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
-    val focusRequester = remember { FocusRequester() }
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
 
-    LaunchedEffect(focusRequester) {
-        focusRequester.requestFocus()
-    }
     Scaffold(
         backgroundColor = MaterialTheme.colors.background,
         scaffoldState = scaffoldState,
@@ -87,15 +83,14 @@ private fun AvashoSearchScreen(
         modifier = Modifier.background(Color_BG)
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize()) {
-            SearchToolbar(searchText = searchText,
-                focusRequester = focusRequester,
+            SearchToolbar(
+                searchText = searchText,
                 arrowForwardAction = { navHostController.popBackStack() },
                 onValueChangeAction = { viewModel.onSearchTextChange(it) },
                 clearState = { viewModel.onSearchTextChange("") }
             )
 
             AvaNegarSearchBody(
-                searchText = searchText,
                 searchResult = searchResult,
                 isSearching = isSearching,
                 onItemClick = { id ->
@@ -114,7 +109,6 @@ private fun AvashoSearchScreen(
 @Composable
 private fun AvaNegarSearchBody(
     isSearching: Boolean,
-    searchText: String,
     searchResult: List<AvashoProcessedFileSearchView>,
     onItemClick: (id: Int) -> Unit,
     modifier: Modifier = Modifier
@@ -156,20 +150,27 @@ private fun AvaNegarSearchBody(
 @Composable
 private fun SearchToolbar(
     searchText: String,
-    focusRequester: FocusRequester,
     arrowForwardAction: () -> Unit,
     onValueChangeAction: (String) -> Unit,
     clearState: () -> Unit
 ) {
+    val focusRequester = remember { FocusRequester() }
+
+    SideEffect {
+        focusRequester.requestFocus()
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 8.dp, bottom = 8.dp, end = 16.dp, start = 8.dp)
     ) {
-        IconButton(onClick = {
-            safeClick { arrowForwardAction() }
-        }) {
+        IconButton(
+            onClick = {
+                safeClick { arrowForwardAction() }
+            }
+        ) {
             ViraIcon(
                 drawable = R.drawable.ic_arrow_right,
                 contentDescription = stringResource(id = R.string.desc_forward),
@@ -195,11 +196,13 @@ private fun SearchToolbar(
                 )
             },
             trailingIcon = {
-                IconButton(onClick = {
-                    safeClick {
-                        clearState()
+                IconButton(
+                    onClick = {
+                        safeClick {
+                            clearState()
+                        }
                     }
-                }) {
+                ) {
                     ViraIcon(
                         drawable = R.drawable.ic_clear,
                         contentDescription = stringResource(id = R.string.desc_clear),
@@ -221,7 +224,9 @@ private fun SearchToolbar(
                 .weight(1f)
                 .focusRequester(focusRequester)
                 .border(
-                    1.dp, shape = RoundedCornerShape(10.dp), color = MaterialTheme.colors.primary
+                    width = 1.dp,
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colors.primary
                 )
         )
     }
