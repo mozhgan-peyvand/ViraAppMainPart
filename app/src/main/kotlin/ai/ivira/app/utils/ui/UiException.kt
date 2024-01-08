@@ -9,6 +9,7 @@ import ai.ivira.app.utils.ui.ApiErrorCodes.InvalidInputData
 import ai.ivira.app.utils.ui.ApiErrorCodes.UrlNotFound
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import timber.log.Timber
 import javax.inject.Inject
 
 // TODO set appropriate error message
@@ -16,6 +17,7 @@ class UiException @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     fun getErrorMessage(appException: AppException): String {
+        Timber.tag("UiException").d("$appException")
         val defaultMessage = context.getString(R.string.msg_there_is_a_problem)
         val message: String = when (appException) {
             is IOException -> context.getString(R.string.msg_server_error)
