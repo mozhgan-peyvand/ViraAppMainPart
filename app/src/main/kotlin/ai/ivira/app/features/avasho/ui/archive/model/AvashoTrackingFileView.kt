@@ -10,6 +10,7 @@ data class AvashoTrackingFileView(
     override val title: String,
     val processEstimation: Int?,
     val createdAt: String,
+    val createdAtMillis: Long,
     val bootElapsedTime: Long,
     val lastFailure: Boolean
 ) : AvashoArchiveView {
@@ -20,12 +21,13 @@ data class AvashoTrackingFileView(
         if (SystemClock.elapsedRealtime() > bootElapsedTime) {
             val diff = (SystemClock.elapsedRealtime() - bootElapsedTime) / 1000
             return (processEstimation - diff) * 1.2
-        } else if (PersianDate().time > createdAt.toLong()) {
-            val diff = (PersianDate().time - createdAt.toLong()) / 1000
+        }
+        if (PersianDate().time > createdAtMillis) {
+            val diff = (PersianDate().time - createdAtMillis) / 1000
             return (processEstimation - diff) * 1.2
         }
 
-        return (-1).toDouble()
+        return -1.0
     }
 }
 
@@ -34,6 +36,7 @@ fun AvashoTrackingFileEntity.toAvashoTrackingFileView() = AvashoTrackingFileView
     title = title,
     processEstimation = processEstimation,
     createdAt = convertDate(insertAt.systemTime),
+    createdAtMillis = insertAt.systemTime,
     bootElapsedTime = insertAt.bootTime,
     lastFailure = lastFailure != null
 )

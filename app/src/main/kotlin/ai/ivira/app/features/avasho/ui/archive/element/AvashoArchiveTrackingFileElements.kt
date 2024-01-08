@@ -148,6 +148,7 @@ private fun AvashoArchiveTrackingFileElementPreview() {
                     token = "sa",
                     title = "عنوان",
                     createdAt = "Sasasasa",
+                    createdAtMillis = System.currentTimeMillis(),
                     processEstimation = 0,
                     bootElapsedTime = 0L,
                     lastFailure = false

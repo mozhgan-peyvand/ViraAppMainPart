@@ -177,6 +177,7 @@ private fun ArchiveTrackingFileElementGridPreview() {
                 filePath = "Sasas",
                 title = "عنوان",
                 createdAt = "Sasasasa",
+                createdAtMillis = System.currentTimeMillis(),
                 processEstimation = 0,
                 lastFailure = false,
                 bootElapsedTime = 0

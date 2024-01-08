@@ -11,6 +11,7 @@ data class AvanegarTrackingFileView(
     override val title: String,
     val processEstimation: Int?,
     val createdAt: String,
+    val createdAtMillis: Long,
     val bootElapsedTime: Long,
     val lastFailure: Boolean
 ) : ArchiveView {
@@ -21,12 +22,13 @@ data class AvanegarTrackingFileView(
         if (SystemClock.elapsedRealtime() > bootElapsedTime) {
             val diff = (SystemClock.elapsedRealtime() - bootElapsedTime) / 1000
             return (processEstimation - diff) * ESTIMATED_TIME_FACTOR
-        } else if (PersianDate().time > createdAt.toLong()) {
-            val diff = (PersianDate().time - createdAt.toLong()) / 1000
+        }
+        if (PersianDate().time > createdAtMillis) {
+            val diff = (PersianDate().time - createdAtMillis) / 1000
             return (processEstimation - diff) * ESTIMATED_TIME_FACTOR
         }
 
-        return (-1).toDouble()
+        return -1.0
     }
 
     companion object {
@@ -40,6 +42,7 @@ fun AvanegarTrackingFileEntity.toAvanegarTrackingFileView() = AvanegarTrackingFi
     title = title,
     processEstimation = processEstimation,
     createdAt = convertDate(insertAt.systemTime),
+    createdAtMillis = insertAt.systemTime,
     bootElapsedTime = insertAt.bootTime,
     lastFailure = lastFailure != null
 )
