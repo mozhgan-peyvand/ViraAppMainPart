@@ -4,12 +4,14 @@ import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.DeleteBottomSheet
+import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
 import ai.ivira.app.features.avasho.ui.AvashoAnalytics
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Delete
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.DeleteConfirmation
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Details
+import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.FileAccessPermissionDenied
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Process
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Rename
 import ai.ivira.app.features.avasho.ui.archive.element.AudioImageStatus.Converting
@@ -26,7 +28,11 @@ import ai.ivira.app.utils.data.NetworkStatus.Available
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
+import ai.ivira.app.utils.ui.hasPermission
+import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isScrollingUp
+import ai.ivira.app.utils.ui.isSdkVersionBetween23And29
+import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoFileCreationScreen
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
@@ -45,8 +51,12 @@ import ai.ivira.app.utils.ui.widgets.ViraBannerInfo
 import ai.ivira.app.utils.ui.widgets.ViraBannerWithAnimation
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import android.Manifest
+import android.app.Activity
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.InfiniteTransition
@@ -223,18 +233,63 @@ private fun AvashoArchiveListScreen(
         )
     }
 
-    var shouldShowSnackBarWithoutPadding by remember {
-        mutableStateOf(true)
-    }
-
+    var shouldShowSnackBarWithPadding by remember { mutableStateOf(true) }
     val eventHandler = LocalEventHandler.current
+    val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+
+    val writeStoragePermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        val avashoItem = selectedAvashoItem
+        if (isGranted) {
+            // make sure it's Processed and it's not null
+            if (avashoItem is AvashoProcessedFileView) {
+                viewModel.saveToDownloadFolder(
+                    filePath = avashoItem.filePath,
+                    fileName = avashoItem.title
+                ).also { isSuccess ->
+
+                    coroutineScope.launch {
+                        bottomSheetState.hide()
+                    }
+
+                    if (isSuccess) {
+                        showMessage(
+                            snackbarHostState,
+                            coroutineScope,
+                            context.getString(R.string.msg_file_saved_successfully)
+                        )
+                    }
+                }
+            }
+        } else {
+            if (fileSheetState != Details) {
+                coroutineScope.launch {
+                    bottomSheetState.hide()
+                }
+            }
+
+            viewModel.putDeniedPermissionToSharedPref(
+                permission = permission,
+                deniedPermanently = isPermissionDeniedPermanently(
+                    activity = context as Activity,
+                    permission = permission
+                )
+            )
+            showMessage(
+                snackbarHostState,
+                coroutineScope,
+                context.getString(R.string.lbl_need_to_access_file_permission)
+            )
+        }
+    }
 
     LaunchedEffect(bottomSheetState.targetValue) {
         snapshotFlow { bottomSheetState.targetValue }
             .collect { targetValue ->
                 bottomSheetTargetValue = targetValue
 
-                shouldShowSnackBarWithoutPadding = targetValue != Hidden
+                shouldShowSnackBarWithPadding = targetValue == Hidden
             }
     }
 
@@ -293,9 +348,7 @@ private fun AvashoArchiveListScreen(
     }
 
     LaunchedEffect(bottomSheetState.isVisible) {
-        if (bottomSheetState.isVisible) {
-            snackbarHostState.currentSnackbarData?.dismiss()
-        }
+        snackbarHostState.currentSnackbarData?.dismiss()
     }
 
     BackHandler(bottomSheetState.isVisible) {
@@ -335,12 +388,34 @@ private fun AvashoArchiveListScreen(
         backgroundColor = MaterialTheme.colors.background,
         modifier = Modifier.background(Color_BG),
         scaffoldState = scaffoldState,
-        snackbarHost = { snackBarState ->
-            if (shouldShowSnackBarWithoutPadding) {
-                SnackBar(snackBarState, 32.dp)
-            } else {
-                SnackBarWithPaddingBottom(snackBarState, true, 400f)
+        snackbarHost = snackBarHost@{ snackBarState ->
+
+            if (shouldShowSnackBarWithPadding) {
+                SnackBarWithPaddingBottom(
+                    snackbarHostState = snackBarState,
+                    shouldShowOverItems = true,
+                    paddingValue = 400f
+                )
+                return@snackBarHost
             }
+
+            if (viewModel.hasPermissionDeniedPermanently.value) {
+                SnackBar(
+                    snackbarHostState = snackBarState,
+                    paddingBottom = 32.dp,
+                    labelAction = snackBarState.currentSnackbarData?.actionLabel,
+                    onActionClick = {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        navigateToAppSettings(activity = context as Activity)
+                    }
+                )
+                return@snackBarHost
+            }
+
+            SnackBar(
+                snackbarHostState = snackBarState,
+                paddingBottom = 32.dp
+            )
         }
     ) { scaffoldPadding ->
         ModalBottomSheetLayout(
@@ -357,7 +432,6 @@ private fun AvashoArchiveListScreen(
                     Details -> {
                         if (avashoItem is AvashoProcessedFileView) {
                             AvashoDetailBottomSheet(
-                                snackBatState = snackbarHostState,
                                 animationProgress = calculatedProgress,
                                 collapseToolbarAction = {
                                     coroutineScope.launch {
@@ -379,7 +453,55 @@ private fun AvashoArchiveListScreen(
                                     )
                                 },
                                 avashoProcessedItem = avashoItem,
-                                isBottomSheetExpanded = bottomSheetState.isVisible
+                                isBottomSheetExpanded = bottomSheetState.isVisible,
+                                onSaveFileClick = onClick@{
+                                    eventHandler.specialEvent(AvashoAnalytics.downloadItem)
+                                    if (!isSdkVersionBetween23And29()) {
+                                        viewModel.saveToDownloadFolder(
+                                            filePath = avashoItem.filePath,
+                                            fileName = avashoItem.title
+                                        ).also { isSuccess ->
+                                            if (isSuccess) {
+                                                showMessage(
+                                                    snackbarHostState,
+                                                    coroutineScope,
+                                                    context.getString(R.string.msg_file_saved_successfully)
+                                                )
+                                            }
+                                        }
+                                        return@onClick
+                                    }
+
+                                    if (context.hasPermission(permission)) {
+                                        viewModel.saveToDownloadFolder(
+                                            filePath = avashoItem.filePath,
+                                            fileName = avashoItem.title
+                                        ).also { isSuccess ->
+
+                                            coroutineScope.launch {
+                                                bottomSheetState.hide()
+                                            }
+
+                                            if (isSuccess) {
+                                                showMessage(
+                                                    snackbarHostState,
+                                                    coroutineScope,
+                                                    context.getString(R.string.msg_file_saved_successfully)
+                                                )
+                                            }
+                                        }
+                                    } else if (viewModel.hasDeniedPermissionPermanently(permission)) {
+                                        showMessage(
+                                            snackbarHostState = snackbarHostState,
+                                            coroutineScope = coroutineScope,
+                                            message = context.getString(R.string.lbl_need_to_access_file_permission),
+                                            actionLabel = context.getString(R.string.lbl_setting)
+                                        )
+                                    } else {
+                                        // Asking for permission
+                                        writeStoragePermission.launch(permission)
+                                    }
+                                }
                             )
                         }
                     }
@@ -387,24 +509,58 @@ private fun AvashoArchiveListScreen(
                         if (avashoItem is AvashoProcessedFileView) {
                             ProcessedWithDownloadBottomSheet(
                                 title = avashoItem.title,
-                                saveAudioFile = {
+                                saveAudioFile = onClick@{
                                     eventHandler.specialEvent(AvashoAnalytics.downloadItem)
-                                    viewModel.saveToDownloadFolder(
-                                        filePath = avashoItem.filePath,
-                                        fileName = avashoItem.title
-                                    ).also { isSuccess ->
+                                    if (!isSdkVersionBetween23And29()) {
+                                        viewModel.saveToDownloadFolder(
+                                            filePath = avashoItem.filePath,
+                                            fileName = avashoItem.title
+                                        ).also { isSuccess ->
 
+                                            coroutineScope.launch {
+                                                bottomSheetState.hide()
+                                            }
+
+                                            if (isSuccess) {
+                                                showMessage(
+                                                    snackbarHostState,
+                                                    coroutineScope,
+                                                    context.getString(R.string.msg_file_saved_successfully)
+                                                )
+                                            }
+                                        }
+                                        return@onClick
+                                    }
+
+                                    if (context.hasPermission(permission)) {
+                                        viewModel.saveToDownloadFolder(
+                                            filePath = avashoItem.filePath,
+                                            fileName = avashoItem.title
+                                        ).also { isSuccess ->
+
+                                            coroutineScope.launch {
+                                                bottomSheetState.hide()
+                                            }
+
+                                            if (isSuccess) {
+                                                showMessage(
+                                                    snackbarHostState,
+                                                    coroutineScope,
+                                                    context.getString(R.string.msg_file_saved_successfully)
+                                                )
+                                            }
+                                        }
+                                    } else if (viewModel.hasDeniedPermissionPermanently(permission)) {
+                                        setBottomSheetType(FileAccessPermissionDenied)
                                         coroutineScope.launch {
                                             bottomSheetState.hide()
+                                            if (!bottomSheetState.isVisible) {
+                                                bottomSheetState.show()
+                                            }
                                         }
-
-                                        if (isSuccess) {
-                                            showMessage(
-                                                snackbarHostState,
-                                                coroutineScope,
-                                                context.getString(R.string.msg_file_saved_successfully)
-                                            )
-                                        }
+                                    } else {
+                                        // Asking for permission
+                                        writeStoragePermission.launch(permission)
                                     }
                                 },
                                 shareItemAction = {
@@ -508,6 +664,21 @@ private fun AvashoArchiveListScreen(
                                     if (!bottomSheetState.isVisible) {
                                         bottomSheetState.show()
                                     }
+                                }
+                            }
+                        )
+                    }
+                    FileAccessPermissionDenied -> {
+                        AccessDeniedToOpenFileBottomSheet(
+                            cancelAction = {
+                                coroutineScope.launch {
+                                    bottomSheetState.hide()
+                                }
+                            },
+                            submitAction = {
+                                navigateToAppSettings(activity = context as Activity)
+                                coroutineScope.launch {
+                                    bottomSheetState.hide()
                                 }
                             }
                         )

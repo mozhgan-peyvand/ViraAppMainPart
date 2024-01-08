@@ -39,10 +39,13 @@ import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.analytics.EventHandler
 import ai.ivira.app.utils.ui.combine
 import android.app.Application
+import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.ModalBottomSheetValue.Hidden
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -74,6 +77,7 @@ class AvashoArchiveListViewModel @Inject constructor(
     private val fileOperationHelper: FileOperationHelper,
     private val application: Application,
     private val eventHandler: EventHandler,
+    private val sharedPref: SharedPreferences,
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
     private var retriever: MediaMetadataRetriever? = null
@@ -102,6 +106,9 @@ class AvashoArchiveListViewModel @Inject constructor(
     val isUploadingAllowed = _isUploadingAllowed.asStateFlow()
 
     private var indexOfItemThatShouldBeUploaded = 0
+
+    private var _hasPermissionDeniedPermanently = mutableStateOf(false)
+    val hasPermissionDeniedPermanently: State<Boolean> = _hasPermissionDeniedPermanently
 
     private var playingAvashoItemId = mutableStateOf<Int>(-1)
 
@@ -498,5 +505,23 @@ class AvashoArchiveListViewModel @Inject constructor(
 
     fun changePlayingItem(id: Int) {
         playingAvashoItemId.value = id
+    }
+
+    fun hasDeniedPermissionPermanently(permission: String): Boolean {
+        val hasDenied = sharedPref.getBoolean(permissionDeniedPrefKey(permission), false)
+        _hasPermissionDeniedPermanently.value = hasDenied
+        return hasDenied
+    }
+
+    fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) {
+        viewModelScope.launch {
+            sharedPref.edit {
+                this.putBoolean(permissionDeniedPrefKey(permission), deniedPermanently)
+            }
+        }
+    }
+
+    private fun permissionDeniedPrefKey(permission: String): String {
+        return "deniedPermission_$permission"
     }
 }

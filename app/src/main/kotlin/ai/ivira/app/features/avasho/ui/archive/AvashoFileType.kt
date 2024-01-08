@@ -5,5 +5,6 @@ enum class AvashoFileType {
     Process,
     Rename,
     DeleteConfirmation,
-    Delete
+    Delete,
+    FileAccessPermissionDenied
 }
