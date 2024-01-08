@@ -4,14 +4,12 @@ import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.avasho.ui.AvashoAnalytics
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
-import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.shareMp3
-import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_Card_Stroke
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
@@ -50,7 +48,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
-import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -62,7 +59,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
@@ -78,22 +74,20 @@ import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import kotlinx.coroutines.flow.collectLatest
 import java.io.File
 
 @Composable
 fun AvashoDetailBottomSheet(
-    snackBatState: SnackbarHostState,
     animationProgress: Float,
     collapseToolbarAction: () -> Unit,
     halfToolbarAction: () -> Unit,
     changePlayingItemAction: (Boolean) -> Unit,
+    onSaveFileClick: () -> Unit,
     avashoProcessedItem: AvashoProcessedFileView,
     isBottomSheetExpanded: Boolean,
     avashoDetailsViewModel: AvashoDetailsBottomSheetViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
     val playerState by avashoDetailsViewModel::playerState
     val verticalScroll = if (isBottomSheetExpanded) Modifier.verticalScroll(rememberScrollState()) else Modifier
     val eventHandler = LocalEventHandler.current
@@ -102,9 +96,7 @@ fun AvashoDetailBottomSheet(
         changePlayingItemAction(playerState.isPlaying)
     }
 
-    LaunchedEffect(
-        isBottomSheetExpanded
-    ) {
+    LaunchedEffect(isBottomSheetExpanded) {
         val emitSuccess = playerState.tryInitWith(
             file = File(avashoProcessedItem.filePath),
             forcePrepare = true,
@@ -118,22 +110,8 @@ fun AvashoDetailBottomSheet(
         }
     }
 
-    LaunchedEffect(Unit) {
-        avashoDetailsViewModel.uiViewState.collectLatest {
-            if (it is UiError && it.isSnack) {
-                showMessage(
-                    snackBatState,
-                    coroutineScope,
-                    it.message
-                )
-            }
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
             CollapseStateToolbar(
                 progress = animationProgress,
                 collapseToolbarAction = { collapseToolbarAction() },
@@ -162,19 +140,7 @@ fun AvashoDetailBottomSheet(
                     )
                 },
                 onSaveClicked = {
-                    eventHandler.specialEvent(AvashoAnalytics.downloadItem)
-                    avashoDetailsViewModel.saveToDownloadFolder(
-                        filePath = avashoProcessedItem.filePath,
-                        fileName = avashoProcessedItem.title
-                    ).also { isSuccess ->
-                        if (isSuccess) {
-                            showMessage(
-                                snackBatState,
-                                coroutineScope,
-                                context.getString(R.string.msg_file_saved_successfully)
-                            )
-                        }
-                    }
+                    onSaveFileClick()
                 }
             )
 
@@ -563,7 +529,6 @@ fun BottomBar(
 private fun AvashoDetailBottomSheetPreview() {
     ViraPreview {
         AvashoDetailBottomSheet(
-            snackBatState = SnackbarHostState(),
             animationProgress = 0f,
             collapseToolbarAction = {},
             halfToolbarAction = {},
@@ -581,6 +546,7 @@ private fun AvashoDetailBottomSheetPreview() {
                 false,
                 0
             ),
+            onSaveFileClick = {},
             isBottomSheetExpanded = false
         )
     }

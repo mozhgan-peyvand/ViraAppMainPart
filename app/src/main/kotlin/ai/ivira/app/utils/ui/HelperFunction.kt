@@ -1,5 +1,6 @@
 package ai.ivira.app.utils.ui
 
+import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.SnackbarHostState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -12,6 +13,22 @@ fun showMessage(
 ) {
     coroutineScope.launch {
         snackbarHostState.showSnackbar(message = message)
+    }
+}
+
+fun showMessage(
+    snackbarHostState: SnackbarHostState,
+    coroutineScope: CoroutineScope,
+    message: String,
+    actionLabel: String,
+    duration: SnackbarDuration = SnackbarDuration.Indefinite
+) {
+    coroutineScope.launch {
+        snackbarHostState.showSnackbar(
+            message = message,
+            actionLabel = actionLabel,
+            duration = duration
+        )
     }
 }
 
