@@ -4,7 +4,6 @@ import ai.ivira.app.features.ava_negar.data.DataStoreRepository
 import ai.ivira.app.features.ava_negar.data.PreferencesKey.onBoardingKey
 import ai.ivira.app.features.avasho.ui.onboarding.AVASHO_ONBOARDING_COMPLETED
 import ai.ivira.app.features.home.data.VersionRepository
-import ai.ivira.app.features.home.ui.home.version.model.VersionView
 import ai.ivira.app.features.home.ui.home.version.model.toVersionView
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
@@ -27,6 +26,8 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -53,8 +54,16 @@ class HomeViewModel @Inject constructor(
     )
 
     private var prefListener: SharedPreferences.OnSharedPreferenceChangeListener
-    private val _changeLogList = MutableStateFlow<List<VersionView>>(listOf())
-    val changeLogList = _changeLogList.asStateFlow()
+    val changeLogList = versionRepository.getChangeLogFromLocal()
+        .map { changeLogList ->
+            changeLogList.map { changeLogDto ->
+                changeLogDto.toVersionView()
+            }
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyList()
+        )
 
     var shouldNavigate = mutableStateOf(false)
     var shouldNavigateToAvasho = mutableStateOf(false)
@@ -62,7 +71,16 @@ class HomeViewModel @Inject constructor(
         private set
 
     private var _showUpdateBottomSheet = MutableStateFlow(false)
-    val showUpdateBottomSheet = _showUpdateBottomSheet.asStateFlow()
+    val showUpdateBottomSheet = combine(
+        _showUpdateBottomSheet,
+        changeLogList
+    ) { showUpdateBottomSheet, changeLogList ->
+        showUpdateBottomSheet && changeLogList.isNotEmpty()
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        false
+    )
 
     var canShowBottomSheet = true
         private set
@@ -106,16 +124,6 @@ class HomeViewModel @Inject constructor(
         }
 
         sharedPref.registerOnSharedPreferenceChangeListener(prefListener)
-
-        viewModelScope.launch(IO) {
-            versionRepository.getChangeLogFromLocal().collect { changeLogList ->
-                _changeLogList.update {
-                    changeLogList.map { changeLogDto ->
-                        changeLogDto.toVersionView()
-                    }
-                }
-            }
-        }
 
         _showUpdateBottomSheet.value = versionRepository.shouldShowBottomSheet()
     }

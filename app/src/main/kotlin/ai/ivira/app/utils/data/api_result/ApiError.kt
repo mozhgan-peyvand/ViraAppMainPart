@@ -30,8 +30,8 @@ sealed interface ApiError {
 fun ApiError.toAppException(): AppException =
     when (this) {
         is HttpError -> AppException.RemoteDataSourceException(this.body)
-        is IOError -> AppException.IOException
-        is JsonParseException -> AppException.IOException
-        is UnknownApiError -> AppException.IOException
-        is EmptyBodyError -> AppException.IOException
+        is IOError -> AppException.IOException(exception)
+        is JsonParseException -> AppException.IOException(throwable)
+        is UnknownApiError -> AppException.IOException(throwable)
+        is EmptyBodyError -> AppException.IOException(IllegalStateException("empty body"))
     }
