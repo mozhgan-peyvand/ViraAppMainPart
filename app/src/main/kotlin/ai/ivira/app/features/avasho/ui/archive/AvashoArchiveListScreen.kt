@@ -249,8 +249,10 @@ private fun AvashoArchiveListScreen(
                     fileName = avashoItem.title
                 ).also { isSuccess ->
 
-                    coroutineScope.launch {
-                        bottomSheetState.hide()
+                    if (fileSheetState != Details) {
+                        coroutineScope.launch {
+                            bottomSheetState.hide()
+                        }
                     }
 
                     if (isSuccess) {
@@ -477,10 +479,6 @@ private fun AvashoArchiveListScreen(
                                             filePath = avashoItem.filePath,
                                             fileName = avashoItem.title
                                         ).also { isSuccess ->
-
-                                            coroutineScope.launch {
-                                                bottomSheetState.hide()
-                                            }
 
                                             if (isSuccess) {
                                                 showMessage(
