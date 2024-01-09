@@ -25,7 +25,12 @@ class NetworkHandler @Inject constructor(
                 actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
                 actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
                 actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-                else -> false
+                else -> {
+                    // on some devices (Samsung Note 8) when vpn is connected  none of the other
+                    // transports are set, so we check if internet is validated means there is some internet connection!
+                    actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                        actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                }
             }
         } else {
             @Suppress("DEPRECATION")
