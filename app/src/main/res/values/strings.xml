@@ -259,5 +259,6 @@
     <string name="lbl_change">تغییر</string>
     <string name="lbl_history">تاریخچه</string>
     <string name="lbl_random">تصادفی</string>
+    <string name="lbl_last_prompts">آخرین توصیف‌ها</string>
 
 </resources>

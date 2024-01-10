@@ -1,14 +1,25 @@
 package ai.ivira.app.features.imazh.ui.newImageDescriptor
 
+import ai.ivira.app.features.imazh.data.ImazhRepository
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhHistoryView
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.toImazhHistoryView
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class NewImageDescriptorViewModel @Inject constructor() : ViewModel() {
+class NewImageDescriptorViewModel @Inject constructor(
+    private val imazhRepository: ImazhRepository
+) : ViewModel() {
     private val _prompt = mutableStateOf("")
     val prompt: State<String> = _prompt
 
@@ -20,6 +31,21 @@ class NewImageDescriptorViewModel @Inject constructor() : ViewModel() {
 
     private val _negativePrompt = mutableStateOf("")
     val negativePrompt: State<String> = _negativePrompt
+
+    private val _historyList: MutableState<List<ImazhHistoryView>> = mutableStateOf(listOf())
+    val historyList: State<List<ImazhHistoryView>> = _historyList
+
+    init {
+        viewModelScope.launch(IO) {
+            imazhRepository.getRecentHistory().collectLatest { list ->
+                withContext(Main) {
+                    _historyList.value = list.map { historyEntity ->
+                        historyEntity.toImazhHistoryView()
+                    }
+                }
+            }
+        }
+    }
 
     fun changePrompt(newPrompt: String) {
         if (newPrompt.length <= PROMPT_CHARACTER_LIMIT) {

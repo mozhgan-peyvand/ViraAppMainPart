@@ -55,6 +55,7 @@ object Migration {
                 db.execSQL("DROP TABLE `AvanegarTrackingFileEntity`")
                 db.execSQL("ALTER TABLE `AvanegarTrackingFileEntityNew` RENAME TO `AvanegarTrackingFileEntity`")
             }
+
             override fun migrate(db: SupportSQLiteDatabase) {
                 migrateTrackingData(db)
 
@@ -70,6 +71,14 @@ object Migration {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `TileConfigEntity` (`name` TEXT NOT NULL, `message` TEXT NOT NULL, `status` INTEGER NOT NULL, PRIMARY KEY(`name`))")
                 db.execSQL("ALTER TABLE AvashoProcessedFileEntity ADD COLUMN `isSeen` INTEGER DEFAULT 1 not null")
+            }
+        }
+    }
+
+    fun migration4_5(): Migration {
+        return object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `ImazhHistoryEntity` (`prompt` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`text`))")
             }
         }
     }

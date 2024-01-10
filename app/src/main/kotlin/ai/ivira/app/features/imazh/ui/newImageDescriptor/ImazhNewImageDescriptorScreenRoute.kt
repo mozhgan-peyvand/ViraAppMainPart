@@ -1,12 +1,14 @@
 package ai.ivira.app.features.imazh.ui.newImageDescriptor
 
 import ai.ivira.app.R
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.ImazhNewImageDescriptionBottomSheetType.History
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.NEGATIVE_PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG
+import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Border
 import ai.ivira.app.utils.ui.theme.Color_Info_700
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
@@ -41,16 +43,21 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -60,6 +67,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -69,6 +77,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 
 @Composable
 fun ImazhNewImageDescriptorScreenRoute(navController: NavHostController) {
@@ -83,12 +92,33 @@ private fun ImazhNewImageDescriptorScreen(
     navController: NavHostController,
     viewModel: NewImageDescriptorViewModel
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
     val scrollState: ScrollState = rememberScrollState()
     val isOkToGenerate by remember {
         derivedStateOf { viewModel.prompt.value.isNotBlank() }
     }
     val view = LocalView.current
     var isKeyboardVisible by remember { mutableStateOf(false) }
+    val isHistoryButtonVisible by remember(viewModel.historyList.value) {
+        mutableStateOf(viewModel.historyList.value.isNotEmpty())
+    }
+
+    val (selectedSheet, setSelectedSheet) = rememberSaveable {
+        mutableStateOf(History)
+    }
+
+    val modalBottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true,
+        confirmValueChange = { true }
+    )
+
+    LaunchedEffect(modalBottomSheetState.isVisible) {
+        if (modalBottomSheetState.isVisible) {
+            focusManager.clearFocus()
+        }
+    }
 
     DisposableEffect(Unit) {
         val listener = ViewTreeObserver.OnPreDrawListener {
@@ -113,52 +143,84 @@ private fun ImazhNewImageDescriptorScreen(
                 onBackClick = navController::navigateUp
             )
         },
-        bottomBar = {
-            if (!isKeyboardVisible) {
-                ConfirmButton(
-                    onClick = navController::navigateUp,
-                    enabled = isOkToGenerate
-                )
-            }
-        },
         modifier = Modifier
             .fillMaxSize()
             .background(Color_BG)
     ) { paddingValues ->
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(state = scrollState)
-                .padding(paddingValues = paddingValues)
-                .padding(horizontal = 16.dp)
-                .then(
-                    if (isKeyboardVisible) {
-                        Modifier.padding(bottom = 16.dp)
-                    } else {
-                        Modifier
+        ModalBottomSheetLayout(
+            sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
+            sheetBackgroundColor = Color_BG_Bottom_Sheet,
+            scrimColor = Color.Black.copy(alpha = 0.5f),
+            sheetState = modalBottomSheetState,
+            sheetContent = {
+                when (selectedSheet) {
+                    History -> {
+                        HistoryBottomSheet(
+                            onAcceptClick = { prompt ->
+                                viewModel.changePrompt(prompt)
+                                coroutineScope.launch {
+                                    if (modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.hide()
+                                    }
+                                }
+                            }
+                        )
                     }
-                )
+                }
+            }
         ) {
-            Prompt(
-                prompt = viewModel.prompt.value,
-                onPromptChange = viewModel::changePrompt,
-                resetPrompt = viewModel::resetPrompt
-            )
+            Column(Modifier.fillMaxSize()) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(state = scrollState)
+                        .padding(paddingValues = paddingValues)
+                        .padding(horizontal = 16.dp)
+                        .then(
+                            if (isKeyboardVisible) {
+                                Modifier.padding(bottom = 16.dp)
+                            } else {
+                                Modifier
+                            }
+                        )
+                ) {
+                    Prompt(
+                        prompt = viewModel.prompt.value,
+                        isHistoryButtonVisible = isHistoryButtonVisible,
+                        onPromptChange = viewModel::changePrompt,
+                        resetPrompt = viewModel::resetPrompt,
+                        onHistoryClick = {
+                            coroutineScope.launch {
+                                setSelectedSheet(History)
+                                modalBottomSheetState.show()
+                            }
+                        }
+                    )
 
-            Keywords(
-                keywords = viewModel.selectedKeywords.value
-            )
+                    Keywords(
+                        keywords = viewModel.selectedKeywords.value
+                    )
 
-            Style(
-                selectedStyle = viewModel.selectedStyle.value
-            )
+                    Style(
+                        selectedStyle = viewModel.selectedStyle.value
+                    )
 
-            NegativePrompt(
-                negativePrompt = viewModel.negativePrompt.value,
-                onNegativePromptChange = viewModel::setNegativePrompt,
-                resetNegativePrompt = viewModel::resetNegativePrompt
-            )
+                    NegativePrompt(
+                        negativePrompt = viewModel.negativePrompt.value,
+                        onNegativePromptChange = viewModel::setNegativePrompt,
+                        resetNegativePrompt = viewModel::resetNegativePrompt
+                    )
+                }
+
+                if (!isKeyboardVisible) {
+                    ConfirmButton(
+                        onClick = navController::navigateUp,
+                        enabled = isOkToGenerate
+                    )
+                }
+            }
         }
     }
 }
@@ -230,8 +292,10 @@ private fun ConfirmButton(
 @Composable
 private fun Prompt(
     prompt: String,
+    isHistoryButtonVisible: Boolean,
     onPromptChange: (String) -> Unit,
     resetPrompt: () -> Unit,
+    onHistoryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -244,10 +308,11 @@ private fun Prompt(
         )
         PromptInputText(
             prompt = prompt,
+            isHistoryButtonVisible = isHistoryButtonVisible,
             onPromptChange = onPromptChange,
             resetPrompt = resetPrompt,
             charLimit = PROMPT_CHARACTER_LIMIT,
-            onHistoryClick = {},
+            onHistoryClick = { onHistoryClick() },
             onRandomClick = {}
         )
     }
@@ -256,6 +321,7 @@ private fun Prompt(
 @Composable
 private fun PromptInputText(
     prompt: String,
+    isHistoryButtonVisible: Boolean,
     onPromptChange: (String) -> Unit,
     resetPrompt: () -> Unit,
     onRandomClick: () -> Unit,
@@ -304,16 +370,18 @@ private fun PromptInputText(
                     .weight(1f)
             )
 
-            IconButton(
-                onClick = {
-                    safeClick(event = onHistoryClick)
+            if (isHistoryButtonVisible) {
+                IconButton(
+                    onClick = {
+                        safeClick(event = onHistoryClick)
+                    }
+                ) {
+                    ViraIcon(
+                        drawable = R.drawable.ic_history,
+                        contentDescription = stringResource(id = R.string.lbl_history),
+                        tint = MaterialTheme.colors.primary
+                    )
                 }
-            ) {
-                ViraIcon(
-                    drawable = R.drawable.ic_history,
-                    contentDescription = stringResource(id = R.string.lbl_history),
-                    tint = MaterialTheme.colors.primary
-                )
             }
 
             Spacer(modifier = Modifier.width(10.dp))
