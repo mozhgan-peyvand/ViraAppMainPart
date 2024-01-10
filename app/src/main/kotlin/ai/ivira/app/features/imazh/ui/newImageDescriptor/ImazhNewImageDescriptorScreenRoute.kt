@@ -2,11 +2,15 @@ package ai.ivira.app.features.imazh.ui.newImageDescriptor
 
 import ai.ivira.app.R
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.ImazhNewImageDescriptionBottomSheetType.History
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.ImazhNewImageDescriptionBottomSheetType.RandomPrompt
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.NEGATIVE_PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.PROMPT_CHARACTER_LIMIT
+import ai.ivira.app.utils.ui.hide
+import ai.ivira.app.utils.ui.hideAndShow
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.show
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Border
@@ -18,6 +22,7 @@ import ai.ivira.app.utils.ui.theme.Cyan_200
 import ai.ivira.app.utils.ui.theme.labelMedium
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import android.view.ViewTreeObserver
+import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ScrollState
@@ -120,6 +125,14 @@ private fun ImazhNewImageDescriptorScreen(
         }
     }
 
+    BackHandler {
+        if (modalBottomSheetState.isVisible) {
+            modalBottomSheetState.hide(coroutineScope)
+        } else {
+            navController.navigateUp()
+        }
+    }
+
     DisposableEffect(Unit) {
         val listener = ViewTreeObserver.OnPreDrawListener {
             val insets = ViewCompat.getRootWindowInsets(view)
@@ -166,6 +179,22 @@ private fun ImazhNewImageDescriptorScreen(
                             }
                         )
                     }
+                    RandomPrompt -> {
+                        RandomConfirmationBottomSheet(
+                            cancelAction = {
+                                modalBottomSheetState.hide(coroutineScope)
+                            },
+                            deleteAction = {
+                                viewModel.resetPrompt()
+                                viewModel.generateRandomPrompt(
+                                    confirmationCallback = {
+                                        modalBottomSheetState.hideAndShow(coroutineScope)
+                                    }
+                                )
+                                modalBottomSheetState.hide(coroutineScope)
+                            }
+                        )
+                    }
                 }
             }
         ) {
@@ -196,6 +225,14 @@ private fun ImazhNewImageDescriptorScreen(
                                 setSelectedSheet(History)
                                 modalBottomSheetState.show()
                             }
+                        },
+                        onRandomClick = {
+                            viewModel.generateRandomPrompt(
+                                confirmationCallback = {
+                                    setSelectedSheet(RandomPrompt)
+                                    modalBottomSheetState.show(coroutineScope)
+                                }
+                            )
                         }
                     )
 
@@ -296,6 +333,7 @@ private fun Prompt(
     onPromptChange: (String) -> Unit,
     resetPrompt: () -> Unit,
     onHistoryClick: () -> Unit,
+    onRandomClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -312,8 +350,8 @@ private fun Prompt(
             onPromptChange = onPromptChange,
             resetPrompt = resetPrompt,
             charLimit = PROMPT_CHARACTER_LIMIT,
-            onHistoryClick = { onHistoryClick() },
-            onRandomClick = {}
+            onHistoryClick = onHistoryClick,
+            onRandomClick = onRandomClick
         )
     }
 }

@@ -5,7 +5,9 @@ import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhHistoryView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.toImazhHistoryView
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,6 +37,8 @@ class NewImageDescriptorViewModel @Inject constructor(
     private val _historyList: MutableState<List<ImazhHistoryView>> = mutableStateOf(listOf())
     val historyList: State<List<ImazhHistoryView>> = _historyList
 
+    private var promptIsEditedByUser by mutableStateOf(false)
+
     init {
         viewModelScope.launch(IO) {
             imazhRepository.getRecentHistory().collectLatest { list ->
@@ -50,11 +54,24 @@ class NewImageDescriptorViewModel @Inject constructor(
     fun changePrompt(newPrompt: String) {
         if (newPrompt.length <= PROMPT_CHARACTER_LIMIT) {
             _prompt.value = newPrompt
+        } else {
+            _prompt.value = newPrompt.substring(startIndex = 0, endIndex = PROMPT_CHARACTER_LIMIT)
         }
+        promptIsEditedByUser = true
     }
 
     fun resetPrompt() {
-        _prompt.value = ""
+        changePrompt("")
+        promptIsEditedByUser = false
+    }
+
+    fun generateRandomPrompt(confirmationCallback: () -> Unit) {
+        if (_prompt.value.isBlank() || !promptIsEditedByUser) {
+            changePrompt(imazhRepository.generateRandomPrompt())
+            promptIsEditedByUser = false
+        } else {
+            confirmationCallback()
+        }
     }
 
     fun selectStyle(newStyle: String) {

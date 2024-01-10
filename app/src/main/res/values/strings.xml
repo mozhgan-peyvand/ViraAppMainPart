@@ -260,5 +260,7 @@
     <string name="lbl_history">تاریخچه</string>
     <string name="lbl_random">تصادفی</string>
     <string name="lbl_last_prompts">آخرین توصیف‌ها</string>
+    <string name="lbl_random_description">توصیف تصادفی</string>
+    <string name="msg_random_description">با انتخاب این گزینه، توضیحات قبلی حذف شده و توصیف تصادفی جایگزین خواهد شد.</string>
 
 </resources>
