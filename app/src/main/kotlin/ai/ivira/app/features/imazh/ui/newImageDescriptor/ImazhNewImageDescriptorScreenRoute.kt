@@ -4,13 +4,17 @@ import ai.ivira.app.R
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.NEGATIVE_PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.PROMPT_CHARACTER_LIMIT
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhKeywordItem
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhStyleItem
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.HistoryBottomSheet
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhKeywordBottomSheet
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.History
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.Keywords
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.RandomPrompt
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.Style
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.RandomConfirmationBottomSheet
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.SelectStyleBottomSheet
-import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.StyleItem
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiSuccess
@@ -40,6 +44,7 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +56,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -123,6 +131,7 @@ private fun ImazhNewImageDescriptorScreen(
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val scrollState: ScrollState = rememberScrollState()
+    val imazhKeywords by viewModel.imazhKeywords.collectAsStateWithLifecycle()
     val isOkToGenerate by remember {
         derivedStateOf { viewModel.prompt.value.isNotBlank() && !isLoading }
     }
@@ -253,6 +262,20 @@ private fun ImazhNewImageDescriptorScreen(
                             }
                         )
                     }
+                    Keywords -> {
+                        ImazhKeywordBottomSheet(
+                            map = imazhKeywords,
+                            selectedChips = viewModel.selectedKeywords.value,
+                            onAcceptClick = { list ->
+                                viewModel.updateKeywordList(list)
+                                coroutineScope.launch {
+                                    if (modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.hide()
+                                    }
+                                }
+                            }
+                        )
+                    }
                 }
             }
         ) {
@@ -264,7 +287,6 @@ private fun ImazhNewImageDescriptorScreen(
                         .weight(1f)
                         .verticalScroll(state = scrollState)
                         .padding(paddingValues = paddingValues)
-                        .padding(horizontal = 16.dp)
                         .then(
                             if (isKeyboardVisible) {
                                 Modifier.padding(bottom = 16.dp)
@@ -291,11 +313,22 @@ private fun ImazhNewImageDescriptorScreen(
                                     modalBottomSheetState.show(coroutineScope)
                                 }
                             )
-                        }
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
 
                     Keywords(
-                        keywords = viewModel.selectedKeywords.value
+                        keywords = viewModel.selectedKeywords.value.toList(),
+                        onAddKeywordClick = {
+                            coroutineScope.launch {
+                                setSelectedSheet(Keywords)
+                                modalBottomSheetState.show()
+                            }
+                        },
+                        onChipClick = { item ->
+                            viewModel.removeKeyword(item)
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
 
                     Style(
@@ -307,13 +340,15 @@ private fun ImazhNewImageDescriptorScreen(
                         },
                         selectStyleCallBack = {
                             viewModel.selectStyle(it)
-                        }
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
 
                     NegativePrompt(
                         negativePrompt = viewModel.negativePrompt.value,
                         onNegativePromptChange = viewModel::setNegativePrompt,
-                        resetNegativePrompt = viewModel::resetNegativePrompt
+                        resetNegativePrompt = viewModel::resetNegativePrompt,
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
 
@@ -328,7 +363,8 @@ private fun ImazhNewImageDescriptorScreen(
                             )
                         },
                         enabled = isOkToGenerate,
-                        isLoading = isLoading
+                        isLoading = isLoading,
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
             }
@@ -520,9 +556,21 @@ private fun PromptInputText(
 
 @Composable
 private fun Keywords(
-    keywords: Set<String>
+    keywords: List<ImazhKeywordView>,
+    onAddKeywordClick: () -> Unit,
+    onChipClick: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    var expandState by rememberSaveable { mutableStateOf(ExpandState.Collapsed) }
+    val listState = rememberLazyListState()
+    var expandState by rememberSaveable(keywords) {
+        mutableStateOf(
+            if (keywords.isEmpty()) {
+                ExpandState.Collapsed
+            } else {
+                ExpandState.Expanded
+            }
+        )
+    }
 
     Header(
         title = R.string.lbl_keyword,
@@ -539,11 +587,34 @@ private fun Keywords(
                 stringRes = R.string.lbl_add,
                 iconRes = R.drawable.ic_add_small,
                 action = {
-                    // TODO: Should open keywords bottomSheet here
+                    onAddKeywordClick()
                 }
             )
-        }
+        },
+        modifier = modifier
     )
+
+    if (expandState == ExpandState.Expanded) {
+        Row {
+            LazyRow(
+                state = listState,
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(
+                    key = { keywordView -> keywordView.farsi },
+                    items = keywords
+                ) { list ->
+                    ImazhKeywordItem(
+                        value = list,
+                        isSelected = true,
+                        onClick = { onChipClick(list.farsi) }
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -551,7 +622,8 @@ private fun Style(
     selectedStyle: ImazhImageStyle,
     isExpandable: Boolean,
     selectStyleCallBack: (ImazhImageStyle) -> Unit,
-    openStyleBottomSheet: () -> Unit
+    openStyleBottomSheet: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var expandState by rememberSaveable { mutableStateOf(ExpandState.Collapsed) }
 
@@ -565,7 +637,7 @@ private fun Style(
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Header(
             title = R.string.lbl_image_style,
@@ -597,7 +669,7 @@ private fun Style(
                         tint = Color.Unspecified
                     )
                 }
-                StyleItem(
+                ImazhStyleItem(
                     style = selectedStyle,
                     isSelected = true,
                     showBorderOnSelection = false,
@@ -612,26 +684,29 @@ private fun Style(
 private fun NegativePrompt(
     negativePrompt: String,
     onNegativePromptChange: (String) -> Unit,
-    resetNegativePrompt: () -> Unit
+    resetNegativePrompt: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var expandState by rememberSaveable { mutableStateOf(ExpandState.Collapsed) }
 
-    Header(
-        title = R.string.lbl_negative_prompt,
-        hasExpandButton = true,
-        expandState = expandState,
-        expandable = true,
-        onExpandClick = { expandState = it.toggleState() },
-        hasInfo = false
-    )
-
-    if (expandState == ExpandState.Expanded) {
-        NegativePromptInputText(
-            text = negativePrompt,
-            onTextChange = onNegativePromptChange,
-            resetText = resetNegativePrompt,
-            charLimit = NEGATIVE_PROMPT_CHARACTER_LIMIT
+    Column(modifier = modifier) {
+        Header(
+            title = R.string.lbl_negative_prompt,
+            hasExpandButton = true,
+            expandState = expandState,
+            expandable = true,
+            onExpandClick = { expandState = it.toggleState() },
+            hasInfo = false
         )
+
+        if (expandState == ExpandState.Expanded) {
+            NegativePromptInputText(
+                text = negativePrompt,
+                onTextChange = onNegativePromptChange,
+                resetText = resetNegativePrompt,
+                charLimit = NEGATIVE_PROMPT_CHARACTER_LIMIT
+            )
+        }
     }
 }
 
@@ -640,12 +715,13 @@ private fun NegativePromptInputText(
     text: String,
     onTextChange: (String) -> Unit,
     resetText: () -> Unit,
+    modifier: Modifier = Modifier,
     charLimit: Int? = null
 ) {
     val focusRequester = remember { FocusRequester() }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .border(
                 width = 1.dp,
                 color = Color_Border,
@@ -742,7 +818,19 @@ private fun Header(
         Text(
             text = stringResource(id = title),
             style = MaterialTheme.typography.subtitle2,
-            color = LocalContentColor.current
+            color = LocalContentColor.current,
+            modifier = Modifier.then(
+                if (expandable) {
+                    Modifier.clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) {
+                        safeClick { onExpandClick(expandState) }
+                    }
+                } else {
+                    Modifier
+                }
+            )
         )
 
         if (hasInfo) {

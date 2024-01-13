@@ -3,7 +3,9 @@ package ai.ivira.app.features.imazh.ui.newImageDescriptor
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.data.ImazhRepository
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhHistoryView
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.toImazhHistoryView
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.toImazhKeywordView
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
@@ -22,6 +24,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
@@ -41,8 +44,11 @@ class NewImageDescriptorViewModel @Inject constructor(
     private val _prompt = mutableStateOf("")
     val prompt: State<String> = _prompt
 
-    private val _selectedKeywords = mutableStateOf<Set<String>>(setOf())
-    val selectedKeywords: State<Set<String>> = _selectedKeywords
+    private val _imazhKeywords = MutableStateFlow<Map<String, Set<ImazhKeywordView>>>(mapOf())
+    val imazhKeywords: StateFlow<Map<String, Set<ImazhKeywordView>>> = _imazhKeywords
+
+    private val _selectedKeywords = mutableStateOf<List<ImazhKeywordView>>(emptyList())
+    val selectedKeywords: State<List<ImazhKeywordView>> = _selectedKeywords
 
     private val _selectedStyle: MutableState<ImazhImageStyle> = mutableStateOf(ImazhImageStyle.None)
     val selectedStyle: State<ImazhImageStyle> = _selectedStyle
@@ -58,6 +64,14 @@ class NewImageDescriptorViewModel @Inject constructor(
     private var promptIsEditedByUser by mutableStateOf(false)
 
     init {
+        viewModelScope.launch {
+            _imazhKeywords.update {
+                imazhRepository.keywordsMap.mapValues { keywords ->
+                    keywords.value.map { it.toImazhKeywordView() }.toSet()
+                }
+            }
+        }
+
         viewModelScope.launch(IO) {
             imazhRepository.getRecentHistory().collectLatest { list ->
                 withContext(Main) {
@@ -96,16 +110,22 @@ class NewImageDescriptorViewModel @Inject constructor(
         _selectedStyle.value = newStyle
     }
 
-    fun addKeywords(vararg newKeywords: String) {
+    fun addKeywords(vararg newKeywords: ImazhKeywordView) {
         _selectedKeywords.value = _selectedKeywords.value.plus(newKeywords)
     }
 
-    fun removeKeywords(vararg newKeywords: String) {
+    fun removeKeywords(vararg newKeywords: ImazhKeywordView) {
         _selectedKeywords.value = _selectedKeywords.value.minus(newKeywords.toSet())
     }
 
+    fun removeKeyword(newKeyword: String) {
+        _selectedKeywords.value = _selectedKeywords.value.filter { keyword ->
+            keyword.farsi != newKeyword
+        }
+    }
+
     fun resetKeywords() {
-        _selectedKeywords.value = setOf()
+        _selectedKeywords.value = emptyList()
     }
 
     fun setNegativePrompt(newNegativeWords: String) {
@@ -116,6 +136,12 @@ class NewImageDescriptorViewModel @Inject constructor(
 
     fun resetNegativePrompt() {
         _negativePrompt.value = ""
+    }
+
+    fun updateKeywordList(set: List<ImazhKeywordView>) {
+        viewModelScope.launch {
+            _selectedKeywords.value = set
+        }
     }
 
     fun sendRequest(

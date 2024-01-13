@@ -1,6 +1,8 @@
 package ai.ivira.app.features.imazh.data
 
+import ai.ivira.app.features.imazh.data.entity.ColorKeyword
 import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
+import ai.ivira.app.features.imazh.data.entity.PaintTypeKeyword
 import ai.ivira.app.features.imazh.data.entity.TextToImageRequestNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageResult
 import ai.ivira.app.utils.data.NetworkHandler
@@ -20,6 +22,12 @@ class ImazhRepository @Inject constructor(
     private val networkHandler: NetworkHandler,
     private val randomPromptGenerator: RandomPromptGenerator
 ) {
+    // fixme remove hard codes
+    val keywordsMap = mapOf(
+        "رنگ" to ColorKeyword,
+        "نقاشی" to PaintTypeKeyword
+    )
+
     fun getRecentHistory(): Flow<List<ImazhHistoryEntity>> = localDataSource.getRecentHistory()
     suspend fun convertTextToImage(
         prompt: String,
