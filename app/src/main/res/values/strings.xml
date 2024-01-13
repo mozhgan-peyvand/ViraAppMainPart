@@ -145,7 +145,7 @@
 
     <!-- AvaSho  -->
     <string name="lbl_avasho_onboarding_first_title">آواشو</string>
-    <string name="lbl_avasho_onboarding_first_description">تنها سرویس تبدیل گفتار به متن فارسی مبتنی بر فناوری هوش مصنوعی با قابلیت تشخیص تمامی لهجه های بومی ایرانی</string>
+    <string name="lbl_avasho_onboarding_first_description">تنها سرویس تبدیل متن به گفتار فارسی مبتنی بر فناوری هوش مصنوعی با قابلیت خوانش بلادرنگ متون با لحن طبیعی انسان</string>
     <string name="lbl_avasho_onboarding_second_title">ویژگی های سرویس آواشو</string>
     <string name="lbl_avasho_onboarding_second_description_first">تبدیل متن به گفتار از طریق تایپ متن  بارگذاری و فایل متنی</string>
     <string name="lbl_avasho_onboarding_second_description_second">قابلیت انتخاب نوع گوینده (گوینده مرد و  زن)</string>
