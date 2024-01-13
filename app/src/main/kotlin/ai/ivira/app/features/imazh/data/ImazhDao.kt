@@ -1,6 +1,7 @@
 package ai.ivira.app.features.imazh.data
 
 import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
+import ai.ivira.app.features.imazh.data.entity.ImazhProcessedEntity
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -14,4 +15,7 @@ interface ImazhDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProcessed(item: List<ImazhHistoryEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPhotoInfo(imazhProcessedEntity: ImazhProcessedEntity)
 }

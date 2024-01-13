@@ -14,10 +14,14 @@ import ai.ivira.app.features.home.data.VersionDao
 import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
 import ai.ivira.app.features.home.data.entity.VersionEntity
 import ai.ivira.app.features.imazh.data.ImazhDao
+import ai.ivira.app.features.imazh.data.ImazhTypeConvertor
 import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
+import ai.ivira.app.features.imazh.data.entity.ImazhProcessedEntity
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
+@TypeConverters(ImazhTypeConvertor::class)
 @Database(
     entities = [
         AvanegarProcessedFileEntity::class,
@@ -29,7 +33,8 @@ import androidx.room.RoomDatabase
         AvashoTrackingFileEntity::class,
         AvashoUploadingFileEntity::class,
         TileConfigEntity::class,
-        ImazhHistoryEntity::class
+        ImazhHistoryEntity::class,
+        ImazhProcessedEntity::class
     ],
     version = 5,
     exportSchema = false

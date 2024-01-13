@@ -1,16 +1,21 @@
 package ai.ivira.app.features.imazh.ui.newImageDescriptor
 
 import ai.ivira.app.R
+import ai.ivira.app.features.imazh.ui.ImazhProcessImageStyle
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.ImazhNewImageDescriptionBottomSheetType.History
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.ImazhNewImageDescriptionBottomSheetType.RandomPrompt
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.NEGATIVE_PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.PROMPT_CHARACTER_LIMIT
+import ai.ivira.app.utils.ui.UiError
+import ai.ivira.app.utils.ui.UiLoading
+import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.hideAndShow
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.show
+import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Border
@@ -44,6 +49,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
@@ -51,10 +57,12 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -72,6 +80,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -80,6 +89,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
@@ -97,11 +107,16 @@ private fun ImazhNewImageDescriptorScreen(
     navController: NavHostController,
     viewModel: NewImageDescriptorViewModel
 ) {
+    val uiState by viewModel.uiViewState.collectAsStateWithLifecycle()
+    var isLoading by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val scrollState: ScrollState = rememberScrollState()
     val isOkToGenerate by remember {
-        derivedStateOf { viewModel.prompt.value.isNotBlank() }
+        derivedStateOf { viewModel.prompt.value.isNotBlank() && !isLoading }
     }
     val view = LocalView.current
     var isKeyboardVisible by remember { mutableStateOf(false) }
@@ -148,8 +163,32 @@ private fun ImazhNewImageDescriptorScreen(
             view.viewTreeObserver.removeOnPreDrawListener(listener)
         }
     }
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is UiError -> {
+                showMessage(
+                    snackbarHostState,
+                    coroutineScope,
+                    context.getString(R.string.msg_updating_failed_please_try_again_later)
+                )
+
+                // fixme should remove it, replace stateFlow with sharedFlow in viewModel
+                viewModel.clearUiState()
+            }
+
+            is UiLoading -> {
+                isLoading = true
+            }
+            is UiSuccess -> {
+                navController.navigateUp()
+                viewModel.clearUiState()
+            }
+            else -> {}
+        }
+    }
 
     Scaffold(
+        scaffoldState = scaffoldState,
         backgroundColor = MaterialTheme.colors.background,
         topBar = {
             NewImageDescriptorTopBar(
@@ -253,8 +292,16 @@ private fun ImazhNewImageDescriptorScreen(
 
                 if (!isKeyboardVisible) {
                     ConfirmButton(
-                        onClick = navController::navigateUp,
-                        enabled = isOkToGenerate
+                        onClick = {
+                            viewModel.sendRequest(
+                                prompt = "",
+                                negativePrompt = "",
+                                keywords = emptyList(),
+                                style = ImazhProcessImageStyle.Abstract
+                            )
+                        },
+                        enabled = isOkToGenerate,
+                        isLoading = isLoading
                     )
                 }
             }
@@ -302,6 +349,7 @@ private fun NewImageDescriptorTopBar(
 private fun ConfirmButton(
     onClick: () -> Unit,
     enabled: Boolean,
+    isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -317,11 +365,15 @@ private fun ConfirmButton(
             enabled = enabled,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = stringResource(id = R.string.lbl_generate_image),
-                style = MaterialTheme.typography.button,
-                color = Color_Text_1
-            )
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else {
+                Text(
+                    text = stringResource(id = R.string.lbl_generate_image),
+                    style = MaterialTheme.typography.button,
+                    color = Color_Text_1
+                )
+            }
         }
     }
 }

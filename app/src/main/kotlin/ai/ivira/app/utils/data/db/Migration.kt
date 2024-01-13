@@ -78,6 +78,7 @@ object Migration {
     fun migration4_5(): Migration {
         return object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `ImazhProcessedEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `imagePath` TEXT NOT NULL, `keywords` TEXT NOT NULL, `prompt` TEXT NOT NULL, `negativePrompt` TEXT NOT NULL, `style` TEXT NOT NULL)")
                 db.execSQL("CREATE TABLE IF NOT EXISTS `ImazhHistoryEntity` (`prompt` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`text`))")
             }
         }

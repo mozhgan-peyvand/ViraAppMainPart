@@ -18,6 +18,13 @@ Java_ai_ivira_app_utils_common_di_NetworkModule_bu(JNIEnv *env, jobject thiz) {
 
 extern "C"
 JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_imazh_data_ImazhRemoteDataSource_bi(JNIEnv *env, jobject thiz) {
+    std::string bi = "http://192.168.33.21:3002/service/textToImage/file";
+    return env->NewStringUTF(bi.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
 Java_ai_ivira_app_features_avasho_data_AvashoRepository_bu(JNIEnv *env, jobject thiz) {
     std::string BU = "9.8!)v~u-8t%\";$08b8(c\";$08c6;84--(";
     std::string key = "QZL";
@@ -168,6 +175,13 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_ai_ivira_app_features_avasho_data_AvashoRemoteDataSource_sak(JNIEnv *env, jobject thiz) {
     return ak(env);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_imazh_data_ImazhRemoteDataSource_sai(JNIEnv *env, jobject thiz) {
+    std::string AK = "2f632ed518a52e2b972a4a81f01f6f58fcd38f9ae324769ec2a5f1e9642ac7accac10f894eb2b7fd807a86934b8b4443f42c30f5decf54745d3d4e0716dacc5a";
+    return env->NewStringUTF(AK.c_str());
 }
 
 extern "C"
