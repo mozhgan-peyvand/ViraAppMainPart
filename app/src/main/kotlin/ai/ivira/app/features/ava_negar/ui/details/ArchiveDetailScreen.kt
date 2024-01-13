@@ -51,7 +51,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -62,6 +61,7 @@ import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberModalBottomSheetState
@@ -577,7 +577,7 @@ private fun AvaNegarProcessedArchiveDetailBottomBar(
             .padding(20.dp)
             .background(Color_BG_Solid_2)
     ) {
-        Button(
+        TextButton(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
@@ -621,7 +621,7 @@ private fun AvaNegarProcessedArchiveDetailBottomBar(
 
         Spacer(modifier = Modifier.size(16.dp))
 
-        Button(
+        TextButton(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
