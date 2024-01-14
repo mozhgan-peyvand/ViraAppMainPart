@@ -1,6 +1,7 @@
-package ai.ivira.app.features.imazh.ui.newImageDescriptor
+package ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets
 
 import ai.ivira.app.R
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhHistoryView
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview

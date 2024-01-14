@@ -1,4 +1,4 @@
-package ai.ivira.app.features.imazh.ui.newImageDescriptor
+package ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets
 
 import ai.ivira.app.R
 import ai.ivira.app.utils.ui.preview.ViraPreview

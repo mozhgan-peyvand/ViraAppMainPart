@@ -1,7 +1,7 @@
 package ai.ivira.app.features.imazh.ui.newImageDescriptor
 
+import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.data.ImazhRepository
-import ai.ivira.app.features.imazh.ui.ImazhProcessImageStyle
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhHistoryView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.toImazhHistoryView
 import ai.ivira.app.utils.data.api_result.AppResult
@@ -19,12 +19,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -44,8 +44,10 @@ class NewImageDescriptorViewModel @Inject constructor(
     private val _selectedKeywords = mutableStateOf<Set<String>>(setOf())
     val selectedKeywords: State<Set<String>> = _selectedKeywords
 
-    private val _selectedStyle: MutableState<String?> = mutableStateOf(null)
-    val selectedStyle: State<String?> = _selectedStyle
+    private val _selectedStyle: MutableState<ImazhImageStyle> = mutableStateOf(ImazhImageStyle.None)
+    val selectedStyle: State<ImazhImageStyle> = _selectedStyle
+
+    val availableStyles = imazhRepository.getImageStyles().flowOn(IO)
 
     private val _negativePrompt = mutableStateOf("")
     val negativePrompt: State<String> = _negativePrompt
@@ -90,12 +92,8 @@ class NewImageDescriptorViewModel @Inject constructor(
         }
     }
 
-    fun selectStyle(newStyle: String) {
-        if (newStyle.isNotBlank()) _selectedStyle.value = newStyle
-    }
-
-    fun resetSelectedStyle() {
-        _selectedStyle.value = null
+    fun selectStyle(newStyle: ImazhImageStyle) {
+        _selectedStyle.value = newStyle
     }
 
     fun addKeywords(vararg newKeywords: String) {
@@ -124,15 +122,15 @@ class NewImageDescriptorViewModel @Inject constructor(
         prompt: String,
         negativePrompt: String,
         keywords: List<String>,
-        style: ImazhProcessImageStyle = ImazhProcessImageStyle.Abstract
+        style: ImazhImageStyle
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(IO) {
             _uiViewState.update { UiLoading }
             when (val result = imazhRepository.convertTextToImage(
                 prompt,
                 negativePrompt,
                 keywords,
-                style.value
+                style
             )) {
                 is AppResult.Success -> {
                     _uiViewState.update {

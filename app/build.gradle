@@ -129,6 +129,7 @@ android {
         freeCompilerArgs += "-opt-in=com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi"
         freeCompilerArgs += "-opt-in=androidx.compose.animation.ExperimentalAnimationApi"
         freeCompilerArgs += "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"
+        freeCompilerArgs += "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"
         jvmTarget = '17'
     }
     buildFeatures {

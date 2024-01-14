@@ -1,11 +1,16 @@
 package ai.ivira.app.features.imazh.ui.newImageDescriptor
 
 import ai.ivira.app.R
-import ai.ivira.app.features.imazh.ui.ImazhProcessImageStyle
-import ai.ivira.app.features.imazh.ui.newImageDescriptor.ImazhNewImageDescriptionBottomSheetType.History
-import ai.ivira.app.features.imazh.ui.newImageDescriptor.ImazhNewImageDescriptionBottomSheetType.RandomPrompt
+import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.NEGATIVE_PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.PROMPT_CHARACTER_LIMIT
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.HistoryBottomSheet
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.History
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.RandomPrompt
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.Style
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.RandomConfirmationBottomSheet
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.SelectStyleBottomSheet
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.StyleItem
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiSuccess
@@ -21,6 +26,7 @@ import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Border
 import ai.ivira.app.utils.ui.theme.Color_Info_700
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
+import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_40
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Cyan_200
@@ -66,6 +72,7 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -86,6 +93,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -123,6 +131,7 @@ private fun ImazhNewImageDescriptorScreen(
     val isHistoryButtonVisible by remember(viewModel.historyList.value) {
         mutableStateOf(viewModel.historyList.value.isNotEmpty())
     }
+    val availableStyles by viewModel.availableStyles.collectAsState(initial = emptyList())
 
     val (selectedSheet, setSelectedSheet) = rememberSaveable {
         mutableStateOf(History)
@@ -234,6 +243,16 @@ private fun ImazhNewImageDescriptorScreen(
                             }
                         )
                     }
+                    Style -> {
+                        SelectStyleBottomSheet(
+                            styles = availableStyles,
+                            selectedStyle = viewModel.selectedStyle.value,
+                            confirmSelectionCallBack = {
+                                viewModel.selectStyle(it)
+                                modalBottomSheetState.hide(coroutineScope)
+                            }
+                        )
+                    }
                 }
             }
         ) {
@@ -280,7 +299,15 @@ private fun ImazhNewImageDescriptorScreen(
                     )
 
                     Style(
-                        selectedStyle = viewModel.selectedStyle.value
+                        selectedStyle = viewModel.selectedStyle.value,
+                        isExpandable = viewModel.selectedStyle.value != ImazhImageStyle.None,
+                        openStyleBottomSheet = {
+                            setSelectedSheet(Style)
+                            modalBottomSheetState.show(coroutineScope)
+                        },
+                        selectStyleCallBack = {
+                            viewModel.selectStyle(it)
+                        }
                     )
 
                     NegativePrompt(
@@ -297,7 +324,7 @@ private fun ImazhNewImageDescriptorScreen(
                                 prompt = "",
                                 negativePrompt = "",
                                 keywords = emptyList(),
-                                style = ImazhProcessImageStyle.Abstract
+                                style = viewModel.selectedStyle.value
                             )
                         },
                         enabled = isOkToGenerate,
@@ -495,16 +522,14 @@ private fun PromptInputText(
 private fun Keywords(
     keywords: Set<String>
 ) {
-    var expanded by rememberSaveable { mutableStateOf(false) }
+    var expandState by rememberSaveable { mutableStateOf(ExpandState.Collapsed) }
 
     Header(
         title = R.string.lbl_keyword,
         hasExpandButton = true,
-        expanded = expanded,
+        expandState = expandState,
         expandable = keywords.isNotEmpty(),
-        onExpandClick = {
-            expanded = !it
-        },
+        onExpandClick = { expandState = expandState.toggleState() },
         hasInfo = false,
         onInfoClick = {
             // TODO: Should open keywords info here
@@ -523,25 +548,64 @@ private fun Keywords(
 
 @Composable
 private fun Style(
-    selectedStyle: String?
+    selectedStyle: ImazhImageStyle,
+    isExpandable: Boolean,
+    selectStyleCallBack: (ImazhImageStyle) -> Unit,
+    openStyleBottomSheet: () -> Unit
 ) {
-    Header(
-        title = R.string.lbl_image_style,
-        hasExpandButton = true,
-        expanded = false,
-        expandable = false,
-        hasInfo = false,
-        onInfoClick = {},
-        sectionActionButton = {
-            SectionActionButton(
-                stringRes = if (selectedStyle != null) R.string.lbl_change else R.string.lbl_select,
-                iconRes = if (selectedStyle != null) R.drawable.ic_change else R.drawable.ic_add_small,
-                action = {
-                    // TODO: should open change/select style bottomSheet
-                }
-            )
+    var expandState by rememberSaveable { mutableStateOf(ExpandState.Collapsed) }
+
+    LaunchedEffect(selectedStyle) {
+        expandState = if (selectedStyle == ImazhImageStyle.None) {
+            ExpandState.Collapsed
+        } else {
+            ExpandState.Expanded
         }
-    )
+    }
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Header(
+            title = R.string.lbl_image_style,
+            hasExpandButton = true,
+            expandState = expandState,
+            expandable = isExpandable,
+            hasInfo = false,
+            onInfoClick = {},
+            onExpandClick = { expandState = expandState.toggleState() },
+            sectionActionButton = {
+                SectionActionButton(
+                    stringRes = if (selectedStyle != ImazhImageStyle.None) R.string.lbl_change else R.string.lbl_select,
+                    iconRes = if (selectedStyle != ImazhImageStyle.None) R.drawable.ic_change else R.drawable.ic_add_small,
+                    action = openStyleBottomSheet
+                )
+            }
+        )
+        if (expandState == ExpandState.Expanded && selectedStyle != ImazhImageStyle.None) {
+            Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+                IconButton(
+                    onClick = { safeClick { selectStyleCallBack(ImazhImageStyle.None) } },
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .zIndex(1f)
+                ) {
+                    ViraIcon(
+                        drawable = R.drawable.ic_close_circle,
+                        contentDescription = stringResource(id = R.string.lbl_btn_delete),
+                        tint = Color.Unspecified
+                    )
+                }
+                StyleItem(
+                    style = selectedStyle,
+                    isSelected = true,
+                    showBorderOnSelection = false,
+                    onItemClick = null
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -550,18 +614,18 @@ private fun NegativePrompt(
     onNegativePromptChange: (String) -> Unit,
     resetNegativePrompt: () -> Unit
 ) {
-    var expanded by rememberSaveable { mutableStateOf(false) }
+    var expandState by rememberSaveable { mutableStateOf(ExpandState.Collapsed) }
 
     Header(
         title = R.string.lbl_negative_prompt,
         hasExpandButton = true,
-        expanded = expanded,
+        expandState = expandState,
         expandable = true,
-        onExpandClick = { expanded = !it },
+        onExpandClick = { expandState = it.toggleState() },
         hasInfo = false
     )
 
-    if (expanded) {
+    if (expandState == ExpandState.Expanded) {
         NegativePromptInputText(
             text = negativePrompt,
             onTextChange = onNegativePromptChange,
@@ -655,8 +719,8 @@ private fun Header(
     @StringRes title: Int,
     modifier: Modifier = Modifier,
     hasExpandButton: Boolean = false,
-    expanded: Boolean = false,
-    onExpandClick: (currentExpandState: Boolean) -> Unit = {},
+    expandState: ExpandState = ExpandState.Collapsed,
+    onExpandClick: (currentExpandState: ExpandState) -> Unit = {},
     expandable: Boolean = false,
     hasInfo: Boolean = false,
     onInfoClick: () -> Unit = {},
@@ -670,7 +734,7 @@ private fun Header(
         if (hasExpandButton) {
             ExpandIcon(
                 enabled = expandable,
-                expanded = expanded,
+                expandState = expandState,
                 onClick = onExpandClick
             )
         }
@@ -708,14 +772,22 @@ private fun Header(
 @Composable
 private fun ExpandIcon(
     enabled: Boolean,
-    expanded: Boolean,
-    onClick: (currentExpandState: Boolean) -> Unit,
+    expandState: ExpandState,
+    onClick: (currentExpandState: ExpandState) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val rotationDegree = if (!expanded) 0f else 180f
+    val rotationDegree = when (expandState) {
+        ExpandState.Collapsed -> {
+            0f
+        }
+        ExpandState.Expanded -> {
+            180f
+        }
+    }
+
     IconButton(
         onClick = {
-            safeClick(event = { onClick(expanded) })
+            safeClick(event = { onClick(expandState) })
         },
         enabled = enabled,
         modifier = modifier
@@ -724,8 +796,18 @@ private fun ExpandIcon(
             drawable = R.drawable.ic_arrow_down,
             contentDescription = stringResource(id = R.string.lbl_details),
             modifier = Modifier.rotate(rotationDegree),
-            tint = if (enabled) Cyan_200 else Color_Primary_Opacity_15
+            tint = if (enabled) Cyan_200 else Color_Primary_Opacity_40
         )
+    }
+}
+
+private enum class ExpandState {
+    Expanded,
+    Collapsed;
+
+    fun toggleState(): ExpandState = when (this) {
+        Expanded -> Collapsed
+        Collapsed -> Expanded
     }
 }
 

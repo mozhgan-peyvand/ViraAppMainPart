@@ -9,7 +9,9 @@ import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.data.api_result.toAppResult
 import ai.ivira.app.utils.ui.attachListItemToString
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
+import kotlin.random.Random
 
 class ImazhRepository @Inject constructor(
     private val localDataSource: ImazhLocalDataSource,
@@ -22,7 +24,7 @@ class ImazhRepository @Inject constructor(
         prompt: String,
         negativePrompt: String,
         keywords: List<String>,
-        style: String
+        style: ImazhImageStyle
     ): AppResult<TextToImageResult> {
         if (!networkHandler.hasNetworkConnection()) {
             return AppResult.Error(AppException.NetworkConnectionException())
@@ -31,7 +33,7 @@ class ImazhRepository @Inject constructor(
             TextToImageRequestNetwork(
                 prompt.attachListItemToString(keywords),
                 negativePrompt = negativePrompt,
-                style = style
+                style = retrieveStyleKey(style)
             )
         ).toAppResult()
 
@@ -42,7 +44,7 @@ class ImazhRepository @Inject constructor(
                     keywords = keywords,
                     prompt = prompt,
                     negativePrompt = negativePrompt,
-                    style = style
+                    style = style.key
                 )
                 AppResult.Success(result.data)
             }
@@ -53,4 +55,29 @@ class ImazhRepository @Inject constructor(
     }
 
     fun generateRandomPrompt(): String = randomPromptGenerator.generateRandomPrompt()
+
+    fun getImageStyles(): Flow<List<ImazhImageStyle>> = flowOf(
+        ImazhImageStyle.values().toList()
+    )
+
+    private fun retrieveStyleKey(selectedStyle: ImazhImageStyle): String {
+        return if (selectedStyle == ImazhImageStyle.None) {
+            getRandomStyleFrom(
+                listOf(
+                    ImazhImageStyle.Cinematic,
+                    ImazhImageStyle.Comic,
+                    ImazhImageStyle.DigitalArt
+                )
+            ).key
+        } else {
+            selectedStyle.key
+        }
+    }
+
+    private fun getRandomStyleFrom(styles: List<ImazhImageStyle>): ImazhImageStyle {
+        if (styles.isEmpty()) return ImazhImageStyle.None
+
+        val random = Random(seed = System.currentTimeMillis()).nextInt(styles.size)
+        return styles[random]
+    }
 }
