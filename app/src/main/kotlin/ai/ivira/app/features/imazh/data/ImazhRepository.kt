@@ -10,6 +10,7 @@ import ai.ivira.app.utils.data.api_result.toAppResult
 import ai.ivira.app.utils.ui.attachListItemToString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import saman.zamani.persiandate.PersianDate
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -45,6 +46,12 @@ class ImazhRepository @Inject constructor(
                     prompt = prompt,
                     negativePrompt = negativePrompt,
                     style = style.key
+                )
+                localDataSource.addPromptToHistory(
+                    ImazhHistoryEntity(
+                        prompt,
+                        PersianDate().time
+                    )
                 )
                 AppResult.Success(result.data)
             }

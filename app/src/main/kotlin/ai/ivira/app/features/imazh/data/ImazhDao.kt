@@ -14,7 +14,7 @@ interface ImazhDao {
     fun getRecentHistory(): Flow<List<ImazhHistoryEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertProcessed(item: List<ImazhHistoryEntity>)
+    suspend fun addPromptToHistory(item: ImazhHistoryEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPhotoInfo(imazhProcessedEntity: ImazhProcessedEntity)

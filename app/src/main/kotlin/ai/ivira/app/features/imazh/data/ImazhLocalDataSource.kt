@@ -9,8 +9,8 @@ class ImazhLocalDataSource @Inject constructor(
 ) {
     fun getRecentHistory() = dao.getRecentHistory()
 
-    suspend fun insertProcessed(list: List<ImazhHistoryEntity>) {
-        dao.insertProcessed(list)
+    suspend fun addPromptToHistory(item: ImazhHistoryEntity) {
+        dao.addPromptToHistory(item)
     }
 
     suspend fun addImageToDataBase(
