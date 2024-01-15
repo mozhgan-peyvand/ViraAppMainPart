@@ -412,6 +412,7 @@ private fun CollapseStatePlayer(
         }
 
         BottomBar(
+            progress = animationProgress,
             onShareClick = {
                 onShareClick()
             },
@@ -423,10 +424,16 @@ private fun CollapseStatePlayer(
 
 @Composable
 fun BottomBar(
+    progress: Float,
     modifier: Modifier = Modifier,
     onShareClick: () -> Unit,
     onSaveClick: () -> Unit
 ) {
+    val textTypography = MaterialTheme.typography.button
+    val maxFontSize by remember(progress) {
+        mutableStateOf(textTypography.fontSize * progress)
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -436,12 +443,7 @@ fun BottomBar(
 
         Row(modifier = modifier.fillMaxWidth()) {
             TextButton(
-                contentPadding = PaddingValues(
-                    top = 16.dp,
-                    bottom = 16.dp,
-                    start = 10.dp,
-                    end = 10.dp
-                ),
+                contentPadding = PaddingValues(vertical = 12.dp, horizontal = 10.dp),
                 onClick = {
                     safeClick {
                         onSaveClick()
@@ -453,7 +455,7 @@ fun BottomBar(
                 ),
                 modifier = Modifier
                     .weight(1f)
-                    .height(52.dp)
+                    .height(60.dp)
             ) {
                 Row(
                     horizontalArrangement = Arrangement.Center,
@@ -470,7 +472,7 @@ fun BottomBar(
                         color = Color_Primary_300,
                         textScale = TextAutoSizeRange(
                             min = 10.sp,
-                            max = MaterialTheme.typography.button.fontSize
+                            max = maxFontSize
                         )
                     )
                 }
@@ -479,12 +481,7 @@ fun BottomBar(
             Spacer(modifier = Modifier.size(16.dp))
 
             TextButton(
-                contentPadding = PaddingValues(
-                    top = 16.dp,
-                    bottom = 16.dp,
-                    start = 10.dp,
-                    end = 10.dp
-                ),
+                contentPadding = PaddingValues(vertical = 12.dp, horizontal = 10.dp),
                 onClick = {
                     safeClick {
                         onShareClick()
@@ -496,7 +493,7 @@ fun BottomBar(
                 ),
                 modifier = Modifier
                     .weight(1f)
-                    .height(52.dp)
+                    .height(60.dp)
             ) {
                 Row(
                     horizontalArrangement = Arrangement.Center,
@@ -513,7 +510,7 @@ fun BottomBar(
                         color = Color_Primary_300,
                         textScale = TextAutoSizeRange(
                             min = 10.sp,
-                            max = MaterialTheme.typography.button.fontSize
+                            max = maxFontSize
                         )
                     )
                 }
