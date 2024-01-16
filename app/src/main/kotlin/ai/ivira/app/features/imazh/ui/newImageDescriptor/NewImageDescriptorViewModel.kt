@@ -23,6 +23,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -62,6 +63,8 @@ class NewImageDescriptorViewModel @Inject constructor(
     val historyList: State<List<ImazhHistoryView>> = _historyList
 
     private var promptIsEditedByUser by mutableStateOf(false)
+
+    private var job: Job? = null
 
     init {
         viewModelScope.launch {
@@ -175,6 +178,29 @@ class NewImageDescriptorViewModel @Inject constructor(
 
     fun clearUiState() {
         _uiViewState.value = UiIdle
+    }
+
+    fun handelBackButton(
+        navigateUp: () -> Unit,
+        backWhileEditing: () -> Unit,
+        backWhileGenerating: () -> Unit
+    ) {
+        val isScreenEmpty = _prompt.value.isEmpty() && _negativePrompt.value.isEmpty() &&
+            _selectedStyle.value == ImazhImageStyle.None && _selectedKeywords.value.isEmpty()
+
+        if (_uiViewState.value == UiLoading) {
+            backWhileGenerating()
+        } else {
+            if (isScreenEmpty) {
+                navigateUp()
+            } else {
+                backWhileEditing()
+            }
+        }
+    }
+
+    fun cancelConvertTextToImageRequest() {
+        job?.cancel()
     }
 
     companion object {

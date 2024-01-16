@@ -9,6 +9,8 @@ import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhStyleIte
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.HistoryBottomSheet
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhKeywordBottomSheet
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.BackWhileEditing
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.BackWhileGenerate
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.History
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.Keywords
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.RandomPrompt
@@ -162,7 +164,19 @@ private fun ImazhNewImageDescriptorScreen(
         if (modalBottomSheetState.isVisible) {
             modalBottomSheetState.hide(coroutineScope)
         } else {
-            navController.navigateUp()
+            viewModel.handelBackButton(
+                navigateUp = {
+                    navController.navigateUp()
+                },
+                backWhileEditing = {
+                    setSelectedSheet(BackWhileEditing)
+                    modalBottomSheetState.show(coroutineScope)
+                },
+                backWhileGenerating = {
+                    setSelectedSheet(BackWhileGenerate)
+                    modalBottomSheetState.show(coroutineScope)
+                }
+            )
         }
     }
 
@@ -275,6 +289,32 @@ private fun ImazhNewImageDescriptorScreen(
                                 }
                             }
                         )
+                    }
+                    BackWhileGenerate -> {
+                        BackConfirmationWhileGeneratingBottomSheet(
+                            continueAction = {
+                                modalBottomSheetState.hide(coroutineScope)
+                            },
+                            deleteAction = {
+                                viewModel.cancelConvertTextToImageRequest()
+                                modalBottomSheetState.hide(coroutineScope)
+                                navController.navigateUp()
+                            })
+                    }
+                    BackWhileEditing -> {
+                        BackConfirmationWhileEditingBottomSheet(
+                            generateAction = {
+                                viewModel.sendRequest(
+                                    prompt = "",
+                                    negativePrompt = "",
+                                    keywords = emptyList(),
+                                    style = viewModel.selectedStyle.value
+                                )
+                            },
+                            deleteAction = {
+                                modalBottomSheetState.hide(coroutineScope)
+                                navController.navigateUp()
+                            })
                     }
                 }
             }

@@ -4,5 +4,7 @@ enum class ImazhNewImageDescriptionBottomSheetType {
     History,
     RandomPrompt,
     Style,
-    Keywords
+    Keywords,
+    BackWhileEditing,
+    BackWhileGenerate
 }
