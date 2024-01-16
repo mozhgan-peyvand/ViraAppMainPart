@@ -2,6 +2,7 @@ package ai.ivira.app.features.imazh.ui.newImageDescriptor
 
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.data.ImazhRepository
+import ai.ivira.app.features.imazh.data.entity.toImazhKeywordEntity
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhHistoryView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.toImazhHistoryView
@@ -147,19 +148,14 @@ class NewImageDescriptorViewModel @Inject constructor(
         }
     }
 
-    fun sendRequest(
-        prompt: String,
-        negativePrompt: String,
-        keywords: List<String>,
-        style: ImazhImageStyle
-    ) {
+    fun generateImage() {
         viewModelScope.launch(IO) {
             _uiViewState.update { UiLoading }
             when (val result = imazhRepository.convertTextToImage(
-                prompt,
-                negativePrompt,
-                keywords,
-                style
+                prompt.value,
+                negativePrompt.value,
+                selectedKeywords.value.map { it.toImazhKeywordEntity() },
+                selectedStyle.value
             )) {
                 is AppResult.Success -> {
                     _uiViewState.update {

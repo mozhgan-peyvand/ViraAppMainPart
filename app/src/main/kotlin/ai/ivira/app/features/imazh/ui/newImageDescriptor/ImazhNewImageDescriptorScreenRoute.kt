@@ -304,12 +304,7 @@ private fun ImazhNewImageDescriptorScreen(
                     BackWhileEditing -> {
                         BackConfirmationWhileEditingBottomSheet(
                             generateAction = {
-                                viewModel.sendRequest(
-                                    prompt = "",
-                                    negativePrompt = "",
-                                    keywords = emptyList(),
-                                    style = viewModel.selectedStyle.value
-                                )
+                                viewModel.generateImage()
                             },
                             deleteAction = {
                                 modalBottomSheetState.hide(coroutineScope)
@@ -395,12 +390,7 @@ private fun ImazhNewImageDescriptorScreen(
                 if (!isKeyboardVisible) {
                     ConfirmButton(
                         onClick = {
-                            viewModel.sendRequest(
-                                prompt = "",
-                                negativePrompt = "",
-                                keywords = emptyList(),
-                                style = viewModel.selectedStyle.value
-                            )
+                            viewModel.generateImage()
                         },
                         enabled = isOkToGenerate,
                         isLoading = isLoading,

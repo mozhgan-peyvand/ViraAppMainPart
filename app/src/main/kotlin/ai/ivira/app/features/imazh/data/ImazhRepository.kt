@@ -2,6 +2,7 @@ package ai.ivira.app.features.imazh.data
 
 import ai.ivira.app.features.imazh.data.entity.ColorKeyword
 import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
+import ai.ivira.app.features.imazh.data.entity.ImazhKeywordEntity
 import ai.ivira.app.features.imazh.data.entity.PaintTypeKeyword
 import ai.ivira.app.features.imazh.data.entity.TextToImageRequestNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageResult
@@ -32,7 +33,7 @@ class ImazhRepository @Inject constructor(
     suspend fun convertTextToImage(
         prompt: String,
         negativePrompt: String,
-        keywords: List<String>,
+        keywords: List<ImazhKeywordEntity>,
         style: ImazhImageStyle
     ): AppResult<TextToImageResult> {
         if (!networkHandler.hasNetworkConnection()) {
@@ -40,7 +41,7 @@ class ImazhRepository @Inject constructor(
         }
         val result = remoteDataSource.sendTextToImage(
             TextToImageRequestNetwork(
-                prompt.attachListItemToString(keywords),
+                prompt.attachListItemToString(keywords.map { it.english }),
                 negativePrompt = negativePrompt,
                 style = retrieveStyleKey(style)
             )
@@ -50,7 +51,7 @@ class ImazhRepository @Inject constructor(
             is AppResult.Success -> {
                 localDataSource.addImageToDataBase(
                     imagePath = result.data.message.imagePath,
-                    keywords = keywords,
+                    keywords = keywords.map { it.english },
                     prompt = prompt,
                     negativePrompt = negativePrompt,
                     style = style.key
