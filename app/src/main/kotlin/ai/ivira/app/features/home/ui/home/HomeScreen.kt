@@ -258,7 +258,7 @@ private fun HomeScreen(
         homeViewModel.shouldNavigateToImazh.value
     ) {
         if (homeViewModel.shouldNavigateToImazh.value) {
-            navController.navigate(ImazhNewImageDescriptorScreen.route)
+            navController.navigate(ScreenRoutes.ImazhArchiveListScreen.route)
             homeViewModel.shouldNavigateToImazh.value = false
         }
     }

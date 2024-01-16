@@ -19,7 +19,7 @@ Java_ai_ivira_app_utils_common_di_NetworkModule_bu(JNIEnv *env, jobject thiz) {
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_ai_ivira_app_features_imazh_data_ImazhRemoteDataSource_bi(JNIEnv *env, jobject thiz) {
-    std::string bi = "http://192.168.33.21:3002/service/textToImage/file";
+    std::string bi = "http://192.168.33.21:3002/";
     return env->NewStringUTF(bi.c_str());
 }
 

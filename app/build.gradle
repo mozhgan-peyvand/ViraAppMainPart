@@ -287,4 +287,7 @@ dependencies {
 
     //Balloon
     implementation "com.github.skydoves:balloon-compose:1.6.3"
+
+    // Coil
+    implementation "io.coil-kt:coil-compose:2.5.0"
 }

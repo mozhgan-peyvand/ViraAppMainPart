@@ -29,4 +29,6 @@ class ImazhLocalDataSource @Inject constructor(
             style = style
         )
     )
+
+    fun getAllProcessedFiles() = dao.getAllProcessedFiles()
 }

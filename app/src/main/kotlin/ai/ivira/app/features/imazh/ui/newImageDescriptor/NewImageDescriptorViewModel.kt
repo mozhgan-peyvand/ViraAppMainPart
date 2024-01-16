@@ -2,7 +2,6 @@ package ai.ivira.app.features.imazh.ui.newImageDescriptor
 
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.data.ImazhRepository
-import ai.ivira.app.features.imazh.data.entity.toImazhKeywordEntity
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhHistoryView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.toImazhHistoryView

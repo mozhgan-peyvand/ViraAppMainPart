@@ -50,7 +50,7 @@ class ImazhRepository @Inject constructor(
         return when (result) {
             is AppResult.Success -> {
                 localDataSource.addImageToDataBase(
-                    imagePath = result.data.message.imagePath,
+                    imagePath = result.data.message.imagePath.removePrefix("/"),
                     keywords = keywords.map { it.english },
                     prompt = prompt,
                     negativePrompt = negativePrompt,
@@ -96,4 +96,10 @@ class ImazhRepository @Inject constructor(
         val random = Random(seed = System.currentTimeMillis()).nextInt(styles.size)
         return styles[random]
     }
+
+    fun getAllProcessedFiles() = localDataSource.getAllProcessedFiles()
+
+    fun sai() = remoteDataSource.sai()
+
+    fun bi() = remoteDataSource.bi()
 }

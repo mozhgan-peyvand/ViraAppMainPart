@@ -18,13 +18,13 @@ class ImazhRemoteDataSource @Inject constructor(
         return when (val result = imazhService.sendTextToImage(
             photoDescribe = photoDescribe,
             apiKey = sai(),
-            url = bi()
+            url = bi() + "service/textToImage/file"
         )) {
             is ApiResult.Success -> ApiResult.Success(result.data.data)
             is ApiResult.Error -> ApiResult.Error(result.error)
         }
     }
 
-    private external fun sai(): String
-    private external fun bi(): String
+    external fun sai(): String
+    external fun bi(): String
 }

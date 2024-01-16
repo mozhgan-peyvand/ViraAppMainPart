@@ -76,3 +76,5 @@ val Color_Text_Tooltip = Color(0xFF1B1B1F)
 val Color_Transparent = Color(0x00FFFFFF)
 val Color_About_Us_Background_Gradiant_20 = Color(0x3341A8FF)
 val Color_Border = White_.copy(alpha = 0.17f)
+
+val Color_Blue_Grey_800_945 = Color(0xFF404041)

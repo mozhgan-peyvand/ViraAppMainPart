@@ -265,4 +265,5 @@
     <string name="msg_random_description">با انتخاب این گزینه، توضیحات قبلی حذف شده و توصیف تصادفی جایگزین خواهد شد.</string>
     <string name="msg_exit_while_editing">با بازگشت به صفحه اصلی، اطلاعات این صفحه حذف خواهد شد.  برای جلوگیری از حذف، ابتدا اطلاعات را به تصویر تبدیل کنید.</string>
     <string name="msg_exit_while_uploading">با بازگشت به صفحه اصلی، اطلاعات این صفحه حذف خواهد شد.  برای جلوگیری از حذف، تا اتمام فرآیند تبدیل صبرکنید.</string>
+    <string name="lbl_description_result">نتیجه توصیف</string>
 </resources>

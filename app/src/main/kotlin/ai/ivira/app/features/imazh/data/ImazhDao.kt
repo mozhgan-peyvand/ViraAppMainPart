@@ -18,4 +18,7 @@ interface ImazhDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPhotoInfo(imazhProcessedEntity: ImazhProcessedEntity)
+
+    @Query("SELECT * FROM ImazhProcessedEntity ORDER BY id DESC")
+    fun getAllProcessedFiles(): Flow<List<ImazhProcessedEntity>>
 }
