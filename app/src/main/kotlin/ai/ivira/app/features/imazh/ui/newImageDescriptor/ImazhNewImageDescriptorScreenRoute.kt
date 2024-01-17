@@ -18,6 +18,7 @@ import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDes
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.RandomConfirmationBottomSheet
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.SelectStyleBottomSheet
 import ai.ivira.app.utils.ui.UiError
+import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.hide
@@ -31,6 +32,7 @@ import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Border
 import ai.ivira.app.utils.ui.theme.Color_Info_700
+import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_40
 import ai.ivira.app.utils.ui.theme.Color_Text_1
@@ -55,6 +57,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -65,7 +68,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
@@ -97,7 +100,10 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -110,6 +116,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import kotlinx.coroutines.launch
 
 @Composable
@@ -126,7 +136,7 @@ private fun ImazhNewImageDescriptorScreen(
     viewModel: NewImageDescriptorViewModel
 ) {
     val uiState by viewModel.uiViewState.collectAsStateWithLifecycle()
-    var isLoading by remember { mutableStateOf(false) }
+    val isLoading by remember(uiState) { derivedStateOf { uiState is UiLoading } }
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
     val context = LocalContext.current
@@ -213,14 +223,12 @@ private fun ImazhNewImageDescriptorScreen(
                 viewModel.clearUiState()
             }
 
-            is UiLoading -> {
-                isLoading = true
-            }
+            is UiLoading -> {}
             is UiSuccess -> {
                 navController.navigateUp()
                 viewModel.clearUiState()
             }
-            else -> {}
+            UiIdle -> {}
         }
     }
 
@@ -396,12 +404,12 @@ private fun ImazhNewImageDescriptorScreen(
 
                 if (!isKeyboardVisible) {
                     ConfirmButton(
-                        onClick = {
-                            viewModel.generateImage()
-                        },
+                        onClick = viewModel::generateImage,
                         enabled = isOkToGenerate,
                         isLoading = isLoading,
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
                     )
                 }
             }
@@ -452,30 +460,57 @@ private fun ConfirmButton(
     isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(all = 20.dp)
-    ) {
-        Button(
-            contentPadding = PaddingValues(vertical = 14.dp),
-            onClick = {
-                safeClick(event = onClick)
-            },
-            enabled = enabled,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator()
+    val density = LocalDensity.current
+    var lottieHeight by remember { mutableStateOf(0.dp) }
+
+    Button(
+        contentPadding = PaddingValues(vertical = 14.dp),
+        onClick = {
+            safeClick(event = onClick)
+        },
+        colors = ButtonDefaults.buttonColors(
+            disabledBackgroundColor = if (!enabled && !isLoading) {
+                MaterialTheme.colors.onSurface
+                    .copy(alpha = 0.12f)
+                    .compositeOver(MaterialTheme.colors.surface)
             } else {
-                Text(
-                    text = stringResource(id = R.string.lbl_generate_image),
-                    style = MaterialTheme.typography.button,
-                    color = Color_Text_1
-                )
+                Color_Primary
             }
+        ),
+        enabled = enabled,
+        modifier = modifier
+    ) {
+        if (isLoading) {
+            LoadingLottie(
+                modifier = Modifier.height(lottieHeight)
+            )
+        } else {
+            Text(
+                text = stringResource(id = R.string.lbl_generate_image),
+                style = MaterialTheme.typography.button,
+                color = Color_Text_1,
+                modifier = Modifier.onGloballyPositioned {
+                    lottieHeight = with(density) {
+                        it.size.height.toDp()
+                    }
+                }
+            )
         }
     }
+}
+
+@Composable
+private fun LoadingLottie(
+    modifier: Modifier = Modifier
+) {
+    val composition by rememberLottieComposition(
+        spec = LottieCompositionSpec.RawRes(resId = R.raw.lottie_loading_2)
+    )
+    LottieAnimation(
+        composition = composition,
+        iterations = LottieConstants.IterateForever,
+        modifier = modifier
+    )
 }
 
 @Composable
