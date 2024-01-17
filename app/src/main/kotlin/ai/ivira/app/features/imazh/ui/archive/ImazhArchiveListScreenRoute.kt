@@ -40,11 +40,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.FloatingActionButton
@@ -53,10 +52,12 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,9 +91,14 @@ private fun ImazhArchiveListScreen(
 ) {
     val isGrid by viewModel.isGrid.collectAsState()
     val archiveFiles by viewModel.allArchiveFiles.collectAsStateWithLifecycle()
-    val listState = rememberLazyListState()
+    val listState = rememberLazyGridState()
     val networkStatus by viewModel.networkStatus.collectAsStateWithLifecycle()
     val uiViewState by viewModel.uiViewState.collectAsState(UiIdle)
+    var isVisible by rememberSaveable { mutableStateOf(true) }
+    val isScrollingUp by listState.isScrollingUp()
+
+    LaunchedEffect(isGrid) { isVisible = true }
+    LaunchedEffect(isScrollingUp) { isVisible = isScrollingUp }
 
     Scaffold(
         backgroundColor = MaterialTheme.colors.background,
@@ -162,7 +168,7 @@ private fun ImazhArchiveListScreen(
                 onClick = onClick@{
                     navController.navigate(route = ImazhNewImageDescriptorScreen.route)
                 },
-                listState = listState
+                isVisible = isVisible
             )
         }
     }
@@ -171,57 +177,40 @@ private fun ImazhArchiveListScreen(
 @Composable
 private fun ArchiveListContent(
     archiveFiles: List<ImazhArchiveView>,
-    listState: LazyListState,
+    listState: LazyGridState,
     isGrid: Boolean,
     imageBuilder: ImageRequest.Builder.(urlPath: String) -> ImageRequest.Builder,
     modifier: Modifier = Modifier
 ) {
-    if (isGrid) {
-        LazyVerticalGrid(
-            modifier = modifier,
-            columns = GridCells.Fixed(2),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(16.dp)
-        ) {
-            items(
-                count = archiveFiles.size,
-                key = {
-                    when (val item = archiveFiles[it]) {
-                        is ImazhProcessedFileView -> item.id
-                        else -> Unit
-                    }
-                }
-            ) { index ->
-                when (val item = archiveFiles[index]) {
-                    is ImazhProcessedFileView -> ImazhProcessedItem(
-                        item = item,
-                        isSmallItem = true,
-                        imageBuilder = imageBuilder
-                    )
+    val columns = remember(isGrid) {
+        if (isGrid) GridCells.Fixed(2) else GridCells.Fixed(1)
+    }
+    val horizontalArrangement = remember(isGrid) {
+        if (isGrid) Arrangement.spacedBy(16.dp) else Arrangement.Center
+    }
+
+    LazyVerticalGrid(
+        columns = columns,
+        state = listState,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = horizontalArrangement,
+        contentPadding = PaddingValues(16.dp),
+        modifier = modifier
+    ) {
+        items(
+            count = archiveFiles.size,
+            key = {
+                when (val item = archiveFiles[it]) {
+                    is ImazhProcessedFileView -> item.id
+                    else -> Unit
                 }
             }
-        }
-    } else {
-        LazyColumn(
-            modifier = modifier,
-            state = listState,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(16.dp)
-        ) {
-            items(
-                count = archiveFiles.size,
-                key = {
-                    when (val item = archiveFiles[it]) {
-                        is ImazhProcessedFileView -> item.id
-                        else -> Unit
-                    }
-                }
-            ) { index ->
-                when (val item = archiveFiles[index]) {
-                    is ImazhProcessedFileView -> ImazhProcessedItem(
+        ) { index ->
+            when (val item = archiveFiles[index]) {
+                is ImazhProcessedFileView -> {
+                    ImazhProcessedItem(
                         item = item,
-                        isSmallItem = false,
+                        isSmallItem = isGrid,
                         imageBuilder = imageBuilder
                     )
                 }
@@ -363,12 +352,10 @@ private fun ArchiveEmptyBody(
 
 @Composable
 private fun ImazhArchiveFab(
-    listState: LazyListState,
+    isVisible: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isVisible by listState.isScrollingUp()
-
     AnimatedVisibility(
         modifier = modifier.padding(
             start = 16.dp,
