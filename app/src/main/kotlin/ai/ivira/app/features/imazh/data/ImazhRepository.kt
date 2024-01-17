@@ -3,6 +3,7 @@ package ai.ivira.app.features.imazh.data
 import ai.ivira.app.features.imazh.data.entity.ColorKeyword
 import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
 import ai.ivira.app.features.imazh.data.entity.ImazhKeywordEntity
+import ai.ivira.app.features.imazh.data.entity.ImazhProcessedEntity
 import ai.ivira.app.features.imazh.data.entity.PaintTypeKeyword
 import ai.ivira.app.features.imazh.data.entity.TextToImageRequestNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageResult
@@ -54,7 +55,9 @@ class ImazhRepository @Inject constructor(
                     keywords = keywords.map { it.english },
                     prompt = prompt,
                     negativePrompt = negativePrompt,
-                    style = style.key
+                    style = style.key,
+                    createdAt = PersianDate().time,
+                    filePath = ""
                 )
                 localDataSource.addPromptToHistory(
                     ImazhHistoryEntity(
@@ -72,9 +75,13 @@ class ImazhRepository @Inject constructor(
 
     fun generateRandomPrompt(): String = randomPromptGenerator.generateRandomPrompt()
 
+    fun getPhotoInfo(id: Int): Flow<ImazhProcessedEntity?> = localDataSource.getPhotoInfo(id)
+
     fun getImageStyles(): Flow<List<ImazhImageStyle>> = flowOf(
         ImazhImageStyle.values().toList()
     )
+
+    suspend fun deletePhotoInfo(id: Int) = localDataSource.deletePhotoInfo(id)
 
     private fun retrieveStyleKey(selectedStyle: ImazhImageStyle): String {
         return if (selectedStyle == ImazhImageStyle.None) {

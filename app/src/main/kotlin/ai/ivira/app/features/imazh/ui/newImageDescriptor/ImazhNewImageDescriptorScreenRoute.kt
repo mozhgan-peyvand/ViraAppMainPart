@@ -154,16 +154,8 @@ private fun ImazhNewImageDescriptorScreen(
         confirmValueChange = { true }
     )
 
-    LaunchedEffect(modalBottomSheetState.isVisible) {
-        if (modalBottomSheetState.isVisible) {
-            focusManager.clearFocus()
-        }
-    }
-
-    BackHandler {
-        if (modalBottomSheetState.isVisible) {
-            modalBottomSheetState.hide(coroutineScope)
-        } else {
+    val actionBack: () -> Unit = remember {
+        {
             viewModel.handelBackButton(
                 navigateUp = {
                     navController.navigateUp()
@@ -177,6 +169,19 @@ private fun ImazhNewImageDescriptorScreen(
                     modalBottomSheetState.show(coroutineScope)
                 }
             )
+        }
+    }
+    LaunchedEffect(modalBottomSheetState.isVisible) {
+        if (modalBottomSheetState.isVisible) {
+            focusManager.clearFocus()
+        }
+    }
+
+    BackHandler {
+        if (modalBottomSheetState.isVisible) {
+            modalBottomSheetState.hide(coroutineScope)
+        } else {
+            actionBack()
         }
     }
 
@@ -224,7 +229,9 @@ private fun ImazhNewImageDescriptorScreen(
         backgroundColor = MaterialTheme.colors.background,
         topBar = {
             NewImageDescriptorTopBar(
-                onBackClick = navController::navigateUp
+                onBackClick = {
+                    actionBack()
+                }
             )
         },
         modifier = Modifier

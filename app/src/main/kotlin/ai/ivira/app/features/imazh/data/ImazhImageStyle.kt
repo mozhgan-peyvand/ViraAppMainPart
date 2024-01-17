@@ -22,5 +22,11 @@ enum class ImazhImageStyle(
     Watercolor(key = "watercolor", viewName = "آبرنگ", iconRes = R.drawable.img_style_watercolor),
     Pencil(key = "pencil", viewName = "سیاه\u200Cقلم", iconRes = R.drawable.img_style_pencil),
     PixelArt(key = "pixel_art", viewName = "پیکسلی", iconRes = R.drawable.img_style_pixelart),
-    LowPoly(key = "lowpoly", viewName = "لوپلی", iconRes = R.drawable.img_style_lowpoly)
+    LowPoly(key = "lowpoly", viewName = "لوپلی", iconRes = R.drawable.img_style_lowpoly);
+
+    companion object {
+        fun findByKey(key: String): ImazhImageStyle {
+            return ImazhImageStyle.entries.first { it.key == key }
+        }
+    }
 }

@@ -8,8 +8,10 @@ data class ImazhProcessedEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
     val imagePath: String,
+    val filePath: String,
     val keywords: List<String>,
     val prompt: String,
     val negativePrompt: String,
-    val style: String
+    val style: String,
+    val createdAt: Long
 )

@@ -18,17 +18,25 @@ class ImazhLocalDataSource @Inject constructor(
         negativePrompt: String,
         keywords: List<String>,
         style: String,
-        imagePath: String
+        imagePath: String,
+        createdAt: Long,
+        filePath: String
     ) = dao.insertPhotoInfo(
         ImazhProcessedEntity(
             id = 0,
             imagePath = imagePath,
+            filePath = filePath,
             keywords = keywords,
             prompt = prompt,
             negativePrompt = negativePrompt,
-            style = style
+            style = style,
+            createdAt = createdAt
         )
     )
 
     fun getAllProcessedFiles() = dao.getAllProcessedFiles()
+
+    fun getPhotoInfo(id: Int) = dao.getPhotoInfo(id)
+
+    suspend fun deletePhotoInfo(id: Int) = dao.deletePhotoInfo(id)
 }

@@ -8,6 +8,7 @@ import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.ViraAsyncImageUsingCoil
 import ai.ivira.app.utils.ui.isScrollingUp
+import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.navigation.ScreenRoutes.ImazhNewImageDescriptorScreen
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -158,6 +159,9 @@ private fun ImazhArchiveListScreen(
                         isGrid = isGrid,
                         imageBuilder = { urlPath ->
                             viewModel.getImageBuilder(imageBuilder = this, urlPath = urlPath)
+                        },
+                        onProcessedItemClick = { id ->
+                            navController.navigate(ScreenRoutes.ImazhDetailsScreen.createRoute(id))
                         }
                     )
                 }
@@ -180,6 +184,7 @@ private fun ArchiveListContent(
     listState: LazyGridState,
     isGrid: Boolean,
     imageBuilder: ImageRequest.Builder.(urlPath: String) -> ImageRequest.Builder,
+    onProcessedItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val columns = remember(isGrid) {
@@ -211,7 +216,10 @@ private fun ArchiveListContent(
                     ImazhProcessedItem(
                         item = item,
                         isSmallItem = isGrid,
-                        imageBuilder = imageBuilder
+                        imageBuilder = imageBuilder,
+                        onClick = { id ->
+                            onProcessedItemClick(id)
+                        }
                     )
                 }
             }
@@ -402,6 +410,7 @@ private fun ImazhProcessedItem(
     item: ImazhProcessedFileView,
     isSmallItem: Boolean,
     imageBuilder: ImageRequest.Builder.(urlPath: String) -> ImageRequest.Builder,
+    onClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var imageLoaderState by remember {
@@ -423,7 +432,9 @@ private fun ImazhProcessedItem(
             .aspectRatio(1f)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
-                // TODO: Not implemented
+                safeClick {
+                    onClick(item.id)
+                }
             }
     ) {
         if (imageLoaderState is AsyncImagePainter.State.Loading) {

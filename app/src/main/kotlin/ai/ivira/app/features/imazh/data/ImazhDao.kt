@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ImazhDao {
-    @Query("SELECT * FROM ImazhHistoryEntity ORDER BY prompt DESC LIMIT 5")
+    @Query("SELECT * FROM ImazhHistoryEntity ORDER BY createdAt DESC LIMIT 5")
     fun getRecentHistory(): Flow<List<ImazhHistoryEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -21,4 +21,10 @@ interface ImazhDao {
 
     @Query("SELECT * FROM ImazhProcessedEntity ORDER BY id DESC")
     fun getAllProcessedFiles(): Flow<List<ImazhProcessedEntity>>
+
+    @Query("SELECT * FROM ImazhProcessedEntity WHERE id=:id")
+    fun getPhotoInfo(id: Int): Flow<ImazhProcessedEntity?>
+
+    @Query("DELETE FROM ImazhProcessedEntity WHERE id=:id ")
+    suspend fun deletePhotoInfo(id: Int)
 }

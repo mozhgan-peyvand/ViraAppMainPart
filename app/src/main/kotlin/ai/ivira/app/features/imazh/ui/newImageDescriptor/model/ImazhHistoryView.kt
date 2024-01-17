@@ -1,7 +1,7 @@
 package ai.ivira.app.features.imazh.ui.newImageDescriptor.model
 
-import ai.ivira.app.features.ava_negar.ui.archive.model.convertDate
 import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
+import ai.ivira.app.features.imazh.ui.archive.model.convertDate
 
 data class ImazhHistoryView(
     val prompt: String,
