@@ -2,6 +2,7 @@ package ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets
 
 import ai.ivira.app.R
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhKeywordItem
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordChipType
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordView
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
@@ -181,7 +182,7 @@ private fun TabSection(
                 mapOfKeywords[tabName]?.forEach { keyword ->
                     ImazhKeywordItem(
                         value = keyword,
-                        isSelected = selectedChips.contains(keyword.farsi),
+                        type = if (selectedChips.contains(keyword.farsi)) ImazhKeywordChipType.DefaultSelected else ImazhKeywordChipType.Normal,
                         onClick = {
                             onChipClick(keyword, selectedChips.contains(keyword.farsi))
                         }

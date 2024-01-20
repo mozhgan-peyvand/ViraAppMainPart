@@ -6,6 +6,7 @@ import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewM
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhKeywordItem
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhStyleItem
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordChipType
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.HistoryBottomSheet
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhKeywordBottomSheet
@@ -720,7 +721,7 @@ private fun Keywords(
                     ) { list ->
                         ImazhKeywordItem(
                             value = list,
-                            isSelected = true,
+                            type = ImazhKeywordChipType.SelectedWithNormalBackground,
                             onClick = { onChipClick(list.farsi) }
                         )
                     }
