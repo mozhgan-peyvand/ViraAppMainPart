@@ -44,6 +44,14 @@ import android.view.ViewTreeObserver
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -121,6 +129,8 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import kotlinx.coroutines.launch
+
+private const val EXPANSION_VISIBILITY_DELAY = 100
 
 @Composable
 fun ImazhNewImageDescriptorScreenRoute(navController: NavHostController) {
@@ -337,13 +347,6 @@ private fun ImazhNewImageDescriptorScreen(
                         .weight(1f)
                         .verticalScroll(state = scrollState)
                         .padding(paddingValues = paddingValues)
-                        .then(
-                            if (isKeyboardVisible) {
-                                Modifier.padding(bottom = 16.dp)
-                            } else {
-                                Modifier
-                            }
-                        )
                 ) {
                     Prompt(
                         prompt = viewModel.prompt.value,
@@ -398,7 +401,9 @@ private fun ImazhNewImageDescriptorScreen(
                         negativePrompt = viewModel.negativePrompt.value,
                         onNegativePromptChange = viewModel::setNegativePrompt,
                         resetNegativePrompt = viewModel::resetNegativePrompt,
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 16.dp)
                     )
                 }
 
@@ -514,6 +519,39 @@ private fun LoadingLottie(
 }
 
 @Composable
+private fun AnimatableContent(
+    isVisible: Boolean,
+    content: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val enterAnimation = remember {
+        expandVertically(
+            animationSpec = tween(EXPANSION_VISIBILITY_DELAY),
+            expandFrom = Alignment.Top
+        ) + fadeIn(
+            animationSpec = tween(EXPANSION_VISIBILITY_DELAY)
+        )
+    }
+    val exitAnimation = remember {
+        shrinkVertically(
+            animationSpec = tween(EXPANSION_VISIBILITY_DELAY),
+            shrinkTowards = Alignment.Top
+        ) + fadeOut(
+            animationSpec = tween(EXPANSION_VISIBILITY_DELAY)
+        )
+    }
+
+    AnimatedVisibility(
+        visible = isVisible,
+        modifier = modifier,
+        enter = enterAnimation,
+        exit = exitAnimation,
+        label = "animated content",
+        content = { content() }
+    )
+}
+
+@Composable
 private fun Prompt(
     prompt: String,
     isHistoryButtonVisible: Boolean,
@@ -525,7 +563,7 @@ private fun Prompt(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(18.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Header(
             title = R.string.lbl_image_prompt,
@@ -666,27 +704,30 @@ private fun Keywords(
         modifier = modifier
     )
 
-    if (expandState == ExpandState.Expanded) {
-        Row {
-            LazyRow(
-                state = listState,
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(
-                    key = { keywordView -> keywordView.farsi },
-                    items = keywords
-                ) { list ->
-                    ImazhKeywordItem(
-                        value = list,
-                        isSelected = true,
-                        onClick = { onChipClick(list.farsi) }
-                    )
+    AnimatableContent(
+        isVisible = expandState == ExpandState.Expanded,
+        content = {
+            Row {
+                LazyRow(
+                    state = listState,
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(
+                        key = { keywordView -> keywordView.farsi },
+                        items = keywords
+                    ) { list ->
+                        ImazhKeywordItem(
+                            value = list,
+                            isSelected = true,
+                            onClick = { onChipClick(list.farsi) }
+                        )
+                    }
                 }
             }
         }
-    }
+    )
 }
 
 @Composable
@@ -727,28 +768,32 @@ private fun Style(
                 )
             }
         )
-        if (expandState == ExpandState.Expanded && selectedStyle != ImazhImageStyle.None) {
-            Box(modifier = Modifier.padding(horizontal = 8.dp)) {
-                IconButton(
-                    onClick = { safeClick { selectStyleCallBack(ImazhImageStyle.None) } },
-                    modifier = Modifier
-                        .padding(2.dp)
-                        .zIndex(1f)
-                ) {
-                    ViraIcon(
-                        drawable = R.drawable.ic_close_circle,
-                        contentDescription = stringResource(id = R.string.lbl_btn_delete),
-                        tint = Color.Unspecified
+
+        AnimatableContent(
+            isVisible = expandState == ExpandState.Expanded && selectedStyle != ImazhImageStyle.None,
+            content = {
+                Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+                    IconButton(
+                        onClick = { safeClick { selectStyleCallBack(ImazhImageStyle.None) } },
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .zIndex(1f)
+                    ) {
+                        ViraIcon(
+                            drawable = R.drawable.ic_close_circle,
+                            contentDescription = stringResource(id = R.string.lbl_btn_delete),
+                            tint = Color.Unspecified
+                        )
+                    }
+                    ImazhStyleItem(
+                        style = selectedStyle,
+                        isSelected = true,
+                        showBorderOnSelection = false,
+                        onItemClick = null
                     )
                 }
-                ImazhStyleItem(
-                    style = selectedStyle,
-                    isSelected = true,
-                    showBorderOnSelection = false,
-                    onItemClick = null
-                )
             }
-        }
+        )
     }
 }
 
@@ -761,7 +806,10 @@ private fun NegativePrompt(
 ) {
     var expandState by rememberSaveable { mutableStateOf(ExpandState.Collapsed) }
 
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
         Header(
             title = R.string.lbl_negative_prompt,
             hasExpandButton = true,
@@ -771,14 +819,17 @@ private fun NegativePrompt(
             hasInfo = false
         )
 
-        if (expandState == ExpandState.Expanded) {
-            NegativePromptInputText(
-                text = negativePrompt,
-                onTextChange = onNegativePromptChange,
-                resetText = resetNegativePrompt,
-                charLimit = NEGATIVE_PROMPT_CHARACTER_LIMIT
-            )
-        }
+        AnimatableContent(
+            isVisible = expandState == ExpandState.Expanded,
+            content = {
+                NegativePromptInputText(
+                    text = negativePrompt,
+                    onTextChange = onNegativePromptChange,
+                    resetText = resetNegativePrompt,
+                    charLimit = NEGATIVE_PROMPT_CHARACTER_LIMIT
+                )
+            }
+        )
     }
 }
 
@@ -936,12 +987,15 @@ private fun ExpandIcon(
     onClick: (currentExpandState: ExpandState) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val rotationDegree = when (expandState) {
-        ExpandState.Collapsed -> {
-            0f
-        }
-        ExpandState.Expanded -> {
-            180f
+    val transition = updateTransition(
+        targetState = expandState,
+        label = "transition"
+    )
+
+    val rotationDegree by transition.animateFloat(label = "expand degree") { state ->
+        when (state) {
+            ExpandState.Collapsed -> 0f
+            ExpandState.Expanded -> 180f
         }
     }
 
