@@ -3,6 +3,7 @@ package ai.ivira.app.features.imazh.ui.archive
 import ai.ivira.app.R
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhArchiveView
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.KEY_NEW_IMAGE_RESULT
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
@@ -76,6 +77,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun ImazhArchiveListScreenRoute(navController: NavHostController) {
@@ -97,6 +100,14 @@ private fun ImazhArchiveListScreen(
     val uiViewState by viewModel.uiViewState.collectAsState(UiIdle)
     var isVisible by rememberSaveable { mutableStateOf(true) }
     val isScrollingUp by listState.isScrollingUp()
+
+    val newImageResult = getNewImageResult(navController)?.collectAsState(initial = false)
+    LaunchedEffect(newImageResult) {
+        if (newImageResult?.value == true && archiveFiles.isNotEmpty()) {
+            listState.animateScrollToItem(0)
+            resetNewImageResult(navController)
+        }
+    }
 
     LaunchedEffect(isGrid) { isVisible = true }
     LaunchedEffect(isScrollingUp) { isVisible = isScrollingUp }
@@ -485,4 +496,17 @@ fun Preview() {
             viewModel = hiltViewModel()
         )
     }
+}
+
+private fun getNewImageResult(navController: NavHostController): Flow<Boolean>? {
+    return navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow(KEY_NEW_IMAGE_RESULT, false)
+        ?.map { it }
+}
+
+private fun resetNewImageResult(navController: NavHostController) {
+    navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.remove<Boolean>(KEY_NEW_IMAGE_RESULT)
 }
