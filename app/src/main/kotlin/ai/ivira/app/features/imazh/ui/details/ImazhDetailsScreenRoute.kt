@@ -131,15 +131,8 @@ private fun ImazhDetailsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(scrollState)
                     .padding(paddingValues)
             ) {
-                val info = photoInfo ?: return@Column
-                val imageSize by remember(info.filePath) {
-                    val image = File(info.imagePath)
-                    mutableLongStateOf(if (image.exists()) image.totalSpace else -1)
-                }
-
                 TopBar(
                     onBackClick = navController::navigateUp,
                     onDeleteClick = {
@@ -150,36 +143,54 @@ private fun ImazhDetailsScreen(
                     }
                 )
 
-                ViraAsyncImageUsingCoil(
-                    imageBuilder = { urlPath ->
-                        viewModel.getImageBuilder(imageBuilder = this, urlPath = urlPath)
-                    },
-                    contentDescription = "",
-                    urlPath = info.imagePath,
-                    onResultCallBack = {},
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .padding(top = 8.dp)
-                )
+                        .weight(1f)
+                        .verticalScroll(scrollState)
+                ) bodyColumn@{
+                    val info = photoInfo ?: return@bodyColumn
+                    val imageSize by remember(info.filePath) {
+                        val image = File(info.imagePath)
+                        mutableLongStateOf(if (image.exists()) image.totalSpace else -1)
+                    }
 
-                Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp)) {
-                    ImageDescription(
-                        description = info.prompt,
-                        createdAt = info.createdAt,
-                        imageSize = imageSize.toDouble()
+                    ViraAsyncImageUsingCoil(
+                        imageBuilder = { urlPath ->
+                            viewModel.getImageBuilder(imageBuilder = this, urlPath = urlPath)
+                        },
+                        contentDescription = "",
+                        urlPath = info.imagePath,
+                        onResultCallBack = {},
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .padding(top = 8.dp)
                     )
 
-                    if (info.keywords.isNotEmpty()) {
-                        Keyword(list = info.keywords)
-                    }
+                    Column(
+                        modifier = Modifier.padding(
+                            start = 20.dp,
+                            end = 20.dp,
+                            bottom = 20.dp
+                        )
+                    ) {
+                        ImageDescription(
+                            description = info.prompt,
+                            createdAt = info.createdAt,
+                            imageSize = imageSize.toDouble()
+                        )
 
-                    if (info.negativePrompt.isNotEmpty()) {
-                        NegativePrompt(value = info.negativePrompt)
-                    }
+                        if (info.keywords.isNotEmpty()) {
+                            Keyword(list = info.keywords)
+                        }
 
-                    if (info.style != ImazhImageStyle.None) {
-                        Style(style = info.style)
+                        if (info.negativePrompt.isNotEmpty()) {
+                            NegativePrompt(value = info.negativePrompt)
+                        }
+
+                        if (info.style != ImazhImageStyle.None) {
+                            Style(style = info.style)
+                        }
                     }
                 }
             }
