@@ -28,6 +28,7 @@ fun ViraAsyncImageUsingCoil(
             .memoryCachePolicy(CachePolicy.ENABLED)
             .crossfade(300)
             .scale(Scale.FILL)
+            .allowHardware(false)
             .build(),
         contentDescription = contentDescription,
         modifier = modifier,

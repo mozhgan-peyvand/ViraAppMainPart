@@ -478,7 +478,7 @@ private fun ConfirmButton(
             }
         ),
         enabled = enabled,
-        modifier = modifier
+        modifier = modifier.padding(bottom = 20.dp)
     ) {
         if (isLoading) {
             LoadingLottie(

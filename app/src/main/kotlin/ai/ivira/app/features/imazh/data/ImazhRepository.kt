@@ -100,7 +100,9 @@ class ImazhRepository @Inject constructor(
     private fun getRandomStyleFrom(styles: List<ImazhImageStyle>): ImazhImageStyle {
         if (styles.isEmpty()) return ImazhImageStyle.None
 
-        val random = Random(seed = System.currentTimeMillis()).nextInt(styles.size)
+        val random = Random(seed = System.currentTimeMillis())
+            .nextInt(0, styles.size * 100)
+            .mod(styles.size)
         return styles[random]
     }
 
