@@ -88,7 +88,7 @@ fun ImazhKeywordItem(
         }
     ) {
         Text(
-            text = value.farsi,
+            text = value.keywordName,
             style = MaterialTheme.typography.button,
             color = Color_On_Surface,
             modifier = Modifier.padding(end = 12.dp, start = textStartPadding)
@@ -101,7 +101,11 @@ fun ImazhKeywordItem(
 private fun ImazhKeywordItemPreview() {
     ViraPreview {
         ImazhKeywordItem(
-            value = ImazhKeywordView("سفید", ""),
+            value = ImazhKeywordView(
+                keywordName = "سفید",
+                farsiKeyword = "سفید",
+                englishKeyword = "white"
+            ),
             type = ImazhKeywordChipType.Normal,
             onClick = {}
         )

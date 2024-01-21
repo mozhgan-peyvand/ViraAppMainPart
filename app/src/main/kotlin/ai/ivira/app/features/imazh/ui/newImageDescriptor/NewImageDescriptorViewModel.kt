@@ -25,10 +25,12 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,8 +47,9 @@ class NewImageDescriptorViewModel @Inject constructor(
     private val _prompt = mutableStateOf("")
     val prompt: State<String> = _prompt
 
-    private val _imazhKeywords = MutableStateFlow<Map<String, Set<ImazhKeywordView>>>(mapOf())
-    val imazhKeywords: StateFlow<Map<String, Set<ImazhKeywordView>>> = _imazhKeywords
+    val imazhKeywords = imazhRepository.getKeywords().map { keywordsMap ->
+        keywordsMap.mapValues { keywords -> keywords.value.map { it.toImazhKeywordView() }.toSet() }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     private val _selectedKeywords = mutableStateOf<List<ImazhKeywordView>>(emptyList())
     val selectedKeywords: State<List<ImazhKeywordView>> = _selectedKeywords
@@ -67,14 +70,6 @@ class NewImageDescriptorViewModel @Inject constructor(
     private var job: Job? = null
 
     init {
-        viewModelScope.launch {
-            _imazhKeywords.update {
-                imazhRepository.keywordsMap.mapValues { keywords ->
-                    keywords.value.map { it.toImazhKeywordView() }.toSet()
-                }
-            }
-        }
-
         viewModelScope.launch(IO) {
             imazhRepository.getRecentHistory().collectLatest { list ->
                 withContext(Main) {
@@ -123,7 +118,7 @@ class NewImageDescriptorViewModel @Inject constructor(
 
     fun removeKeyword(newKeyword: String) {
         _selectedKeywords.value = _selectedKeywords.value.filter { keyword ->
-            keyword.farsi != newKeyword
+            keyword.keywordName != newKeyword
         }
     }
 

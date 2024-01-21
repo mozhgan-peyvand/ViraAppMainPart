@@ -716,13 +716,13 @@ private fun Keywords(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(
-                        key = { keywordView -> keywordView.farsi },
+                        key = { keywordView -> keywordView.keywordName },
                         items = keywords
                     ) { list ->
                         ImazhKeywordItem(
                             value = list,
                             type = ImazhKeywordChipType.SelectedWithNormalBackground,
-                            onClick = { onChipClick(list.farsi) }
+                            onClick = { onChipClick(list.keywordName) }
                         )
                     }
                 }

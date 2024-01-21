@@ -61,9 +61,11 @@ fun ImazhKeywordBottomSheet(
         stateSaver = listSaver<List<ImazhKeywordView>, Any>(
             save = { list ->
                 buildList {
+                    // should read based on the order we added
                     list.forEach { keyword ->
-                        add(keyword.farsi)
-                        add(keyword.english)
+                        add(keyword.keywordName)
+                        add(keyword.farsiKeyword)
+                        add(keyword.englishKeyword)
                     }
                 }
             },
@@ -73,8 +75,10 @@ fun ImazhKeywordBottomSheet(
                     while (i < list.lastIndex) {
                         add(
                             ImazhKeywordView(
-                                farsi = list[i++] as String,
-                                english = list[i++] as String
+                                // should read based on the order we added
+                                keywordName = list[i++] as String,
+                                farsiKeyword = list[i++] as String,
+                                englishKeyword = list[i++] as String
                             )
                         )
                     }
@@ -101,7 +105,7 @@ fun ImazhKeywordBottomSheet(
 
         TabSection(
             mapOfKeywords = map,
-            selectedChips = selected.map { it.farsi },
+            selectedChips = selected.map { it.keywordName },
             onChipClick = { value, isSelected ->
 
                 selected = if (isSelected) {
@@ -141,7 +145,8 @@ private fun TabSection(
     onChipClick: (value: ImazhKeywordView, isSelected: Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var tabName by remember { mutableStateOf(mapOfKeywords.keys.first()) }
+    if (mapOfKeywords.isEmpty()) return
+    var tabName by rememberSaveable { mutableStateOf(mapOfKeywords.keys.first()) }
     val tabIndex by remember(tabName) { mutableIntStateOf(mapOfKeywords.keys.indexOf(tabName)) }
     val scrollState = rememberScrollState()
 
@@ -182,9 +187,9 @@ private fun TabSection(
                 mapOfKeywords[tabName]?.forEach { keyword ->
                     ImazhKeywordItem(
                         value = keyword,
-                        type = if (selectedChips.contains(keyword.farsi)) ImazhKeywordChipType.DefaultSelected else ImazhKeywordChipType.Normal,
+                        type = if (selectedChips.contains(keyword.keywordName)) ImazhKeywordChipType.DefaultSelected else ImazhKeywordChipType.Normal,
                         onClick = {
-                            onChipClick(keyword, selectedChips.contains(keyword.farsi))
+                            onChipClick(keyword, selectedChips.contains(keyword.keywordName))
                         }
                     )
 

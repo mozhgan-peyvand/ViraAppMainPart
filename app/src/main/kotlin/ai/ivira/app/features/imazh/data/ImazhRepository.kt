@@ -4,15 +4,18 @@ import ai.ivira.app.features.imazh.data.entity.ColorKeyword
 import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
 import ai.ivira.app.features.imazh.data.entity.ImazhKeywordEntity
 import ai.ivira.app.features.imazh.data.entity.ImazhProcessedEntity
-import ai.ivira.app.features.imazh.data.entity.PaintTypeKeyword
+import ai.ivira.app.features.imazh.data.entity.PainterKeyword
 import ai.ivira.app.features.imazh.data.entity.TextToImageRequestNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageResult
+import ai.ivira.app.features.imazh.data.entity.attitudeKeyword
+import ai.ivira.app.features.imazh.data.entity.lightAngleKeyword
 import ai.ivira.app.utils.data.NetworkHandler
 import ai.ivira.app.utils.data.api_result.AppException
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.data.api_result.toAppResult
 import ai.ivira.app.utils.ui.attachListItemToString
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import saman.zamani.persiandate.PersianDate
 import javax.inject.Inject
@@ -24,11 +27,17 @@ class ImazhRepository @Inject constructor(
     private val networkHandler: NetworkHandler,
     private val randomPromptGenerator: RandomPromptGenerator
 ) {
-    // fixme remove hard codes
-    val keywordsMap = mapOf(
-        "رنگ" to ColorKeyword,
-        "نقاشی" to PaintTypeKeyword
-    )
+    // it should be sortedMapOf because we need items based on this order
+    fun getKeywords(): Flow<Map<String, Set<ImazhKeywordEntity>>> = flow {
+        emit(
+            LinkedHashMap<String, Set<ImazhKeywordEntity>>().apply {
+                put("حال و هوا", attitudeKeyword)
+                put("زاویه و نور", lightAngleKeyword)
+                put("نقاش", PainterKeyword)
+                put("رنگ", ColorKeyword)
+            }
+        )
+    }
 
     fun getRecentHistory(): Flow<List<ImazhHistoryEntity>> = localDataSource.getRecentHistory()
     suspend fun convertTextToImage(
@@ -42,7 +51,7 @@ class ImazhRepository @Inject constructor(
         }
         val result = remoteDataSource.sendTextToImage(
             TextToImageRequestNetwork(
-                prompt.attachListItemToString(keywords.map { it.english }),
+                prompt.attachListItemToString(keywords.map { it.englishKeyword }),
                 negativePrompt = negativePrompt,
                 style = retrieveStyleKey(style)
             )
@@ -52,7 +61,7 @@ class ImazhRepository @Inject constructor(
             is AppResult.Success -> {
                 localDataSource.addImageToDataBase(
                     imagePath = result.data.message.imagePath.removePrefix("/"),
-                    keywords = keywords.map { it.english },
+                    keywords = keywords.map { it.keywordName },
                     prompt = prompt,
                     negativePrompt = negativePrompt,
                     style = style.key,
