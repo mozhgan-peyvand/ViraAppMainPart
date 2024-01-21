@@ -56,6 +56,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -100,11 +101,17 @@ private fun ImazhArchiveListScreen(
     val uiViewState by viewModel.uiViewState.collectAsState(UiIdle)
     var isVisible by rememberSaveable { mutableStateOf(true) }
     val isScrollingUp by listState.isScrollingUp()
+    val isScrolledDown by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0 ||
+                listState.firstVisibleItemScrollOffset > 0
+        }
+    }
 
     val newImageResult = getNewImageResult(navController)?.collectAsState(initial = false)
-    LaunchedEffect(newImageResult) {
-        if (newImageResult?.value == true && archiveFiles.isNotEmpty()) {
-            listState.animateScrollToItem(0)
+    LaunchedEffect(newImageResult, isScrolledDown) {
+        if (newImageResult?.value == true && isScrolledDown) {
+            listState.scrollToItem(0)
             resetNewImageResult(navController)
         }
     }

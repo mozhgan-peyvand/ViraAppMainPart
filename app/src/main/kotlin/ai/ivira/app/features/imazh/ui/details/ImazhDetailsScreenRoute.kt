@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -246,11 +247,13 @@ private fun ImageDescription(
 
             Spacer(modifier = Modifier.size(8.dp))
 
-            Text(
-                text = description,
-                color = Color_Text_3,
-                style = MaterialTheme.typography.body1
-            )
+            SelectionContainer {
+                Text(
+                    text = description,
+                    color = Color_Text_3,
+                    style = MaterialTheme.typography.body1
+                )
+            }
         }
     )
 }

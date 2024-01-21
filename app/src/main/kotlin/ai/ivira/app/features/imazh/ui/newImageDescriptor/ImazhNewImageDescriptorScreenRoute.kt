@@ -97,6 +97,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -326,17 +327,22 @@ private fun ImazhNewImageDescriptorScreen(
                                 viewModel.cancelConvertTextToImageRequest()
                                 modalBottomSheetState.hide(coroutineScope)
                                 navController.navigateUp()
-                            })
+                            }
+                        )
                     }
                     BackWhileEditing -> {
                         BackConfirmationWhileEditingBottomSheet(
                             generateAction = {
-                                viewModel.generateImage()
+                                modalBottomSheetState.hide(coroutineScope)
+                                if (viewModel.prompt.value.isNotBlank()) {
+                                    viewModel.generateImage()
+                                }
                             },
                             deleteAction = {
                                 modalBottomSheetState.hide(coroutineScope)
                                 navController.navigateUp()
-                            })
+                            }
+                        )
                     }
                 }
             }
@@ -468,7 +474,7 @@ private fun ConfirmButton(
     modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
-    var lottieHeight by remember { mutableStateOf(0.dp) }
+    var lottieHeight by rememberSaveable { mutableIntStateOf(0) }
 
     Button(
         contentPadding = PaddingValues(vertical = 14.dp),
@@ -489,7 +495,7 @@ private fun ConfirmButton(
     ) {
         if (isLoading) {
             LoadingLottie(
-                modifier = Modifier.height(lottieHeight)
+                modifier = Modifier.height(with(density) { lottieHeight.toDp() })
             )
         } else {
             Text(
@@ -497,9 +503,7 @@ private fun ConfirmButton(
                 style = MaterialTheme.typography.button,
                 color = Color_Text_1,
                 modifier = Modifier.onGloballyPositioned {
-                    lottieHeight = with(density) {
-                        it.size.height.toDp()
-                    }
+                    lottieHeight = it.size.height
                 }
             )
         }
