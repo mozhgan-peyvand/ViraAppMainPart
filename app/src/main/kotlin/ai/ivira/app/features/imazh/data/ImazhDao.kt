@@ -27,4 +27,7 @@ interface ImazhDao {
 
     @Query("DELETE FROM ImazhProcessedEntity WHERE id=:id ")
     suspend fun deletePhotoInfo(id: Int)
+
+    @Query("UPDATE ImazhProcessedEntity SET filePath=:filePath WHERE id=:id")
+    suspend fun updateFilePath(id: Int, filePath: String)
 }

@@ -4,6 +4,7 @@ import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.data.entity.ImazhProcessedEntity
 import saman.zamani.persiandate.PersianDate
 import saman.zamani.persiandate.PersianDateFormat
+import java.io.File
 
 data class ImazhProcessedFileView(
     val id: Int,
@@ -13,10 +14,18 @@ data class ImazhProcessedFileView(
     val prompt: String,
     val negativePrompt: String,
     val style: ImazhImageStyle,
-    val createdAt: String
+    val createdAt: String,
+    val fileSize: Long?,
+    val downloadedBytes: Long?,
+    val downloadingPercent: Float
 ) : ImazhArchiveView
 
-fun ImazhProcessedEntity.toImazhProcessedFileView() = ImazhProcessedFileView(
+fun ImazhProcessedEntity.toImazhProcessedFileView(
+    downloadingId: Int = -1,
+    downloadingPercent: Float = -1f,
+    fileSize: Long? = null,
+    downloadedBytes: Long? = null
+) = ImazhProcessedFileView(
     id = id,
     imagePath = imagePath,
     filePath = filePath,
@@ -24,7 +33,10 @@ fun ImazhProcessedEntity.toImazhProcessedFileView() = ImazhProcessedFileView(
     prompt = prompt,
     negativePrompt = negativePrompt,
     style = ImazhImageStyle.findByKey(style),
-    createdAt = convertDate(createdAt)
+    createdAt = convertDate(createdAt),
+    fileSize = if (filePath.isNotEmpty()) File(filePath).length() else fileSize,
+    downloadedBytes = downloadedBytes,
+    downloadingPercent = if (downloadingId == id) downloadingPercent else -1f
 )
 
 // duplicate 2

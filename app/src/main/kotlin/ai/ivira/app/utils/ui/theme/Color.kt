@@ -78,3 +78,4 @@ val Color_About_Us_Background_Gradiant_20 = Color(0x3341A8FF)
 val Color_Border = White_.copy(alpha = 0.17f)
 
 val Color_Blue_Grey_800_945 = Color(0xFF404041)
+val Color_Background_Menu = Color(0xFF23252B)

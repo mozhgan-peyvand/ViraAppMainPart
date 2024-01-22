@@ -39,4 +39,8 @@ class ImazhLocalDataSource @Inject constructor(
     fun getPhotoInfo(id: Int) = dao.getPhotoInfo(id)
 
     suspend fun deletePhotoInfo(id: Int) = dao.deletePhotoInfo(id)
+
+    suspend fun updateFilePath(id: Int, filePath: String) {
+        dao.updateFilePath(id, filePath)
+    }
 }

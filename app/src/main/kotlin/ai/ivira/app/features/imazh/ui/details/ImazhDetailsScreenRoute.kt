@@ -6,7 +6,6 @@ import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.ui.details.ImazhDetailBottomSheetType.DeleteConfirmation
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhStyleItem
 import ai.ivira.app.utils.common.orZero
-import ai.ivira.app.utils.ui.ViraAsyncImageUsingCoil
 import ai.ivira.app.utils.ui.convertByteToMB
 import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
@@ -20,9 +19,12 @@ import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.labelMedium
+import ai.ivira.app.utils.ui.toBitmap
 import ai.ivira.app.utils.ui.widgets.ViraIcon
+import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,7 +50,6 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -150,23 +152,19 @@ private fun ImazhDetailsScreen(
                         .verticalScroll(scrollState)
                 ) bodyColumn@{
                     val info = photoInfo ?: return@bodyColumn
-                    val imageSize by remember(info.filePath) {
-                        val image = File(info.imagePath)
-                        mutableLongStateOf(if (image.exists()) image.totalSpace else -1)
-                    }
+                    val file = File(info.filePath)
+                    val imageBitmap: Bitmap? by remember(file) { mutableStateOf(file.toBitmap()) }
 
-                    ViraAsyncImageUsingCoil(
-                        imageBuilder = { urlPath ->
-                            viewModel.getImageBuilder(imageBuilder = this, urlPath = urlPath)
-                        },
-                        contentDescription = "",
-                        urlPath = info.imagePath,
-                        onResultCallBack = {},
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .padding(top = 8.dp)
-                    )
+                    imageBitmap?.let { bitmap ->
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .padding(top = 8.dp)
+                        )
+                    }
 
                     Column(
                         modifier = Modifier.padding(
@@ -178,7 +176,7 @@ private fun ImazhDetailsScreen(
                         ImageDescription(
                             description = info.prompt,
                             createdAt = info.createdAt,
-                            imageSize = imageSize.toDouble()
+                            imageSize = file.length().toDouble()
                         )
 
                         if (info.keywords.isNotEmpty()) {

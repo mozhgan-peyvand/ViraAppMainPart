@@ -9,6 +9,9 @@ import ai.ivira.app.features.imazh.data.entity.TextToImageRequestNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageResult
 import ai.ivira.app.features.imazh.data.entity.attitudeKeyword
 import ai.ivira.app.features.imazh.data.entity.lightAngleKeyword
+import ai.ivira.app.utils.common.file.FileOperationHelper
+import ai.ivira.app.utils.common.file.IMAZH_FOLDER_PATH
+import ai.ivira.app.utils.common.file.PNG_EXTENSION
 import ai.ivira.app.utils.data.NetworkHandler
 import ai.ivira.app.utils.data.api_result.AppException
 import ai.ivira.app.utils.data.api_result.AppResult
@@ -18,6 +21,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import saman.zamani.persiandate.PersianDate
+import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -25,7 +30,8 @@ class ImazhRepository @Inject constructor(
     private val localDataSource: ImazhLocalDataSource,
     private val remoteDataSource: ImazhRemoteDataSource,
     private val networkHandler: NetworkHandler,
-    private val randomPromptGenerator: RandomPromptGenerator
+    private val randomPromptGenerator: RandomPromptGenerator,
+    private val fileOperationHelper: FileOperationHelper
 ) {
     // it should be sortedMapOf because we need items based on this order
     fun getKeywords(): Flow<Map<String, Set<ImazhKeywordEntity>>> = flow {
@@ -59,6 +65,12 @@ class ImazhRepository @Inject constructor(
 
         return when (result) {
             is AppResult.Success -> {
+                val file = fileOperationHelper.getFile(
+                    fileName = "${System.currentTimeMillis()}_${UUID.randomUUID().mostSignificantBits}",
+                    path = IMAZH_FOLDER_PATH,
+                    extension = PNG_EXTENSION
+                )
+
                 localDataSource.addImageToDataBase(
                     imagePath = result.data.message.imagePath.removePrefix("/"),
                     keywords = keywords.map { it.keywordName },
@@ -66,7 +78,7 @@ class ImazhRepository @Inject constructor(
                     negativePrompt = negativePrompt,
                     style = style.key,
                     createdAt = PersianDate().time,
-                    filePath = ""
+                    filePath = file.absolutePath
                 )
                 localDataSource.addPromptToHistory(
                     ImazhHistoryEntity(
@@ -116,6 +128,29 @@ class ImazhRepository @Inject constructor(
     }
 
     fun getAllProcessedFiles() = localDataSource.getAllProcessedFiles()
+
+    suspend fun downloadFile(
+        id: Int,
+        url: String,
+        fileName: String,
+        progress: (byteReceived: Long, totalSize: Long) -> Unit
+    ): AppResult<Unit> {
+        return if (networkHandler.hasNetworkConnection()) {
+            val file = File(fileName)
+            val result = remoteDataSource.downloadFile(url, file, progress).toAppResult()
+
+            if (file.exists()) {
+                localDataSource.updateFilePath(id, file.absolutePath)
+            }
+
+            when (result) {
+                is AppResult.Success -> AppResult.Success(Unit)
+                is AppResult.Error -> AppResult.Error(result.error)
+            }
+        } else {
+            AppResult.Error(AppException.NetworkConnectionException())
+        }
+    }
 
     fun sai() = remoteDataSource.sai()
 

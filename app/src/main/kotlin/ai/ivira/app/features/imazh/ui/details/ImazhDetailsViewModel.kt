@@ -27,7 +27,9 @@ class ImazhDetailsViewModel @Inject constructor(
             if (id == -1) {
                 flowOf(null)
             } else {
-                imazhRepository.getPhotoInfo(id).map { it?.toImazhProcessedFileView() }
+                imazhRepository.getPhotoInfo(id).map { imazhProcessedEntity ->
+                    imazhProcessedEntity?.toImazhProcessedFileView()
+                }
             }
         }.stateIn(
             scope = viewModelScope,

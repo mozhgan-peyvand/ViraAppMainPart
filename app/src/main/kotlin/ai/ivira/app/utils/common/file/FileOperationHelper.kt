@@ -10,14 +10,19 @@ import java.io.IOException
 import javax.inject.Inject
 
 const val AVASHO_FOLDER_PATH = "avasho"
+const val IMAZH_FOLDER_PATH = "imazh"
 const val VIRA_FOLDER_PATH = "vira"
+
+const val MP3_EXTENSION = "mp3"
+const val PNG_EXTENSION = "png"
 
 class FileOperationHelper @Inject constructor(
     @ApplicationContext val context: Context
 ) {
     fun getFile(
         fileName: String,
-        path: String
+        path: String,
+        extension: String
     ): File {
         val parent = File(context.filesDir, path)
 
@@ -25,7 +30,7 @@ class FileOperationHelper @Inject constructor(
             parent.mkdirs()
         }
 
-        return File(parent, "$fileName.mp3")
+        return File(parent, "$fileName.$extension")
     }
 
     fun copyFileToDownloadFolder(filePath: String, fileName: String): Boolean {

@@ -2,11 +2,14 @@ package ai.ivira.app.features.imazh.data
 
 import ai.ivira.app.features.imazh.data.entity.TextToImageRequestNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageResult
+import ai.ivira.app.utils.common.file.DownloadFileRequest
 import ai.ivira.app.utils.data.api_result.ApiResult
+import java.io.File
 import javax.inject.Inject
 
 class ImazhRemoteDataSource @Inject constructor(
-    private val imazhService: ImazhService
+    private val imazhService: ImazhService,
+    private val downloadFileRequest: DownloadFileRequest
 ) {
     init {
         System.loadLibrary("vira")
@@ -21,6 +24,24 @@ class ImazhRemoteDataSource @Inject constructor(
             url = bi() + "service/textToImage/file"
         )) {
             is ApiResult.Success -> ApiResult.Success(result.data.data)
+            is ApiResult.Error -> ApiResult.Error(result.error)
+        }
+    }
+
+    suspend fun downloadFile(
+        url: String,
+        file: File,
+        progress: (byteReceived: Long, totalSize: Long) -> Unit
+    ): ApiResult<Unit> {
+        return when (
+            val result = downloadFileRequest.downloadFile(
+                url = bi() + url,
+                file = file,
+                token = sai(),
+                progress = progress
+            )
+        ) {
+            is ApiResult.Success -> ApiResult.Success(Unit)
             is ApiResult.Error -> ApiResult.Error(result.error)
         }
     }
