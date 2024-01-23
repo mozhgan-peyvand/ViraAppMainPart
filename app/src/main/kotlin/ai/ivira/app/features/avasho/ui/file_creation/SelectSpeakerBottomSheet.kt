@@ -52,7 +52,7 @@ fun SelectSpeakerBottomSheet(
     uploadFileAction: (fileName: String, selected: SpeakerTypeBottomSheet) -> Unit
 ) {
     val radioOptions = remember {
-        mutableStateListOf(MAN, WOMAN)
+        mutableStateListOf(WOMAN, MAN)
     }
     val (selectSpeaker, onSelectedSpeaker) = rememberSaveable { mutableStateOf(radioOptions[0]) }
     var textValue by rememberSaveable(fileName, stateSaver = TextFieldValue.Saver) {
