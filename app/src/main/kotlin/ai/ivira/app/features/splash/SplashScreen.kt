@@ -65,6 +65,7 @@ private fun SplashScreen(
                 navController.navigate(
                     route = ScreenRoutes.Home.route
                 )
+                viewModel.updateIsFirstRun()
             } else {
                 navController.popBackStack()
                 navController.navigate(

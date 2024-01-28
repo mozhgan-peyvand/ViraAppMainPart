@@ -1,10 +1,13 @@
 package ai.ivira.app.features.home.ui.home
 
+import ai.ivira.app.BuildConfig
 import ai.ivira.app.features.ava_negar.data.DataStoreRepository
 import ai.ivira.app.features.ava_negar.data.PreferencesKey.onBoardingKey
 import ai.ivira.app.features.avasho.ui.onboarding.AVASHO_ONBOARDING_COMPLETED
 import ai.ivira.app.features.config.ui.TileItem
+import ai.ivira.app.features.home.data.CURRENT_CHANGELOG_VERSION_KEY
 import ai.ivira.app.features.home.data.VersionRepository
+import ai.ivira.app.features.home.ui.home.version.model.toChangelogView
 import ai.ivira.app.features.home.ui.home.version.model.toVersionView
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
@@ -19,6 +22,7 @@ import ai.ivira.app.utils.ui.UiSuccess
 import android.content.SharedPreferences
 import android.text.format.DateUtils
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
@@ -54,6 +58,16 @@ class HomeViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = NetworkStatus.Unavailable
     )
+
+    private var _shouldShowChangeLogBottomSheet = mutableStateOf(
+        getCurrentChangelogVersionFromSharedPref() != BuildConfig.VERSION_CODE
+    )
+    val shouldShowChangeLogBottomSheet: State<Boolean> = _shouldShowChangeLogBottomSheet
+
+    val updatedChangelogList = versionRepository.getChangelog()
+        .map { changeLog ->
+            changeLog.toChangelogView()
+        }
 
     private var prefListener: SharedPreferences.OnSharedPreferenceChangeListener
     val changeLogList = versionRepository.getChangeLogFromLocal()
@@ -197,6 +211,19 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    fun updateChangelogVersion() {
+        viewModelScope.launch {
+            sharedPref
+                .edit()
+                .putInt(CURRENT_CHANGELOG_VERSION_KEY, BuildConfig.VERSION_CODE)
+                .apply()
+        }
+        _shouldShowChangeLogBottomSheet.value = false
+    }
+
+    private fun getCurrentChangelogVersionFromSharedPref() =
+        sharedPref.getInt(CURRENT_CHANGELOG_VERSION_KEY, 0)
 
     fun clearUiState() {
         _uiViewState.value = UiIdle

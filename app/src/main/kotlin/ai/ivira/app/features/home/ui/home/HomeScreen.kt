@@ -8,12 +8,14 @@ import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Changelog
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Imazh
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNegar
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NotificationPermission
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UnavailableTile
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UpdateApp
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ViraSiar
+import ai.ivira.app.features.home.ui.home.version.sheets.ChangelogBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpToDateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateLoadingBottomSheet
@@ -96,6 +98,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -151,9 +154,7 @@ private fun HomeScreen(
 
     val showUpdateBottomSheet by homeViewModel.showUpdateBottomSheet.collectAsStateWithLifecycle()
 
-    val (sheetSelected, setSelectedSheet) = rememberSaveable {
-        mutableStateOf(Imazh)
-    }
+    var sheetSelected by rememberSaveable { mutableStateOf(Imazh) }
 
     val avanegarTile by configViewModel.avanegarTileConfig.collectAsStateWithLifecycle(initialValue = null)
     val avashoTile by configViewModel.avashoTileConfig.collectAsStateWithLifecycle(initialValue = null)
@@ -164,7 +165,7 @@ private fun HomeScreen(
         if (configViewModel.shouldShowAvanegarUnavailableBottomSheet.value) {
             coroutineScope.launch {
                 homeViewModel.unavailableTileToShowBottomSheet.value = avanegarTile
-                setSelectedSheet(UnavailableTile)
+                sheetSelected = UnavailableTile
                 if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
                 modalBottomSheetState.show()
             }
@@ -178,7 +179,7 @@ private fun HomeScreen(
         if (configViewModel.shouldShowAvashoUnavailableBottomSheet.value) {
             coroutineScope.launch {
                 homeViewModel.unavailableTileToShowBottomSheet.value = avashoTile
-                setSelectedSheet(UnavailableTile)
+                sheetSelected = UnavailableTile
                 if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
                 modalBottomSheetState.show()
             }
@@ -249,8 +250,8 @@ private fun HomeScreen(
             !context.hasNotificationPermission() &&
             homeViewModel.shouldShowNotificationBottomSheet
         ) {
-            setSelectedSheet(NotificationPermission)
             coroutineScope.launch {
+                sheetSelected = NotificationPermission
                 if (!modalBottomSheetState.isVisible) {
                     modalBottomSheetState.show()
                 }
@@ -270,14 +271,21 @@ private fun HomeScreen(
 
     LaunchedEffect(showUpdateBottomSheet) {
         if (homeViewModel.canShowBottomSheet && showUpdateBottomSheet) {
-            setSelectedSheet(UpdateApp)
-
             coroutineScope.launch {
+                sheetSelected = UpdateApp
                 modalBottomSheetState.hide()
                 if (!modalBottomSheetState.isVisible) {
                     modalBottomSheetState.show()
                 }
             }
+        }
+    }
+
+    LaunchedEffect(homeViewModel.shouldShowChangeLogBottomSheet.value) {
+        if (homeViewModel.shouldShowChangeLogBottomSheet.value && homeViewModel.updatedChangelogList.isNotEmpty()) {
+            homeViewModel.updateChangelogVersion()
+            sheetSelected = Changelog
+            modalBottomSheetState.show()
         }
     }
 
@@ -340,12 +348,10 @@ private fun HomeScreen(
                         return@DrawerHeader
                     }
 
-                    setSelectedSheet(UpdateApp)
                     coroutineScope.launch {
+                        sheetSelected = UpdateApp
                         if (!modalBottomSheetState.isVisible) {
                             modalBottomSheetState.show()
-                        } else {
-                            modalBottomSheetState.hide()
                         }
                     }
 
@@ -520,6 +526,15 @@ private fun HomeScreen(
                             )
                         }
                     }
+
+                    Changelog -> {
+                        ChangelogBottomSheet(
+                            item = homeViewModel.updatedChangelogList,
+                            onUnderstoodClick = {
+                                modalBottomSheetState.hide(coroutineScope)
+                            }
+                        )
+                    }
                 }
             }
         ) {
@@ -528,7 +543,7 @@ private fun HomeScreen(
                 onAvanegarClick = {
                     if (avanegarTile?.available == false) {
                         homeViewModel.unavailableTileToShowBottomSheet.value = avanegarTile
-                        setSelectedSheet(UnavailableTile)
+                        sheetSelected = UnavailableTile
                         modalBottomSheetState.hideAndShow(coroutineScope)
                     } else {
                         eventHandler.specialEvent(HomeAnalytics.openAvanegar)
@@ -538,7 +553,7 @@ private fun HomeScreen(
                 onAvashoClick = {
                     if (avashoTile?.available == false) {
                         homeViewModel.unavailableTileToShowBottomSheet.value = avashoTile
-                        setSelectedSheet(UnavailableTile)
+                        sheetSelected = UnavailableTile
                         modalBottomSheetState.hideAndShow(coroutineScope)
                     } else {
                         eventHandler.specialEvent(HomeAnalytics.openAvasho)
@@ -549,39 +564,33 @@ private fun HomeScreen(
                     when (homeItem) {
                         NeviseNegar -> {
                             eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
-                            setSelectedSheet(NeviseNegar)
                             coroutineScope.launch {
+                                sheetSelected = NeviseNegar
                                 modalBottomSheetState.hide()
                                 if (!modalBottomSheetState.isVisible) {
                                     modalBottomSheetState.show()
-                                } else {
-                                    modalBottomSheetState.hide()
                                 }
                             }
                         }
 
                         ViraSiar -> {
                             eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
-                            setSelectedSheet(ViraSiar)
                             coroutineScope.launch {
+                                sheetSelected = ViraSiar
                                 modalBottomSheetState.hide()
                                 if (!modalBottomSheetState.isVisible) {
                                     modalBottomSheetState.show()
-                                } else {
-                                    modalBottomSheetState.hide()
                                 }
                             }
                         }
 
                         Imazh -> {
                             eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
-                            setSelectedSheet(Imazh)
                             coroutineScope.launch {
+                                sheetSelected = Imazh
                                 modalBottomSheetState.hide()
                                 if (!modalBottomSheetState.isVisible) {
                                     modalBottomSheetState.show()
-                                } else {
-                                    modalBottomSheetState.hide()
                                 }
                             }
                         }
@@ -591,6 +600,8 @@ private fun HomeScreen(
                         UpdateApp -> {}
 
                         UnavailableTile -> {}
+
+                        Changelog -> {}
                     }
                 },
                 modifier = Modifier.padding(top = 8.dp)
