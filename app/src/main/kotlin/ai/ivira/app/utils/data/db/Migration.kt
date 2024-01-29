@@ -64,4 +64,12 @@ object Migration {
             }
         }
     }
+
+    fun migration3_4(): Migration {
+        return object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `TileConfigEntity` (`name` TEXT NOT NULL, `message` TEXT NOT NULL, `status` INTEGER NOT NULL, PRIMARY KEY(`name`))")
+            }
+        }
+    }
 }

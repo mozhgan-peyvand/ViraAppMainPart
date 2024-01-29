@@ -4,12 +4,14 @@ import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.SnackBar
+import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Imazh
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNegar
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NotificationPermission
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UnavailableTile
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UpdateApp
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ViraSiar
 import ai.ivira.app.features.home.ui.home.version.sheets.UpToDateBottomSheet
@@ -22,6 +24,8 @@ import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.hasNotificationPermission
+import ai.ivira.app.utils.ui.hide
+import ai.ivira.app.utils.ui.hideAndShow
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isSdkVersion33orHigher
 import ai.ivira.app.utils.ui.navigateToAppSettings
@@ -52,6 +56,7 @@ import android.Manifest.permission
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
@@ -107,6 +112,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreenRoute(navController: NavHostController) {
+    val activity = LocalContext.current as ComponentActivity
     val eventHandler = LocalEventHandler.current
     LaunchedEffect(Unit) {
         eventHandler.screenViewEvent(HomeAnalytics.screenViewHome)
@@ -114,14 +120,16 @@ fun HomeScreenRoute(navController: NavHostController) {
 
     HomeScreen(
         navController = navController,
-        homeViewModel = hiltViewModel()
+        homeViewModel = hiltViewModel(),
+        configViewModel = hiltViewModel(viewModelStoreOwner = activity)
     )
 }
 
 @Composable
 private fun HomeScreen(
     navController: NavHostController,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    configViewModel: ConfigViewModel
 ) {
     val eventHandler = LocalEventHandler.current
     val coroutineScope = rememberCoroutineScope()
@@ -145,6 +153,37 @@ private fun HomeScreen(
 
     val (sheetSelected, setSelectedSheet) = rememberSaveable {
         mutableStateOf(Imazh)
+    }
+
+    val avanegarTile by configViewModel.avanegarTileConfig.collectAsStateWithLifecycle(initialValue = null)
+    val avashoTile by configViewModel.avashoTileConfig.collectAsStateWithLifecycle(initialValue = null)
+
+    LaunchedEffect(
+        configViewModel.shouldShowAvanegarUnavailableBottomSheet.value
+    ) {
+        if (configViewModel.shouldShowAvanegarUnavailableBottomSheet.value) {
+            coroutineScope.launch {
+                homeViewModel.unavailableTileToShowBottomSheet.value = avanegarTile
+                setSelectedSheet(UnavailableTile)
+                if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
+                modalBottomSheetState.show()
+            }
+            configViewModel.resetAvanegarUnavailableFeature()
+        }
+    }
+
+    LaunchedEffect(
+        configViewModel.shouldShowAvashoUnavailableBottomSheet.value
+    ) {
+        if (configViewModel.shouldShowAvashoUnavailableBottomSheet.value) {
+            coroutineScope.launch {
+                homeViewModel.unavailableTileToShowBottomSheet.value = avashoTile
+                setSelectedSheet(UnavailableTile)
+                if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
+                modalBottomSheetState.show()
+            }
+            configViewModel.resetAvashoUnavailableFeature()
+        }
     }
 
     BackHandler(scaffoldState.drawerState.isOpen) {
@@ -469,18 +508,42 @@ private fun HomeScreen(
                         )
                         homeViewModel.doNotShowUtilNextLaunch()
                     }
+                    UnavailableTile -> {
+                        homeViewModel.unavailableTileToShowBottomSheet.value?.let { unavailableTile ->
+                            HomeItemBottomSheet(
+                                iconRes = unavailableTile.iconRes,
+                                title = stringResource(id = unavailableTile.titleRes),
+                                textBody = unavailableTile.unavailableStateMessage,
+                                action = {
+                                    modalBottomSheetState.hide(coroutineScope)
+                                }
+                            )
+                        }
+                    }
                 }
             }
         ) {
             HomeBody(
                 paddingValues = innerPadding,
                 onAvanegarClick = {
-                    eventHandler.specialEvent(HomeAnalytics.openAvanegar)
-                    homeViewModel.navigate()
+                    if (avanegarTile?.available == false) {
+                        homeViewModel.unavailableTileToShowBottomSheet.value = avanegarTile
+                        setSelectedSheet(UnavailableTile)
+                        modalBottomSheetState.hideAndShow(coroutineScope)
+                    } else {
+                        eventHandler.specialEvent(HomeAnalytics.openAvanegar)
+                        homeViewModel.navigate()
+                    }
                 },
                 onAvashoClick = {
-                    eventHandler.specialEvent(HomeAnalytics.openAvasho)
-                    homeViewModel.navigateToAvasho()
+                    if (avashoTile?.available == false) {
+                        homeViewModel.unavailableTileToShowBottomSheet.value = avashoTile
+                        setSelectedSheet(UnavailableTile)
+                        modalBottomSheetState.hideAndShow(coroutineScope)
+                    } else {
+                        eventHandler.specialEvent(HomeAnalytics.openAvasho)
+                        homeViewModel.navigateToAvasho()
+                    }
                 },
                 onItemClick = { homeItem ->
                     when (homeItem) {
@@ -526,6 +589,8 @@ private fun HomeScreen(
                         NotificationPermission -> {}
 
                         UpdateApp -> {}
+
+                        UnavailableTile -> {}
                     }
                 },
                 modifier = Modifier.padding(top = 8.dp)

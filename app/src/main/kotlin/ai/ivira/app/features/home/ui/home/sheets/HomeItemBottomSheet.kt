@@ -77,7 +77,8 @@ fun HomeItemBottomSheet(
         ) {
             Text(
                 text = stringResource(id = R.string.lbl_understood),
-                style = MaterialTheme.typography.button
+                style = MaterialTheme.typography.button,
+                modifier = Modifier.padding(vertical = 4.dp)
             )
         }
     }

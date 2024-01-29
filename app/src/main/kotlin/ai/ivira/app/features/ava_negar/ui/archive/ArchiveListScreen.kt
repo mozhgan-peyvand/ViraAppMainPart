@@ -31,6 +31,7 @@ import ai.ivira.app.features.ava_negar.ui.details.TIME_INTERVAL
 import ai.ivira.app.features.ava_negar.ui.record.RecordFileResult
 import ai.ivira.app.features.ava_negar.ui.record.RecordFileResult.Companion.FILE_NAME
 import ai.ivira.app.features.ava_negar.ui.update.ForceUpdateScreen
+import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.utils.common.event.ViraEvent
 import ai.ivira.app.utils.common.file.convertTextToPdf
 import ai.ivira.app.utils.common.file.convertTextToTXTFile
@@ -169,15 +170,26 @@ fun AvaNegarArchiveListScreenRoute(navController: NavHostController) {
 
     AvaNegarArchiveListScreen(
         navHostController = navController,
-        archiveListViewModel = hiltViewModel(viewModelStoreOwner = activity)
+        archiveListViewModel = hiltViewModel(viewModelStoreOwner = activity),
+        configViewModel = hiltViewModel(viewModelStoreOwner = activity)
     )
 }
 
 @Composable
 private fun AvaNegarArchiveListScreen(
     navHostController: NavHostController,
-    archiveListViewModel: ArchiveListViewModel
+    archiveListViewModel: ArchiveListViewModel,
+    configViewModel: ConfigViewModel
 ) {
+    LaunchedEffect(Unit) {
+        configViewModel.avanegarTileConfig.collect { avanegarTileConfig ->
+            if (avanegarTileConfig?.available == false) {
+                configViewModel.showAvanegarUnavailableFeature()
+                navHostController.navigateUp()
+            }
+        }
+    }
+
     val eventHandler = LocalEventHandler.current
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current

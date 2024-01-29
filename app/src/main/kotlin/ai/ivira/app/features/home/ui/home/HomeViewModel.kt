@@ -3,6 +3,7 @@ package ai.ivira.app.features.home.ui.home
 import ai.ivira.app.features.ava_negar.data.DataStoreRepository
 import ai.ivira.app.features.ava_negar.data.PreferencesKey.onBoardingKey
 import ai.ivira.app.features.avasho.ui.onboarding.AVASHO_ONBOARDING_COMPLETED
+import ai.ivira.app.features.config.ui.TileItem
 import ai.ivira.app.features.home.data.VersionRepository
 import ai.ivira.app.features.home.ui.home.version.model.toVersionView
 import ai.ivira.app.utils.data.NetworkStatus
@@ -17,6 +18,7 @@ import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
 import android.content.SharedPreferences
 import android.text.format.DateUtils
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
@@ -90,6 +92,8 @@ class HomeViewModel @Inject constructor(
 
     var avashoOnboardingHasBeenShown = mutableStateOf(false)
         private set
+
+    val unavailableTileToShowBottomSheet: MutableState<TileItem?> = mutableStateOf(null)
 
     init {
         // region notification request

@@ -8,6 +8,8 @@ import ai.ivira.app.features.avasho.data.AvashoDao
 import ai.ivira.app.features.avasho.data.entity.AvashoProcessedFileEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoTrackingFileEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoUploadingFileEntity
+import ai.ivira.app.features.config.data.ConfigDao
+import ai.ivira.app.features.config.data.TileConfigEntity
 import ai.ivira.app.features.home.data.VersionDao
 import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
 import ai.ivira.app.features.home.data.entity.VersionEntity
@@ -23,13 +25,15 @@ import androidx.room.RoomDatabase
         ReleaseNoteEntity::class,
         AvashoProcessedFileEntity::class,
         AvashoTrackingFileEntity::class,
-        AvashoUploadingFileEntity::class
+        AvashoUploadingFileEntity::class,
+        TileConfigEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class ViraDb : RoomDatabase() {
     abstract fun avanegarDao(): AvanegarDao
     abstract fun versionDao(): VersionDao
     abstract fun avashoDao(): AvashoDao
+    abstract fun tileConfigDao(): ConfigDao
 }
