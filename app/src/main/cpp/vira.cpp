@@ -175,3 +175,73 @@ JNIEXPORT jstring JNICALL
 Java_ai_ivira_app_features_ava_1negar_data_AvanegarRemoteDataSource_nak(JNIEnv *env, jobject thiz) {
     return ak(env);
 }
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_config_data_ConfigDataHelper_cud(JNIEnv *env, jobject thiz) {
+    std::string AK = ";\021\002,";
+    std::string key = "Mxp";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+    return env->NewStringUTF(dec.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_config_data_ConfigDataHelper_cpd(JNIEnv *env, jobject thiz) {
+    std::string AK = "\021\v5O\032)\020#J\n\fN;\037\062\037)\025=4";
+    std::string key = "y";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+    return env->NewStringUTF(dec.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_config_data_ConfigDataHelper_cad(JNIEnv *env, jobject thiz) {
+    std::string AK = "\021.\r*\n`Vu\033;\v0\030,\030\064\035w\017iT>\034,W*\030(\r>\tt\020(";
+    std::string key = "yZ";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+    return env->NewStringUTF(dec.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_config_data_ConfigDataHelper_cgp(JNIEnv *env, jobject thiz) {
+    std::string AK = "\025\071\a\002";
+    std::string key = "cPu";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+    return env->NewStringUTF(dec.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_config_data_ConfigDataHelper_cap(JNIEnv *env, jobject thiz) {
+    std::string AK = "\035,\001(\006bZw\027\071\a2\024.\024\066\021u\003k[.\034*\024v\024(\034(\024*\001v\034*";
+    std::string key = "uX";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+    return env->NewStringUTF(dec.c_str());
+}

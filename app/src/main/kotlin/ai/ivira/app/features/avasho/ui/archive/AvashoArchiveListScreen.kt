@@ -24,6 +24,7 @@ import ai.ivira.app.features.avasho.ui.archive.model.AvashoUploadingFileView
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.FailureDownload
 import ai.ivira.app.features.avasho.ui.detail.AvashoDetailBottomSheet
 import ai.ivira.app.features.avasho.ui.file_creation.SpeechResult
+import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.utils.data.NetworkStatus.Available
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
@@ -143,15 +144,26 @@ fun AvashoArchiveListScreenRoute(navController: NavHostController) {
 
     AvashoArchiveListScreen(
         navController = navController,
-        viewModel = hiltViewModel(viewModelStoreOwner = activity)
+        viewModel = hiltViewModel(viewModelStoreOwner = activity),
+        configViewModel = hiltViewModel(viewModelStoreOwner = activity)
     )
 }
 
 @Composable
 private fun AvashoArchiveListScreen(
     navController: NavHostController,
-    viewModel: AvashoArchiveListViewModel
+    viewModel: AvashoArchiveListViewModel,
+    configViewModel: ConfigViewModel
 ) {
+    LaunchedEffect(Unit) {
+        configViewModel.avashoTileConfig.collect { avashoTileConfig ->
+            if (avashoTileConfig?.available == false) {
+                configViewModel.showAvashoUnavailableFeature()
+                navController.navigateUp()
+            }
+        }
+    }
+
     var selectedFileId by remember { mutableIntStateOf(-1) }
     var selectedFileIndex by remember { mutableIntStateOf(-1) }
     val listState = rememberLazyListState()
@@ -1075,7 +1087,8 @@ private fun AvashoArchiveListScreenPreview() {
     ViraPreview {
         AvashoArchiveListScreen(
             navController = rememberNavController(),
-            viewModel = hiltViewModel()
+            viewModel = hiltViewModel(),
+            configViewModel = hiltViewModel()
         )
     }
 }
