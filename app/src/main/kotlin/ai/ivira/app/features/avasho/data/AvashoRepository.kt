@@ -25,6 +25,8 @@ class AvashoRepository @Inject constructor(
         System.loadLibrary("vira")
     }
 
+    suspend fun markFileAsSeen(id: Int) = avashoLocalDataSource.markFileAsSeen(id)
+
     fun getAllArchiveFiles() = avashoLocalDataSource.getAllArchiveFiles()
 
     fun getTrackingFiles() = avashoLocalDataSource.getTrackingFiles()

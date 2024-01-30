@@ -67,7 +67,8 @@ class AvashoLocalDataSource @Inject constructor(
                     filePath = "",
                     text = text,
                     createdAt = PersianDate().time,
-                    isDownloading = false
+                    isDownloading = false,
+                    isSeen = false
                 )
             )
         }
@@ -86,7 +87,8 @@ class AvashoLocalDataSource @Inject constructor(
                         fileName = tracking.title,
                         text = tracking.text,
                         createdAt = PersianDate().time,
-                        isDownloading = false
+                        isDownloading = false,
+                        isSeen = false
                     )
                 )
             }
@@ -137,4 +139,6 @@ class AvashoLocalDataSource @Inject constructor(
 
     suspend fun searchAvashoArchiveItem(searchText: String) =
         dao.searchAvashoArchiveItem(searchText)
+
+    suspend fun markFileAsSeen(id: Int) = dao.markFileAsSeen(id)
 }

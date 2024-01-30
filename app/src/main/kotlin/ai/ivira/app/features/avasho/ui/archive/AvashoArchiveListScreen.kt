@@ -513,6 +513,11 @@ private fun AvashoArchiveListScreen(
                                     }
                                 }
                             )
+                            LaunchedEffect(!avashoItem.isSeen) {
+                                if (!avashoItem.isSeen) {
+                                    viewModel.markFileAsSeen(avashoItem.id)
+                                }
+                            }
                         }
                     }
                     Process -> {

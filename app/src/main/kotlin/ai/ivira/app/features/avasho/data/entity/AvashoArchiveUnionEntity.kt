@@ -17,7 +17,8 @@ data class AvashoArchiveUnionEntity(
     val archiveType: String,
     val processEstimation: Int?,
     val lastFailureSystemTime: Long?,
-    val lastFailureBootTime: Long?
+    val lastFailureBootTime: Long?,
+    val isSeen: Boolean
 ) {
     fun toAvanegarProcessedFileEntity() = AvashoProcessedFileEntity(
         id = id,
@@ -26,7 +27,8 @@ data class AvashoArchiveUnionEntity(
         createdAt = insertSystemTime,
         fileUrl = fileUrl,
         filePath = filePath,
-        isDownloading = isDownloading
+        isDownloading = isDownloading,
+        isSeen = isSeen
     )
 
     fun toAvashoTrackingFileEntity() = AvashoTrackingFileEntity(

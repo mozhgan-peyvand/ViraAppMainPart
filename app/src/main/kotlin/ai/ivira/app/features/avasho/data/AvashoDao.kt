@@ -15,7 +15,7 @@ interface AvashoDao {
     @Query(
         """
         SELECT * FROM (
-            SELECT 0 AS id, '' AS uploadingId, token, text, title AS fileName, insertSystemTime, 
+            SELECT 0 AS id, '' AS uploadingId, token, 0 AS isSeen,text, title AS fileName, insertSystemTime, 
             insertBootTime, '' AS fileUrl, '' AS filePath, 0 AS isDownloading, '' AS speaker,
             'tracking' as archiveType, processEstimation, lastFailureSystemTime, lastFailureBootTime
            FROM AvashoTrackingFileEntity
@@ -23,7 +23,7 @@ interface AvashoDao {
         UNION
         
         SELECT * FROM (
-            SELECT id, '' AS uploadingId, '' AS token, text, fileName, createdAt, 0 AS insertBootTime,
+            SELECT id, '' AS uploadingId, '' AS token, isSeen,text, fileName, createdAt, 0 AS insertBootTime,
             fileUrl, filePath, isDownloading, '' AS speaker, 'processed' as archiveType, 
             0 AS processEstimation, 0 AS lastFailureSystemTime, 0 AS lastFailureBootTime       
             FROM AvashoProcessedFileEntity
@@ -31,7 +31,7 @@ interface AvashoDao {
         UNION
         
         SELECT * FROM (
-            SELECT 0 AS id, id AS uploadingId, '' AS token, text, title AS fileName, createdAt, 
+            SELECT 0 AS id, id AS uploadingId, '' AS token,0 AS isSeen, text, title AS fileName, createdAt, 
             0 AS insertBootTime, '' AS fileUrl, '' AS filePath, 0 AS isDownloading, speaker, 
             'uploading' as archiveType, 0 AS processEstimation, 0 AS lastFailureSystemTime, 0 AS lastTrackedBootElapsed
             FROM AvashoUploadingFileEntity
@@ -93,4 +93,7 @@ interface AvashoDao {
 
     @Query("DELETE FROM AvashoProcessedFileEntity WHERE id = :id")
     suspend fun deleteProcessedFile(id: Int)
+
+    @Query("UPDATE AvashoProcessedFileEntity SET isSeen=1 WHERE id=:id")
+    suspend fun markFileAsSeen(id: Int)
 }
