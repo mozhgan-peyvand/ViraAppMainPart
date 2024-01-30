@@ -71,3 +71,4 @@ val Color_Home_Avasho_Subtitle = Color(0XFFCACAFF)
 val Color_Surface_Tooltip = Deep_Purple_50
 val Color_Text_Tooltip = Color(0xFF1B1B1F)
 val Color_Transparent = Color(0x00FFFFFF)
+val Color_About_Us_Background_Gradiant_20 = Color(0x3341A8FF)

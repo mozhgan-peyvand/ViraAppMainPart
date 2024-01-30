@@ -13,7 +13,8 @@
     <string name="lbl_change_voice_to_text">تبدیل صوت به متن</string>
     <string name="coming_soon">به زودی</string>
     <string name="lbl_assistant_smart_voice"> دستیار صوتی هوشمند</string>
-    <string name="lbl_about_vira">درباره ویرا</string>
+    <string name="lbl_about_us">درباره ما</string>
+    <string name="lbl_contact_us">ارتباط با ما:</string>
     <string name="lbl_invite_friends">معرفی به دوستان</string>
     <string name="lbl_start">شروع</string>
 
@@ -182,7 +183,7 @@
     <string name="lbl_recording_paused">توقف ضبط…</string>
     <string name="lbl_recording_finished">پایان ضبط صدا</string>
     <string name="mgs_general_error_playing_file">خطایی در هنگام پخش صدا رخ داد.</string>
-    <string name="desc_about_us">ویرا بر ارائه‌­ی سرویس‌های کاربردی مبتنی بر فناوری هوش مصنوعی تمرکز کرده است. \nاپلیکیشن ویرا استفاده از ابزارهای جذاب هوش مصنوعی از جمله تبدیل گفتار به متن و بالعکس، استخراج متن از تصویر، ویرایشگر متن، تولید تصویر از توضیح متنی و… را برای کاربران فارسی زبان آسان می‌­کند، تا خلأ عدم پشتیبانی از زبان و گویش‌های متنوع فارسی، در بسیاری از سرویس­‌های مشابه خارجی پر شود. \nما در تیم ویرا تلاش می­‌کنیم سرویس‌های جذاب بیشتری را در اختیارتان قرار دهیم تا شما حس داشتن یک دستیار هوشمند را تجربه کنید. \nاز طریق ایمیل زیر با ما در ارتباط باشید:</string>
+    <string name="desc_about_us">مرکز تحقیقات هوش مصنوعی پارت، به عنوان یکی از اصلی ترین واحدهای شرکت دانش بنیان پارت، فعالیت خود را از سال 1396 با هدف تبدیل شدن به پیشروترین بازیگر هوش مصنوعی در ایران و خاورمیانه آغاز کرده است. \n\n تیم متخصصان این مرکز با هدف عرضه ی بهترین سوپر اپلیکیشن ایرانی در زمینه تجمیع و ارائه سرویس های جذاب و کاربردی هوش مصنوعی به طیف وسیعی از کاربران فارسی زبان، اقدام به توسعه ی اپلیکیشن ویرا نموده اند. ما در تیم ویرا در تلاش هستیم که سرویس های جذاب بیشتری را در اختیارتان قرار دهیم، تا شما حس داشتن یک دستیار هوشمند را تجربه کنید.</string>
     <string name="coming_soon_vira">به زودی در ویرا</string>
     <string name="msg_back_again_to_cancel_converting">برای کنسل کردن تبدیل متن به فایل، دوباره دکمه بازگشت را بزنید!</string>
     <string name="lbl_access_file">دسترسی به پوشه ها</string>
@@ -193,6 +194,7 @@
     <string name="lbl_explain_vira_need_microphone_permission"> ویرا برای استفاده از میکروفون نیاز به تایید دسترسی دارد </string>
     <string name="lbl_version">v &#160;</string>
     <string name="lbl_email">info@ivira.ai</string>
+    <string name="lbl_website">www.ivira.ai</string>
     <string name="lbl_default_recorded_title">متن %d</string>
     <string name="lbl_default_voice_title">صوت %d</string>
     <string name="lbl_microphone">میکروفون</string>
