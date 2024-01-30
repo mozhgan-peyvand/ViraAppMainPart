@@ -13,14 +13,15 @@ import ai.ivira.app.utils.ui.millisecondsToTime
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.theme.Color_Card
-import ai.ivira.app.utils.ui.theme.Color_On_Surface_Variant
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Red
+import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.ViraTheme
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -59,8 +60,6 @@ fun AvashoArchiveProcessedFileElement(
     onMenuClick: (AvashoProcessedFileView) -> Unit
 ) {
     val isDownloaded = File(archiveViewProcessed.filePath).exists()
-    val selectedItemTextColor =
-        if (archiveViewProcessed.id == selectedItem) Color_On_Surface_Variant else Color.Unspecified
 
     val selectedItemBackgroundColor =
         if (archiveViewProcessed.id == selectedItem) Color_Primary_300 else Color.Unspecified
@@ -68,6 +67,11 @@ fun AvashoArchiveProcessedFileElement(
     Card(
         backgroundColor = Color_Card,
         elevation = 0.dp,
+        border = if (archiveViewProcessed.isSeen) {
+            BorderStroke(0.dp, Color_Card)
+        } else {
+            BorderStroke(0.5.dp, MaterialTheme.colors.primary)
+        },
         modifier = Modifier.heightIn(min = 89.dp),
         onClick = {
             safeClick {
@@ -106,7 +110,11 @@ fun AvashoArchiveProcessedFileElement(
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.subtitle2,
                     text = archiveViewProcessed.title,
-                    color = selectedItemTextColor,
+                    color = if (archiveViewProcessed.isSeen) {
+                        Color_Text_1
+                    } else {
+                        MaterialTheme.colors.primary
+                    },
                     modifier = Modifier.background(selectedItemBackgroundColor)
                 )
 
@@ -252,7 +260,8 @@ private fun AvashoArchiveProcessedFileElementPreview() {
                     downloadingPercent = 0.5f,
                     downloadedBytes = 1055205252558,
                     isDownloading = false,
-                    fileDuration = 0L
+                    fileDuration = 0L,
+                    isSeen = false
                 ),
                 isNetworkAvailable = true,
                 isDownloadFailure = false,

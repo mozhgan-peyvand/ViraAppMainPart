@@ -17,7 +17,8 @@ data class AvashoProcessedFileView(
     val downloadedBytes: Long?,
     val downloadingPercent: Float,
     val isDownloading: Boolean,
-    val fileDuration: Long
+    val fileDuration: Long,
+    val isSeen: Boolean
 ) : AvashoArchiveView
 
 fun AvashoProcessedFileEntity.toAvashoProcessedFileView(
@@ -33,6 +34,7 @@ fun AvashoProcessedFileEntity.toAvashoProcessedFileView(
     createdAt = convertDate(createdAt),
     fileUrl = fileUrl,
     filePath = filePath,
+    isSeen = isSeen,
     fileSize = if (filePath.isNotEmpty()) File(filePath).length() else fileSize,
     downloadedBytes = downloadedBytes,
     downloadingPercent = if (downloadingId == id) downloadingPercent else -1f, // it's default and initial value

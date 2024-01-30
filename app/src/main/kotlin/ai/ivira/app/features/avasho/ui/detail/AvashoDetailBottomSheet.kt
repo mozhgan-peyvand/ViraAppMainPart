@@ -541,7 +541,8 @@ private fun AvashoDetailBottomSheetPreview() {
                 0,
                 0f,
                 false,
-                0
+                0,
+                isSeen = false
             ),
             onSaveFileClick = {},
             isBottomSheetExpanded = false

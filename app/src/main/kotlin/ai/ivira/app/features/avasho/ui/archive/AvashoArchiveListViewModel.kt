@@ -524,4 +524,8 @@ class AvashoArchiveListViewModel @Inject constructor(
     private fun permissionDeniedPrefKey(permission: String): String {
         return "deniedPermission_$permission"
     }
+
+    fun markFileAsSeen(id: Int) = viewModelScope.launch(IO) {
+        avashoRepository.markFileAsSeen(id)
+    }
 }

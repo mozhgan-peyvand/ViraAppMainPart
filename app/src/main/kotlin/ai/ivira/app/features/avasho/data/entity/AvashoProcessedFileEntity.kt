@@ -12,5 +12,6 @@ data class AvashoProcessedFileEntity(
     val fileName: String,
     val text: String,
     val createdAt: Long,
-    val isDownloading: Boolean
+    val isDownloading: Boolean,
+    val isSeen: Boolean
 )
