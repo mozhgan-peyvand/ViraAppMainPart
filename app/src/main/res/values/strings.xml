@@ -231,6 +231,8 @@
     <string name="lbl_app_changes">تغییرات برنامه</string>
     <string name="lbl_version_title">نسخه</string>
     <string name="lbl_show_later">بعدا نمایش بده</string>
+    <string name="lbl_latest_changes">آخرین تغییرات</string>
+    <string name="lbl_new_added_features_to_vira">امکانات جدیدی که به ویرا اضافه شده است :</string>
     <string name="lbl_bullet">•</string>
     <string name="msg_updating_failed_please_try_again_later">متاسفانه درخواست به روزرسانی شما با خطا مواجه شد، لطفا مدتی منتظر بمانید و سپس دوباره امتحان کنید.</string>
     <string name="msg_vpn_is_connected_error">برای عملکرد بهتر، فیلترشکن خود را خاموش کنید.</string>

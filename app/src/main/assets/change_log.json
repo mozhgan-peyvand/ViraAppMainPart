@@ -1,0 +1,45 @@
+[
+  {
+    "versionCode": 30101000,
+    "versionName": "1.1.0",
+    "releaseNotes": [
+      {
+        "type": 2,
+        "title": "افزوده شدن سرویس تبدیل متن به گفتار (آواشو)"
+      }
+    ]
+  },
+  {
+    "versionCode": 30100040,
+    "versionName": "1.0.4",
+    "releaseNotes": [
+      {
+        "type": 1,
+        "title": "افزایش سرعت پردازش فایل های طولانی در سرویس آوانگار"
+      },
+      {
+        "type": 1,
+        "title": "بهبود تجربه ی کاربری سرویس آوانگار"
+      },
+      {
+        "type": 1,
+        "title": "رفع مشکلات گزارش شده"
+      }
+    ]
+  },
+  {
+    "versionCode": 21100100,
+    "versionName": "1.0.1",
+    "releaseNotes": [
+      {
+        "type": 1,
+        "title": "رفع مشکلات گزارش شده"
+      }
+    ]
+  },
+  {
+    "versionCode": 1,
+    "versionName": "1.0.0",
+    "releaseNotes": []
+  }
+]

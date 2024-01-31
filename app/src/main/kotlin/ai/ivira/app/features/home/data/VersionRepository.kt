@@ -1,9 +1,12 @@
 package ai.ivira.app.features.home.data
 
 import ai.ivira.app.BuildConfig
+import ai.ivira.app.features.home.data.entity.ChangelogEntity
 import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
 import ai.ivira.app.features.home.data.entity.VersionDto
 import ai.ivira.app.features.home.data.entity.VersionEntity
+import ai.ivira.app.features.splash.IS_FIRST_RUN_KEY
+import ai.ivira.app.utils.data.JsonHelper
 import ai.ivira.app.utils.data.NetworkHandler
 import ai.ivira.app.utils.data.api_result.AppException
 import ai.ivira.app.utils.data.api_result.AppResult
@@ -24,14 +27,19 @@ private const val CHECK_UPDATE_PERIODICALLY_KEY = "checkUpdatePeriodicallyKey"
 private const val LAST_UPDATE_CHECK = "lastUpdateCheck"
 private const val SHOWING_UPDATE_LATER_INTERVAL = 48 * DateUtils.HOUR_IN_MILLIS
 private const val CHECK_UPDATE_PERIODICALLY_INTERVAL = 48 * DateUtils.HOUR_IN_MILLIS
+const val CURRENT_CHANGELOG_VERSION_KEY = "currentChangelogVersionKey"
 
 @Singleton
 class VersionRepository @Inject constructor(
     private val versionLocalDataSource: VersionLocalDataSource,
     private val versionRemoteDataSource: VersionRemoteDataSource,
     private val sharedPref: SharedPreferences,
+    private val jsonHelper: JsonHelper,
     private val networkHandler: NetworkHandler
 ) {
+    private val changelogVersion = sharedPref.getInt(CURRENT_CHANGELOG_VERSION_KEY, 0)
+    private val isFirstRun = sharedPref.getBoolean(IS_FIRST_RUN_KEY, true)
+
     init {
         CoroutineScope(IO).launch {
             if (shouldShowBottomSheet()) {
@@ -123,5 +131,14 @@ class VersionRepository @Inject constructor(
 
     private suspend fun insertReleaseNoteToDatabase(list: List<ReleaseNoteEntity>) {
         versionLocalDataSource.insertReleaseNote(list)
+    }
+
+    fun getChangelog(): List<ChangelogEntity> {
+        val poetListJson = jsonHelper.openJsonFromAssets("change_log.json") ?: return emptyList()
+        val list = jsonHelper.getList<ChangelogEntity>(poetListJson) ?: return emptyList()
+
+        if (changelogVersion == 0 || isFirstRun) return listOf(list.first())
+
+        return list.filter { it.versionCode > changelogVersion }
     }
 }
