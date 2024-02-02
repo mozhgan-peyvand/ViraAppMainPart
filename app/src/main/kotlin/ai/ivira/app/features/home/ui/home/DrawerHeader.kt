@@ -77,7 +77,7 @@ private fun DrawerHeaderBody(
         )
 
         DrawerBody(
-            title = stringResource(id = R.string.lbl_about_vira),
+            title = stringResource(id = R.string.lbl_about_us),
             icon = R.drawable.ic_info,
             onItemClick = { aboutUsOnClick() }
         )
