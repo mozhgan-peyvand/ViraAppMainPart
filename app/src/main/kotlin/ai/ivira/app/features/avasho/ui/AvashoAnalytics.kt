@@ -10,9 +10,9 @@ object AvashoAnalytics {
         get() = SpecialEvent("${PREFIX}_upload_icon")
 
     val createFileAbove1k: SpecialEvent
-        get() = SpecialEvent("${PREFIX}_file_created_above1k")
+        get() = SpecialEvent("${PREFIX}_file_created_above1k_v2")
     val createFileBelow1k: SpecialEvent
-        get() = SpecialEvent("${PREFIX}_file_created_below1k")
+        get() = SpecialEvent("${PREFIX}_file_created_below1k_v2")
 
     val cancelUploadFile: SpecialEvent
         get() = SpecialEvent("${PREFIX}_cancel_upload")

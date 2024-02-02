@@ -282,6 +282,12 @@ class AvashoArchiveListViewModel @Inject constructor(
             append(speakerType)
         }
 
+        if (text.length <= TEXT_LENGTH_LIMIT) {
+            eventHandler.specialEvent(AvashoAnalytics.createFileBelow1k)
+        } else {
+            eventHandler.specialEvent(AvashoAnalytics.createFileAbove1k)
+        }
+
         viewModelScope.launch(IO) {
             avashoRepository.insertUploadingSpeech(
                 AvashoUploadingFileEntity(
@@ -334,22 +340,11 @@ class AvashoArchiveListViewModel @Inject constructor(
     }
 
     fun addFileToDownloadQueue(item: AvashoProcessedFileView) {
-        var itemAdded = false
         downloadQueue.update { currentQueue ->
             if (currentQueue.contains(item)) {
-                itemAdded = false
                 currentQueue
             } else {
-                itemAdded = true
                 currentQueue.plus(item)
-            }
-        }
-
-        if (itemAdded) {
-            if (item.text.length <= TEXT_LENGTH_LIMIT) {
-                eventHandler.specialEvent(AvashoAnalytics.createFileBelow1k)
-            } else {
-                eventHandler.specialEvent(AvashoAnalytics.createFileAbove1k)
             }
         }
 
