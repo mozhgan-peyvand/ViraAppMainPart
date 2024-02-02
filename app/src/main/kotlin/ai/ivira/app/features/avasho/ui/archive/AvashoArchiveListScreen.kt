@@ -8,6 +8,8 @@ import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileB
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
 import ai.ivira.app.features.avasho.ui.AvashoAnalytics
+import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoFileCreationScreen
+import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvashoSearchScreen
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Delete
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.DeleteConfirmation
 import ai.ivira.app.features.avasho.ui.archive.AvashoFileType.Details
@@ -34,8 +36,6 @@ import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isScrollingUp
 import ai.ivira.app.utils.ui.isSdkVersionBetween23And29
 import ai.ivira.app.utils.ui.navigateToAppSettings
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoFileCreationScreen
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -715,7 +715,7 @@ private fun AvashoArchiveListScreen(
                                     SELECTED_ITEM_KEY
                                 )
                             }
-                            navController.navigate(ScreenRoutes.AvashoSearchScreen.route)
+                            navController.navigate(AvashoSearchScreen.route)
                         }
                     )
                 }

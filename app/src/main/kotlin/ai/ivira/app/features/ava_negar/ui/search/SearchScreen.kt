@@ -1,12 +1,12 @@
 package ai.ivira.app.features.ava_negar.ui.search
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarArchiveDetail
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.ava_negar.ui.archive.model.AvanegarProcessedFileView
 import ai.ivira.app.features.ava_negar.ui.search.element.SearchFileElementGrid
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_Text_1
@@ -107,7 +107,7 @@ private fun AvaNegarSearchScreen(
             modifier = Modifier.padding(innerPadding),
             onItemClick = { id, title ->
                 navHostController.navigate(
-                    ScreenRoutes.AvaNegarArchiveDetail.createRoute(id, title)
+                    AvaNegarArchiveDetail.createRoute(id, title)
                 )
             }
         )

@@ -2,10 +2,15 @@ package ai.ivira.app.features.home.ui.home
 
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarArchiveList
+import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarOnboarding
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.SnackBar
+import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoArchiveScreen
+import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoOnboardingScreen
 import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.features.home.ui.HomeAnalytics
+import ai.ivira.app.features.home.ui.HomeScreenRoutes.AboutUs
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Changelog
@@ -31,10 +36,6 @@ import ai.ivira.app.utils.ui.hideAndShow
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isSdkVersion33orHigher
 import ai.ivira.app.utils.ui.navigateToAppSettings
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AboutUs
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoArchiveScreen
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes.AvaShoOnboardingScreen
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -220,9 +221,9 @@ private fun HomeScreen(
             if (!homeViewModel.onboardingHasBeenShown.value) {
                 // TODO: should this be here?
                 eventHandler.onboardingEvent(AvanegarAnalytics.onboardingStart)
-                navController.navigate(ScreenRoutes.AvaNegarOnboarding.route)
+                navController.navigate(AvaNegarOnboarding.route)
             } else {
-                navController.navigate(ScreenRoutes.AvaNegarArchiveList.route)
+                navController.navigate(AvaNegarArchiveList.route)
             }
 
             homeViewModel.shouldNavigate.value = false

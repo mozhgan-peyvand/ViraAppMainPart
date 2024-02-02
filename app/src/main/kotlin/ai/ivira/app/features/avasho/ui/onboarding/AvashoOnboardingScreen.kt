@@ -1,8 +1,9 @@
 package ai.ivira.app.features.avasho.ui.onboarding
 
 import ai.ivira.app.R
+import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoArchiveScreen
+import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoOnboardingScreen
 import ai.ivira.app.utils.ui.BulletParagraph
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -76,8 +77,8 @@ private fun AvashoOnboardingScreen(
 
     LaunchedEffect(viewModel.shouldNavigate.value) {
         if (viewModel.shouldNavigate.value) {
-            navController.navigate(ScreenRoutes.AvaShoArchiveScreen.route) {
-                popUpTo(ScreenRoutes.AvaShoOnboardingScreen.route) {
+            navController.navigate(AvaShoArchiveScreen.route) {
+                popUpTo(AvaShoOnboardingScreen.route) {
                     inclusive = true
                     saveState = true
                 }
