@@ -2,6 +2,9 @@ package ai.ivira.app.features.ava_negar.ui.archive
 
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarArchiveDetail
+import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarSearch
+import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarVoiceRecording
 import ai.ivira.app.features.ava_negar.AvanegarSentry
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Processed
@@ -46,7 +49,6 @@ import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isScrollingUp
 import ai.ivira.app.utils.ui.isSdkVersion33orHigher
 import ai.ivira.app.utils.ui.navigateToAppSettings
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.openAudioSelector
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
@@ -776,7 +778,7 @@ private fun AvaNegarArchiveListScreen(
                             archiveListViewModel.saveListType(!isGrid)
                         },
                         onSearchClick = {
-                            navHostController.navigate(ScreenRoutes.AvaNegarSearch.route)
+                            navHostController.navigate(AvaNegarSearch.route)
                         }
                     )
 
@@ -861,7 +863,7 @@ private fun AvaNegarArchiveListScreen(
                         },
                         onItemClick = { id, title ->
                             navHostController.navigate(
-                                ScreenRoutes.AvaNegarArchiveDetail.createRoute(id, title)
+                                AvaNegarArchiveDetail.createRoute(id, title)
                             )
                         }
                     )
@@ -1399,7 +1401,7 @@ fun DecreaseEstimateTime(
 }
 
 private fun gotoRecordAudioScreen(navHostController: NavHostController) {
-    navHostController.navigate(ScreenRoutes.AvaNegarVoiceRecording.route)
+    navHostController.navigate(AvaNegarVoiceRecording.route)
 }
 
 @ViraDarkPreview

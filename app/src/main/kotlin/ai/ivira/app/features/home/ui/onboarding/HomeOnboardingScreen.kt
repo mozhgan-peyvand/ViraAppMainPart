@@ -2,12 +2,12 @@ package ai.ivira.app.features.home.ui.onboarding
 
 import ai.ivira.app.R
 import ai.ivira.app.features.home.ui.HomeAnalytics
+import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.features.home.ui.onboarding.MainOnboardingItem.First
 import ai.ivira.app.features.home.ui.onboarding.MainOnboardingItem.Second
 import ai.ivira.app.features.home.ui.onboarding.MainOnboardingItem.Third
 import ai.ivira.app.utils.ui.BulletParagraph
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -90,7 +90,7 @@ private fun HomeOnboardingScreen(
         if (viewModel.shouldNavigate.value) {
             viewModel.onBoardingShown()
             navController.popBackStack()
-            navController.navigate(ScreenRoutes.Home.route)
+            navController.navigate(HomeScreenRoutes.Home.route)
         }
     }
 

@@ -1,10 +1,11 @@
 package ai.ivira.app.features.ava_negar.ui.onboarding
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarArchiveList
+import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarOnboarding
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
 import ai.ivira.app.utils.ui.BulletParagraph
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -85,8 +86,8 @@ private fun AvaNegarOnboardingScreen(
 
     LaunchedEffect(viewModel.shouldNavigate.value) {
         if (viewModel.shouldNavigate.value) {
-            navController.navigate(ScreenRoutes.AvaNegarArchiveList.route) {
-                popUpTo(ScreenRoutes.AvaNegarOnboarding.route) {
+            navController.navigate(AvaNegarArchiveList.route) {
+                popUpTo(AvaNegarOnboarding.route) {
                     inclusive = true
                     saveState = true
                 }

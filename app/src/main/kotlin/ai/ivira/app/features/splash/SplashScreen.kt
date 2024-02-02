@@ -1,8 +1,8 @@
 package ai.ivira.app.features.splash
 
 import ai.ivira.app.R
+import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.theme.Color_BG
@@ -63,13 +63,13 @@ private fun SplashScreen(
             if (viewModel.hasOnboardingShown.value) {
                 navController.popBackStack()
                 navController.navigate(
-                    route = ScreenRoutes.Home.route
+                    route = HomeScreenRoutes.Home.route
                 )
                 viewModel.updateIsFirstRun()
             } else {
                 navController.popBackStack()
                 navController.navigate(
-                    route = ScreenRoutes.HomeMainOnboardingScreen.route
+                    route = HomeScreenRoutes.HomeMainOnboardingScreen.route
                 )
             }
         }
