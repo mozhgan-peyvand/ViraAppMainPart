@@ -3,6 +3,8 @@ package ai.ivira.app.features.imazh.ui.archive
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.archive.DeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
+import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhDetailsScreen
+import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhNewImageDescriptorScreen
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.Delete
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.DeleteConfirmation
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhArchiveView
@@ -13,8 +15,6 @@ import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.isScrollingUp
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes
-import ai.ivira.app.utils.ui.navigation.ScreenRoutes.ImazhNewImageDescriptorScreen
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
@@ -251,11 +251,7 @@ private fun ImazhArchiveListScreen(
                             isGrid = isGrid,
                             isInDownloadQueue = { id -> viewModel.isInDownloadQueue(id) },
                             onProcessedItemClick = { id ->
-                                navController.navigate(
-                                    ScreenRoutes.ImazhDetailsScreen.createRoute(
-                                        id
-                                    )
-                                )
+                                navController.navigate(ImazhDetailsScreen.createRoute(id))
                             },
                             onMenuClick = { itemProcessed ->
                                 selectedMenuItem.value = itemProcessed

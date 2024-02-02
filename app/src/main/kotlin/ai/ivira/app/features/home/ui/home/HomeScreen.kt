@@ -26,6 +26,7 @@ import ai.ivira.app.features.home.ui.home.version.sheets.ForceUpdateScreen
 import ai.ivira.app.features.home.ui.home.version.sheets.UpToDateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateLoadingBottomSheet
+import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes
 import ai.ivira.app.utils.common.CommonConstants.LANDING_URL
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.UiError
@@ -258,7 +259,7 @@ private fun HomeScreen(
         homeViewModel.shouldNavigateToImazh.value
     ) {
         if (homeViewModel.shouldNavigateToImazh.value) {
-            navController.navigate(ScreenRoutes.ImazhArchiveListScreen.route)
+            navController.navigate(ImazhScreenRoutes.ImazhArchiveListScreen.route)
             homeViewModel.shouldNavigateToImazh.value = false
         }
     }

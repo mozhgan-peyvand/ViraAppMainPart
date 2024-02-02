@@ -3,7 +3,7 @@ package ai.ivira.app.utils.ui.navigation
 import ai.ivira.app.features.ava_negar.avanegarNavGraph
 import ai.ivira.app.features.avasho.ui.avashoNavGraph
 import ai.ivira.app.features.home.ui.homeNavGraph
-import ai.ivira.app.features.imazh.imazhNavGraph
+import ai.ivira.app.features.imazh.ui.imazhNavGraph
 import ai.ivira.app.features.splash.SplashScreenRoutes
 import ai.ivira.app.features.splash.splashNavGraph
 import androidx.compose.animation.AnimatedContentTransitionScope
