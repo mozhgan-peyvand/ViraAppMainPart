@@ -178,5 +178,8 @@ class AvashoRepository @Inject constructor(
     suspend fun searchAvashoArchiveItem(searchText: String) =
         avashoLocalDataSource.searchAvashoArchiveItem(searchText)
 
+    suspend fun checkSpeech(speech: String): AppResult<Boolean> =
+        avashoRemoteDataSource.checkSpeech(speech).toAppResult()
+
     private external fun bu(): String
 }

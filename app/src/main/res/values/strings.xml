@@ -93,6 +93,8 @@
     <string name="msg_server_error">ارتباط با سرور موقتا برقرار نمی باشد</string>
     <string name="msg_invalid_file">فایل نامعتبر می باشد</string>
     <string name="msg_file_duration_exceeds_max">فایل صوتی نمی‌تواند بیش از 60 دقیقه باشد</string>
+    <string name="msg_request_failed_try_again_later">متاسفانه درخواست شما با خطا مواجه شد، لطفا مدتی منتظر بمانید و سپس دوباره امتحان کنید</string>
+    <string name="msg_your_text_contains_inappropriate_words">متن شما حاوی کلمات نامناسب است، لطفا آن را اصلاح نموده و مجدد امتحان کنید.</string>
     <!--endregion -->
 
     <string name="msg_convert_error">خطایی رخ داده است</string>

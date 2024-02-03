@@ -38,4 +38,10 @@ class UiException @Inject constructor(
 
     fun getErrorMessageMaxLengthExceeded(): String =
         context.getString(R.string.msg_file_duration_exceeds_max)
+
+    fun getAvashoErrorMessageRequestFailedTryAgainLater(): String =
+        context.getString(R.string.msg_request_failed_try_again_later)
+
+    fun getAvashoErrorMessageTextContainsInappropriateWords(): String =
+        context.getString(R.string.msg_your_text_contains_inappropriate_words)
 }

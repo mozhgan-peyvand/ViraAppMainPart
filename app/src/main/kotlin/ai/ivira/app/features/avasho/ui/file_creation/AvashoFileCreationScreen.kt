@@ -1,12 +1,16 @@
 package ai.ivira.app.features.avasho.ui.file_creation
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.ChooseFileContentBottomSheet
 import ai.ivira.app.features.avasho.ui.AvashoAnalytics
 import ai.ivira.app.features.avasho.ui.file_creation.FileCreationBottomSheetType.ChooseFile
 import ai.ivira.app.features.avasho.ui.file_creation.FileCreationBottomSheetType.FileAccessPermissionDenied
 import ai.ivira.app.features.avasho.ui.file_creation.FileCreationBottomSheetType.OpenForChooseSpeaker
+import ai.ivira.app.utils.ui.UiError
+import ai.ivira.app.utils.ui.UiIdle
+import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.ViraBalloon
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
@@ -17,8 +21,10 @@ import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
+import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Surface_Container_High
+import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Color_White
 import ai.ivira.app.utils.ui.theme.ViraTheme
@@ -41,12 +47,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
@@ -63,6 +71,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -74,6 +83,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -86,11 +97,17 @@ import androidx.compose.ui.unit.LayoutDirection.Rtl
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.skydoves.balloon.overlay.BalloonOverlayCircle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 private const val CHAR_COUNT = 2500
@@ -110,6 +127,7 @@ fun AvashoFileCreationScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
+    val uiViewState by viewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
 
     val launchOpenFile = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -195,6 +213,14 @@ fun AvashoFileCreationScreen(
         focusRequester.requestFocus()
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.uiViewState.collectLatest {
+            if (it is UiError && it.isSnack) {
+                showMessage(snackbarHostState, this, it.message)
+            }
+        }
+    }
+
     BackHandler(bottomSheetState.isVisible) {
         coroutineScope.launch {
             bottomSheetState.hide()
@@ -203,7 +229,14 @@ fun AvashoFileCreationScreen(
 
     Scaffold(
         backgroundColor = Color_BG,
-        scaffoldState = scaffoldState
+        scaffoldState = scaffoldState,
+        snackbarHost = { snackBarHostState ->
+            SnackBar(
+                snackbarHostState = snackBarHostState,
+                paddingBottom = 80.dp,
+                maxLine = 2
+            )
+        }
     ) { padding ->
         ModalBottomSheetLayout(
             sheetState = bottomSheetState,
@@ -358,14 +391,12 @@ fun AvashoFileCreationScreen(
                     modifier = Modifier.weight(1f)
                 )
 
-                Button(
-                    contentPadding = PaddingValues(vertical = 12.dp),
-                    enabled = viewModel.textBody.value.isNotEmpty(),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                ConfirmButton(
+                    enabled = viewModel.textBody.value.isNotEmpty() && uiViewState !is UiLoading,
+                    isLoading = uiViewState is UiLoading,
                     onClick = {
-                        safeClick {
+                        keyboardController?.hide()
+                        viewModel.checkSpeech(speech = viewModel.textBody.value) {
                             setSelectedSheet(OpenForChooseSpeaker)
                             coroutineScope.launch {
                                 if (!bottomSheetState.isVisible) {
@@ -376,12 +407,7 @@ fun AvashoFileCreationScreen(
                             }
                         }
                     }
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.lbl_convert_to_sound),
-                        style = MaterialTheme.typography.button
-                    )
-                }
+                )
             }
         }
     }
@@ -586,6 +612,65 @@ private fun Body(
             }
         }
     }
+}
+
+@Composable
+private fun ConfirmButton(
+    enabled: Boolean,
+    isLoading: Boolean,
+    onClick: () -> Unit
+) {
+    val density = LocalDensity.current
+    var lottieHeight by rememberSaveable { mutableIntStateOf(0) }
+
+    Button(
+        contentPadding = PaddingValues(vertical = 12.dp),
+        onClick = {
+            safeClick(event = onClick)
+        },
+        colors = ButtonDefaults.buttonColors(
+            disabledBackgroundColor = if (!enabled && !isLoading) {
+                MaterialTheme.colors.onSurface
+                    .copy(alpha = 0.12f)
+                    .compositeOver(MaterialTheme.colors.surface)
+            } else {
+                Color_Primary
+            }
+        ),
+        enabled = enabled,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        if (isLoading) {
+            LoadingLottie(
+                modifier = Modifier.height(with(density) { lottieHeight.toDp() })
+            )
+        } else {
+            Text(
+                text = stringResource(id = R.string.lbl_convert_to_sound),
+                style = MaterialTheme.typography.button,
+                color = Color_Text_1,
+                modifier = Modifier.onGloballyPositioned {
+                    lottieHeight = it.size.height
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoadingLottie(
+    modifier: Modifier = Modifier
+) {
+    val composition by rememberLottieComposition(
+        spec = LottieCompositionSpec.RawRes(resId = R.raw.lottie_loading_2)
+    )
+    LottieAnimation(
+        composition = composition,
+        iterations = LottieConstants.IterateForever,
+        modifier = modifier
+    )
 }
 
 @Preview(showBackground = true, backgroundColor = 0xffffff)
