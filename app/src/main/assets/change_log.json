@@ -1,5 +1,19 @@
 [
   {
+    "versionCode": 30101020,
+    "versionName": "1.1.2",
+    "releaseNotes": [
+      {
+        "type": 1,
+        "title": "افزوده شدن گوینده جدید به سرویس آواشو"
+      },
+      {
+        "type": 1,
+        "title": "بهبود کیفیت سرویس آواشو"
+      }
+    ]
+  },
+  {
     "versionCode": 30101000,
     "versionName": "1.1.0",
     "releaseNotes": [
