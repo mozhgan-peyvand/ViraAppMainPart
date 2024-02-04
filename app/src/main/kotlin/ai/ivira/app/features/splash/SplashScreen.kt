@@ -63,9 +63,8 @@ private fun SplashScreen(
             if (viewModel.hasOnboardingShown.value) {
                 navController.popBackStack()
                 navController.navigate(
-                    route = HomeScreenRoutes.Home.route
+                    route = HomeScreenRoutes.Home.createRoute()
                 )
-                viewModel.updateIsFirstRun()
             } else {
                 navController.popBackStack()
                 navController.navigate(

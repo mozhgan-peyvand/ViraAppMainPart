@@ -166,6 +166,8 @@ private fun HomeScreen(
     val avashoTile by configViewModel.avashoTileConfig.collectAsStateWithLifecycle(initialValue = null)
 
     val shouldShowForceUpdateBottomSheet by homeViewModel.shouldShowForceUpdateBottomSheet.collectAsStateWithLifecycle()
+    val shouldShowChangeLogBottomSheet by homeViewModel.shouldShowChangeLogBottomSheet.collectAsStateWithLifecycle()
+    val updatedChangelogList by homeViewModel.updatedChangelogList.collectAsStateWithLifecycle()
 
     LaunchedEffect(
         configViewModel.shouldShowAvanegarUnavailableBottomSheet.value
@@ -289,8 +291,8 @@ private fun HomeScreen(
         }
     }
 
-    LaunchedEffect(homeViewModel.shouldShowChangeLogBottomSheet.value) {
-        if (homeViewModel.shouldShowChangeLogBottomSheet.value && homeViewModel.updatedChangelogList.isNotEmpty()) {
+    LaunchedEffect(shouldShowChangeLogBottomSheet) {
+        if (shouldShowChangeLogBottomSheet) {
             homeViewModel.updateChangelogVersion()
             sheetSelected = Changelog
             modalBottomSheetState.show()
@@ -558,7 +560,7 @@ private fun HomeScreen(
 
                     Changelog -> {
                         ChangelogBottomSheet(
-                            item = homeViewModel.updatedChangelogList,
+                            item = updatedChangelogList,
                             onUnderstoodClick = {
                                 modalBottomSheetState.hide(coroutineScope)
                             }

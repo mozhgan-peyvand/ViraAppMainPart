@@ -11,10 +11,13 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.runtime.Composable
+import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 
 fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
     navigateWithSlideAnimationAndFadeInEnter(
@@ -25,7 +28,15 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
     navigateWithSlideAnimation(route = HomeScreenRoutes.HomeOnboardingScreen.route) {
         HomeOnboardingScreenRoute(navController = navController)
     }
-    navigateWithSlideAnimationAndFadeInEnter(route = HomeScreenRoutes.Home.route) {
+    navigateWithSlideAnimationAndFadeInEnter(
+        route = HomeScreenRoutes.Home.route,
+        arguments = listOf(
+            navArgument("isFirstRun") {
+                type = NavType.BoolType
+                defaultValue = false
+            }
+        )
+    ) {
         HomeScreenRoute(navController = navController)
     }
     navigateWithSlideAnimation(route = HomeScreenRoutes.AboutUs.route) {
@@ -35,10 +46,12 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
 
 private fun NavGraphBuilder.navigateWithSlideAnimationAndFadeInEnter(
     route: String,
+    arguments: List<NamedNavArgument> = emptyList(),
     content: @Composable (NavBackStackEntry) -> Unit
 ) {
     composable(
         route = route,
+        arguments = arguments,
         enterTransition = {
             fadeIn(animationSpec = tween(ANIMATION_NAVIGATION_DURATION_FADE))
         },

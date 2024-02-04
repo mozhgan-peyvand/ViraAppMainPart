@@ -90,7 +90,7 @@ private fun HomeOnboardingScreen(
         if (viewModel.shouldNavigate.value) {
             viewModel.onBoardingShown()
             navController.popBackStack()
-            navController.navigate(HomeScreenRoutes.Home.route)
+            navController.navigate(HomeScreenRoutes.Home.createRoute(true))
         }
     }
 
