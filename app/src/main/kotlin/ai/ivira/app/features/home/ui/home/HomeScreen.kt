@@ -14,6 +14,7 @@ import ai.ivira.app.features.home.ui.HomeScreenRoutes.AboutUs
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Changelog
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ForceUpdate
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Imazh
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNegar
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NotificationPermission
@@ -21,6 +22,7 @@ import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Unavail
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UpdateApp
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ViraSiar
 import ai.ivira.app.features.home.ui.home.version.sheets.ChangelogBottomSheet
+import ai.ivira.app.features.home.ui.home.version.sheets.ForceUpdateScreen
 import ai.ivira.app.features.home.ui.home.version.sheets.UpToDateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateLoadingBottomSheet
@@ -109,6 +111,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -144,10 +147,6 @@ private fun HomeScreen(
     val changeLogList by homeViewModel.changeLogList.collectAsStateWithLifecycle()
     val uiState by homeViewModel.uiViewState.collectAsStateWithLifecycle()
     val networkStatus by homeViewModel.networkStatus.collectAsStateWithLifecycle()
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
-    )
 
     val hasVpnConnection by remember(networkStatus) {
         mutableStateOf(networkStatus.let { it is NetworkStatus.Available && it.hasVpn })
@@ -157,8 +156,16 @@ private fun HomeScreen(
 
     var sheetSelected by rememberSaveable { mutableStateOf(Imazh) }
 
+    val modalBottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true,
+        confirmValueChange = { sheetSelected != ForceUpdate }
+    )
+
     val avanegarTile by configViewModel.avanegarTileConfig.collectAsStateWithLifecycle(initialValue = null)
     val avashoTile by configViewModel.avashoTileConfig.collectAsStateWithLifecycle(initialValue = null)
+
+    val shouldShowForceUpdateBottomSheet by homeViewModel.shouldShowForceUpdateBottomSheet.collectAsStateWithLifecycle()
 
     LaunchedEffect(
         configViewModel.shouldShowAvanegarUnavailableBottomSheet.value
@@ -286,6 +293,14 @@ private fun HomeScreen(
         if (homeViewModel.shouldShowChangeLogBottomSheet.value && homeViewModel.updatedChangelogList.isNotEmpty()) {
             homeViewModel.updateChangelogVersion()
             sheetSelected = Changelog
+            modalBottomSheetState.show()
+        }
+    }
+
+    LaunchedEffect(shouldShowForceUpdateBottomSheet) {
+        if (shouldShowForceUpdateBottomSheet) {
+            sheetSelected = ForceUpdate
+            modalBottomSheetState.hide()
             modalBottomSheetState.show()
         }
     }
@@ -469,6 +484,18 @@ private fun HomeScreen(
                         homeViewModel.doNotShowUpdateBottomSheetUntilNextLaunch()
                     }
 
+                    ForceUpdate -> {
+                        ForceUpdateScreen(
+                            onUpdateClick = {
+                                ContextCompat.startActivity(
+                                    context,
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.SHARE_URL)),
+                                    null
+                                )
+                            }
+                        )
+                    }
+
                     NotificationPermission -> {
                         if (!isSdkVersion33orHigher()) return@sheetContent
                         val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -515,6 +542,7 @@ private fun HomeScreen(
                         )
                         homeViewModel.doNotShowUtilNextLaunch()
                     }
+
                     UnavailableTile -> {
                         homeViewModel.unavailableTileToShowBottomSheet.value?.let { unavailableTile ->
                             HomeItemBottomSheet(
@@ -599,6 +627,8 @@ private fun HomeScreen(
                         NotificationPermission -> {}
 
                         UpdateApp -> {}
+
+                        ForceUpdate -> {}
 
                         UnavailableTile -> {}
 

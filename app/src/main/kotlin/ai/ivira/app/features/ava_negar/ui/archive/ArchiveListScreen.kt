@@ -1,6 +1,5 @@
 package ai.ivira.app.features.ava_negar.ui.archive
 
-import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarArchiveDetail
 import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarSearch
@@ -33,9 +32,7 @@ import ai.ivira.app.features.ava_negar.ui.archive.sheets.ShareDetailItemBottomSh
 import ai.ivira.app.features.ava_negar.ui.details.TIME_INTERVAL
 import ai.ivira.app.features.ava_negar.ui.record.RecordFileResult
 import ai.ivira.app.features.ava_negar.ui.record.RecordFileResult.Companion.FILE_NAME
-import ai.ivira.app.features.ava_negar.ui.update.ForceUpdateScreen
 import ai.ivira.app.features.config.ui.ConfigViewModel
-import ai.ivira.app.utils.common.event.ViraEvent
 import ai.ivira.app.utils.common.file.convertTextToPdf
 import ai.ivira.app.utils.common.file.convertTextToTXTFile
 import ai.ivira.app.utils.common.file.filename
@@ -69,7 +66,6 @@ import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.Manifest
 import android.app.Activity
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
@@ -147,7 +143,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -214,9 +209,7 @@ private fun AvaNegarArchiveListScreen(
             ArchiveBottomSheetType.ChooseFile
         )
     }
-    val isAnyBottomSheetOtherThanUpdate by rememberSaveable(selectedSheet) {
-        mutableStateOf(selectedSheet != ArchiveBottomSheetType.Update)
-    }
+
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true,
@@ -395,13 +388,6 @@ private fun AvaNegarArchiveListScreen(
         }
     }
 
-    LaunchedEffect(archiveListViewModel.aiEvent.value) {
-        if (archiveListViewModel.aiEvent.value == ViraEvent.TokenExpired) {
-            setSelectedSheet(ArchiveBottomSheetType.Update)
-            modalBottomSheetStateUpdate.show()
-        }
-    }
-
     LaunchedEffect(isConvertingPdf) {
         if (isConvertingPdf) {
             archiveListViewModel.jobConverting?.cancel()
@@ -470,11 +456,7 @@ private fun AvaNegarArchiveListScreen(
             sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
             sheetBackgroundColor = Color_BG_Bottom_Sheet,
             scrimColor = Color.Black.copy(alpha = 0.5f),
-            sheetState = if (isAnyBottomSheetOtherThanUpdate) {
-                modalBottomSheetState
-            } else {
-                modalBottomSheetStateUpdate
-            },
+            sheetState = modalBottomSheetState,
             sheetContent = {
                 when (selectedSheet) {
                     ArchiveBottomSheetType.ChooseFile -> {
@@ -535,18 +517,6 @@ private fun AvaNegarArchiveListScreen(
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
                                 }
-                            }
-                        )
-                    }
-
-                    ArchiveBottomSheetType.Update -> {
-                        ForceUpdateScreen(
-                            onUpdateClick = {
-                                ContextCompat.startActivity(
-                                    context,
-                                    Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.SHARE_URL)),
-                                    null
-                                )
                             }
                         )
                     }

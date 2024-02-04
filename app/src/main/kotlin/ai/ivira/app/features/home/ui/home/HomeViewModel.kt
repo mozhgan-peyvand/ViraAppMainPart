@@ -9,6 +9,8 @@ import ai.ivira.app.features.home.data.CURRENT_CHANGELOG_VERSION_KEY
 import ai.ivira.app.features.home.data.VersionRepository
 import ai.ivira.app.features.home.ui.home.version.model.toChangelogView
 import ai.ivira.app.features.home.ui.home.version.model.toVersionView
+import ai.ivira.app.utils.common.event.ViraEvent
+import ai.ivira.app.utils.common.event.ViraPublisher
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult.Error
@@ -47,11 +49,18 @@ class HomeViewModel @Inject constructor(
     private val versionRepository: VersionRepository,
     private val sharedPref: SharedPreferences,
     private val uiException: UiException,
+    aiEventPublisher: ViraPublisher,
     repository: DataStoreRepository,
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
     private val _uiViewState = MutableStateFlow<UiStatus>(UiIdle)
     val uiViewState = _uiViewState.asStateFlow()
+
+    private val aiEvent = aiEventPublisher.events.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        false
+    )
 
     val networkStatus = networkStatusTracker.networkStatus.stateIn(
         scope = viewModelScope,
@@ -87,11 +96,25 @@ class HomeViewModel @Inject constructor(
         private set
 
     private var _showUpdateBottomSheet = MutableStateFlow(false)
+
+    val shouldShowForceUpdateBottomSheet = combine(
+        aiEvent,
+        changeLogList
+    ) { aiEvent, versionList ->
+        aiEvent == ViraEvent.TokenExpired || versionList.any { version -> version.isForce }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        false
+    )
+
     val showUpdateBottomSheet = combine(
         _showUpdateBottomSheet,
-        changeLogList
-    ) { showUpdateBottomSheet, changeLogList ->
-        showUpdateBottomSheet && changeLogList.isNotEmpty()
+        changeLogList,
+        shouldShowForceUpdateBottomSheet
+    ) { showUpdateBottomSheet, changeLogList, shouldShowForceUpdateBottomSheet ->
+
+        !shouldShowForceUpdateBottomSheet && showUpdateBottomSheet && changeLogList.isNotEmpty()
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
@@ -110,6 +133,7 @@ class HomeViewModel @Inject constructor(
     val unavailableTileToShowBottomSheet: MutableState<TileItem?> = mutableStateOf(null)
 
     init {
+
         // region notification request
         val previousPermissionRequest = sharedPref.getLong(
             CURRENT_TIME_PREF_KEY,

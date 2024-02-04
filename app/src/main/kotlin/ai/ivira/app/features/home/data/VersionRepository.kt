@@ -3,6 +3,7 @@ package ai.ivira.app.features.home.data
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.features.home.data.entity.ChangelogEntity
 import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
+import ai.ivira.app.features.home.data.entity.SettingNetwork
 import ai.ivira.app.features.home.data.entity.VersionDto
 import ai.ivira.app.features.home.data.entity.VersionEntity
 import ai.ivira.app.features.splash.IS_FIRST_RUN_KEY
@@ -84,18 +85,7 @@ class VersionRepository @Inject constructor(
                 val result = versionRemoteDataSource.getUpdateVersionList().toAppResult()
             ) {
                 is Success -> {
-                    val data = result.data.map { settingNetwork ->
-                        settingNetwork.toVersionEntity()
-                    }
-
-                    insertChangeLogToDatabase(data)
-
-                    versionLocalDataSource.deleteReleaseNote()
-                    result.data.map { settingNetwork ->
-                        insertReleaseNoteToDatabase(settingNetwork.value.releaseNote.map {
-                            it.toReleaseNoteEntity(settingNetwork.value.versionNumber)
-                        })
-                    }
+                    insertChangeLogToDatabase(result.data)
                     updateChecked()
                     Success(Unit)
                 }
@@ -125,12 +115,22 @@ class VersionRepository @Inject constructor(
         }
     }
 
-    private suspend fun insertChangeLogToDatabase(list: List<VersionEntity>) {
-        versionLocalDataSource.insertChangeLog(list)
-    }
+    private suspend fun insertChangeLogToDatabase(settingNetwork: List<SettingNetwork>) {
+        val versions = mutableListOf<VersionEntity>()
+        val releaseNotes = mutableListOf<ReleaseNoteEntity>()
 
-    private suspend fun insertReleaseNoteToDatabase(list: List<ReleaseNoteEntity>) {
-        versionLocalDataSource.insertReleaseNote(list)
+        settingNetwork.forEach { setting ->
+            versions.add(setting.toVersionEntity())
+            releaseNotes.addAll(
+                setting.value.releaseNote.map {
+                    it.toReleaseNoteEntity(setting.value.versionNumber)
+                }
+            )
+        }
+        versionLocalDataSource.insertChangeLog(
+            versions = versions,
+            releaseNotes = releaseNotes
+        )
     }
 
     fun getChangelog(): List<ChangelogEntity> {
