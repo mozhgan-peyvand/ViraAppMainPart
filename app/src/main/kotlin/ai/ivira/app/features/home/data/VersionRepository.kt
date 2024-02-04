@@ -6,7 +6,6 @@ import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
 import ai.ivira.app.features.home.data.entity.SettingNetwork
 import ai.ivira.app.features.home.data.entity.VersionDto
 import ai.ivira.app.features.home.data.entity.VersionEntity
-import ai.ivira.app.features.splash.IS_FIRST_RUN_KEY
 import ai.ivira.app.utils.data.JsonHelper
 import ai.ivira.app.utils.data.NetworkHandler
 import ai.ivira.app.utils.data.api_result.AppException
@@ -19,6 +18,7 @@ import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -38,8 +38,8 @@ class VersionRepository @Inject constructor(
     private val jsonHelper: JsonHelper,
     private val networkHandler: NetworkHandler
 ) {
-    private val changelogVersion = sharedPref.getInt(CURRENT_CHANGELOG_VERSION_KEY, 0)
-    private val isFirstRun = sharedPref.getBoolean(IS_FIRST_RUN_KEY, true)
+    private val changelogVersion: Int
+        get() = sharedPref.getInt(CURRENT_CHANGELOG_VERSION_KEY, 0)
 
     init {
         CoroutineScope(IO).launch {
@@ -133,12 +133,12 @@ class VersionRepository @Inject constructor(
         )
     }
 
-    fun getChangelog(): List<ChangelogEntity> {
-        val poetListJson = jsonHelper.openJsonFromAssets("change_log.json") ?: return emptyList()
-        val list = jsonHelper.getList<ChangelogEntity>(poetListJson) ?: return emptyList()
+    fun getChangelog(): Flow<List<ChangelogEntity>> {
+        return flow {
+            val poetListJson = jsonHelper.openJsonFromAssets("change_log.json") ?: return@flow
+            val list = jsonHelper.getList<ChangelogEntity>(poetListJson) ?: return@flow
 
-        if (changelogVersion == 0 || isFirstRun) return listOf(list.first())
-
-        return list.filter { it.versionCode > changelogVersion }
+            emit(list.filter { it.versionCode > changelogVersion })
+        }
     }
 }

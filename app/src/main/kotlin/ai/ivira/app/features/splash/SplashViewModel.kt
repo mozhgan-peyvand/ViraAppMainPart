@@ -2,7 +2,6 @@ package ai.ivira.app.features.splash
 
 import ai.ivira.app.features.ava_negar.data.DataStoreRepository
 import ai.ivira.app.features.ava_negar.data.PreferencesKey.mainOnBoardingKey
-import android.content.SharedPreferences
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,12 +10,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-const val IS_FIRST_RUN_KEY = "isFirstRunKey"
-
 @HiltViewModel
 class SplashViewModel @Inject constructor(
-    private val repository: DataStoreRepository,
-    private val sharedPreferences: SharedPreferences
+    private val repository: DataStoreRepository
 ) : ViewModel() {
     var shouldNavigate = mutableStateOf(false)
         private set
@@ -37,11 +33,5 @@ class SplashViewModel @Inject constructor(
 
     fun startNavigation() {
         shouldNavigate.value = true
-    }
-
-    fun updateIsFirstRun() {
-        viewModelScope.launch {
-            sharedPreferences.edit().putBoolean(IS_FIRST_RUN_KEY, false).apply()
-        }
     }
 }
