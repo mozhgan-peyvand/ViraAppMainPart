@@ -1,5 +1,6 @@
 package ai.ivira.app.features.avasho.data
 
+import ai.ivira.app.features.avasho.data.entity.CheckSpeechRequestNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechItemLongNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechItemNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechLongRequestNetwork
@@ -79,6 +80,18 @@ class AvashoRemoteDataSource @Inject constructor(
             )
         ) {
             is Success -> Success(Unit)
+            is Error -> Error(result.error)
+        }
+    }
+
+    suspend fun checkSpeech(speech: String): ApiResult<Boolean> {
+        val result = service.checkSpeech(
+            token = sak(),
+            checkSpeechBody = CheckSpeechRequestNetwork(data = speech)
+        )
+
+        return when (result) {
+            is Success -> Success(result.data.data.message)
             is Error -> Error(result.error)
         }
     }

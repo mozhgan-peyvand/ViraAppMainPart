@@ -1,5 +1,7 @@
 package ai.ivira.app.features.avasho.data
 
+import ai.ivira.app.features.avasho.data.entity.CheckSpeechNetwork
+import ai.ivira.app.features.avasho.data.entity.CheckSpeechRequestNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechItemLongNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechItemNetwork
 import ai.ivira.app.features.avasho.data.entity.TextToSpeechLongRequestNetwork
@@ -32,4 +34,10 @@ interface AvashoService {
         @Header("ApiKey") token: String,
         @Path("token") fileToken: String
     ): ApiResult<ViraNetwork<TextToSpeechItemNetwork>>
+
+    @POST("sahab/gateway/service/loghman/loghmans")
+    suspend fun checkSpeech(
+        @Header("ApiKey") token: String,
+        @Body checkSpeechBody: CheckSpeechRequestNetwork
+    ): ApiResult<ViraNetwork<CheckSpeechNetwork>>
 }
