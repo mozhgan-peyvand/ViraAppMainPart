@@ -1,4 +1,4 @@
-package ai.ivira.app.features.ava_negar.ui.update
+package ai.ivira.app.features.home.ui.home.version.sheets
 
 import ai.ivira.app.R
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview

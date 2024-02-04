@@ -18,8 +18,6 @@ import ai.ivira.app.features.ava_negar.ui.archive.model.toAvanegarProcessedFileV
 import ai.ivira.app.features.ava_negar.ui.archive.model.toAvanegarTrackingFileView
 import ai.ivira.app.features.ava_negar.ui.archive.model.toAvanegarUploadingFileView
 import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewModel.Companion.MAX_FILE_DURATION_MS
-import ai.ivira.app.utils.common.event.ViraEvent
-import ai.ivira.app.utils.common.event.ViraPublisher
 import ai.ivira.app.utils.common.file.FileCache
 import ai.ivira.app.utils.common.file.UploadProgressCallback
 import ai.ivira.app.utils.common.orZero
@@ -40,8 +38,6 @@ import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import androidx.annotation.WorkerThread
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -77,7 +73,6 @@ private const val SIXTY_SECOND = 60000
 class ArchiveListViewModel @Inject constructor(
     private val repository: AvanegarRepository,
     private val fileCache: FileCache,
-    private val aiEventPublisher: ViraPublisher,
     private val sharedPref: SharedPreferences,
     private val uiException: UiException,
     private val eventHandler: EventHandler, // TODO: should this be used here?
@@ -85,9 +80,6 @@ class ArchiveListViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewState
-
-    private val _aiEvent: MutableState<ViraEvent?> = mutableStateOf(null)
-    val aiEvent: State<ViraEvent?> = _aiEvent
 
     val networkStatus = networkStatusTracker.networkStatus.stateIn(
         scope = viewModelScope,
@@ -221,12 +213,6 @@ class ArchiveListViewModel @Inject constructor(
 
         viewModelScope.launch {
             isGrid.value = sharedPref.getBoolean(IS_GRID_AVANEGAR_ARCHIVE_LIST_KEY, true)
-        }
-
-        viewModelScope.launch {
-            aiEventPublisher.events.collect {
-                _aiEvent.value = it
-            }
         }
 
         viewModelScope.launch {

@@ -8,7 +8,6 @@ enum class ArchiveBottomSheetType {
     Delete,
     DeleteConfirmation,
     RenameUploading,
-    Update,
     FileAccessPermissionDenied,
     AudioAccessPermissionDenied
 }
