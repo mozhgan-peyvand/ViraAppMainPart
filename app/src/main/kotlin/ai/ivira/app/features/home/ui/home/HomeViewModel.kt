@@ -36,6 +36,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -69,12 +70,25 @@ class HomeViewModel @Inject constructor(
     val shouldShowChangeLogBottomSheet = _shouldShowChangeLogBottomSheet.asStateFlow()
 
     val updatedChangelogList = versionRepository.getChangelog().map { changelogList ->
+        val oldVersion = getCurrentChangelogVersionFromSharedPref()
+        if (oldVersion < BuildConfig.VERSION_CODE) {
+            updateChangelogVersion()
+        }
         if (isFirstRun) {
             emptyList<ChangelogView>()
         } else {
-            changelogList.map { changeLog -> changeLog.toChangelogView() }
+            if (oldVersion == 0) {
+                buildList<ChangelogView> {
+                    changelogList.firstOrNull()
+                        ?.takeIf { it.releaseNotes.isNotEmpty() }?.let { changeLog ->
+                            add(changeLog.toChangelogView())
+                        }
+                }
+            } else {
+                changelogList.map { changeLog -> changeLog.toChangelogView() }
+            }
         }
-    }.stateIn(initial = emptyList())
+    }.flowOn(IO).stateIn(initial = emptyList())
 
     private var prefListener: SharedPreferences.OnSharedPreferenceChangeListener
     val changeLogList = versionRepository.getChangeLogFromLocal()
@@ -226,13 +240,16 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun updateChangelogVersion() {
+    private fun updateChangelogVersion() {
         viewModelScope.launch {
             sharedPref
                 .edit()
                 .putInt(CURRENT_CHANGELOG_VERSION_KEY, BuildConfig.VERSION_CODE)
                 .apply()
         }
+    }
+
+    fun changeLogBottomSheetIsShow() {
         _shouldShowChangeLogBottomSheet.value = false
     }
 

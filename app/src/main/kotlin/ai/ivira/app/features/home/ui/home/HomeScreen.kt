@@ -291,11 +291,15 @@ private fun HomeScreen(
         }
     }
 
-    LaunchedEffect(shouldShowChangeLogBottomSheet) {
+    LaunchedEffect(shouldShowChangeLogBottomSheet, updatedChangelogList) {
         if (shouldShowChangeLogBottomSheet) {
-            homeViewModel.updateChangelogVersion()
-            sheetSelected = Changelog
-            modalBottomSheetState.show()
+            if (updatedChangelogList.isNotEmpty()) {
+                sheetSelected = Changelog
+                launch {
+                    modalBottomSheetState.show()
+                }
+                homeViewModel.changeLogBottomSheetIsShow()
+            }
         }
     }
 

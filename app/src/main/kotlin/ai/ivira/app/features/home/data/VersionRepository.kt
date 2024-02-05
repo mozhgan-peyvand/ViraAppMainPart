@@ -38,8 +38,7 @@ class VersionRepository @Inject constructor(
     private val jsonHelper: JsonHelper,
     private val networkHandler: NetworkHandler
 ) {
-    private val changelogVersion: Int
-        get() = sharedPref.getInt(CURRENT_CHANGELOG_VERSION_KEY, 0)
+    private val changelogVersion: Int = sharedPref.getInt(CURRENT_CHANGELOG_VERSION_KEY, 0)
 
     init {
         CoroutineScope(IO).launch {
