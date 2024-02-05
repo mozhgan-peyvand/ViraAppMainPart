@@ -22,6 +22,7 @@ import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.stateIn
 import android.content.SharedPreferences
 import android.text.format.DateUtils
 import androidx.compose.runtime.MutableState
@@ -33,11 +34,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -60,17 +59,9 @@ class HomeViewModel @Inject constructor(
     private val _uiViewState = MutableStateFlow<UiStatus>(UiIdle)
     val uiViewState = _uiViewState.asStateFlow()
 
-    private val aiEvent = aiEventPublisher.events.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        false
-    )
+    private val aiEvent = aiEventPublisher.events.stateIn(initial = false)
 
-    val networkStatus = networkStatusTracker.networkStatus.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = NetworkStatus.Unavailable
-    )
+    val networkStatus = networkStatusTracker.networkStatus.stateIn(initial = NetworkStatus.Unavailable)
 
     private val _shouldShowChangeLogBottomSheet = MutableStateFlow(
         getCurrentChangelogVersionFromSharedPref() < BuildConfig.VERSION_CODE
@@ -83,11 +74,7 @@ class HomeViewModel @Inject constructor(
         } else {
             changelogList.map { changeLog -> changeLog.toChangelogView() }
         }
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        emptyList()
-    )
+    }.stateIn(initial = emptyList())
 
     private var prefListener: SharedPreferences.OnSharedPreferenceChangeListener
     val changeLogList = versionRepository.getChangeLogFromLocal()
@@ -95,11 +82,7 @@ class HomeViewModel @Inject constructor(
             changeLogList.map { changeLogDto ->
                 changeLogDto.toVersionView()
             }
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            emptyList()
-        )
+        }.stateIn(initial = emptyList())
 
     var shouldNavigate = mutableStateOf(false)
     var shouldNavigateToAvasho = mutableStateOf(false)
@@ -113,11 +96,7 @@ class HomeViewModel @Inject constructor(
         changeLogList
     ) { aiEvent, versionList ->
         aiEvent == ViraEvent.TokenExpired || versionList.any { version -> version.isForce }
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        false
-    )
+    }.stateIn(initial = false)
 
     val showUpdateBottomSheet = combine(
         _showUpdateBottomSheet,
@@ -126,11 +105,7 @@ class HomeViewModel @Inject constructor(
     ) { showUpdateBottomSheet, changeLogList, shouldShowForceUpdateBottomSheet ->
 
         !shouldShowForceUpdateBottomSheet && showUpdateBottomSheet && changeLogList.isNotEmpty()
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        false
-    )
+    }.stateIn(initial = false)
 
     var canShowBottomSheet = true
         private set

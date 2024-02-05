@@ -33,6 +33,7 @@ import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.analytics.EventHandler
+import ai.ivira.app.utils.ui.stateIn
 import android.content.Context
 import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
@@ -52,12 +53,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import saman.zamani.persiandate.PersianDate
@@ -81,11 +80,7 @@ class ArchiveListViewModel @Inject constructor(
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewState
 
-    val networkStatus = networkStatusTracker.networkStatus.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = NetworkStatus.Unavailable
-    )
+    val networkStatus = networkStatusTracker.networkStatus.stateIn(initial = NetworkStatus.Unavailable)
 
     private val _isUploading: MutableStateFlow<UploadingFileStatus> = MutableStateFlow(Idle)
     val isUploading: StateFlow<UploadingFileStatus> = _isUploading.asStateFlow()

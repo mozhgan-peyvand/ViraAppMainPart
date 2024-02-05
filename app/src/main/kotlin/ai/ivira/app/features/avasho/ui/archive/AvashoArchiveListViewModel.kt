@@ -38,6 +38,7 @@ import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.analytics.EventHandler
 import ai.ivira.app.utils.ui.combine
+import ai.ivira.app.utils.ui.stateIn
 import android.app.Application
 import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
@@ -55,10 +56,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import saman.zamani.persiandate.PersianDate
@@ -112,11 +111,7 @@ class AvashoArchiveListViewModel @Inject constructor(
 
     private var playingAvashoItemId = mutableStateOf<Int>(-1)
 
-    val networkStatus = networkStatusTracker.networkStatus.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = Unavailable
-    )
+    val networkStatus = networkStatusTracker.networkStatus.stateIn(initial = Unavailable)
     var selectedAvashoItemBottomSheet = mutableStateOf<AvashoArchiveView?>(null)
     var bottomSheetInitialValue = mutableStateOf<ModalBottomSheetValue>(Hidden)
 
