@@ -3,6 +3,7 @@ package ai.ivira.app.features.ava_negar.ui.record
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.Recorder.OnMaxDurationReached
 import ai.ivira.app.utils.common.safeGetInt
+import ai.ivira.app.utils.ui.stateIn
 import android.app.Application
 import android.content.SharedPreferences
 import android.media.MediaPlayer
@@ -17,11 +18,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -38,11 +37,7 @@ class VoiceRecordingViewModel @Inject constructor(
     private val _timer = MutableStateFlow(0L)
     val timer: StateFlow<Int> = _timer.map { (it / 1000).toInt() }
         .distinctUntilChanged()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 0
-        )
+        .stateIn(initial = 0)
 
     val state: MutableState<VoiceRecordingViewState> = mutableStateOf(VoiceRecordingViewState.Idle)
 

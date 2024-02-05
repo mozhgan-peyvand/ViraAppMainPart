@@ -2,6 +2,7 @@ package ai.ivira.app.features.config.ui
 
 import ai.ivira.app.features.config.data.ConfigRepository
 import ai.ivira.app.utils.data.api_result.AppResult
+import ai.ivira.app.utils.ui.stateIn
 import android.text.format.DateUtils
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -10,10 +11,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -41,26 +40,15 @@ class ConfigViewModel @Inject constructor(
 
     private val tiles: StateFlow<List<TileItem>> = configRepository.getTileConfigs()
         .map { it.mapNotNull { entity -> entity.toTileItem() } }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+        .stateIn(initial = emptyList())
 
     val avanegarTileConfig = tiles
         .map { it.firstOrNull { tile -> tile is TileItem.Avanegar } }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = null
-        )
+        .stateIn(initial = null)
+
     val avashoTileConfig = tiles
         .map { it.firstOrNull { tile -> tile is TileItem.Avasho } }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = null
-        )
+        .stateIn(initial = null)
 
     private val _shouldShowAvanegarUnavailableBottomSheet = mutableStateOf(false)
     val shouldShowAvanegarUnavailableBottomSheet: State<Boolean> = _shouldShowAvanegarUnavailableBottomSheet
