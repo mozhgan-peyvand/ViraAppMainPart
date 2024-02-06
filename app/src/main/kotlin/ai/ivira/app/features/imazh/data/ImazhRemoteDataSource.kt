@@ -1,7 +1,9 @@
 package ai.ivira.app.features.imazh.data
 
+import ai.ivira.app.features.imazh.data.entity.NFSWResultNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageRequestNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageResult
+import ai.ivira.app.features.imazh.data.entity.ValidateRequestNetwork
 import ai.ivira.app.utils.common.file.DownloadFileRequest
 import ai.ivira.app.utils.data.api_result.ApiResult
 import java.io.File
@@ -23,6 +25,21 @@ class ImazhRemoteDataSource @Inject constructor(
             apiKey = sai(),
             url = bi() + "service/textToImage/file"
         )) {
+            is ApiResult.Success -> ApiResult.Success(result.data.data)
+            is ApiResult.Error -> ApiResult.Error(result.error)
+        }
+    }
+
+    suspend fun validateAndTranslatePrompt(
+        promptData: ValidateRequestNetwork
+    ): ApiResult<NFSWResultNetwork> {
+        return when (
+            val result = imazhService.validateAndTranslatePrompt(
+                apiKey = sai(),
+                url = bi() + "service/nsfwDetector/data",
+                data = promptData
+            )
+        ) {
             is ApiResult.Success -> ApiResult.Success(result.data.data)
             is ApiResult.Error -> ApiResult.Error(result.error)
         }

@@ -69,6 +69,9 @@ class NewImageDescriptorViewModel @Inject constructor(
 
     private var job: Job? = null
 
+    private var _promptIsValid = mutableStateOf(true)
+    val promptIsValid: State<Boolean> = _promptIsValid
+
     init {
         viewModelScope.launch(IO) {
             imazhRepository.getRecentHistory().collectLatest { list ->
@@ -88,6 +91,7 @@ class NewImageDescriptorViewModel @Inject constructor(
             _prompt.value = newPrompt.substring(startIndex = 0, endIndex = PROMPT_CHARACTER_LIMIT)
         }
         promptIsEditedByUser = true
+        _promptIsValid.value = true
     }
 
     fun resetPrompt() {
@@ -145,7 +149,7 @@ class NewImageDescriptorViewModel @Inject constructor(
     fun generateImage() {
         viewModelScope.launch(IO) {
             _uiViewState.update { UiLoading }
-            when (val result = imazhRepository.convertTextToImage(
+            when (val result = imazhRepository.validatePromptAndConvertToImage(
                 prompt.value,
                 negativePrompt.value,
                 selectedKeywords.value.map { it.toImazhKeywordEntity() },
@@ -154,6 +158,8 @@ class NewImageDescriptorViewModel @Inject constructor(
                 is AppResult.Success -> {
                     _uiViewState.update {
                         UiSuccess
+                    }.also {
+                        _promptIsValid.value = result.data.isValid
                     }
                 }
 

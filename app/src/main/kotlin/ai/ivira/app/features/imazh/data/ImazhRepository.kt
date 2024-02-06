@@ -4,17 +4,22 @@ import ai.ivira.app.features.imazh.data.entity.ColorKeyword
 import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
 import ai.ivira.app.features.imazh.data.entity.ImazhKeywordEntity
 import ai.ivira.app.features.imazh.data.entity.ImazhProcessedEntity
+import ai.ivira.app.features.imazh.data.entity.NFSWResultNetwork
 import ai.ivira.app.features.imazh.data.entity.PainterKeyword
 import ai.ivira.app.features.imazh.data.entity.TextToImageRequestNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageResult
+import ai.ivira.app.features.imazh.data.entity.ValidateRequestNetwork
+import ai.ivira.app.features.imazh.data.entity.ValidatedTextToImage
 import ai.ivira.app.features.imazh.data.entity.attitudeKeyword
 import ai.ivira.app.features.imazh.data.entity.lightAngleKeyword
 import ai.ivira.app.utils.common.file.FileOperationHelper
 import ai.ivira.app.utils.common.file.IMAZH_FOLDER_PATH
 import ai.ivira.app.utils.common.file.PNG_EXTENSION
 import ai.ivira.app.utils.data.NetworkHandler
+import ai.ivira.app.utils.data.api_result.ApiResult
 import ai.ivira.app.utils.data.api_result.AppException
 import ai.ivira.app.utils.data.api_result.AppResult
+import ai.ivira.app.utils.data.api_result.toAppException
 import ai.ivira.app.utils.data.api_result.toAppResult
 import ai.ivira.app.utils.ui.attachListItemToString
 import kotlinx.coroutines.flow.Flow
@@ -46,11 +51,56 @@ class ImazhRepository @Inject constructor(
     }
 
     fun getRecentHistory(): Flow<List<ImazhHistoryEntity>> = localDataSource.getRecentHistory()
-    suspend fun convertTextToImage(
+    suspend fun validatePromptAndConvertToImage(
         prompt: String,
         negativePrompt: String,
         keywords: List<ImazhKeywordEntity>,
         style: ImazhImageStyle
+    ): AppResult<ValidatedTextToImage> {
+        return when (val validateResult = validateAndTranslatePrompt(
+            prompt = prompt,
+            negativePrompt = negativePrompt,
+            keywords = keywords,
+            style = retrieveStyleKey(style)
+        )) {
+            is AppResult.Error -> {
+                AppResult.Error(validateResult.error)
+            }
+            is AppResult.Success -> {
+                if (validateResult.data.message.sfw) {
+                    when (val textToImageResult = with(validateResult.data.message) {
+                        convertTextToImage(
+                            prompt = englishPrompt,
+                            negativePrompt = englishNegativePrompt,
+                            keywords = keywords,
+                            style = englishStyle
+                        )
+                    }) {
+                        is AppResult.Success -> AppResult.Success(
+                            ValidatedTextToImage(
+                                isValid = true,
+                                imagePath = textToImageResult.data.message.imagePath
+                            )
+                        )
+                        is AppResult.Error -> AppResult.Error(textToImageResult.error)
+                    }
+                } else {
+                    AppResult.Success(
+                        ValidatedTextToImage(
+                            isValid = false,
+                            imagePath = null
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun convertTextToImage(
+        prompt: String,
+        negativePrompt: String,
+        keywords: List<ImazhKeywordEntity>,
+        style: String
     ): AppResult<TextToImageResult> {
         if (!networkHandler.hasNetworkConnection()) {
             return AppResult.Error(AppException.NetworkConnectionException())
@@ -59,7 +109,7 @@ class ImazhRepository @Inject constructor(
             TextToImageRequestNetwork(
                 prompt.attachListItemToString(keywords.map { it.englishKeyword }),
                 negativePrompt = negativePrompt,
-                style = retrieveStyleKey(style)
+                style = style
             )
         ).toAppResult()
 
@@ -76,7 +126,7 @@ class ImazhRepository @Inject constructor(
                     keywords = keywords.map { it.keywordName },
                     prompt = prompt,
                     negativePrompt = negativePrompt,
-                    style = style.key,
+                    style = style,
                     createdAt = PersianDate().time,
                     filePath = file.absolutePath
                 )
@@ -91,6 +141,29 @@ class ImazhRepository @Inject constructor(
             is AppResult.Error -> {
                 AppResult.Error(result.error)
             }
+        }
+    }
+
+    private suspend fun validateAndTranslatePrompt(
+        prompt: String,
+        negativePrompt: String,
+        keywords: List<ImazhKeywordEntity>,
+        style: String
+    ): AppResult<NFSWResultNetwork> {
+        if (!networkHandler.hasNetworkConnection()) {
+            return AppResult.Error(AppException.NetworkConnectionException())
+        }
+
+        return when (val validateResult = remoteDataSource.validateAndTranslatePrompt(
+            promptData = ValidateRequestNetwork(
+                data = prompt.attachListItemToString(keywords.map { it.englishKeyword }),
+                negativePrompt = negativePrompt,
+                style = style,
+                onlineTranslation = true
+            )
+        )) {
+            is ApiResult.Error -> AppResult.Error(validateResult.error.toAppException())
+            is ApiResult.Success -> AppResult.Success(validateResult.data)
         }
     }
 

@@ -1,6 +1,7 @@
 package ai.ivira.app.features.imazh.ui.newImageDescriptor
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.NEGATIVE_PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.PROMPT_CHARACTER_LIMIT
@@ -36,6 +37,7 @@ import ai.ivira.app.utils.ui.theme.Color_Info_700
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_40
+import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Cyan_200
@@ -130,6 +132,7 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val EXPANSION_VISIBILITY_DELAY = 100
@@ -156,8 +159,10 @@ private fun ImazhNewImageDescriptorScreen(
     val focusManager = LocalFocusManager.current
     val scrollState: ScrollState = rememberScrollState()
     val imazhKeywords by viewModel.imazhKeywords.collectAsStateWithLifecycle()
+    var isErrorSnackBar by remember { mutableStateOf(false) }
+    val promptIsValid by viewModel.promptIsValid
     val isOkToGenerate by remember {
-        derivedStateOf { viewModel.prompt.value.isNotBlank() && !isLoading }
+        derivedStateOf { viewModel.prompt.value.isNotBlank() && !isLoading && promptIsValid }
     }
     val view = LocalView.current
     var isKeyboardVisible by remember { mutableStateOf(false) }
@@ -193,9 +198,26 @@ private fun ImazhNewImageDescriptorScreen(
             )
         }
     }
+
+    LaunchedEffect(promptIsValid) {
+        if (!promptIsValid) {
+            isErrorSnackBar = true
+            showMessage(
+                snackbarHostState,
+                coroutineScope,
+                context.getString(R.string.msg_inappropriate_prompt_error)
+            )
+        } else {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            delay(100) // To avoid seeing color changing of snackbar
+            isErrorSnackBar = false
+        }
+    }
+
     LaunchedEffect(modalBottomSheetState.isVisible) {
         if (modalBottomSheetState.isVisible) {
             focusManager.clearFocus()
+            snackbarHostState.currentSnackbarData?.dismiss()
         }
     }
 
@@ -225,10 +247,12 @@ private fun ImazhNewImageDescriptorScreen(
     LaunchedEffect(uiState) {
         when (uiState) {
             is UiError -> {
+                val message = (uiState as? UiError)?.message
+                    ?: context.getString(R.string.msg_there_is_a_problem)
                 showMessage(
                     snackbarHostState,
                     coroutineScope,
-                    context.getString(R.string.msg_updating_failed_please_try_again_later)
+                    message
                 )
 
                 // fixme should remove it, replace stateFlow with sharedFlow in viewModel
@@ -237,9 +261,12 @@ private fun ImazhNewImageDescriptorScreen(
 
             is UiLoading -> {}
             is UiSuccess -> {
-                setNewImageResult(navController)
-                navController.navigateUp()
-                viewModel.clearUiState()
+                // FIXME: Fix this. It's not Jaaleb!
+                if (promptIsValid) {
+                    setNewImageResult(navController)
+                    navController.navigateUp()
+                    viewModel.clearUiState()
+                }
             }
             UiIdle -> {}
         }
@@ -248,6 +275,14 @@ private fun ImazhNewImageDescriptorScreen(
     Scaffold(
         scaffoldState = scaffoldState,
         backgroundColor = MaterialTheme.colors.background,
+        snackbarHost = {
+            SnackBar(
+                snackbarHostState = it,
+                paddingBottom = 96.dp,
+                maxLine = 2,
+                isError = isErrorSnackBar
+            )
+        },
         topBar = {
             NewImageDescriptorTopBar(
                 onBackClick = {
@@ -358,6 +393,7 @@ private fun ImazhNewImageDescriptorScreen(
                 ) {
                     Prompt(
                         prompt = viewModel.prompt.value,
+                        promptIsValid = promptIsValid,
                         isHistoryButtonVisible = isHistoryButtonVisible,
                         onPromptChange = viewModel::changePrompt,
                         resetPrompt = viewModel::resetPrompt,
@@ -560,6 +596,7 @@ private fun AnimatableContent(
 @Composable
 private fun Prompt(
     prompt: String,
+    promptIsValid: Boolean,
     isHistoryButtonVisible: Boolean,
     onPromptChange: (String) -> Unit,
     resetPrompt: () -> Unit,
@@ -577,6 +614,7 @@ private fun Prompt(
         )
         PromptInputText(
             prompt = prompt,
+            promptIsValid = promptIsValid,
             isHistoryButtonVisible = isHistoryButtonVisible,
             onPromptChange = onPromptChange,
             resetPrompt = resetPrompt,
@@ -590,6 +628,7 @@ private fun Prompt(
 @Composable
 private fun PromptInputText(
     prompt: String,
+    promptIsValid: Boolean,
     isHistoryButtonVisible: Boolean,
     onPromptChange: (String) -> Unit,
     resetPrompt: () -> Unit,
@@ -603,7 +642,7 @@ private fun PromptInputText(
         modifier = Modifier
             .border(
                 width = 1.dp,
-                color = Color_Border,
+                color = if (promptIsValid) Color_Border else Color_Red,
                 shape = RoundedCornerShape(4.dp)
             )
     ) {

@@ -270,4 +270,6 @@
     <string name="msg_exit_while_uploading">با بازگشت به صفحه اصلی، اطلاعات این صفحه حذف خواهد شد.  برای جلوگیری از حذف، تا اتمام فرآیند تبدیل صبرکنید.</string>
     <string name="lbl_description_result">نتیجه توصیف</string>
     <string name="lbl_downloading_image">در حال دانلود عکس…</string>
+
+    <string name="msg_inappropriate_prompt_error">توصیف شما حاوی محتوای نامناسب است ، لطفا آن را اصلاح نموده و مجددا امتحان کنید.</string>
 </resources>
