@@ -110,7 +110,8 @@ class ImazhRepository @Inject constructor(
                 listOf(
                     ImazhImageStyle.Cinematic,
                     ImazhImageStyle.Comic,
-                    ImazhImageStyle.DigitalArt
+                    ImazhImageStyle.DigitalArt,
+                    ImazhImageStyle.Anime
                 )
             ).key
         } else {

@@ -10,13 +10,13 @@ enum class ImazhImageStyle(
 ) {
     None(key = "none", viewName = "هیچکدام", iconRes = R.drawable.img_style_none),
     Cinematic(key = "cinematic", viewName = "واقعی", iconRes = R.drawable.img_style_cinematic),
+    Anime(key = "anime", viewName = "اَنیمه", iconRes = R.drawable.img_style_anime),
     DigitalArt(
         key = "digital_art",
         viewName = "دیجیتال آرت",
         iconRes = R.drawable.img_style_digital_art
     ),
     Comic(key = "comic", viewName = "کُمیک", iconRes = R.drawable.img_style_comic),
-    Anime(key = "anime", viewName = "اَنیمه", iconRes = R.drawable.img_style_anime),
     Origami(key = "origami", viewName = "کاغذی", iconRes = R.drawable.img_style_origami),
     ThreeD(key = "3d", viewName = "۳بُعدی", iconRes = R.drawable.img_style_three_d),
     Watercolor(key = "watercolor", viewName = "آبرنگ", iconRes = R.drawable.img_style_watercolor),
