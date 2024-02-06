@@ -248,7 +248,7 @@
     <string name="msg_file_saved_successfully">فایل در downloads ذخیره شد</string>
 
     <string name="lbl_image_prompt">توصیف تصویر</string>
-    <string name="lbl_keyword">کلیدواژه</string>
+    <string name="lbl_image_attributes">خصوصیات تصویر</string>
     <string name="lbl_add">افزودن</string>
     <string name="lbl_image_style">سبک تصویر</string>
     <string name="lbl_select">انتخاب</string>

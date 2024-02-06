@@ -39,8 +39,8 @@ class ImazhRepository @Inject constructor(
             LinkedHashMap<String, Set<ImazhKeywordEntity>>().apply {
                 put("حال و هوا", attitudeKeyword)
                 put("زاویه و نور", lightAngleKeyword)
-                put("نقاش", PainterKeyword)
                 put("رنگ", ColorKeyword)
+                put("نقاش", PainterKeyword)
             }
         )
     }

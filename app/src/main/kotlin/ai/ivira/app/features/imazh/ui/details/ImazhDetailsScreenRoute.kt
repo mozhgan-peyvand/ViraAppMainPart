@@ -259,7 +259,7 @@ private fun ImageDescription(
 @Composable
 private fun Keyword(list: List<String>) {
     Section(
-        title = R.string.lbl_keyword,
+        title = R.string.lbl_image_attributes,
         content = {
             FlowRow(modifier = Modifier.fillMaxWidth()) {
                 list.forEach { imageStyle ->

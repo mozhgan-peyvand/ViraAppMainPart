@@ -689,7 +689,7 @@ private fun Keywords(
     }
 
     Header(
-        title = R.string.lbl_keyword,
+        title = R.string.lbl_image_attributes,
         hasExpandButton = true,
         expandState = expandState,
         expandable = keywords.isNotEmpty(),

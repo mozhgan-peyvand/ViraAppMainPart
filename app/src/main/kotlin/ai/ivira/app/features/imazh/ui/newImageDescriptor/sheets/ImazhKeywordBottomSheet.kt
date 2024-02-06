@@ -95,7 +95,7 @@ fun ImazhKeywordBottomSheet(
             .padding(horizontal = 16.dp, vertical = 20.dp)
     ) {
         Text(
-            text = stringResource(id = R.string.lbl_keyword),
+            text = stringResource(id = R.string.lbl_image_attributes),
             style = MaterialTheme.typography.h6,
             color = Color_Text_1,
             modifier = Modifier.padding(top = 12.dp)
