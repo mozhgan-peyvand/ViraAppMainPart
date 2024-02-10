@@ -272,4 +272,9 @@
     <string name="lbl_downloading_image">در حال دانلود عکس…</string>
 
     <string name="msg_inappropriate_prompt_error">توصیف شما حاوی محتوای نامناسب است ، لطفا آن را اصلاح نموده و مجددا امتحان کنید.</string>
+
+    <string name="msg_firs_run_image_description">دراین بخش، تصویر مورد نظرتان را توصیف کنید و \nبرای تولید تصویر بهتر، جزئیات بیشتری بنویسید.</string>
+    <string name="msg_firs_run_random_prompt">می‌توانید از این گزینه برای تولید نمونه \nتوصیف تصویر استفاده کنید.</string>
+    <string name="msg_firs_run_keywords">می‌توانید برای اضافه کردن جزئیات بیشتر به \nتوصیف تصویر، از کلمات کلیدی استفاده کنید. </string>
+    <string name="msg_firs_run_negative_prompt">در این بخش، ویژگی هایی که نمی‌خواهید در \nتصویر تولیدی وجود داشته باشد را بنویسید. \nبه عنوان مثال، با نوشتن کلمه "آبی"، رنگ آبی \nکمتری در تصویر تولیدی وجود خواهد داشت.</string>
 </resources>

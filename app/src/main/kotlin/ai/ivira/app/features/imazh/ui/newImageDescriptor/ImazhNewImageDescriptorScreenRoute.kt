@@ -19,10 +19,12 @@ import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDes
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.Style
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.RandomConfirmationBottomSheet
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.SelectStyleBottomSheet
+import ai.ivira.app.utils.ui.TooltipHelper
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.ViraBalloon
 import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.hideAndShow
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
@@ -114,6 +116,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -134,6 +137,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 private const val EXPANSION_VISIBILITY_DELAY = 100
 
@@ -170,6 +174,12 @@ private fun ImazhNewImageDescriptorScreen(
         mutableStateOf(viewModel.historyList.value.isNotEmpty())
     }
     val availableStyles by viewModel.availableStyles.collectAsState(initial = emptyList())
+    val tooltipHelper = remember {
+        TooltipHelper(
+            scrollToPosition = { coroutineScope.launch { scrollState.scrollTo(it) } },
+            onAllTooltipsShown = { viewModel.doNotShowFirstRunAgain() }
+        )
+    }
 
     val (selectedSheet, setSelectedSheet) = rememberSaveable {
         mutableStateOf(History)
@@ -195,6 +205,33 @@ private fun ImazhNewImageDescriptorScreen(
                     setSelectedSheet(BackWhileGenerate)
                     modalBottomSheetState.show(coroutineScope)
                 }
+            )
+        }
+    }
+
+    val promptPosition = remember { mutableIntStateOf(0) }
+    val randomPromptPosition = remember { mutableIntStateOf(0) }
+    val negativePromptPosition = remember { mutableIntStateOf(0) }
+    val keywordsPosition = remember { mutableIntStateOf(0) }
+    val topBarPosition = remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(viewModel.shouldShowFirstRun.value) {
+        if (viewModel.shouldShowFirstRun.value) {
+            tooltipHelper.setupTooltipChainRunner(
+                listOf(
+                    Pair(
+                        ImazhTooltip.Prompt,
+                        promptPosition.intValue - topBarPosition.intValue
+                    ),
+                    Pair(
+                        ImazhTooltip.NegativePrompt,
+                        negativePromptPosition.intValue - topBarPosition.intValue
+                    ),
+                    Pair(
+                        ImazhTooltip.RandomPrompt,
+                        randomPromptPosition.intValue - topBarPosition.intValue
+                    )
+                )
             )
         }
     }
@@ -287,6 +324,9 @@ private fun ImazhNewImageDescriptorScreen(
             NewImageDescriptorTopBar(
                 onBackClick = {
                     actionBack()
+                },
+                modifier = Modifier.onGloballyPositioned {
+                    topBarPosition.intValue = it.size.height
                 }
             )
         },
@@ -411,7 +451,13 @@ private fun ImazhNewImageDescriptorScreen(
                                 }
                             )
                         },
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .onGloballyPositioned {
+                                promptPosition.intValue = it.positionInRoot().y.roundToInt()
+                            },
+                        tooltipHelper = tooltipHelper,
+                        onRandomPromptPositionChange = { randomPromptPosition.intValue = it }
                     )
 
                     Keywords(
@@ -425,7 +471,12 @@ private fun ImazhNewImageDescriptorScreen(
                         onChipClick = { item ->
                             viewModel.removeKeyword(item)
                         },
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .onGloballyPositioned {
+                                keywordsPosition.intValue = it.positionInRoot().y.roundToInt()
+                            },
+                        tooltipHelper = tooltipHelper
                     )
 
                     Style(
@@ -448,6 +499,11 @@ private fun ImazhNewImageDescriptorScreen(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .padding(bottom = 16.dp)
+                            .onGloballyPositioned {
+                                negativePromptPosition.intValue = it.positionInRoot().y.roundToInt()
+                            },
+                        tooltipHelper = tooltipHelper,
+                        isFirstRun = viewModel.shouldShowFirstRun.value
                     )
                 }
 
@@ -602,15 +658,30 @@ private fun Prompt(
     resetPrompt: () -> Unit,
     onHistoryClick: () -> Unit,
     onRandomClick: () -> Unit,
+    onRandomPromptPositionChange: (Int) -> Unit,
+    tooltipHelper: TooltipHelper,
     modifier: Modifier = Modifier
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Header(
             title = R.string.lbl_image_prompt,
-            hasInfo = false
+            hasInfo = true,
+            setupInfoTooltip = {
+                coroutineScope.launch {
+                    tooltipHelper.setupSingleTooltipRunner(ImazhTooltip.Prompt, null)
+                }
+            },
+            onTooltipDismiss = {
+                coroutineScope.launch { tooltipHelper.next() }
+            },
+            showInfoTooltip = tooltipHelper.getTooltipStateByKey(ImazhTooltip.Prompt)?.value
+                ?: false,
+            infoTooltipMessage = R.string.msg_firs_run_image_description
         )
         PromptInputText(
             prompt = prompt,
@@ -620,7 +691,9 @@ private fun Prompt(
             resetPrompt = resetPrompt,
             charLimit = PROMPT_CHARACTER_LIMIT,
             onHistoryClick = onHistoryClick,
-            onRandomClick = onRandomClick
+            onRandomClick = onRandomClick,
+            tooltipHelper = tooltipHelper,
+            onRandomPromptPositionChange = onRandomPromptPositionChange,
         )
     }
 }
@@ -634,9 +707,12 @@ private fun PromptInputText(
     resetPrompt: () -> Unit,
     onRandomClick: () -> Unit,
     onHistoryClick: () -> Unit,
+    onRandomPromptPositionChange: (Int) -> Unit,
+    tooltipHelper: TooltipHelper,
     charLimit: Int? = null
 ) {
     val focusRequester = remember { FocusRequester() }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -645,6 +721,9 @@ private fun PromptInputText(
                 color = if (promptIsValid) Color_Border else Color_Red,
                 shape = RoundedCornerShape(4.dp)
             )
+            .onGloballyPositioned {
+                onRandomPromptPositionChange(it.positionInRoot().y.toInt())
+            }
     ) {
         InputTextSection(
             text = prompt,
@@ -694,16 +773,28 @@ private fun PromptInputText(
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            IconButton(
-                onClick = {
-                    safeClick(event = onRandomClick)
+            ViraBalloon(
+                text = stringResource(id = R.string.msg_firs_run_random_prompt),
+                marginVertical = 0,
+                marginHorizontal = 0,
+                onDismiss = {
+                    coroutineScope.launch { tooltipHelper.next() }
                 }
             ) {
-                ViraIcon(
-                    drawable = R.drawable.ic_random,
-                    contentDescription = stringResource(id = R.string.lbl_random),
-                    tint = MaterialTheme.colors.primary
-                )
+                IconButton(
+                    onClick = {
+                        safeClick(event = onRandomClick)
+                    }
+                ) {
+                    ViraIcon(
+                        drawable = R.drawable.ic_random,
+                        contentDescription = stringResource(id = R.string.lbl_random),
+                        tint = MaterialTheme.colors.primary
+                    )
+                }
+                if (tooltipHelper.getTooltipStateByKey(ImazhTooltip.RandomPrompt)?.value == true) {
+                    showAlignBottom()
+                }
             }
         }
     }
@@ -714,6 +805,7 @@ private fun Keywords(
     keywords: List<ImazhKeywordView>,
     onAddKeywordClick: () -> Unit,
     onChipClick: (String) -> Unit,
+    tooltipHelper: TooltipHelper,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -726,6 +818,7 @@ private fun Keywords(
             }
         )
     }
+    val coroutineScope = rememberCoroutineScope()
 
     Header(
         title = R.string.lbl_image_attributes,
@@ -733,10 +826,6 @@ private fun Keywords(
         expandState = expandState,
         expandable = keywords.isNotEmpty(),
         onExpandClick = { expandState = expandState.toggleState() },
-        hasInfo = false,
-        onInfoClick = {
-            // TODO: Should open keywords info here
-        },
         sectionActionButton = {
             SectionActionButton(
                 stringRes = R.string.lbl_add,
@@ -746,7 +835,19 @@ private fun Keywords(
                 }
             )
         },
-        modifier = modifier
+        modifier = modifier,
+        hasInfo = true,
+        setupInfoTooltip = {
+            coroutineScope.launch {
+                tooltipHelper.setupSingleTooltipRunner(ImazhTooltip.Keywords, null)
+            }
+        },
+        onTooltipDismiss = {
+            coroutineScope.launch { tooltipHelper.next() }
+        },
+        showInfoTooltip = tooltipHelper.getTooltipStateByKey(ImazhTooltip.Keywords)?.value
+            ?: false,
+        infoTooltipMessage = R.string.msg_firs_run_keywords
     )
 
     AnimatableContent(
@@ -802,8 +903,6 @@ private fun Style(
             hasExpandButton = true,
             expandState = expandState,
             expandable = isExpandable,
-            hasInfo = false,
-            onInfoClick = {},
             onExpandClick = { expandState = expandState.toggleState() },
             sectionActionButton = {
                 SectionActionButton(
@@ -811,7 +910,11 @@ private fun Style(
                     iconRes = if (selectedStyle != ImazhImageStyle.None) R.drawable.ic_change else R.drawable.ic_add_small,
                     action = openStyleBottomSheet
                 )
-            }
+            },
+            hasInfo = false,
+            setupInfoTooltip = {},
+            onTooltipDismiss = {},
+            showInfoTooltip = false
         )
 
         AnimatableContent(
@@ -847,9 +950,15 @@ private fun NegativePrompt(
     negativePrompt: String,
     onNegativePromptChange: (String) -> Unit,
     resetNegativePrompt: () -> Unit,
+    tooltipHelper: TooltipHelper,
+    isFirstRun: Boolean,
     modifier: Modifier = Modifier
 ) {
-    var expandState by rememberSaveable { mutableStateOf(ExpandState.Collapsed) }
+    var expandState by rememberSaveable(isFirstRun) {
+        if (isFirstRun) mutableStateOf(ExpandState.Expanded)
+        else mutableStateOf(ExpandState.Collapsed)
+    }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = modifier,
@@ -861,7 +970,16 @@ private fun NegativePrompt(
             expandState = expandState,
             expandable = true,
             onExpandClick = { expandState = it.toggleState() },
-            hasInfo = false
+            hasInfo = false,
+            setupInfoTooltip = {
+                coroutineScope.launch {
+                    tooltipHelper.setupSingleTooltipRunner(ImazhTooltip.NegativePrompt, null)
+                }
+            },
+            onTooltipDismiss = { coroutineScope.launch { tooltipHelper.next() } },
+            showInfoTooltip = tooltipHelper.getTooltipStateByKey(ImazhTooltip.NegativePrompt)?.value
+                ?: false,
+            infoTooltipMessage = R.string.msg_firs_run_negative_prompt
         )
 
         AnimatableContent(
@@ -967,7 +1085,10 @@ private fun Header(
     onExpandClick: (currentExpandState: ExpandState) -> Unit = {},
     expandable: Boolean = false,
     hasInfo: Boolean = false,
-    onInfoClick: () -> Unit = {},
+    setupInfoTooltip: () -> Unit,
+    onTooltipDismiss: () -> Unit,
+    showInfoTooltip: Boolean,
+    @StringRes infoTooltipMessage: Int? = null,
     sectionActionButton: (@Composable () -> Unit)? = null
 ) {
     Row(
@@ -983,35 +1104,53 @@ private fun Header(
             )
         }
 
-        Text(
-            text = stringResource(id = title),
-            style = MaterialTheme.typography.subtitle2,
-            color = LocalContentColor.current,
-            modifier = Modifier.then(
-                if (expandable) {
-                    Modifier.clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) {
-                        safeClick { onExpandClick(expandState) }
-                    }
-                } else {
-                    Modifier
-                }
-            )
-        )
-
-        if (hasInfo) {
-            IconButton(
-                onClick = {
-                    safeClick(event = onInfoClick)
-                }
+        ViraBalloon(
+            text = infoTooltipMessage?.let { stringResource(id = it) } ?: "",
+            marginVertical = 0,
+            marginHorizontal = 0,
+            arrowPositionPercent = if (hasInfo) 0.1f else 0.5f,
+            onDismiss = { onTooltipDismiss() }
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                ViraIcon(
-                    drawable = R.drawable.ic_info,
-                    contentDescription = stringResource(id = R.string.lbl_info),
-                    tint = Color_Info_700
+                Text(
+                    text = stringResource(id = title),
+                    style = MaterialTheme.typography.subtitle2,
+                    color = LocalContentColor.current,
+                    modifier = Modifier.then(
+                        if (expandable) {
+                            Modifier.clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ) {
+                                safeClick { onExpandClick(expandState) }
+                            }
+                        } else {
+                            Modifier
+                        }
+                    )
                 )
+
+                infoTooltipMessage?.let {
+                    if (hasInfo) {
+                        IconButton(
+                            onClick = {
+                                safeClick(event = { setupInfoTooltip() })
+                            }
+                        ) {
+                            ViraIcon(
+                                drawable = R.drawable.ic_info,
+                                contentDescription = stringResource(id = R.string.lbl_info),
+                                tint = Color_Info_700
+                            )
+                        }
+                    }
+                    if (showInfoTooltip) {
+                        showAlignBottom()
+                    }
+                }
             }
         }
 

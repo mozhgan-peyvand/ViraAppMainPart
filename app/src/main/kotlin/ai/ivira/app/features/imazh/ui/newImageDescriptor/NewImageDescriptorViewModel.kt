@@ -13,6 +13,7 @@ import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import android.content.SharedPreferences
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -36,9 +37,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+private const val IMAZH_NEW_IMAGE_DESCRIPTOR_FIRST_RUN_KEY = "imazhNewImageDescriptorFirstRunKey"
+
 @HiltViewModel
 class NewImageDescriptorViewModel @Inject constructor(
     private val imazhRepository: ImazhRepository,
+    private val sharedPref: SharedPreferences,
     private val uiException: UiException
 ) : ViewModel() {
     private val _uiViewState = MutableStateFlow<UiStatus>(UiIdle)
@@ -72,6 +76,11 @@ class NewImageDescriptorViewModel @Inject constructor(
     private var _promptIsValid = mutableStateOf(true)
     val promptIsValid: State<Boolean> = _promptIsValid
 
+    private val _shouldShowFirstRun = mutableStateOf(
+        sharedPref.getBoolean(IMAZH_NEW_IMAGE_DESCRIPTOR_FIRST_RUN_KEY, true)
+    )
+    val shouldShowFirstRun: State<Boolean> = _shouldShowFirstRun
+
     init {
         viewModelScope.launch(IO) {
             imazhRepository.getRecentHistory().collectLatest { list ->
@@ -81,6 +90,15 @@ class NewImageDescriptorViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    fun doNotShowFirstRunAgain() {
+        viewModelScope.launch {
+            _shouldShowFirstRun.value = false
+            sharedPref.edit()
+                .putBoolean(IMAZH_NEW_IMAGE_DESCRIPTOR_FIRST_RUN_KEY, false)
+                .apply()
         }
     }
 
