@@ -165,6 +165,7 @@ private fun HomeScreen(
 
     val avanegarTile by configViewModel.avanegarTileConfig.collectAsStateWithLifecycle(initialValue = null)
     val avashoTile by configViewModel.avashoTileConfig.collectAsStateWithLifecycle(initialValue = null)
+    val imazhTile by configViewModel.imazhTileConfig.collectAsStateWithLifecycle(initialValue = null)
 
     val shouldShowForceUpdateBottomSheet by homeViewModel.shouldShowForceUpdateBottomSheet.collectAsStateWithLifecycle()
     val shouldShowChangeLogBottomSheet by homeViewModel.shouldShowChangeLogBottomSheet.collectAsStateWithLifecycle()
@@ -195,6 +196,20 @@ private fun HomeScreen(
                 modalBottomSheetState.show()
             }
             configViewModel.resetAvashoUnavailableFeature()
+        }
+    }
+
+    LaunchedEffect(
+        configViewModel.shouldShowImazhUnavailableBottomSheet.value
+    ) {
+        if (configViewModel.shouldShowImazhUnavailableBottomSheet.value) {
+            coroutineScope.launch {
+                homeViewModel.unavailableTileToShowBottomSheet.value = imazhTile
+                sheetSelected = UnavailableTile
+                if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
+                modalBottomSheetState.show()
+            }
+            configViewModel.resetImazhUnavailableFeature()
         }
     }
 
@@ -617,7 +632,13 @@ private fun HomeScreen(
                         }
 
                         Imazh -> {
-                            homeViewModel.navigateToImazh()
+                            if (imazhTile?.available == false) {
+                                homeViewModel.unavailableTileToShowBottomSheet.value = imazhTile
+                                sheetSelected = UnavailableTile
+                                modalBottomSheetState.hideAndShow(coroutineScope)
+                            } else {
+                                homeViewModel.navigateToImazh()
+                            }
                         }
 
                         NotificationPermission -> {}

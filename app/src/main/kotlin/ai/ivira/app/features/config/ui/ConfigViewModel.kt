@@ -11,8 +11,10 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -49,12 +51,22 @@ class ConfigViewModel @Inject constructor(
     val avashoTileConfig = tiles
         .map { it.firstOrNull { tile -> tile is TileItem.Avasho } }
         .stateIn(initial = null)
+    val imazhTileConfig = tiles
+        .map { it.firstOrNull { tile -> tile is TileItem.Imazh } }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
 
     private val _shouldShowAvanegarUnavailableBottomSheet = mutableStateOf(false)
     val shouldShowAvanegarUnavailableBottomSheet: State<Boolean> = _shouldShowAvanegarUnavailableBottomSheet
 
     private val _shouldShowAvashoUnavailableBottomSheet = mutableStateOf(false)
     val shouldShowAvashoUnavailableBottomSheet: State<Boolean> = _shouldShowAvashoUnavailableBottomSheet
+
+    private val _shouldShowImazhUnavailableBottomSheet = mutableStateOf(false)
+    val shouldShowImazhUnavailableBottomSheet: State<Boolean> = _shouldShowImazhUnavailableBottomSheet
 
     fun showAvanegarUnavailableFeature() {
         _shouldShowAvanegarUnavailableBottomSheet.value = true
@@ -70,6 +82,14 @@ class ConfigViewModel @Inject constructor(
 
     fun resetAvashoUnavailableFeature() {
         _shouldShowAvashoUnavailableBottomSheet.value = false
+    }
+
+    fun showImazhUnavailableFeature() {
+        _shouldShowImazhUnavailableBottomSheet.value = true
+    }
+
+    fun resetImazhUnavailableFeature() {
+        _shouldShowImazhUnavailableBottomSheet.value = false
     }
 
     companion object {

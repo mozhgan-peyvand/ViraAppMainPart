@@ -3,6 +3,7 @@ package ai.ivira.app.features.imazh.ui.archive
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.archive.DeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
+import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhDetailsScreen
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhNewImageDescriptorScreen
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.Delete
@@ -32,6 +33,7 @@ import ai.ivira.app.utils.ui.widgets.ViraBannerWithAnimation
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.graphics.Bitmap
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOut
@@ -87,6 +89,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -104,16 +107,19 @@ import java.io.File
 
 @Composable
 fun ImazhArchiveListScreenRoute(navController: NavHostController) {
+    val activity = LocalContext.current as ComponentActivity
     ImazhArchiveListScreen(
         navController = navController,
-        viewModel = hiltViewModel()
+        viewModel = hiltViewModel(),
+        configViewModel = hiltViewModel(viewModelStoreOwner = activity)
     )
 }
 
 @Composable
 private fun ImazhArchiveListScreen(
     navController: NavHostController,
-    viewModel: ImazhArchiveListViewModel
+    viewModel: ImazhArchiveListViewModel,
+    configViewModel: ConfigViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
     val isGrid by viewModel.isGrid.collectAsState()
@@ -147,6 +153,14 @@ private fun ImazhArchiveListScreen(
 
     LaunchedEffect(isGrid) { isVisible = true }
     LaunchedEffect(isScrollingUp) { isVisible = isScrollingUp }
+    LaunchedEffect(Unit) {
+        configViewModel.imazhTileConfig.collect { imazhTileConfig ->
+            if (imazhTileConfig?.available == false) {
+                configViewModel.showImazhUnavailableFeature()
+                navController.navigateUp()
+            }
+        }
+    }
 
     BackHandler(modalBottomSheetState.isVisible) {
         if (modalBottomSheetState.isVisible) {
@@ -693,7 +707,7 @@ fun Preview() {
     ViraPreview {
         ImazhArchiveListScreen(
             navController = rememberNavController(),
-            viewModel = hiltViewModel()
+            viewModel = hiltViewModel(), configViewModel = hiltViewModel()
         )
     }
 }

@@ -34,4 +34,16 @@ sealed class TileItem(
         titleRes = R.string.lbl_avasho,
         unavailableStateMessage = unavailableStateMessage
     )
+
+    class Imazh(
+        key: String,
+        available: Boolean,
+        unavailableStateMessage: String
+    ) : TileItem(
+        key = key,
+        available = available,
+        iconRes = R.drawable.img_imazh,
+        titleRes = R.string.lbl_imazh,
+        unavailableStateMessage = unavailableStateMessage
+    )
 }
