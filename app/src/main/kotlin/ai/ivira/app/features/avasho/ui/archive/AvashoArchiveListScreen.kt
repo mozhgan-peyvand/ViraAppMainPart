@@ -513,11 +513,6 @@ private fun AvashoArchiveListScreen(
                                     }
                                 }
                             )
-                            LaunchedEffect(!avashoItem.isSeen) {
-                                if (!avashoItem.isSeen) {
-                                    viewModel.markFileAsSeen(avashoItem.id)
-                                }
-                            }
                         }
                     }
                     Process -> {
@@ -788,6 +783,9 @@ private fun AvashoArchiveListScreen(
                                                 if (File(item.filePath).exists()) {
                                                     eventHandler.specialEvent(AvashoAnalytics.playItem)
                                                     setBottomSheetType(Details)
+                                                    if (!item.isSeen) {
+                                                        viewModel.markFileAsSeen(item.id)
+                                                    }
                                                     coroutineScope.launch {
                                                         if (!bottomSheetState.isVisible) {
                                                             bottomSheetState.show()
