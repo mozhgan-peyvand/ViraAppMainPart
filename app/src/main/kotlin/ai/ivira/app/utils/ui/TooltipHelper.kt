@@ -45,14 +45,19 @@ class TooltipHelper(
         tooltips.removeFirstOrNull()?.showState?.value = false
 
         tooltips.firstOrNull()?.positionForScroll?.let {
-            if (lastPosition > it) scrollToPosition(it + 200)
-            else scrollToPosition(it)
+            if (lastPosition > it) {
+                scrollToPosition(it + 200)
+            } else {
+                scrollToPosition(it)
+            }
             lastPosition = it
         }
         tooltips.firstOrNull()?.showState?.value = true
 
-        if (tooltips.size == 0) onAllTooltipsShown().also {
-            if (!isSingleTooltip) scrollToPosition(0)
+        if (tooltips.size == 0) {
+            onAllTooltipsShown().also {
+                if (!isSingleTooltip) scrollToPosition(0)
+            }
         }
     }
 }

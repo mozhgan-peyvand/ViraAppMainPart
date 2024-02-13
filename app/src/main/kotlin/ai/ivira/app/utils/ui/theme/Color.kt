@@ -79,3 +79,4 @@ val Color_Border = White_.copy(alpha = 0.17f)
 
 val Color_Blue_Grey_800_945 = Color(0xFF404041)
 val Color_Background_Menu = Color(0xFF23252B)
+val Color_BG_Imazh_Tracking_Text = Color(0xFF23252B)

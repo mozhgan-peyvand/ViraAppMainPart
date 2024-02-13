@@ -2,6 +2,7 @@ package ai.ivira.app
 
 import ai.ivira.app.features.ava_negar.data.AvanegarTracker
 import ai.ivira.app.features.avasho.data.AvashoTracker
+import ai.ivira.app.features.imazh.data.ImazhTracker
 import ai.ivira.app.utils.common.notification.FirebaseTopic.Vira
 import ai.ivira.app.utils.common.notification.ViraFirebaseMessagingService.Companion.TAG
 import ai.ivira.app.utils.ui.initializers.SentryInitializer
@@ -29,6 +30,9 @@ class ViraApp : Application(), ImageLoaderFactory {
 
     @Inject
     lateinit var avashoTracker: AvashoTracker
+
+    @Inject
+    lateinit var imazhTracker: ImazhTracker
 
     @Inject
     lateinit var sentryInitializer: SentryInitializer

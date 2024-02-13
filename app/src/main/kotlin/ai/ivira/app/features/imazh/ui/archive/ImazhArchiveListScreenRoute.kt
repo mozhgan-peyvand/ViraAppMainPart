@@ -10,19 +10,24 @@ import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.Delete
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.DeleteConfirmation
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhArchiveView
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
+import ai.ivira.app.features.imazh.ui.archive.model.ImazhTrackingFileView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.KEY_NEW_IMAGE_RESULT
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
+import ai.ivira.app.utils.ui.computeSecondAndMinute
+import ai.ivira.app.utils.ui.computeTextBySecondAndMinute
 import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.isScrollingUp
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
+import ai.ivira.app.utils.ui.theme.Color_BG_Imazh_Tracking_Text
 import ai.ivira.app.utils.ui.theme.Color_Background_Menu
 import ai.ivira.app.utils.ui.theme.Color_Blue_Grey_800_945
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Primary
+import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
@@ -77,6 +82,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -100,6 +106,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -141,7 +153,7 @@ private fun ImazhArchiveListScreen(
         confirmValueChange = { true }
     )
     var selectedSheet by rememberSaveable { mutableStateOf(Delete) }
-    val selectedMenuItem = remember { mutableStateOf<ImazhProcessedFileView?>(null) }
+    val selectedMenuItem = remember { mutableStateOf<ImazhArchiveView?>(null) }
 
     val newImageResult = getNewImageResult(navController)?.collectAsState(initial = false)
     LaunchedEffect(newImageResult, isScrolledDown) {
@@ -208,7 +220,16 @@ private fun ImazhArchiveListScreen(
 
                         FileItemConfirmationDeleteBottomSheet(
                             deleteAction = {
-                                viewModel.removeImage(info.id, info.filePath)
+                                when (info) {
+                                    is ImazhTrackingFileView -> {
+                                        viewModel.removeTrackingFile(info.token)
+                                    }
+
+                                    is ImazhProcessedFileView -> {
+                                        viewModel.removeProcessedFile(info.id, info.filePath)
+                                    }
+                                }
+
                                 modalBottomSheetState.hide(coroutineScope)
                             },
                             cancelAction = {
@@ -267,8 +288,8 @@ private fun ImazhArchiveListScreen(
                             onProcessedItemClick = { id ->
                                 navController.navigate(ImazhDetailsScreen.createRoute(id))
                             },
-                            onMenuClick = { itemProcessed ->
-                                selectedMenuItem.value = itemProcessed
+                            onMenuClick = { imazhArchiveView ->
+                                selectedMenuItem.value = imazhArchiveView
                                 selectedSheet = Delete
                                 coroutineScope.launch {
                                     modalBottomSheetState.hide()
@@ -300,7 +321,7 @@ private fun ArchiveListContent(
     isInDownloadQueue: (Int) -> Boolean,
     isGrid: Boolean,
     onProcessedItemClick: (Int) -> Unit,
-    onMenuClick: (ImazhProcessedFileView) -> Unit,
+    onMenuClick: (ImazhArchiveView) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val columns = remember(isGrid) {
@@ -323,6 +344,7 @@ private fun ArchiveListContent(
             key = {
                 when (val item = archiveFiles[it]) {
                     is ImazhProcessedFileView -> item.id
+                    is ImazhTrackingFileView -> item.token
                     else -> Unit
                 }
             }
@@ -335,6 +357,15 @@ private fun ArchiveListContent(
                         isInDownloadQueue = { id -> isInDownloadQueue(id) },
                         onClick = { id -> onProcessedItemClick(id) },
                         onMenuClick = { processedItem -> onMenuClick(processedItem) }
+                    )
+                }
+
+                is ImazhTrackingFileView -> {
+                    ImazhTrackingItem(
+                        item = item,
+                        isSmallItem = isGrid,
+                        estimateTime = { item.computeFileEstimateProcess() },
+                        onMenuClick = { trackingItem -> onMenuClick(trackingItem) }
                     )
                 }
             }
@@ -618,6 +649,239 @@ private fun ImazhProcessedItem(
                 isSmallItem = isSmallItem,
                 progress = item.downloadingPercent
             )
+        }
+    }
+}
+
+@Composable
+private fun ImazhTrackingItem(
+    item: ImazhTrackingFileView,
+    isSmallItem: Boolean,
+    estimateTime: () -> Double,
+    onMenuClick: (ImazhTrackingFileView) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    val textPaddingModifier by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                Modifier.padding(vertical = 4.dp, horizontal = 12.dp)
+            } else {
+                Modifier.padding(vertical = 12.dp, horizontal = 22.dp)
+            }
+        )
+    }
+
+    val lottieSizeModifier by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                Modifier.size(width = 35.dp, height = 43.dp)
+            } else {
+                Modifier.size(width = 73.dp, height = 90.dp)
+            }
+        )
+    }
+
+    val body1Style = MaterialTheme.typography.body1
+    val body2Style = MaterialTheme.typography.body2
+    val textStyle by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                body2Style
+            } else {
+                body1Style
+            }
+        )
+    }
+
+    val iconSizeModifier by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                Modifier.size(14.dp)
+            } else {
+                Modifier.size(21.dp)
+            }
+        )
+    }
+
+    val paddingBetweenLottieAndText by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                8.dp
+            } else {
+                16.dp
+            }
+        )
+    }
+
+    val menuButtonSize by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                30.dp
+            } else {
+                42.dp
+            }
+        )
+    }
+
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(R.raw.lottie_puzzle)
+    )
+
+    val progress by animateLottieCompositionAsState(
+        composition,
+        iterations = LottieConstants.IterateForever,
+        isPlaying = true,
+        speed = 1f,
+        restartOnPlay = true
+    )
+
+    val getNewEstimateTime = remember(item.token, item.lastFailure) {
+        mutableIntStateOf(estimateTime().toInt())
+    }
+
+    val isEstimatedTimeRemains by remember(getNewEstimateTime.intValue) {
+        mutableStateOf(getNewEstimateTime.intValue > 0)
+    }
+
+    val subtitleText by remember(isEstimatedTimeRemains) {
+        mutableIntStateOf(
+            if (isEstimatedTimeRemains) {
+                R.string.lbl_generating_image
+            } else {
+                R.string.lbl_processing_queue
+            }
+        )
+    }
+
+    DecreaseEstimateTime(
+        estimationTime = getNewEstimateTime.intValue,
+        token = item.token
+    ) { long ->
+        getNewEstimateTime.intValue = long
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color_Card)
+    ) {
+        IconButton(
+            onClick = {
+                safeClick { onMenuClick(item) }
+            },
+            modifier = Modifier
+                .padding(end = 8.dp, top = 8.dp)
+                .size(menuButtonSize)
+                .align(Alignment.TopEnd)
+                .background(Color_Background_Menu, RoundedCornerShape(12.dp))
+        ) {
+            ViraImage(
+                drawable = R.drawable.ic_dots_menu,
+                contentDescription = null,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.weight(1f)
+
+            ) {
+                LottieAnimation(
+                    composition = composition,
+                    progress = progress,
+                    modifier = lottieSizeModifier
+                )
+
+                Spacer(modifier = Modifier.size(paddingBetweenLottieAndText))
+
+                Text(
+                    text = stringResource(id = subtitleText),
+                    color = Color_Text_2,
+                    style = textStyle,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.size(4.dp))
+
+                if (isEstimatedTimeRemains) {
+                    Row {
+                        ViraIcon(
+                            drawable = R.drawable.ic_time,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .then(iconSizeModifier)
+                                .align(alignment = Alignment.CenterVertically),
+                            tint = Color_Primary_300
+                        )
+
+                        Spacer(modifier = Modifier.size(8.dp))
+
+                        Text(
+                            text = buildString {
+                                append(stringResource(id = R.string.lbl_approximate))
+                                append(" ")
+                                append(computeSecondAndMinute(getNewEstimateTime.intValue))
+                                append(" ")
+                                append(
+                                    computeTextBySecondAndMinute(
+                                        second = getNewEstimateTime.intValue,
+                                        context = context
+                                    )
+                                )
+                            },
+                            color = Color_Text_2,
+                            style = textStyle,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+
+            Text(
+                text = item.prompt,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                style = textStyle,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color_BG_Imazh_Tracking_Text)
+                    .then(textPaddingModifier)
+                    .zIndex(1f)
+            )
+        }
+    }
+}
+
+// Duplicate DecreaseEstimateTime 2
+@Composable
+fun DecreaseEstimateTime(
+    estimationTime: Int,
+    token: String,
+    callBack: (Int) -> Unit
+) {
+    val getEstimationTime = remember(token) {
+        mutableIntStateOf(estimationTime)
+    }
+    LaunchedEffect(token) {
+        while (getEstimationTime.intValue > 0) {
+            if (getEstimationTime.intValue < 14) {
+                delay(1000)
+                getEstimationTime.intValue -= 1
+                callBack(getEstimationTime.intValue)
+                continue
+            }
+
+            delay(10000)
+            getEstimationTime.intValue -= 10
+            callBack(getEstimationTime.intValue)
         }
     }
 }

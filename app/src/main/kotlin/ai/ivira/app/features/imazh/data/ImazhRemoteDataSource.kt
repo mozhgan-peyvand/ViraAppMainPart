@@ -17,16 +17,26 @@ class ImazhRemoteDataSource @Inject constructor(
         System.loadLibrary("vira")
     }
 
-    suspend fun sendTextToImage(
-        photoDescribe: TextToImageRequestNetwork
-    ): ApiResult<TextToImageResult> {
+    suspend fun sendTextToImage(photoDescribe: TextToImageRequestNetwork): ApiResult<TextToImageResult> {
         return when (val result = imazhService.sendTextToImage(
             photoDescribe = photoDescribe,
             apiKey = sai(),
-            url = bi() + "service/textToImage/file"
+            url = bi() + "/service/textToImage/textToImage"
         )) {
             is ApiResult.Success -> ApiResult.Success(result.data.data)
             is ApiResult.Error -> ApiResult.Error(result.error)
+        }
+    }
+
+    suspend fun trackImageResult(fileToken: String): ApiResult<String> {
+        val result = imazhService.trackImageResult(
+            url = bi() + "/service/textToImage/trackingFile/$fileToken",
+            token = sai()
+        )
+
+        return when (result) {
+            is ApiResult.Error -> ApiResult.Error(result.error)
+            is ApiResult.Success -> ApiResult.Success(result.data.data.filePath)
         }
     }
 
@@ -36,7 +46,7 @@ class ImazhRemoteDataSource @Inject constructor(
         return when (
             val result = imazhService.validateAndTranslatePrompt(
                 apiKey = sai(),
-                url = bi() + "service/nsfwDetector/data",
+                url = bi() + "/service/nsfwDetector/data",
                 data = promptData
             )
         ) {

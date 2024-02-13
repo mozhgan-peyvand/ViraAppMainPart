@@ -177,7 +177,7 @@ class NewImageDescriptorViewModel @Inject constructor(
                     _uiViewState.update {
                         UiSuccess
                     }.also {
-                        _promptIsValid.value = result.data.isValid
+                        _promptIsValid.value = result.data
                     }
                 }
 

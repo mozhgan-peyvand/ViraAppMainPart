@@ -3,9 +3,10 @@ package ai.ivira.app.features.imazh.ui.archive
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleDownload
 import ai.ivira.app.features.imazh.data.ImazhRepository
-import ai.ivira.app.features.imazh.data.entity.ImazhProcessedEntity
+import ai.ivira.app.features.imazh.data.entity.ImazhArchiveFilesEntity
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
 import ai.ivira.app.features.imazh.ui.archive.model.toImazhProcessedFileView
+import ai.ivira.app.features.imazh.ui.archive.model.toImazhTrackingFileView
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
@@ -47,12 +48,12 @@ class ImazhArchiveListViewModel @Inject constructor(
     private var downloadJob: Job? = null
 
     val allArchiveFiles = combine(
-        repository.getAllProcessedFiles(),
+        repository.getAllArchiveFiles(),
         networkStatusTracker.networkStatus,
         downloadStatus,
         downloadQueue,
         currentDownloadingFile
-    ) { processedList: List<ImazhProcessedEntity>,
+    ) { archiveFiles: ImazhArchiveFilesEntity,
         networkStatus: NetworkStatus,
         downloadState: DownloadingFileStatus,
         queue: List<ImazhProcessedFileView>,
@@ -69,22 +70,30 @@ class ImazhArchiveListViewModel @Inject constructor(
             downloadFile(queue.first())
         }
 
-        processedList.map { processedEntity ->
-            processedEntity.toImazhProcessedFileView(
-                downloadingPercent = downloadingFile?.downloadingPercent.orZero(),
-                downloadingId = downloadingFile?.id ?: -1,
-                fileSize = downloadingFile?.fileSize,
-                downloadedBytes = downloadingFile?.downloadedBytes
-            )
-        }.also { list ->
-            val idList = queue.map { it.id }
-            for (i in list) {
-                if (File(i.filePath).exists() || idList.contains(i.id)) continue
+        val processedList = archiveFiles.processed
+        val trackingList = archiveFiles.tracking
 
-                downloadQueue.update { queue ->
-                    queue.plus(i)
+        buildList {
+            addAll(trackingList.map { it.toImazhTrackingFileView() })
+            addAll(
+                processedList.map { processedEntity ->
+                    processedEntity.toImazhProcessedFileView(
+                        downloadingPercent = downloadingFile?.downloadingPercent.orZero(),
+                        downloadingId = downloadingFile?.id ?: -1,
+                        fileSize = downloadingFile?.fileSize,
+                        downloadedBytes = downloadingFile?.downloadedBytes
+                    )
+                }.also { list ->
+                    val idList = queue.map { it.id }
+                    for (i in list) {
+                        if (File(i.filePath).exists() || idList.contains(i.id)) continue
+
+                        downloadQueue.update { queue ->
+                            queue.plus(i)
+                        }
+                    }
                 }
-            }
+            )
         }
     }.stateIn(
         scope = viewModelScope,
@@ -160,12 +169,18 @@ class ImazhArchiveListViewModel @Inject constructor(
         }
     }
 
-    fun removeImage(id: Int, imagePath: String) {
+    fun removeProcessedFile(id: Int, imagePath: String) {
         viewModelScope.launch(IO) {
-            repository.deletePhotoInfo(id)
+            repository.deleteProcessedFile(id)
             runCatching {
                 File(imagePath).delete()
             }
+        }
+    }
+
+    fun removeTrackingFile(token: String) {
+        viewModelScope.launch(IO) {
+            repository.deleteTrackingFile(token)
         }
     }
 }

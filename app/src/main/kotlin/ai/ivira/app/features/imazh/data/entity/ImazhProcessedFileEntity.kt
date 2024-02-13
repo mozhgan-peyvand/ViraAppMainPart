@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class ImazhProcessedEntity(
+data class ImazhProcessedFileEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
     val imagePath: String,

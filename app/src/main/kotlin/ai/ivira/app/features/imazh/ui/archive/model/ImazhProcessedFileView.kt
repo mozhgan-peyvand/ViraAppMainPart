@@ -1,7 +1,7 @@
 package ai.ivira.app.features.imazh.ui.archive.model
 
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
-import ai.ivira.app.features.imazh.data.entity.ImazhProcessedEntity
+import ai.ivira.app.features.imazh.data.entity.ImazhProcessedFileEntity
 import saman.zamani.persiandate.PersianDate
 import saman.zamani.persiandate.PersianDateFormat
 import java.io.File
@@ -20,7 +20,7 @@ data class ImazhProcessedFileView(
     val downloadingPercent: Float
 ) : ImazhArchiveView
 
-fun ImazhProcessedEntity.toImazhProcessedFileView(
+fun ImazhProcessedFileEntity.toImazhProcessedFileView(
     downloadingId: Int = -1,
     downloadingPercent: Float = -1f,
     fileSize: Long? = null,

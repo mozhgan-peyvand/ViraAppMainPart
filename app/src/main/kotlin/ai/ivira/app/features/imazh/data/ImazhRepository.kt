@@ -3,31 +3,30 @@ package ai.ivira.app.features.imazh.data
 import ai.ivira.app.features.imazh.data.entity.ColorKeyword
 import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
 import ai.ivira.app.features.imazh.data.entity.ImazhKeywordEntity
-import ai.ivira.app.features.imazh.data.entity.ImazhProcessedEntity
+import ai.ivira.app.features.imazh.data.entity.ImazhProcessedFileEntity
+import ai.ivira.app.features.imazh.data.entity.ImazhTrackingFileEntity
 import ai.ivira.app.features.imazh.data.entity.NFSWResultNetwork
 import ai.ivira.app.features.imazh.data.entity.PainterKeyword
 import ai.ivira.app.features.imazh.data.entity.TextToImageRequestNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageResult
 import ai.ivira.app.features.imazh.data.entity.ValidateRequestNetwork
-import ai.ivira.app.features.imazh.data.entity.ValidatedTextToImage
 import ai.ivira.app.features.imazh.data.entity.attitudeKeyword
 import ai.ivira.app.features.imazh.data.entity.lightAngleKeyword
 import ai.ivira.app.utils.common.file.FileOperationHelper
-import ai.ivira.app.utils.common.file.IMAZH_FOLDER_PATH
-import ai.ivira.app.utils.common.file.PNG_EXTENSION
 import ai.ivira.app.utils.data.NetworkHandler
+import ai.ivira.app.utils.data.TrackTime
 import ai.ivira.app.utils.data.api_result.ApiResult
 import ai.ivira.app.utils.data.api_result.AppException
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.data.api_result.toAppException
 import ai.ivira.app.utils.data.api_result.toAppResult
 import ai.ivira.app.utils.ui.attachListItemToString
+import android.os.SystemClock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import saman.zamani.persiandate.PersianDate
 import java.io.File
-import java.util.UUID
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -50,13 +49,17 @@ class ImazhRepository @Inject constructor(
         )
     }
 
+    fun getTrackingFiles() = localDataSource.getTrackingFiles()
+
+    fun getAllArchiveFiles() = localDataSource.getAllArchiveFiles()
+
     fun getRecentHistory(): Flow<List<ImazhHistoryEntity>> = localDataSource.getRecentHistory()
     suspend fun validatePromptAndConvertToImage(
         prompt: String,
         negativePrompt: String,
         keywords: List<ImazhKeywordEntity>,
         style: ImazhImageStyle
-    ): AppResult<ValidatedTextToImage> {
+    ): AppResult<Boolean> {
         return when (val validateResult = validateAndTranslatePrompt(
             prompt = prompt,
             negativePrompt = negativePrompt,
@@ -76,21 +79,11 @@ class ImazhRepository @Inject constructor(
                             style = englishStyle
                         )
                     }) {
-                        is AppResult.Success -> AppResult.Success(
-                            ValidatedTextToImage(
-                                isValid = true,
-                                imagePath = textToImageResult.data.message.imagePath
-                            )
-                        )
+                        is AppResult.Success -> AppResult.Success(true)
                         is AppResult.Error -> AppResult.Error(textToImageResult.error)
                     }
                 } else {
-                    AppResult.Success(
-                        ValidatedTextToImage(
-                            isValid = false,
-                            imagePath = null
-                        )
-                    )
+                    AppResult.Success(false)
                 }
             }
         }
@@ -107,7 +100,7 @@ class ImazhRepository @Inject constructor(
         }
         val result = remoteDataSource.sendTextToImage(
             TextToImageRequestNetwork(
-                prompt.attachListItemToString(keywords.map { it.englishKeyword }),
+                prompt = prompt.attachListItemToString(keywords.map { it.englishKeyword }),
                 negativePrompt = negativePrompt,
                 style = style
             )
@@ -115,21 +108,22 @@ class ImazhRepository @Inject constructor(
 
         return when (result) {
             is AppResult.Success -> {
-                val file = fileOperationHelper.getFile(
-                    fileName = "${System.currentTimeMillis()}_${UUID.randomUUID().mostSignificantBits}",
-                    path = IMAZH_FOLDER_PATH,
-                    extension = PNG_EXTENSION
+                localDataSource.insertTrackingFile(
+                    ImazhTrackingFileEntity(
+                        token = result.data.token,
+                        processEstimation = result.data.estimationTime,
+                        keywords = keywords.map { it.keywordName },
+                        prompt = prompt,
+                        negativePrompt = negativePrompt,
+                        style = style,
+                        insertAt = TrackTime(
+                            systemTime = PersianDate().time,
+                            bootTime = SystemClock.elapsedRealtime()
+                        ),
+                        lastFailure = null
+                    )
                 )
 
-                localDataSource.addImageToDataBase(
-                    imagePath = result.data.message.imagePath.removePrefix("/"),
-                    keywords = keywords.map { it.keywordName },
-                    prompt = prompt,
-                    negativePrompt = negativePrompt,
-                    style = style,
-                    createdAt = PersianDate().time,
-                    filePath = file.absolutePath
-                )
                 localDataSource.addPromptToHistory(
                     ImazhHistoryEntity(
                         prompt,
@@ -140,6 +134,23 @@ class ImazhRepository @Inject constructor(
             }
             is AppResult.Error -> {
                 AppResult.Error(result.error)
+            }
+        }
+    }
+
+    suspend fun trackImageResult(fileToken: String): AppResult<Unit> {
+        if (!networkHandler.hasNetworkConnection()) {
+            return AppResult.Error(AppException.NetworkConnectionException())
+        }
+
+        return when (val result = remoteDataSource.trackImageResult(fileToken)) {
+            is ApiResult.Success -> {
+                localDataSource.insertProcessedFromTracking(fileToken, result.data)
+                AppResult.Success(Unit)
+            }
+            is ApiResult.Error -> {
+                // TODO implement it
+                AppResult.Error(result.error.toAppException())
             }
         }
     }
@@ -169,13 +180,15 @@ class ImazhRepository @Inject constructor(
 
     fun generateRandomPrompt(): String = randomPromptGenerator.generateRandomPrompt()
 
-    fun getPhotoInfo(id: Int): Flow<ImazhProcessedEntity?> = localDataSource.getPhotoInfo(id)
+    fun getPhotoInfo(id: Int): Flow<ImazhProcessedFileEntity?> = localDataSource.getPhotoInfo(id)
 
     fun getImageStyles(): Flow<List<ImazhImageStyle>> = flowOf(
         ImazhImageStyle.values().toList()
     )
 
-    suspend fun deletePhotoInfo(id: Int) = localDataSource.deletePhotoInfo(id)
+    suspend fun deleteProcessedFile(id: Int) = localDataSource.deleteProcessedFile(id)
+
+    suspend fun deleteTrackingFile(token: String) = localDataSource.deleteTrackingFile(token)
 
     private fun retrieveStyleKey(selectedStyle: ImazhImageStyle): String {
         return if (selectedStyle == ImazhImageStyle.None) {

@@ -1343,6 +1343,7 @@ private fun columnBrush(): Brush {
     }
 }
 
+// Duplicate DecreaseEstimateTime 1
 @Composable
 fun DecreaseEstimateTime(
     estimationTime: Int,

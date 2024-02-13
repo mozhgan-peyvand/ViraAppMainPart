@@ -693,7 +693,7 @@ private fun Prompt(
             onHistoryClick = onHistoryClick,
             onRandomClick = onRandomClick,
             tooltipHelper = tooltipHelper,
-            onRandomPromptPositionChange = onRandomPromptPositionChange,
+            onRandomPromptPositionChange = onRandomPromptPositionChange
         )
     }
 }
@@ -955,8 +955,11 @@ private fun NegativePrompt(
     modifier: Modifier = Modifier
 ) {
     var expandState by rememberSaveable(isFirstRun) {
-        if (isFirstRun) mutableStateOf(ExpandState.Expanded)
-        else mutableStateOf(ExpandState.Collapsed)
+        if (isFirstRun) {
+            mutableStateOf(ExpandState.Expanded)
+        } else {
+            mutableStateOf(ExpandState.Collapsed)
+        }
     }
     val coroutineScope = rememberCoroutineScope()
 

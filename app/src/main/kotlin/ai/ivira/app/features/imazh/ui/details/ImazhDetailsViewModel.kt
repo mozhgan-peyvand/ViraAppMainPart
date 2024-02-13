@@ -39,7 +39,7 @@ class ImazhDetailsViewModel @Inject constructor(
 
     fun removeImage(id: Int, imagePath: String) {
         viewModelScope.launch(IO) {
-            imazhRepository.deletePhotoInfo(id)
+            imazhRepository.deleteProcessedFile(id)
             runCatching {
                 File(imagePath).delete()
             }
