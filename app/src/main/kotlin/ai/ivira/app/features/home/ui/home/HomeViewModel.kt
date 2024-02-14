@@ -12,6 +12,7 @@ import ai.ivira.app.features.home.ui.home.version.model.toChangelogView
 import ai.ivira.app.features.home.ui.home.version.model.toVersionView
 import ai.ivira.app.utils.common.event.ViraEvent
 import ai.ivira.app.utils.common.event.ViraPublisher
+import ai.ivira.app.features.imazh.ui.onboarding.IMAZH_ONBOARDING_COMPLETED
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult.Error
@@ -131,6 +132,9 @@ class HomeViewModel @Inject constructor(
     var avashoOnboardingHasBeenShown = mutableStateOf(false)
         private set
 
+    var imazhOnboardingHasBeenShown = mutableStateOf(false)
+        private set
+
     val unavailableTileToShowBottomSheet: MutableState<TileItem?> = mutableStateOf(null)
 
     init {
@@ -161,10 +165,21 @@ class HomeViewModel @Inject constructor(
             false
         )
 
+        imazhOnboardingHasBeenShown.value = sharedPref.getBoolean(
+            IMAZH_ONBOARDING_COMPLETED,
+            false
+        )
+
         prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == AVASHO_ONBOARDING_COMPLETED) {
                 avashoOnboardingHasBeenShown.value = sharedPref.getBoolean(
                     AVASHO_ONBOARDING_COMPLETED,
+                    false
+                )
+            }
+            if (key == IMAZH_ONBOARDING_COMPLETED) {
+                imazhOnboardingHasBeenShown.value = sharedPref.getBoolean(
+                    IMAZH_ONBOARDING_COMPLETED,
                     false
                 )
             }

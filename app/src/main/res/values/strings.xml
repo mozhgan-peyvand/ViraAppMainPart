@@ -275,7 +275,7 @@
     <string name="lbl_approximate">حدود</string>
 
     <string name="msg_inappropriate_prompt_error">توصیف شما حاوی محتوای نامناسب است ، لطفا آن را اصلاح نموده و مجددا امتحان کنید.</string>
-
+    <string name="lbl_imazh_on_boarding_describe">ایده ها و خلاقیت های ذهنی خود را با یک توضیح متنی به تصویر تبدیل کنید.</string>
     <string name="msg_firs_run_image_description">دراین بخش، تصویر مورد نظرتان را توصیف کنید و \nبرای تولید تصویر بهتر، جزئیات بیشتری بنویسید.</string>
     <string name="msg_firs_run_random_prompt">می‌توانید از این گزینه برای تولید نمونه \nتوصیف تصویر استفاده کنید.</string>
     <string name="msg_firs_run_keywords">می‌توانید برای اضافه کردن جزئیات بیشتر به \nتوصیف تصویر، از کلمات کلیدی استفاده کنید. </string>

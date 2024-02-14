@@ -271,10 +271,15 @@ private fun HomeScreen(
     }
 
     LaunchedEffect(
+        homeViewModel.imazhOnboardingHasBeenShown.value,
         homeViewModel.shouldNavigateToImazh.value
     ) {
         if (homeViewModel.shouldNavigateToImazh.value) {
-            navController.navigate(ImazhScreenRoutes.ImazhArchiveListScreen.route)
+            if (!homeViewModel.imazhOnboardingHasBeenShown.value) {
+                navController.navigate(ImazhScreenRoutes.ImazhOnboardingScreen.route)
+            } else {
+                navController.navigate(ImazhScreenRoutes.ImazhArchiveListScreen.route)
+            }
             homeViewModel.shouldNavigateToImazh.value = false
         }
     }
