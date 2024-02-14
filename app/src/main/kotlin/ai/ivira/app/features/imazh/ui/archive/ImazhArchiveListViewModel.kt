@@ -12,7 +12,12 @@ import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.ui.UiStatus
+import ai.ivira.app.utils.ui.shareMultipleImage
+import android.content.Context
 import android.content.SharedPreferences
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.FileProvider
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -101,6 +106,16 @@ class ImazhArchiveListViewModel @Inject constructor(
         initialValue = emptyList()
     )
 
+    val filesInSelection = combine(downloadQueue, allArchiveFiles) { _, allArchiveFiles ->
+        allArchiveFiles
+            .filterIsInstance<ImazhProcessedFileView>()
+            .filterNot { isInDownloadQueue(it.id) }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
     val networkStatus = networkStatusTracker.networkStatus.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -110,10 +125,49 @@ class ImazhArchiveListViewModel @Inject constructor(
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewState
 
+    private val _selectedItemIds = mutableStateOf(emptySet<Int>())
+    val selectedItemIds: State<Set<Int>> = _selectedItemIds
+
+    private var _isDeletingFiles = mutableStateOf(false)
+    val isDeletingFiles: State<Boolean> = _isDeletingFiles
+
+    private var _isSharingFiles = mutableStateOf(false)
+    val isSharingFiles: State<Boolean> = _isSharingFiles
+
+    private val _isSelectionMode = mutableStateOf(false)
+    val isSelectionMode: State<Boolean> = _isSelectionMode
+
     init {
         viewModelScope.launch {
             isGrid.value = sharedPref.getBoolean(IS_GRID_IMAZH_ARCHIVE_LIST_KEY, false)
         }
+    }
+
+    fun setIsSharing(value: Boolean) {
+        _isSharingFiles.value = value
+    }
+
+    private fun selectItems(vararg ids: Int) {
+        _selectedItemIds.value = _selectedItemIds.value.plus(ids.toSet())
+    }
+
+    private fun deselectItems(vararg ids: Int) {
+        _selectedItemIds.value = _selectedItemIds.value.minus(ids.toSet())
+    }
+
+    fun selectDeselectItems(vararg ids: Int) {
+        ids.forEach {
+            if (_selectedItemIds.value.contains(it)) deselectItems(it)
+            else selectItems(it)
+        }
+    }
+
+    fun selectAll() {
+        _selectedItemIds.value = filesInSelection.value.map { it.id }.toSet()
+    }
+
+    fun deselectAll() {
+        _selectedItemIds.value = emptySet()
     }
 
     fun saveListType(value: Boolean) {
@@ -169,8 +223,8 @@ class ImazhArchiveListViewModel @Inject constructor(
         }
     }
 
-    fun removeProcessedFile(id: Int, imagePath: String) {
-        viewModelScope.launch(IO) {
+    fun removeProcessedFile(id: Int, imagePath: String): Job {
+        return viewModelScope.launch(IO) {
             repository.deleteProcessedFile(id)
             runCatching {
                 File(imagePath).delete()
@@ -182,5 +236,46 @@ class ImazhArchiveListViewModel @Inject constructor(
         viewModelScope.launch(IO) {
             repository.deleteTrackingFile(token)
         }
+    }
+
+    fun shareSelectedItems(context: Context) {
+        val files = filesInSelection.value
+            .filter { file -> _selectedItemIds.value.any { it == file.id } }
+
+        val uris = ArrayList(
+            files.filter { File(it.filePath).exists() }
+                .map {
+                    FileProvider.getUriForFile(
+                        context,
+                        context.applicationContext.packageName + ".provider",
+                        File(it.filePath)
+                    )
+                }
+        )
+
+        if (uris.isNotEmpty()) {
+            setIsSharing(true)
+            shareMultipleImage(context, uris)
+        }
+    }
+
+    suspend fun deleteSelectedItems() {
+        _isDeletingFiles.value = true
+        filesInSelection.value
+            .filter { file -> _selectedItemIds.value.any { it == file.id } }
+            .map { removeProcessedFile(it.id, it.filePath) }
+            .forEach { it.join() }
+        _selectedItemIds.value = emptySet()
+        _isDeletingFiles.value = false
+        _isSelectionMode.value = false
+    }
+
+    fun clearSelectionMode() {
+        _isSelectionMode.value = false
+        _selectedItemIds.value = emptySet()
+    }
+
+    fun enableSelectionMode() {
+        _isSelectionMode.value = true
     }
 }

@@ -3,6 +3,7 @@ package ai.ivira.app.utils.ui
 import ai.ivira.app.R
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import java.io.File
@@ -104,4 +105,14 @@ fun shareText(context: Context, text: String) {
             context.getString(R.string.lbl_share_file)
         )
     )
+}
+
+fun shareMultipleImage(context: Context, fileUris: ArrayList<Uri>) {
+    val shareIntent = Intent(Intent.ACTION_SEND_MULTIPLE)
+    shareIntent.type = "image/*"
+
+    runCatching {
+        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, fileUris)
+        context.startActivity(shareIntent)
+    }
 }

@@ -8,11 +8,13 @@ import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhDetailsScreen
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhNewImageDescriptorScreen
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.Delete
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.DeleteConfirmation
+import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.SelectionModeDeleteConfirmation
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhArchiveView
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhTrackingFileView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.KEY_NEW_IMAGE_RESULT
 import ai.ivira.app.utils.data.NetworkStatus
+import ai.ivira.app.utils.ui.OnLifecycleEvent
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.computeSecondAndMinute
@@ -21,11 +23,13 @@ import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.isScrollingUp
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_BG_Imazh_Tracking_Text
 import ai.ivira.app.utils.ui.theme.Color_Background_Menu
 import ai.ivira.app.utils.ui.theme.Color_Blue_Grey_800_945
 import ai.ivira.app.utils.ui.theme.Color_Card
+import ai.ivira.app.utils.ui.theme.Color_Card_Stroke
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Text_1
@@ -41,15 +45,20 @@ import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -75,8 +84,10 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -90,6 +101,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -111,6 +123,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -133,9 +146,13 @@ private fun ImazhArchiveListScreen(
     viewModel: ImazhArchiveListViewModel,
     configViewModel: ConfigViewModel
 ) {
+    val context = LocalContext.current
+    val snackBarState = remember { SnackbarHostState() }
+    val scaffoldState = rememberScaffoldState(snackbarHostState = snackBarState)
     val coroutineScope = rememberCoroutineScope()
     val isGrid by viewModel.isGrid.collectAsState()
     val archiveFiles by viewModel.allArchiveFiles.collectAsStateWithLifecycle()
+    val filesInSelection by viewModel.filesInSelection.collectAsStateWithLifecycle()
     val listState = rememberLazyGridState()
     val networkStatus by viewModel.networkStatus.collectAsStateWithLifecycle()
     val uiViewState by viewModel.uiViewState.collectAsState(UiIdle)
@@ -154,6 +171,12 @@ private fun ImazhArchiveListScreen(
     )
     var selectedSheet by rememberSaveable { mutableStateOf(Delete) }
     val selectedMenuItem = remember { mutableStateOf<ImazhArchiveView?>(null) }
+
+    val selectedItemIds by viewModel.selectedItemIds
+    val isSelectionMode by viewModel.isSelectionMode
+    val allItemsAreSelected by remember(selectedItemIds, filesInSelection) {
+        derivedStateOf { filesInSelection.size == selectedItemIds.size }
+    }
 
     val newImageResult = getNewImageResult(navController)?.collectAsState(initial = false)
     LaunchedEffect(newImageResult, isScrolledDown) {
@@ -174,23 +197,83 @@ private fun ImazhArchiveListScreen(
         }
     }
 
-    BackHandler(modalBottomSheetState.isVisible) {
+    BackHandler(isSelectionMode || modalBottomSheetState.isVisible) {
         if (modalBottomSheetState.isVisible) {
             modalBottomSheetState.hide(coroutineScope)
+        } else if (isSelectionMode) {
+            viewModel.clearSelectionMode()
         }
     }
 
+    OnLifecycleEvent(
+        onResume = {
+            if (viewModel.isSharingFiles.value) {
+                viewModel.deselectAll()
+                viewModel.clearSelectionMode()
+            }
+            viewModel.setIsSharing(false)
+        }
+    )
+
     Scaffold(
+        scaffoldState = scaffoldState,
         backgroundColor = MaterialTheme.colors.background,
         topBar = {
-            ImazhArchiveAppBar(
-                onBackClick = navController::navigateUp,
-                isGrid = isGrid,
-                showListTypeIcon = archiveFiles.isNotEmpty(),
-                onChangeListTypeClick = {
-                    viewModel.saveListType(!isGrid)
+            Crossfade(
+                targetState = isSelectionMode,
+                animationSpec = tween(200),
+                label = "TopBar"
+            ) { isSelectionModeOn ->
+                if (isSelectionModeOn) {
+                    val noOperationMessage = stringResource(id = R.string.msg_no_item_selected)
+                    ImazhSelectionModeAppBar(
+                        onSelectAllClick = {
+                            if (allItemsAreSelected) viewModel.deselectAll()
+                            else viewModel.selectAll()
+                        },
+                        onDeleteClick = {
+                            if (selectedItemIds.isNotEmpty()) {
+                                coroutineScope.launch {
+                                    selectedSheet = SelectionModeDeleteConfirmation
+                                    modalBottomSheetState.hide()
+                                    if (!modalBottomSheetState.isVisible) {
+                                        modalBottomSheetState.show()
+                                    }
+                                }
+                            } else {
+                                showMessage(snackBarState, coroutineScope, noOperationMessage)
+                            }
+                        },
+                        onShareClick = {
+                            if (selectedItemIds.isNotEmpty()) viewModel.shareSelectedItems(context)
+                            else showMessage(snackBarState, coroutineScope, noOperationMessage)
+                        },
+                        onCancelClick = {
+                            viewModel.deselectAll()
+                            viewModel.clearSelectionMode()
+                        },
+                        allItemsAreSelected = allItemsAreSelected,
+                        isSharingEnabled = !viewModel.isDeletingFiles.value,
+                        isClickable = !(selectedSheet == SelectionModeDeleteConfirmation && modalBottomSheetState.isVisible),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    )
+                } else {
+                    ImazhArchiveAppBar(
+                        onBackClick = navController::navigateUp,
+                        isGrid = isGrid,
+                        showListTypeIcon = archiveFiles.isNotEmpty(),
+                        onChangeListTypeClick = {
+                            viewModel.saveListType(!isGrid)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    )
                 }
-            )
+
+            }
         }
     ) { paddingValues ->
         ModalBottomSheetLayout(
@@ -204,8 +287,8 @@ private fun ImazhArchiveListScreen(
                         DeleteBottomSheet(
                             fileName = "",
                             onDelete = {
-                                selectedSheet = DeleteConfirmation
                                 coroutineScope.launch {
+                                    selectedSheet = DeleteConfirmation
                                     modalBottomSheetState.hide()
                                     if (!modalBottomSheetState.isVisible) {
                                         modalBottomSheetState.show()
@@ -238,6 +321,21 @@ private fun ImazhArchiveListScreen(
                             fileName = ""
                         )
                     }
+
+                    SelectionModeDeleteConfirmation -> {
+                        FileItemConfirmationDeleteBottomSheet(
+                            deleteAction = {
+                                coroutineScope.launch(IO) {
+                                    viewModel.deleteSelectedItems()
+                                }
+                                modalBottomSheetState.hide(coroutineScope)
+                            },
+                            cancelAction = {
+                                modalBottomSheetState.hide(coroutineScope)
+                            },
+                            fileName = stringResource(id = R.string.lbl_selected_files)
+                        )
+                    }
                 }
             }
         ) {
@@ -261,7 +359,7 @@ private fun ImazhArchiveListScreen(
                             mutableStateOf(uiViewState.let { it is UiError && !it.isSnack })
                         }
                         ViraBannerWithAnimation(
-                            isVisible = !isNetworkAvailable || hasVpnConnection || isBannerError, // FIXME: Should this be displaying only if upload is in progress?
+                            isVisible = !isSelectionMode && (!isNetworkAvailable || hasVpnConnection || isBannerError), // FIXME: Should this be displaying only if upload is in progress?
                             bannerInfo = if (uiViewState is UiError) {
                                 ViraBannerInfo.Error(
                                     message = (uiViewState as UiError).message,
@@ -281,7 +379,7 @@ private fun ImazhArchiveListScreen(
                         )
 
                         ArchiveListContent(
-                            archiveFiles = archiveFiles,
+                            archiveFiles = if (isSelectionMode) filesInSelection else archiveFiles,
                             listState = listState,
                             isGrid = isGrid,
                             isInDownloadQueue = { id -> viewModel.isInDownloadQueue(id) },
@@ -290,26 +388,164 @@ private fun ImazhArchiveListScreen(
                             },
                             onMenuClick = { imazhArchiveView ->
                                 selectedMenuItem.value = imazhArchiveView
-                                selectedSheet = Delete
                                 coroutineScope.launch {
+                                    selectedSheet = Delete
                                     modalBottomSheetState.hide()
                                     if (!modalBottomSheetState.isVisible) {
                                         modalBottomSheetState.show()
                                     }
                                 }
-                            }
+                            },
+                            onProcessedItemLongClick = { id ->
+                                viewModel.enableSelectionMode()
+                                viewModel.selectDeselectItems(id)
+                            },
+                            isSelectionMode = isSelectionMode,
+                            selectedItemIds = selectedItemIds
                         )
                     }
                 }
 
-                ImazhArchiveFab(
-                    modifier = Modifier.align(Alignment.BottomStart),
-                    onClick = onClick@{
-                        navController.navigate(route = ImazhNewImageDescriptorScreen.route)
-                    },
-                    isVisible = isVisible
+                if (!isSelectionMode) {
+                    ImazhArchiveFab(
+                        modifier = Modifier.align(Alignment.BottomStart),
+                        onClick = onClick@{
+                            navController.navigate(route = ImazhNewImageDescriptorScreen.route)
+                        },
+                        isVisible = isVisible
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ImazhSelectionModeAppBar(
+    onSelectAllClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onShareClick: () -> Unit,
+    onCancelClick: () -> Unit,
+    isSharingEnabled: Boolean,
+    isClickable: Boolean,
+    allItemsAreSelected: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val alpha by animateFloatAsState(targetValue = if (isClickable) 1f else 0.6f, label = "alpha")
+
+    Row(
+        modifier = modifier.alpha(alpha),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (allItemsAreSelected) {
+                Box(
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .size(24.dp)
+                        .background(
+                            color = Color_Primary,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .clickable(
+                            enabled = isClickable,
+                            onClick = onSelectAllClick
+                        )
+                ) {
+                    ViraIcon(
+                        drawable = R.drawable.ic_selected,
+                        modifier = Modifier.fillMaxSize(),
+                        contentDescription = stringResource(id = R.string.desc_back)
+                    )
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .size(24.dp)
+                        .border(
+                            width = 1.dp,
+                            color = Color_White,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .clickable(
+                            enabled = isClickable,
+                            onClick = onSelectAllClick
+                        )
                 )
             }
+
+            Spacer(modifier = Modifier.size(8.dp))
+
+            Text(
+                text = stringResource(id = R.string.lbl_imazh_select_all),
+                style = MaterialTheme.typography.subtitle2,
+                color = MaterialTheme.colors.onSurface,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.clickable(
+                    enabled = isClickable,
+                    onClick = onSelectAllClick
+                )
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        IconButton(
+            enabled = isClickable,
+            onClick = {
+                safeClick {
+                    onDeleteClick()
+                }
+            }
+        ) {
+            ViraIcon(
+                drawable = R.drawable.icon_trash_delete,
+                contentDescription = stringResource(R.string.lbl_btn_delete),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .size(24.dp),
+                tint = Color_White
+            )
+        }
+
+        IconButton(
+            enabled = isClickable && isSharingEnabled,
+            onClick = {
+                safeClick {
+                    onShareClick()
+                }
+            }
+        ) {
+            ViraIcon(
+                drawable = R.drawable.ic_share_new,
+                contentDescription = stringResource(R.string.lbl_share_file),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .size(24.dp),
+                tint = Color_White
+            )
+        }
+
+        IconButton(
+            enabled = isClickable,
+            onClick = {
+                safeClick {
+                    onCancelClick()
+                }
+            }
+        ) {
+            ViraIcon(
+                drawable = R.drawable.ic_close_new,
+                contentDescription = stringResource(R.string.lbl_cancel),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .size(14.dp), // fixme: Icon size is not similar to other appBar icons
+                tint = Color_White
+            )
         }
     }
 }
@@ -320,8 +556,11 @@ private fun ArchiveListContent(
     listState: LazyGridState,
     isInDownloadQueue: (Int) -> Boolean,
     isGrid: Boolean,
+    isSelectionMode: Boolean,
+    selectedItemIds: Set<Int>,
     onProcessedItemClick: (Int) -> Unit,
     onMenuClick: (ImazhArchiveView) -> Unit,
+    onProcessedItemLongClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val columns = remember(isGrid) {
@@ -355,8 +594,13 @@ private fun ArchiveListContent(
                         item = item,
                         isSmallItem = isGrid,
                         isInDownloadQueue = { id -> isInDownloadQueue(id) },
-                        onClick = { id -> onProcessedItemClick(id) },
-                        onMenuClick = { processedItem -> onMenuClick(processedItem) }
+                        onClick = if (isSelectionMode) onProcessedItemLongClick
+                        else onProcessedItemClick,
+                        onMenuClick = onMenuClick,
+                        isSelected = selectedItemIds.contains(item.id),
+                        showPrompt = !isGrid || !isSelectionMode,
+                        onItemLongClick = onProcessedItemLongClick,
+                        isSelectionMode = isSelectionMode
                     )
                 }
 
@@ -382,9 +626,7 @@ private fun ImazhArchiveAppBar(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
@@ -555,9 +797,13 @@ private fun ImazhArchiveFab(
 private fun ImazhProcessedItem(
     item: ImazhProcessedFileView,
     isSmallItem: Boolean,
+    isSelected: Boolean,
+    isSelectionMode: Boolean,
+    showPrompt: Boolean,
     isInDownloadQueue: (Int) -> Boolean,
     onClick: (Int) -> Unit,
     onMenuClick: (ImazhProcessedFileView) -> Unit,
+    onItemLongClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val textPaddingModifier by remember(isSmallItem) {
@@ -577,11 +823,19 @@ private fun ImazhProcessedItem(
             .aspectRatio(1f)
             .clip(RoundedCornerShape(16.dp))
             .background(Color_Card)
-            .clickable(enabled = !isInQueue) {
-                safeClick {
-                    onClick(item.id)
+            .combinedClickable(
+                enabled = !isInQueue,
+                onClick = {
+                    safeClick {
+                        onClick(item.id)
+                    }
+                },
+                onLongClick = {
+                    safeClick {
+                        onItemLongClick(item.id)
+                    }
                 }
-            }
+            )
     ) {
         if (!isInQueue) {
             val file = File(item.filePath)
@@ -599,22 +853,24 @@ private fun ImazhProcessedItem(
             }
         }
 
-        Text(
-            text = item.prompt,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            style = if (isSmallItem) {
-                MaterialTheme.typography.body2
-            } else {
-                MaterialTheme.typography.body1
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color_Blue_Grey_800_945.copy(alpha = 0.75f))
-                .then(textPaddingModifier)
-                .align(Alignment.BottomCenter)
-                .zIndex(1f)
-        )
+        if (showPrompt) {
+            Text(
+                text = item.prompt,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                style = if (isSmallItem) {
+                    MaterialTheme.typography.body2
+                } else {
+                    MaterialTheme.typography.body1
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color_Blue_Grey_800_945.copy(alpha = 0.75f))
+                    .then(textPaddingModifier)
+                    .align(Alignment.BottomCenter)
+                    .zIndex(1f)
+            )
+        }
 
         if (isInQueue) {
             IconButton(
@@ -648,6 +904,59 @@ private fun ImazhProcessedItem(
             ImageLoadingProgress(
                 isSmallItem = isSmallItem,
                 progress = item.downloadingPercent
+            )
+        }
+
+        if (isSelectionMode) {
+            SelectBox(
+                isSelected = isSelected,
+                isSmallItem = isSmallItem
+            )
+        }
+    }
+}
+
+@Composable
+private fun BoxScope.SelectBox(
+    isSmallItem: Boolean,
+    isSelected: Boolean
+) {
+    val shape by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) RoundedCornerShape(16.dp)
+            else RoundedCornerShape(18.dp)
+        )
+    }
+
+    val verticalPadding by remember(isSmallItem) { mutableStateOf(if (isSmallItem) 4.dp else 8.dp) }
+
+    val horizontalPadding by remember(isSmallItem) { mutableStateOf(if (isSmallItem) 4.dp else 8.dp) }
+
+    Box(
+        modifier = Modifier
+            .padding(vertical = verticalPadding, horizontal = horizontalPadding)
+            .fillMaxWidth(if (isSmallItem) 0.24f else 0.15f)
+            .aspectRatio(1f)
+            .align(Alignment.TopStart)
+            .background(
+                color = if (isSelected) Color_Primary else Color_Card_Stroke,
+                shape = shape,
+            )
+            .then(
+                if (!isSelected) Modifier.border(
+                    width = 1.dp,
+                    color = Color_Card_Stroke,
+                    shape = shape
+                )
+                else Modifier
+            )
+            .clip(shape)
+    ) {
+        if (isSelected) {
+            ViraIcon(
+                drawable = R.drawable.ic_selected,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
@@ -913,7 +1222,7 @@ private fun ImageLoadingProgress(
     }
 
     val centerIcon by remember(isSmallItem) {
-        mutableStateOf(
+        mutableIntStateOf(
             if (isSmallItem) R.drawable.ic_cancel_small else R.drawable.ic_cancel
         )
     }
