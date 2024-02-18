@@ -120,6 +120,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -209,13 +210,22 @@ private fun ImazhNewImageDescriptorScreen(
         }
     }
 
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     val promptPosition = remember { mutableIntStateOf(0) }
     val randomPromptPosition = remember { mutableIntStateOf(0) }
     val negativePromptPosition = remember { mutableIntStateOf(0) }
     val keywordsPosition = remember { mutableIntStateOf(0) }
     val topBarPosition = remember { mutableIntStateOf(0) }
 
+    LaunchedEffect(tooltipHelper.isTooltipRunning.value) {
+        if (tooltipHelper.isTooltipRunning.value) {
+            keyboardController?.hide()
+        }
+    }
+
     LaunchedEffect(viewModel.shouldShowFirstRun.value) {
+        delay(200) // To ensure positions are calculated and avoid mis-positioning of first balloon item in first-run
         if (viewModel.shouldShowFirstRun.value) {
             tooltipHelper.setupTooltipChainRunner(
                 listOf(

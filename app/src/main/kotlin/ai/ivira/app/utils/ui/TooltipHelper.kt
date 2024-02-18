@@ -1,6 +1,7 @@
 package ai.ivira.app.utils.ui
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 
@@ -13,6 +14,8 @@ class TooltipHelper(
     private val tooltips = mutableStateListOf<TooltipData>()
     private var isSingleTooltip = true
     private var lastPosition = Int.MIN_VALUE
+    private val _isTooltipRunning = mutableStateOf(false)
+    val isTooltipRunning: State<Boolean> = _isTooltipRunning
 
     suspend fun setupTooltipChainRunner(
         tooltips: List<Pair<ViraTooltip, Int?>> // List of tooltip type and position for scroll
@@ -20,16 +23,17 @@ class TooltipHelper(
         this.tooltips.clear()
         isSingleTooltip = tooltips.size < 2
 
-        tooltips.forEach {
-            this.tooltips.add(
+        this.tooltips.addAll(
+            tooltips.map {
                 TooltipData(
                     type = it.first,
                     showState = mutableStateOf(tooltips.firstOrNull() == it),
                     positionForScroll = it.second
                 )
-            )
-            this.tooltips.firstOrNull()?.positionForScroll?.let { scrollToPosition(it) }
-        }
+            }
+        )
+        this.tooltips.firstOrNull()?.positionForScroll?.let { scrollToPosition(it) }
+        _isTooltipRunning.value = tooltips.isNotEmpty()
     }
 
     suspend fun setupSingleTooltipRunner(
@@ -58,6 +62,7 @@ class TooltipHelper(
             onAllTooltipsShown().also {
                 if (!isSingleTooltip) scrollToPosition(0)
             }
+            _isTooltipRunning.value = false
         }
     }
 }
