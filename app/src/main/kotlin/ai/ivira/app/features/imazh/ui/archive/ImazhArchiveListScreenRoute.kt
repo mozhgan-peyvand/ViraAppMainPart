@@ -32,6 +32,8 @@ import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Card_Stroke
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
+import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
+import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
@@ -77,6 +79,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
@@ -86,6 +89,7 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
@@ -156,6 +160,7 @@ private fun ImazhArchiveListScreen(
     val listState = rememberLazyGridState()
     val networkStatus by viewModel.networkStatus.collectAsStateWithLifecycle()
     val uiViewState by viewModel.uiViewState.collectAsState(UiIdle)
+    val downloadFailureList by viewModel.downloadFailureList.collectAsStateWithLifecycle()
     var isVisible by rememberSaveable { mutableStateOf(true) }
     val isScrollingUp by listState.isScrollingUp()
     val isScrolledDown by remember {
@@ -228,8 +233,11 @@ private fun ImazhArchiveListScreen(
                     val noOperationMessage = stringResource(id = R.string.msg_no_item_selected)
                     ImazhSelectionModeAppBar(
                         onSelectAllClick = {
-                            if (allItemsAreSelected) viewModel.deselectAll()
-                            else viewModel.selectAll()
+                            if (allItemsAreSelected) {
+                                viewModel.deselectAll()
+                            } else {
+                                viewModel.selectAll()
+                            }
                         },
                         onDeleteClick = {
                             if (selectedItemIds.isNotEmpty()) {
@@ -245,8 +253,11 @@ private fun ImazhArchiveListScreen(
                             }
                         },
                         onShareClick = {
-                            if (selectedItemIds.isNotEmpty()) viewModel.shareSelectedItems(context)
-                            else showMessage(snackBarState, coroutineScope, noOperationMessage)
+                            if (selectedItemIds.isNotEmpty()) {
+                                viewModel.shareSelectedItems(context)
+                            } else {
+                                showMessage(snackBarState, coroutineScope, noOperationMessage)
+                            }
                         },
                         onCancelClick = {
                             viewModel.deselectAll()
@@ -272,7 +283,6 @@ private fun ImazhArchiveListScreen(
                             .padding(8.dp)
                     )
                 }
-
             }
         }
     ) { paddingValues ->
@@ -382,6 +392,7 @@ private fun ImazhArchiveListScreen(
                             archiveFiles = if (isSelectionMode) filesInSelection else archiveFiles,
                             listState = listState,
                             isGrid = isGrid,
+                            failureList = downloadFailureList,
                             isInDownloadQueue = { id -> viewModel.isInDownloadQueue(id) },
                             onProcessedItemClick = { id ->
                                 navController.navigate(ImazhDetailsScreen.createRoute(id))
@@ -401,7 +412,10 @@ private fun ImazhArchiveListScreen(
                                 viewModel.selectDeselectItems(id)
                             },
                             isSelectionMode = isSelectionMode,
-                            selectedItemIds = selectedItemIds
+                            selectedItemIds = selectedItemIds,
+                            onTryAgainClick = { processedItem ->
+                                viewModel.startDownloading(processedItem)
+                            }
                         )
                     }
                 }
@@ -557,10 +571,12 @@ private fun ArchiveListContent(
     isInDownloadQueue: (Int) -> Boolean,
     isGrid: Boolean,
     isSelectionMode: Boolean,
+    failureList: List<Int>,
     selectedItemIds: Set<Int>,
     onProcessedItemClick: (Int) -> Unit,
     onMenuClick: (ImazhArchiveView) -> Unit,
     onProcessedItemLongClick: (Int) -> Unit,
+    onTryAgainClick: (ImazhProcessedFileView) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val columns = remember(isGrid) {
@@ -594,13 +610,18 @@ private fun ArchiveListContent(
                         item = item,
                         isSmallItem = isGrid,
                         isInDownloadQueue = { id -> isInDownloadQueue(id) },
-                        onClick = if (isSelectionMode) onProcessedItemLongClick
-                        else onProcessedItemClick,
+                        isError = failureList.contains(item.id),
+                        onClick = if (isSelectionMode) {
+                            onProcessedItemLongClick
+                        } else {
+                            onProcessedItemClick
+                        },
                         onMenuClick = onMenuClick,
                         isSelected = selectedItemIds.contains(item.id),
                         showPrompt = !isGrid || !isSelectionMode,
                         onItemLongClick = onProcessedItemLongClick,
-                        isSelectionMode = isSelectionMode
+                        isSelectionMode = isSelectionMode,
+                        onTryAgainClick = { processedItem -> onTryAgainClick(processedItem) }
                     )
                 }
 
@@ -800,10 +821,12 @@ private fun ImazhProcessedItem(
     isSelected: Boolean,
     isSelectionMode: Boolean,
     showPrompt: Boolean,
+    isError: Boolean,
     isInDownloadQueue: (Int) -> Boolean,
     onClick: (Int) -> Unit,
     onMenuClick: (ImazhProcessedFileView) -> Unit,
     onItemLongClick: (Int) -> Unit,
+    onTryAgainClick: (ImazhProcessedFileView) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val textPaddingModifier by remember(isSmallItem) {
@@ -851,6 +874,47 @@ private fun ImazhProcessedItem(
                         .clip(RoundedCornerShape(16.dp))
                 )
             }
+        } else {
+            IconButton(
+                onClick = {
+                    safeClick { onMenuClick(item) }
+                },
+                modifier = Modifier
+                    .padding(end = 8.dp, top = 8.dp)
+                    .size(42.dp)
+                    .align(Alignment.TopEnd)
+                    .background(Color_Background_Menu, RoundedCornerShape(12.dp))
+            ) {
+                ViraImage(
+                    drawable = R.drawable.ic_dots_menu,
+                    contentDescription = null,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
+            if (isError) {
+                BodyError(
+                    isSmallItem = isSmallItem,
+                    onTryAgainClick = { onTryAgainClick(item) },
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            } else {
+                Text(
+                    text = stringResource(id = R.string.lbl_downloading_image),
+                    color = Color_Text_2,
+                    style = if (isSmallItem) {
+                        MaterialTheme.typography.body2
+                    } else {
+                        MaterialTheme.typography.body1
+                    },
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+                ImageLoadingProgress(
+                    isSmallItem = isSmallItem,
+                    progress = item.downloadingPercent
+                )
+            }
         }
 
         if (showPrompt) {
@@ -872,41 +936,6 @@ private fun ImazhProcessedItem(
             )
         }
 
-        if (isInQueue) {
-            IconButton(
-                onClick = {
-                    safeClick { onMenuClick(item) }
-                },
-                modifier = Modifier
-                    .padding(end = 8.dp, top = 8.dp)
-                    .size(42.dp)
-                    .align(Alignment.TopEnd)
-                    .background(Color_Background_Menu, RoundedCornerShape(12.dp))
-            ) {
-                ViraImage(
-                    drawable = R.drawable.ic_dots_menu,
-                    contentDescription = null,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-
-            Text(
-                text = stringResource(id = R.string.lbl_downloading_image),
-                color = Color_Text_2,
-                style = if (isSmallItem) {
-                    MaterialTheme.typography.body2
-                } else {
-                    MaterialTheme.typography.body1
-                },
-                modifier = Modifier.align(Alignment.Center)
-            )
-
-            ImageLoadingProgress(
-                isSmallItem = isSmallItem,
-                progress = item.downloadingPercent
-            )
-        }
-
         if (isSelectionMode) {
             SelectBox(
                 isSelected = isSelected,
@@ -923,8 +952,11 @@ private fun BoxScope.SelectBox(
 ) {
     val shape by remember(isSmallItem) {
         mutableStateOf(
-            if (isSmallItem) RoundedCornerShape(16.dp)
-            else RoundedCornerShape(18.dp)
+            if (isSmallItem) {
+                RoundedCornerShape(16.dp)
+            } else {
+                RoundedCornerShape(18.dp)
+            }
         )
     }
 
@@ -940,15 +972,18 @@ private fun BoxScope.SelectBox(
             .align(Alignment.TopStart)
             .background(
                 color = if (isSelected) Color_Primary else Color_Card_Stroke,
-                shape = shape,
+                shape = shape
             )
             .then(
-                if (!isSelected) Modifier.border(
-                    width = 1.dp,
-                    color = Color_Card_Stroke,
-                    shape = shape
-                )
-                else Modifier
+                if (!isSelected) {
+                    Modifier.border(
+                        width = 1.dp,
+                        color = Color_Card_Stroke,
+                        shape = shape
+                    )
+                } else {
+                    Modifier
+                }
             )
             .clip(shape)
     ) {
@@ -1165,6 +1200,84 @@ private fun ImazhTrackingItem(
                     .then(textPaddingModifier)
                     .zIndex(1f)
             )
+        }
+    }
+}
+
+@Composable
+fun BodyError(
+    isSmallItem: Boolean,
+    onTryAgainClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val spacerSize by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) 8.dp else 24.dp
+        )
+    }
+
+    val h6TextStyle = MaterialTheme.typography.h6
+    val captionTextStyle = MaterialTheme.typography.caption
+
+    val textStyle by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) captionTextStyle else h6TextStyle
+        )
+    }
+
+    val buttonContentPadding by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                PaddingValues(top = 8.dp, bottom = 8.dp, start = 28.dp, end = 24.dp)
+            } else {
+                PaddingValues(top = 16.dp, bottom = 16.dp, start = 40.dp, end = 36.dp)
+            }
+
+        )
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = stringResource(id = R.string.msg_internet_connection_problem),
+            style = textStyle,
+            color = Color_Red,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.size(spacerSize))
+
+        TextButton(
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color_Primary_Opacity_15
+            ),
+            contentPadding = buttonContentPadding,
+            shape = RoundedCornerShape(8.dp),
+            onClick = {
+                safeClick {
+                    onTryAgainClick()
+                }
+            }
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(id = R.string.lbl_try_again),
+                    style = MaterialTheme.typography.button,
+                    color = Color_Primary_300
+                )
+
+                Spacer(modifier = Modifier.size(8.dp))
+
+                ViraIcon(
+                    drawable = R.drawable.ic_retry,
+                    contentDescription = null,
+                    tint = Color_Primary_300,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }

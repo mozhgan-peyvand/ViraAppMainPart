@@ -1,6 +1,7 @@
 package ai.ivira.app.features.imazh.ui.archive
 
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
+import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Downloading
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleDownload
 import ai.ivira.app.features.imazh.data.ImazhRepository
 import ai.ivira.app.features.imazh.data.entity.ImazhArchiveFilesEntity
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -47,7 +49,12 @@ class ImazhArchiveListViewModel @Inject constructor(
         private set
 
     private val downloadQueue = MutableStateFlow(listOf<ImazhProcessedFileView>())
+
+    private val _downloadFailureList = MutableStateFlow(listOf<Int>())
+    val downloadFailureList = _downloadFailureList.asStateFlow()
+
     private val downloadStatus = MutableStateFlow<DownloadingFileStatus>(IdleDownload)
+
     private val currentDownloadingFile = MutableStateFlow<ImazhProcessedFileView?>(null)
 
     private var downloadJob: Job? = null
@@ -64,15 +71,20 @@ class ImazhArchiveListViewModel @Inject constructor(
         queue: List<ImazhProcessedFileView>,
         downloadingFile: ImazhProcessedFileView? ->
 
-        if (
-            queue.isNotEmpty() &&
-            networkStatus is NetworkStatus.Available &&
-            downloadState == IdleDownload
-        ) {
-            downloadStatus.update {
-                DownloadingFileStatus.Downloading
+        if (networkStatus is NetworkStatus.Unavailable) {
+            currentDownloadingFile.emit(null)
+            downloadJob?.cancel()
+            downloadJob = null
+            downloadStatus.update { IdleDownload }
+        } else {
+            if (
+                queue.isNotEmpty() &&
+                downloadState == IdleDownload
+            ) {
+                downloadStatus.update { Downloading }
+                downloadFile(queue.first())
+                _downloadFailureList.update { it.filter { id -> id != queue.first().id } }
             }
-            downloadFile(queue.first())
         }
 
         val processedList = archiveFiles.processed
@@ -157,8 +169,11 @@ class ImazhArchiveListViewModel @Inject constructor(
 
     fun selectDeselectItems(vararg ids: Int) {
         ids.forEach {
-            if (_selectedItemIds.value.contains(it)) deselectItems(it)
-            else selectItems(it)
+            if (_selectedItemIds.value.contains(it)) {
+                deselectItems(it)
+            } else {
+                selectItems(it)
+            }
         }
     }
 
@@ -203,11 +218,38 @@ class ImazhArchiveListViewModel @Inject constructor(
             removeItemFromDownloadQueue(imazhProcessedFileView.id)
 
             if (result is AppResult.Success) {
-                downloadStatus.emit(IdleDownload)
+                downloadStatus.update { IdleDownload }
+
+                _downloadFailureList.update { list ->
+                    list.filter { it == imazhProcessedFileView.id }
+                }
+            } else {
+                _downloadFailureList.update { failureList ->
+                    if (failureList.contains(imazhProcessedFileView.id)) {
+                        failureList
+                    } else {
+                        failureList.plus(imazhProcessedFileView.id)
+                    }
+                }
             }
 
             currentDownloadingFile.emit(null)
             downloadJob = null
+        }
+    }
+
+    fun startDownloading(item: ImazhProcessedFileView) {
+        if (downloadStatus.value != Downloading) {
+            downloadStatus.update { Downloading }
+
+            downloadQueue.update { list ->
+                list.plus(item.copy(downloadedBytes = null, downloadingPercent = 0f))
+            }
+
+            _downloadFailureList.update { list ->
+                list.filter { it != item.id }
+            }
+            downloadFile(item)
         }
     }
 
