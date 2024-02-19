@@ -1,6 +1,7 @@
 package ai.ivira.app.features.avasho.ui.onboarding
 
 import ai.ivira.app.R
+import ai.ivira.app.designsystem.pager.HorizontalPagerIndicator
 import ai.ivira.app.features.avasho.ui.AvashoAnalytics
 import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoArchiveScreen
 import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoOnboardingScreen
@@ -55,7 +56,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.pager.HorizontalPagerIndicator
 
 @Composable
 fun AvashoOnboardingScreenRoute(navController: NavHostController) {

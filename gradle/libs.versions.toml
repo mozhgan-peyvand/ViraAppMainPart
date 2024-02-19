@@ -1,0 +1,110 @@
+[versions]
+
+accompanist = "0.34.0"
+activityCompose = "1.8.2"
+androidGradle = "8.3.1"
+androidxSecurityCrypto = "1.1.0-alpha06"
+balloon = "1.6.3"
+coil = "2.5.0"
+composeCompiler = "1.5.11"
+composeFoundation = "1.6.5"
+composeMaterial = "1.6.5"
+composeRuntime = "1.6.5"
+composeUi = "1.6.5"
+coreKtx = "1.12.0"
+coreSplashScreen = "1.0.1"
+coroutine = "1.8.0"
+dataStorePreferences = "1.0.0"
+detekt = "1.23.6"
+firebaseAnalytics = "19.0.0"
+firebaseCrashlytics = "18.3.7"
+firebaseCrashlyticsPlugin = "2.9.6"
+firebaseMessaging = "23.3.1"
+gifDrawable = "1.2.28"
+googleServices = "4.4.1"
+hilt = "2.51.1"
+hiltNavigationCompose = "1.2.0"
+iTextPdf = "5.5.13.3"
+lifecycle = "2.7.0"
+lottieCompose = "6.4.0"
+kotlin = "1.9.23"
+ksp = "1.9.23-1.0.20"
+ktor = "2.3.10"
+moshi = "1.15.1"
+okHttp = "4.12.0"
+persianDate = "1.7.1"
+retrofit = "2.11.0"
+room = "2.6.1"
+savedState = "1.2.1"
+sentry = "7.7.0"
+sentryGradle = "4.4.0"
+snapper = "0.3.0"
+timber = "5.0.1"
+
+[libraries]
+
+accompanistNavigationMaterial = { module = "com.google.accompanist:accompanist-navigation-material", version.ref = "accompanist" }
+acticityCompose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+androidxSecurityCrypto = { module = "androidx.security:security-crypto", version.ref = "androidxSecurityCrypto" }
+ballonCompose = { module = "com.github.skydoves:balloon-compose", version.ref = "balloon" }
+coilCompose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+composeCompiler = { module = "androidx.compose.compiler:compiler", version.ref = "composeCompiler" }
+composeFoundation = { module = "androidx.compose.foundation:foundation", version.ref = "composeFoundation" }
+composeMaterial = { module = "androidx.compose.material:material", version.ref = "composeMaterial" }
+composeRuntime = { module = "androidx.compose.runtime:runtime", version.ref = "composeRuntime" }
+composeUi = { module = "androidx.compose.ui:ui", version.ref = "composeUi" }
+composeUiGraphics = { module = "androidx.compose.ui:ui-graphics", version.ref = "composeUi" }
+composeUiTestManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "composeUi" }
+composeUiTooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "composeUi" }
+composeUiToolingPreview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "composeUi" }
+coreKtx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+coreSplashScreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashScreen" }
+coroutineCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutine" }
+coroutineAndroid = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutine" }
+dataStorePreferences = { module = "androidx.datastore:datastore-preferences", version.ref = "dataStorePreferences" }
+detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+firebaseAnalytics = { module = "com.google.firebase:firebase-analytics-ktx", version.ref = "firebaseAnalytics" }
+firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics-ktx", version.ref = "firebaseCrashlytics" }
+firebaseMessaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessaging" }
+gifDrawable = { module = "pl.droidsonroids.gif:android-gif-drawable", version.ref = "gifDrawable" }
+hiltAndroid = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hiltCompiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
+hiltNavigationCompose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+iTextPdf = { module = "com.itextpdf:itextpdf", version.ref = "iTextPdf" }
+lifecycleRuntimeKtx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
+lifecycleRuntimeCompose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+lifecycleViewModel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
+lifecycleViewModelCompose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+lifecycleProcess = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycle" }
+lottieCompose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
+ktorClientCore = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktorClientOkHttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
+moshiCodeGen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
+okHttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okHttp" }
+okHttpLoggingInterceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okHttp" }
+persianDate = { module = "com.github.samanzamani:PersianDate", version.ref = "persianDate" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofitScalarConverter = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "retrofit" }
+retrofitMoshiConverter = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofit" }
+roomRuntime = { module = "androidx.room:room-runtime", version.ref = "room" }
+roomCompiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+roomKtx = { module = "androidx.room:room-ktx", version.ref = "room" }
+savedState = { module = "androidx.savedstate:savedstate", version.ref = "savedState" }
+sentryAndroid = { module = "io.sentry:sentry-android", version.ref = "sentry" }
+snapper = { module = "dev.chrisbanes.snapper:snapper", version.ref = "snapper" }
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+
+[plugins]
+
+androidApplication = { id = "com.android.application", version.ref = "androidGradle" }
+androidLibrary = { id = "com.android.library", version.ref = "androidGradle" }
+crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+googleServices = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinKapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+kotlinParcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+sentry = { id = "io.sentry.android.gradle", version.ref = "sentryGradle" }
