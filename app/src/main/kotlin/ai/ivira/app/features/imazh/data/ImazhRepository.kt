@@ -73,8 +73,10 @@ class ImazhRepository @Inject constructor(
                 if (validateResult.data.message.sfw) {
                     when (val textToImageResult = with(validateResult.data.message) {
                         convertTextToImage(
-                            prompt = englishPrompt,
-                            negativePrompt = englishNegativePrompt,
+                            prompt = prompt,
+                            englishPrompt = englishPrompt,
+                            negativePrompt = negativePrompt,
+                            englishNegativePrompt = englishNegativePrompt,
                             keywords = keywords,
                             style = englishStyle
                         )
@@ -91,7 +93,9 @@ class ImazhRepository @Inject constructor(
 
     private suspend fun convertTextToImage(
         prompt: String,
+        englishPrompt: String,
         negativePrompt: String,
+        englishNegativePrompt: String,
         keywords: List<ImazhKeywordEntity>,
         style: String
     ): AppResult<TextToImageResult> {
@@ -100,8 +104,8 @@ class ImazhRepository @Inject constructor(
         }
         val result = remoteDataSource.sendTextToImage(
             TextToImageRequestNetwork(
-                prompt = prompt.attachListItemToString(keywords.map { it.englishKeyword }),
-                negativePrompt = negativePrompt,
+                prompt = englishPrompt.attachListItemToString(keywords.map { it.englishKeyword }),
+                negativePrompt = englishNegativePrompt,
                 style = style
             )
         ).toAppResult()
@@ -114,7 +118,9 @@ class ImazhRepository @Inject constructor(
                         processEstimation = result.data.estimationTime,
                         keywords = keywords.map { it.keywordName },
                         prompt = prompt,
+                        englishPrompt = englishPrompt,
                         negativePrompt = negativePrompt,
+                        englishNegativePrompt = englishNegativePrompt,
                         style = style,
                         insertAt = TrackTime(
                             systemTime = PersianDate().time,

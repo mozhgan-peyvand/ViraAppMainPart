@@ -75,7 +75,9 @@ class ImazhLocalDataSource @Inject constructor(
                         filePath = file.absolutePath,
                         keywords = tracking.keywords,
                         prompt = tracking.prompt,
+                        englishPrompt = tracking.englishPrompt,
                         negativePrompt = tracking.negativePrompt,
+                        englishNegativePrompt = tracking.englishNegativePrompt,
                         style = tracking.style,
                         createdAt = PersianDate().time
                     )

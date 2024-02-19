@@ -31,14 +31,14 @@ interface ImazhDao {
         """
         SELECT * FROM (
             SELECT 0 AS id, token, 'tracking' as archiveType,
-                '' AS imagePath, '' AS filePath, keywords, prompt, negativePrompt, style, 
+                '' AS imagePath, '' AS filePath, keywords, prompt, englishPrompt, negativePrompt, englishNegativePrompt, style, 
                    insertSystemTime,  processEstimation, insertBootTime, lastFailureSystemTime, lastFailureBootTime
             FROM ImazhTrackingFileEntity
         )
         UNION
         SELECT * FROM (
             SELECT id, '' AS token, 'processed' as archiveType,
-                imagePath, filePath, keywords, prompt, negativePrompt, style,
+                imagePath, filePath, keywords, prompt, englishPrompt, negativePrompt, englishNegativePrompt, style,
                 0 AS insertSystemTime, 0 AS insertBootTime, 0 AS lastFailureSystemTime, 0 AS lastFailureBootTime,
                 0 AS processEstimation
             FROM ImazhProcessedFileEntity
