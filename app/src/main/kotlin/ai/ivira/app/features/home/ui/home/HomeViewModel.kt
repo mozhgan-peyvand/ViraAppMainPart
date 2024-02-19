@@ -10,9 +10,9 @@ import ai.ivira.app.features.home.data.VersionRepository
 import ai.ivira.app.features.home.ui.home.version.model.ChangelogView
 import ai.ivira.app.features.home.ui.home.version.model.toChangelogView
 import ai.ivira.app.features.home.ui.home.version.model.toVersionView
+import ai.ivira.app.features.imazh.ui.onboarding.IMAZH_ONBOARDING_COMPLETED
 import ai.ivira.app.utils.common.event.ViraEvent
 import ai.ivira.app.utils.common.event.ViraPublisher
-import ai.ivira.app.features.imazh.ui.onboarding.IMAZH_ONBOARDING_COMPLETED
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult.Error

@@ -2,17 +2,16 @@ package ai.ivira.app.features.imazh.ui.details
 
 import ai.ivira.app.features.imazh.data.ImazhRepository
 import ai.ivira.app.features.imazh.ui.archive.model.toImazhProcessedFileView
+import ai.ivira.app.utils.ui.stateIn
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.request.ImageRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -31,11 +30,7 @@ class ImazhDetailsViewModel @Inject constructor(
                     imazhProcessedEntity?.toImazhProcessedFileView()
                 }
             }
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = null
-        )
+        }.stateIn(initial = null)
 
     fun removeImage(id: Int, imagePath: String) {
         viewModelScope.launch(IO) {

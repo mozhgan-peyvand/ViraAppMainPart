@@ -13,6 +13,7 @@ import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.stateIn
 import android.content.SharedPreferences
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -26,12 +27,10 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -53,7 +52,7 @@ class NewImageDescriptorViewModel @Inject constructor(
 
     val imazhKeywords = imazhRepository.getKeywords().map { keywordsMap ->
         keywordsMap.mapValues { keywords -> keywords.value.map { it.toImazhKeywordView() }.toSet() }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+    }.stateIn(initial = emptyMap())
 
     private val _selectedKeywords = mutableStateOf<List<ImazhKeywordView>>(emptyList())
     val selectedKeywords: State<List<ImazhKeywordView>> = _selectedKeywords

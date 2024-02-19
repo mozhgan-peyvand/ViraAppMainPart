@@ -14,6 +14,7 @@ import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.shareMultipleImage
+import ai.ivira.app.utils.ui.stateIn
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.runtime.State
@@ -28,10 +29,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -112,27 +111,15 @@ class ImazhArchiveListViewModel @Inject constructor(
                 }
             )
         }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
+    }.stateIn(initial = emptyList())
 
     val filesInSelection = combine(downloadQueue, allArchiveFiles) { _, allArchiveFiles ->
         allArchiveFiles
             .filterIsInstance<ImazhProcessedFileView>()
             .filterNot { isInDownloadQueue(it.id) }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
+    }.stateIn(initial = emptyList())
 
-    val networkStatus = networkStatusTracker.networkStatus.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = NetworkStatus.Unavailable
-    )
+    val networkStatus = networkStatusTracker.networkStatus.stateIn(NetworkStatus.Unavailable)
 
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewState
