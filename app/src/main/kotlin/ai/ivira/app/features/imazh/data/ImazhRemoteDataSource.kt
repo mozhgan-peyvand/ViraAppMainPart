@@ -20,8 +20,7 @@ class ImazhRemoteDataSource @Inject constructor(
     suspend fun sendTextToImage(photoDescribe: TextToImageRequestNetwork): ApiResult<TextToImageResult> {
         return when (val result = imazhService.sendTextToImage(
             photoDescribe = photoDescribe,
-            apiKey = sai(),
-            url = bi() + "/service/textToImage/textToImage"
+            apiKey = iak()
         )) {
             is ApiResult.Success -> ApiResult.Success(result.data.data)
             is ApiResult.Error -> ApiResult.Error(result.error)
@@ -30,8 +29,8 @@ class ImazhRemoteDataSource @Inject constructor(
 
     suspend fun trackImageResult(fileToken: String): ApiResult<String> {
         val result = imazhService.trackImageResult(
-            url = bi() + "/service/textToImage/trackingFile/$fileToken",
-            token = sai()
+            apiKey = iak(),
+            fileToken = fileToken
         )
 
         return when (result) {
@@ -62,9 +61,9 @@ class ImazhRemoteDataSource @Inject constructor(
     ): ApiResult<Unit> {
         return when (
             val result = downloadFileRequest.downloadFile(
-                url = bi() + url,
+                url = bu() + "/sahab/gateway" + url,
                 file = file,
-                token = sai(),
+                token = iak(),
                 progress = progress
             )
         ) {
@@ -75,4 +74,6 @@ class ImazhRemoteDataSource @Inject constructor(
 
     external fun sai(): String
     external fun bi(): String
+    private external fun iak(): String
+    private external fun bu(): String
 }

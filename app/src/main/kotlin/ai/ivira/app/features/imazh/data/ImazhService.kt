@@ -11,20 +11,20 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Url
 
 interface ImazhService {
-    @POST
+    @POST("sahab/gateway/service/textToImage/textToImage")
     suspend fun sendTextToImage(
-        @Url url: String,
         @Header("ApiKey") apiKey: String,
         @Body photoDescribe: TextToImageRequestNetwork
     ): ApiResult<ViraNetwork<TextToImageResult>>
 
-    @GET
+    @GET("sahab/gateway/service/textToImage/trackingFile/{token}")
     suspend fun trackImageResult(
-        @Url url: String,
-        @Header("ApiKey") token: String
+        @Header("ApiKey") apiKey: String,
+        @Path("token") fileToken: String
     ): ApiResult<ViraNetwork<TextToImageItemNetwork>>
 
     @POST
