@@ -89,6 +89,8 @@ class ImazhArchiveListViewModel @Inject constructor(
         val processedList = archiveFiles.processed
         val trackingList = archiveFiles.tracking
 
+        _isTrackingEmpty.update { trackingList.isEmpty() }
+
         buildList {
             addAll(trackingList.map { it.toImazhTrackingFileView() })
             addAll(
@@ -135,6 +137,9 @@ class ImazhArchiveListViewModel @Inject constructor(
 
     private val _isSelectionMode = mutableStateOf(false)
     val isSelectionMode: State<Boolean> = _isSelectionMode
+
+    private var _isTrackingEmpty = MutableStateFlow(true)
+    val isTrackingEmpty = _isTrackingEmpty.asStateFlow()
 
     init {
         viewModelScope.launch {

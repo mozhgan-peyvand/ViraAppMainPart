@@ -1,6 +1,7 @@
 package ai.ivira.app.features.imazh.ui.archive
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.DeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.config.ui.ConfigViewModel
@@ -163,6 +164,7 @@ private fun ImazhArchiveListScreen(
     val downloadFailureList by viewModel.downloadFailureList.collectAsStateWithLifecycle()
     var isVisible by rememberSaveable { mutableStateOf(true) }
     val isScrollingUp by listState.isScrollingUp()
+    val isTrackingEmpty by viewModel.isTrackingEmpty.collectAsStateWithLifecycle()
     val isScrolledDown by remember {
         derivedStateOf {
             listState.firstVisibleItemIndex > 0 ||
@@ -223,6 +225,13 @@ private fun ImazhArchiveListScreen(
     Scaffold(
         scaffoldState = scaffoldState,
         backgroundColor = MaterialTheme.colors.background,
+        snackbarHost = {
+            SnackBarWithPaddingBottom(
+                snackbarHostState = snackBarState,
+                shouldShowOverItems = true,
+                paddingValue = 400f
+            )
+        },
         topBar = {
             Crossfade(
                 targetState = isSelectionMode,
@@ -424,6 +433,22 @@ private fun ImazhArchiveListScreen(
                     ImazhArchiveFab(
                         modifier = Modifier.align(Alignment.BottomStart),
                         onClick = onClick@{
+                            if (!isTrackingEmpty) {
+                                val hasError = uiViewState is UiError
+                                showMessage(
+                                    snackBarState,
+                                    coroutineScope,
+                                    context.getString(
+                                        if (hasError) {
+                                            R.string.msg_wait_for_connection_to_server
+                                        } else {
+                                            R.string.msg_wait_process_finish_or_cancel_it
+                                        }
+                                    )
+                                )
+                                return@onClick
+                            }
+
                             navController.navigate(route = ImazhNewImageDescriptorScreen.route)
                         },
                         isVisible = isVisible
