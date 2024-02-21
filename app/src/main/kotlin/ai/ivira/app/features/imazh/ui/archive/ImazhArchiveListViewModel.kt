@@ -19,6 +19,7 @@ import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.combine
 import ai.ivira.app.utils.ui.shareMultipleImage
 import ai.ivira.app.utils.ui.stateIn
 import android.app.Application
@@ -37,7 +38,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -76,11 +76,13 @@ class ImazhArchiveListViewModel @Inject constructor(
         networkStatusTracker.networkStatus,
         downloadStatus,
         downloadQueue,
+        _downloadFailureList,
         currentDownloadingFile
     ) { archiveFiles: ImazhArchiveFilesEntity,
         networkStatus: NetworkStatus,
         downloadState: DownloadingFileStatus,
         queue: List<ImazhProcessedFileView>,
+        failureList: List<Int>,
         downloadingFile: ImazhProcessedFileView? ->
 
         if (networkStatus is NetworkStatus.Unavailable) {
@@ -89,13 +91,15 @@ class ImazhArchiveListViewModel @Inject constructor(
             downloadJob = null
             downloadStatus.update { IdleDownload }
         } else {
-            if (
-                queue.isNotEmpty() &&
-                downloadState == IdleDownload
-            ) {
-                downloadStatus.update { Downloading }
-                downloadFile(queue.first())
-                _downloadFailureList.update { it.filter { id -> id != queue.first().id } }
+            if (downloadState == IdleDownload) {
+                if (queue.isNotEmpty()) {
+                    val item = queue.firstOrNull { it.id !in failureList || !File(it.filePath).exists() }
+                    if (item != null) {
+                        downloadStatus.update { Downloading }
+                        downloadFile(item)
+                        _downloadFailureList.update { it.filter { id -> id != item.id } }
+                    }
+                }
             }
         }
 
@@ -115,14 +119,12 @@ class ImazhArchiveListViewModel @Inject constructor(
                         downloadedBytes = downloadingFile?.downloadedBytes
                     )
                 }.also { list ->
-                    val idList = queue.map { it.id }
+                    val newQueue = mutableListOf<ImazhProcessedFileView>()
                     for (i in list) {
-                        if (File(i.filePath).exists() || idList.contains(i.id)) continue
-
-                        downloadQueue.update { queue ->
-                            queue.plus(i)
-                        }
+                        if (File(i.filePath).exists()) continue
+                        newQueue.add(i)
                     }
+                    downloadQueue.update { newQueue }
                 }
             )
         }
@@ -227,11 +229,8 @@ class ImazhArchiveListViewModel @Inject constructor(
                 }
             }
 
-            removeItemFromDownloadQueue(imazhProcessedFileView.id)
-
+            downloadStatus.update { IdleDownload }
             if (result is AppResult.Success) {
-                downloadStatus.update { IdleDownload }
-
                 _downloadFailureList.update { list ->
                     list.filter { it == imazhProcessedFileView.id }
                 }
