@@ -255,6 +255,7 @@
     <string name="lbl_negative_prompt">کلمات منفی</string>
     <string name="lbl_generate_image">تولید تصویر</string>
     <string name="msg_describe_your_image">تصویر مدنظر خود را توصیف کنید…</string>
+    <string name="lbl_imazh_negative_prompt_placeholder">ویژگی‌هایی که نمی‌خواهید در تصویر باشند را بنویسید…</string>
     <string name="lbl_details">جزئیات</string>
     <string name="lbl_info">توضیحات</string>
     <string name="lbl_change">تغییر</string>

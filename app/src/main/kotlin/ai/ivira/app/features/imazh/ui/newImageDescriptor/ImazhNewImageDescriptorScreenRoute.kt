@@ -737,6 +737,7 @@ private fun PromptInputText(
     ) {
         InputTextSection(
             text = prompt,
+            placeHolder = stringResource(id = R.string.msg_describe_your_image),
             focusRequester = focusRequester,
             onTextChange = onPromptChange
         )
@@ -1029,6 +1030,7 @@ private fun NegativePromptInputText(
     ) {
         InputTextSection(
             text = text,
+            placeHolder = stringResource(id = R.string.lbl_imazh_negative_prompt_placeholder),
             focusRequester = focusRequester,
             onTextChange = onTextChange
         )
@@ -1059,6 +1061,7 @@ private fun NegativePromptInputText(
 @Composable
 private fun InputTextSection(
     text: String,
+    placeHolder: String,
     focusRequester: FocusRequester,
     onTextChange: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -1068,7 +1071,7 @@ private fun InputTextSection(
         textStyle = MaterialTheme.typography.body1,
         placeholder = {
             Text(
-                text = stringResource(id = R.string.msg_describe_your_image),
+                text = placeHolder,
                 style = MaterialTheme.typography.body1,
                 color = Color_Text_3,
                 modifier = Modifier.padding(horizontal = 8.dp)
