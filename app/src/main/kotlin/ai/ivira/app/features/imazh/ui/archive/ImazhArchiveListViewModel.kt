@@ -251,15 +251,14 @@ class ImazhArchiveListViewModel @Inject constructor(
     }
 
     fun startDownloading(item: ImazhProcessedFileView) {
+        _downloadFailureList.update { list ->
+            list.filter { it != item.id }
+        }
         if (downloadStatus.value != Downloading) {
             downloadStatus.update { Downloading }
 
             downloadQueue.update { list ->
                 list.plus(item.copy(downloadedBytes = null, downloadingPercent = 0f))
-            }
-
-            _downloadFailureList.update { list ->
-                list.filter { it != item.id }
             }
             downloadFile(item)
         }
