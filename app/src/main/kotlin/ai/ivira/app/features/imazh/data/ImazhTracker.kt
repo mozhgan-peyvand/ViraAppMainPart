@@ -23,8 +23,8 @@ import javax.inject.Singleton
 class ImazhTracker @Inject constructor(private val imazhRepository: ImazhRepository) {
     companion object {
         private const val TAG = "ImazhTracker"
-        private const val NO_ESTIMATE_DELAY_MS = 10 * DateUtils.SECOND_IN_MILLIS // TODO
-        private const val TRACK_DELAY_AFTER_FAILURE_MS = 15 * DateUtils.SECOND_IN_MILLIS
+        private const val NO_ESTIMATE_DELAY_MS = 10 * DateUtils.SECOND_IN_MILLIS
+        private const val TRACK_DELAY_AFTER_FAILURE_MS = 10 * DateUtils.SECOND_IN_MILLIS
     }
 
     private val coroutineScope = ProcessLifecycleOwner.get().lifecycleScope
