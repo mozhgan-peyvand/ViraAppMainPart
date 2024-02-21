@@ -156,6 +156,10 @@ class ImazhArchiveListViewModel @Inject constructor(
     private var _isTrackingEmpty = MutableStateFlow(true)
     val isTrackingEmpty = _isTrackingEmpty.asStateFlow()
 
+    val isDownloadQueueEmpty = combine(downloadQueue, downloadFailureList) { queue, failure ->
+        queue.isEmpty() && failure.isEmpty()
+    }.stateIn(initial = true)
+
     private var _isRegeneratingImage = mutableStateOf(false)
     val isRegeneratingImage: State<Boolean> = _isRegeneratingImage
 

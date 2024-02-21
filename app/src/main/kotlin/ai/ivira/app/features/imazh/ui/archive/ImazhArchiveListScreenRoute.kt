@@ -177,6 +177,7 @@ private fun ImazhArchiveListScreen(
     var isVisible by rememberSaveable { mutableStateOf(true) }
     val isScrollingUp by listState.isScrollingUp()
     val isTrackingEmpty by viewModel.isTrackingEmpty.collectAsStateWithLifecycle()
+    val isDownloadQueueEmpty by viewModel.isDownloadQueueEmpty.collectAsStateWithLifecycle()
     val isScrolledDown by remember {
         derivedStateOf {
             listState.firstVisibleItemIndex > 0 ||
@@ -469,8 +470,14 @@ private fun ImazhArchiveListScreen(
                         val isBannerError by remember(uiViewState) {
                             mutableStateOf(uiViewState.let { it is UiError && !it.isSnack })
                         }
+                        val shouldShowBanner by remember(isTrackingEmpty, isDownloadQueueEmpty) {
+                            mutableStateOf(!isTrackingEmpty || !isDownloadQueueEmpty)
+                        }
                         ViraBannerWithAnimation(
-                            isVisible = !isSelectionMode && (!isNetworkAvailable || hasVpnConnection || isBannerError), // FIXME: Should this be displaying only if upload is in progress?
+                            // FIXME: Should this be displaying only if upload is in progress?
+                            isVisible = shouldShowBanner &&
+                                !isSelectionMode &&
+                                (!isNetworkAvailable || hasVpnConnection || isBannerError),
                             bannerInfo = if (uiViewState is UiError) {
                                 ViraBannerInfo.Error(
                                     message = (uiViewState as UiError).message,
