@@ -1,5 +1,6 @@
 package ai.ivira.app.features.imazh.ui.archive
 
+import ai.ivira.app.R
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Downloading
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleDownload
@@ -8,13 +9,17 @@ import ai.ivira.app.features.imazh.data.entity.ImazhArchiveFilesEntity
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
 import ai.ivira.app.features.imazh.ui.archive.model.toImazhProcessedFileView
 import ai.ivira.app.features.imazh.ui.archive.model.toImazhTrackingFileView
+import ai.ivira.app.utils.common.file.FileOperationHelper
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult
+import ai.ivira.app.utils.ui.StorageUtils
+import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.shareMultipleImage
 import ai.ivira.app.utils.ui.stateIn
+import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.runtime.State
@@ -42,6 +47,9 @@ private const val IS_GRID_IMAZH_ARCHIVE_LIST_KEY = "isGridPrefKey_ImazhArchiveLi
 class ImazhArchiveListViewModel @Inject constructor(
     private val sharedPref: SharedPreferences,
     private val repository: ImazhRepository,
+    private val storageUtils: StorageUtils,
+    private val application: Application,
+    private val fileOperationHelper: FileOperationHelper,
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
     var isGrid = MutableStateFlow(true)
@@ -55,6 +63,8 @@ class ImazhArchiveListViewModel @Inject constructor(
     private val downloadStatus = MutableStateFlow<DownloadingFileStatus>(IdleDownload)
 
     private val currentDownloadingFile = MutableStateFlow<ImazhProcessedFileView?>(null)
+
+    private var hasPermissionDeniedPermanently = mutableStateOf(false)
 
     private var downloadJob: Job? = null
 
@@ -311,5 +321,39 @@ class ImazhArchiveListViewModel @Inject constructor(
 
     fun enableSelectionMode() {
         _isSelectionMode.value = true
+    }
+
+    fun hasDeniedPermissionPermanently(permission: String): Boolean {
+        val hasDenied = sharedPref.getBoolean(permissionDeniedPrefKey(permission), false)
+        hasPermissionDeniedPermanently.value = hasDenied
+        return hasDenied
+    }
+
+    fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) {
+        viewModelScope.launch {
+            sharedPref.edit {
+                this.putBoolean(permissionDeniedPrefKey(permission), deniedPermanently)
+            }
+        }
+    }
+
+    private fun permissionDeniedPrefKey(permission: String): String {
+        return "deniedPermission_$permission"
+    }
+
+    fun saveToDownloadFolder(filePath: String, fileName: String): Boolean {
+        if (storageUtils.getAvailableSpace() <= File(filePath).length()) {
+            viewModelScope.launch {
+                _uiViewState.emit(
+                    UiError(application.getString(R.string.msg_not_enough_space), true)
+                )
+            }
+            return false
+        }
+
+        return fileOperationHelper.copyFileToDownloadFolder(
+            filePath = filePath,
+            fileName = fileName
+        )
     }
 }

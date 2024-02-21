@@ -3,6 +3,7 @@ package ai.ivira.app.features.imazh.ui.archive
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.DeleteBottomSheet
+import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhDetailsScreen
@@ -20,8 +21,12 @@ import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.computeSecondAndMinute
 import ai.ivira.app.utils.ui.computeTextBySecondAndMinute
+import ai.ivira.app.utils.ui.hasPermission
 import ai.ivira.app.utils.ui.hide
+import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isScrollingUp
+import ai.ivira.app.utils.ui.isSdkVersionBetween23And29
+import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.showMessage
@@ -44,9 +49,13 @@ import ai.ivira.app.utils.ui.widgets.ViraBannerInfo
 import ai.ivira.app.utils.ui.widgets.ViraBannerWithAnimation
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import android.Manifest
+import android.app.Activity
 import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.EaseInOut
@@ -178,6 +187,7 @@ private fun ImazhArchiveListScreen(
     )
     var selectedSheet by rememberSaveable { mutableStateOf(Delete) }
     val selectedMenuItem = remember { mutableStateOf<ImazhArchiveView?>(null) }
+    var selectedFilePathDownloadItem by remember { mutableStateOf<String?>(null) }
 
     val selectedItemIds by viewModel.selectedItemIds
     val isSelectionMode by viewModel.isSelectionMode
@@ -221,11 +231,45 @@ private fun ImazhArchiveListScreen(
             viewModel.setIsSharing(false)
         }
     )
+    val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+    val writeStoragePermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            selectedFilePathDownloadItem?.let { filePath ->
+                viewModel.saveToDownloadFolder(
+                    filePath = filePath,
+                    fileName = File(filePath).nameWithoutExtension
+                ).also { isSuccess ->
+                    if (isSuccess) {
+                        showMessage(
+                            snackBarState,
+                            coroutineScope,
+                            context.getString(R.string.msg_file_saved_successfully)
+                        )
+                    }
+                }
+            }
+        } else {
+            viewModel.putDeniedPermissionToSharedPref(
+                permission = permission,
+                deniedPermanently = isPermissionDeniedPermanently(
+                    activity = context as Activity,
+                    permission = permission
+                )
+            )
+            showMessage(
+                snackBarState,
+                coroutineScope,
+                context.getString(R.string.lbl_need_to_access_file_permission)
+            )
+        }
+    }
 
     Scaffold(
         scaffoldState = scaffoldState,
         backgroundColor = MaterialTheme.colors.background,
-        snackbarHost = {
+        snackbarHost = snackBarHost@{
             SnackBarWithPaddingBottom(
                 snackbarHostState = snackBarState,
                 shouldShowOverItems = true,
@@ -355,6 +399,22 @@ private fun ImazhArchiveListScreen(
                             fileName = stringResource(id = R.string.lbl_selected_files)
                         )
                     }
+
+                    ImazhArchiveBottomSheetType.FileAccessPermissionDenied -> {
+                        AccessDeniedToOpenFileBottomSheet(
+                            cancelAction = {
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            },
+                            submitAction = {
+                                navigateToAppSettings(activity = context as Activity)
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        )
+                    }
                 }
             }
         ) {
@@ -424,6 +484,51 @@ private fun ImazhArchiveListScreen(
                             selectedItemIds = selectedItemIds,
                             onTryAgainClick = { processedItem ->
                                 viewModel.startDownloading(processedItem)
+                            },
+                            onDownloadAction = onClick@{ imazhFilePathItem ->
+                                selectedFilePathDownloadItem = imazhFilePathItem
+                                selectedFilePathDownloadItem?.let { filePath ->
+                                    if (!isSdkVersionBetween23And29()) {
+                                        viewModel.saveToDownloadFolder(
+                                            filePath = filePath,
+                                            fileName = File(filePath).name
+                                        ).also { isSuccess ->
+                                            if (isSuccess) {
+                                                showMessage(
+                                                    snackBarState,
+                                                    coroutineScope,
+                                                    context.getString(R.string.msg_file_saved_successfully)
+                                                )
+                                            }
+                                        }
+                                        return@onClick
+                                    }
+                                    if (context.hasPermission(permission)) {
+                                        viewModel.saveToDownloadFolder(
+                                            filePath = filePath,
+                                            fileName = File(filePath).nameWithoutExtension
+                                        ).also { isSuccess ->
+                                            if (isSuccess) {
+                                                showMessage(
+                                                    snackBarState,
+                                                    coroutineScope,
+                                                    context.getString(R.string.msg_file_saved_successfully)
+                                                )
+                                            }
+                                        }
+                                    } else if (viewModel.hasDeniedPermissionPermanently(permission)) {
+                                        coroutineScope.launch {
+                                            selectedSheet = ImazhArchiveBottomSheetType.FileAccessPermissionDenied
+                                            modalBottomSheetState.hide()
+                                            if (!modalBottomSheetState.isVisible) {
+                                                modalBottomSheetState.show()
+                                            }
+                                        }
+                                    } else {
+                                        // Asking for permission
+                                        writeStoragePermission.launch(permission)
+                                    }
+                                }
                             }
                         )
                     }
@@ -602,6 +707,7 @@ private fun ArchiveListContent(
     onMenuClick: (ImazhArchiveView) -> Unit,
     onProcessedItemLongClick: (Int) -> Unit,
     onTryAgainClick: (ImazhProcessedFileView) -> Unit,
+    onDownloadAction: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val columns = remember(isGrid) {
@@ -646,7 +752,10 @@ private fun ArchiveListContent(
                         showPrompt = !isGrid || !isSelectionMode,
                         onItemLongClick = onProcessedItemLongClick,
                         isSelectionMode = isSelectionMode,
-                        onTryAgainClick = { processedItem -> onTryAgainClick(processedItem) }
+                        onTryAgainClick = { processedItem -> onTryAgainClick(processedItem) },
+                        onDownloadAction = { filePath ->
+                            onDownloadAction(filePath)
+                        }
                     )
                 }
 
@@ -852,6 +961,7 @@ private fun ImazhProcessedItem(
     onMenuClick: (ImazhProcessedFileView) -> Unit,
     onItemLongClick: (Int) -> Unit,
     onTryAgainClick: (ImazhProcessedFileView) -> Unit,
+    onDownloadAction: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val textPaddingModifier by remember(isSmallItem) {
@@ -966,7 +1076,56 @@ private fun ImazhProcessedItem(
                 isSelected = isSelected,
                 isSmallItem = isSmallItem
             )
+        } else {
+            if (!isInQueue) {
+                DownloadImage(
+                    isSmallItem,
+                    onDownloadAction = { onDownloadAction(item.filePath) }
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun BoxScope.DownloadImage(
+    isSmallItem: Boolean,
+    onDownloadAction: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val shape by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                RoundedCornerShape(16.dp)
+            } else {
+                RoundedCornerShape(18.dp)
+            }
+        )
+    }
+
+    val verticalPadding by remember(isSmallItem) { mutableStateOf(if (isSmallItem) 4.dp else 8.dp) }
+
+    val horizontalPadding by remember(isSmallItem) { mutableStateOf(if (isSmallItem) 4.dp else 8.dp) }
+
+    Box(
+        modifier = modifier
+            .padding(vertical = verticalPadding, horizontal = horizontalPadding)
+            .fillMaxWidth(if (isSmallItem) 0.24f else 0.15f)
+            .aspectRatio(1f)
+            .background(
+                color = Color_Blue_Grey_800_945.copy(alpha = .75f),
+                shape = shape
+            )
+            .clip(shape)
+            .clickable { onDownloadAction() }
+            .padding(10.dp)
+            .align(Alignment.TopEnd)
+    ) {
+        ViraIcon(
+            drawable = R.drawable.ic_download_audio,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 
