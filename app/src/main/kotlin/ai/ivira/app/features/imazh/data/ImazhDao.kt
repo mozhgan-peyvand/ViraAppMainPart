@@ -31,14 +31,14 @@ interface ImazhDao {
         """
         SELECT * FROM (
             SELECT 0 AS id, token, 'tracking' as archiveType,
-                '' AS imagePath, '' AS filePath, keywords, prompt, englishPrompt, negativePrompt, englishNegativePrompt, style, 
+                '' AS imagePath, '' AS filePath, keywords, englishKeywords, prompt, englishPrompt, negativePrompt, englishNegativePrompt, style, 
                    insertSystemTime,  processEstimation, insertBootTime, lastFailureSystemTime, lastFailureBootTime
             FROM ImazhTrackingFileEntity
         )
         UNION
         SELECT * FROM (
             SELECT id, '' AS token, 'processed' as archiveType,
-                imagePath, filePath, keywords, prompt, englishPrompt, negativePrompt, englishNegativePrompt, style,
+                imagePath, filePath, keywords, englishKeywords, prompt, englishPrompt, negativePrompt, englishNegativePrompt, style,
                 0 AS insertSystemTime, 0 AS insertBootTime, 0 AS lastFailureSystemTime, 0 AS lastFailureBootTime,
                 0 AS processEstimation
             FROM ImazhProcessedFileEntity
@@ -52,6 +52,9 @@ interface ImazhDao {
 
     @Query("SELECT * FROM ImazhTrackingFileEntity WHERE token=:token")
     suspend fun getTrackingFile(token: String): ImazhTrackingFileEntity?
+
+    @Query("SELECT * FROM ImazhProcessedFileEntity WHERE id=:id")
+    suspend fun getProcessedFileEntity(id: Int): ImazhProcessedFileEntity?
 
     @Query("SELECT * FROM ImazhProcessedFileEntity WHERE id=:id")
     fun getPhotoInfo(id: Int): Flow<ImazhProcessedFileEntity?>

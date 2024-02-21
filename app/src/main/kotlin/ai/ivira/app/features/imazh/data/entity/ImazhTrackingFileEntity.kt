@@ -10,6 +10,7 @@ data class ImazhTrackingFileEntity(
     @PrimaryKey
     val token: String,
     val keywords: List<String>,
+    val englishKeywords: List<String>,
     val prompt: String,
     val englishPrompt: String,
     val negativePrompt: String,

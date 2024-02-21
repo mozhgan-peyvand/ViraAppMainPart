@@ -10,6 +10,7 @@ data class ImazhProcessedFileEntity(
     val imagePath: String,
     val filePath: String,
     val keywords: List<String>,
+    val englishKeywords: List<String>,
     val prompt: String,
     val englishPrompt: String,
     val negativePrompt: String,

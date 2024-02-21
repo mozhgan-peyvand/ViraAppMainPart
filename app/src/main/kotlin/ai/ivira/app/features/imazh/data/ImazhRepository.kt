@@ -77,7 +77,8 @@ class ImazhRepository @Inject constructor(
                             englishPrompt = englishPrompt,
                             negativePrompt = negativePrompt,
                             englishNegativePrompt = englishNegativePrompt,
-                            keywords = keywords,
+                            englishKeywords = keywords.map { it.englishKeyword },
+                            keywordsNames = keywords.map { it.keywordName },
                             style = englishStyle
                         )
                     }) {
@@ -91,12 +92,37 @@ class ImazhRepository @Inject constructor(
         }
     }
 
+    suspend fun regeneratePromptImage(processedItemId: Int): AppResult<Boolean> {
+        val item = localDataSource.getProcessedFileEntity(processedItemId)
+            ?: return AppResult.Error(
+                AppException.IOException(
+                    IllegalArgumentException("id($processedItemId) not found!")
+                )
+            )
+
+        return when (
+            val result = convertTextToImage(
+                prompt = item.prompt,
+                englishPrompt = item.englishPrompt,
+                negativePrompt = item.negativePrompt,
+                englishNegativePrompt = item.englishNegativePrompt,
+                keywordsNames = item.keywords,
+                englishKeywords = item.englishKeywords,
+                style = item.style
+            )
+        ) {
+            is AppResult.Success -> AppResult.Success(true)
+            is AppResult.Error -> AppResult.Error(result.error)
+        }
+    }
+
     private suspend fun convertTextToImage(
         prompt: String,
         englishPrompt: String,
         negativePrompt: String,
         englishNegativePrompt: String,
-        keywords: List<ImazhKeywordEntity>,
+        englishKeywords: List<String>,
+        keywordsNames: List<String>,
         style: String
     ): AppResult<TextToImageResult> {
         if (!networkHandler.hasNetworkConnection()) {
@@ -104,7 +130,7 @@ class ImazhRepository @Inject constructor(
         }
         val result = remoteDataSource.sendTextToImage(
             TextToImageRequestNetwork(
-                prompt = englishPrompt.attachListItemToString(keywords.map { it.englishKeyword }),
+                prompt = englishPrompt.attachListItemToString(englishKeywords),
                 negativePrompt = englishNegativePrompt,
                 style = style
             )
@@ -116,7 +142,8 @@ class ImazhRepository @Inject constructor(
                     ImazhTrackingFileEntity(
                         token = result.data.token,
                         processEstimation = result.data.estimationTime,
-                        keywords = keywords.map { it.keywordName },
+                        keywords = keywordsNames,
+                        englishKeywords = englishKeywords,
                         prompt = prompt,
                         englishPrompt = englishPrompt,
                         negativePrompt = negativePrompt,

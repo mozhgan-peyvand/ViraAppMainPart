@@ -284,4 +284,8 @@
     <string name="lbl_imazh_select_all">انتخاب همه</string>
     <string name="lbl_selected_files">(های) انتخاب شده</string>
     <string name="msg_no_item_selected">فایلی انتخاب نشده است</string>
+
+    <string name="lbl_regenerate_image">تولید مجدد تصویر</string>
+    <string name="msg_regenerate_image">با انتخاب این گزینه، تصویر جدیدی طبق توصیف شما تولید خواهد شد.</string>
+    <string name="lbl_cancel_2">لغو</string>
 </resources>

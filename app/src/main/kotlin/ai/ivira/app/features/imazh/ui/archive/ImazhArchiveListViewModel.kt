@@ -16,7 +16,9 @@ import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.ui.StorageUtils
 import ai.ivira.app.utils.ui.UiError
+import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiStatus
+import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.shareMultipleImage
 import ai.ivira.app.utils.ui.stateIn
 import android.app.Application
@@ -50,6 +52,7 @@ class ImazhArchiveListViewModel @Inject constructor(
     private val storageUtils: StorageUtils,
     private val application: Application,
     private val fileOperationHelper: FileOperationHelper,
+    private val uiException: UiException,
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
     var isGrid = MutableStateFlow(true)
@@ -150,6 +153,13 @@ class ImazhArchiveListViewModel @Inject constructor(
 
     private var _isTrackingEmpty = MutableStateFlow(true)
     val isTrackingEmpty = _isTrackingEmpty.asStateFlow()
+
+    private var _isRegeneratingImage = mutableStateOf(false)
+    val isRegeneratingImage: State<Boolean> = _isRegeneratingImage
+
+    private var itemIdForRegenerate: Int = -1
+
+    private var regenerateJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -355,5 +365,37 @@ class ImazhArchiveListViewModel @Inject constructor(
             filePath = filePath,
             fileName = fileName
         )
+    }
+
+    fun regenerateImage(onCompletionCallback: () -> Unit) {
+        regenerateJob?.cancel()
+        regenerateJob = viewModelScope.launch(IO) {
+            _isRegeneratingImage.value = true
+            when (repository.regeneratePromptImage(itemIdForRegenerate)) {
+                is AppResult.Success -> {
+                    _uiViewState.emit(UiSuccess)
+                    onCompletionCallback()
+                }
+
+                is AppResult.Error -> {
+                    _uiViewState.emit(
+                        UiError(
+                            message = uiException.getErrorMessageInvalidItemId(),
+                            isSnack = true
+                        )
+                    )
+                }
+            }
+            _isRegeneratingImage.value = false
+            regenerateJob = null
+        }
+    }
+
+    fun setItemIdForRegenerate(itemId: Int) {
+        itemIdForRegenerate = itemId
+    }
+
+    fun resetItemIdForRegenerate() {
+        itemIdForRegenerate = -1
     }
 }

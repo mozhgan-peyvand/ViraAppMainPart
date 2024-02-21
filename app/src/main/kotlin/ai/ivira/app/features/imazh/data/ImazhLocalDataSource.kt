@@ -74,6 +74,7 @@ class ImazhLocalDataSource @Inject constructor(
                         imagePath = imagePath,
                         filePath = file.absolutePath,
                         keywords = tracking.keywords,
+                        englishKeywords = tracking.englishKeywords,
                         prompt = tracking.prompt,
                         englishPrompt = tracking.englishPrompt,
                         negativePrompt = tracking.negativePrompt,
@@ -89,6 +90,8 @@ class ImazhLocalDataSource @Inject constructor(
     fun getAllProcessedFiles() = dao.getAllProcessedFiles()
 
     fun getPhotoInfo(id: Int) = dao.getPhotoInfo(id)
+
+    suspend fun getProcessedFileEntity(id: Int) = dao.getProcessedFileEntity(id)
 
     suspend fun deleteProcessedFile(id: Int) = dao.deleteProcessedFile(id)
 

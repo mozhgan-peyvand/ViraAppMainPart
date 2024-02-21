@@ -5,11 +5,13 @@ import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.DeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
+import ai.ivira.app.features.ava_negar.ui.archive.sheets.RegenerateItemConfirmationBottomSheet
 import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhDetailsScreen
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhNewImageDescriptorScreen
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.Delete
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.DeleteConfirmation
+import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.RegenerateImageConfirmation
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.SelectionModeDeleteConfirmation
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhArchiveView
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
@@ -140,6 +142,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.io.File
@@ -214,6 +217,20 @@ private fun ImazhArchiveListScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.uiViewState.collectLatest {
+            if (it is UiError && it.isSnack) {
+                modalBottomSheetState.hide(coroutineScope)
+                delay(100)
+                showMessage(
+                    snackBarState,
+                    coroutineScope,
+                    it.message
+                )
+            }
+        }
+    }
+
     BackHandler(isSelectionMode || modalBottomSheetState.isVisible) {
         if (modalBottomSheetState.isVisible) {
             modalBottomSheetState.hide(coroutineScope)
@@ -269,11 +286,11 @@ private fun ImazhArchiveListScreen(
     Scaffold(
         scaffoldState = scaffoldState,
         backgroundColor = MaterialTheme.colors.background,
-        snackbarHost = snackBarHost@{
+        snackbarHost = {
             SnackBarWithPaddingBottom(
                 snackbarHostState = snackBarState,
                 shouldShowOverItems = true,
-                paddingValue = 400f
+                paddingValue = if (isVisible) 400f else 150f
             )
         },
         topBar = {
@@ -415,6 +432,21 @@ private fun ImazhArchiveListScreen(
                             }
                         )
                     }
+
+                    RegenerateImageConfirmation -> {
+                        RegenerateItemConfirmationBottomSheet(
+                            cancelAction = {
+                                viewModel.resetItemIdForRegenerate()
+                                modalBottomSheetState.hide(coroutineScope)
+                            },
+                            regenerateAction = {
+                                viewModel.regenerateImage {
+                                    modalBottomSheetState.hide(coroutineScope)
+                                }
+                            },
+                            isLoading = viewModel.isRegeneratingImage.value
+                        )
+                    }
                 }
             }
         ) {
@@ -527,6 +559,31 @@ private fun ImazhArchiveListScreen(
                                     } else {
                                         // Asking for permission
                                         writeStoragePermission.launch(permission)
+                                    }
+                                }
+                            },
+                            onRegenerateImageClick = { itemId ->
+                                if (!isTrackingEmpty) {
+                                    val hasError = uiViewState is UiError
+                                    showMessage(
+                                        snackBarState,
+                                        coroutineScope,
+                                        context.getString(
+                                            if (hasError) {
+                                                R.string.msg_wait_for_connection_to_server
+                                            } else {
+                                                R.string.msg_wait_process_finish_or_cancel_it
+                                            }
+                                        )
+                                    )
+                                } else {
+                                    viewModel.setItemIdForRegenerate(itemId)
+                                    coroutineScope.launch {
+                                        selectedSheet = RegenerateImageConfirmation
+                                        modalBottomSheetState.hide()
+                                        if (!modalBottomSheetState.isVisible) {
+                                            modalBottomSheetState.show()
+                                        }
                                     }
                                 }
                             }
@@ -708,6 +765,7 @@ private fun ArchiveListContent(
     onProcessedItemLongClick: (Int) -> Unit,
     onTryAgainClick: (ImazhProcessedFileView) -> Unit,
     onDownloadAction: (String) -> Unit,
+    onRegenerateImageClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val columns = remember(isGrid) {
@@ -755,7 +813,8 @@ private fun ArchiveListContent(
                         onTryAgainClick = { processedItem -> onTryAgainClick(processedItem) },
                         onDownloadAction = { filePath ->
                             onDownloadAction(filePath)
-                        }
+                        },
+                        onRegenerateImageClick = { itemId -> onRegenerateImageClick(itemId) }
                     )
                 }
 
@@ -962,6 +1021,7 @@ private fun ImazhProcessedItem(
     onItemLongClick: (Int) -> Unit,
     onTryAgainClick: (ImazhProcessedFileView) -> Unit,
     onDownloadAction: (String) -> Unit,
+    onRegenerateImageClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val textPaddingModifier by remember(isSmallItem) {
@@ -1078,17 +1138,34 @@ private fun ImazhProcessedItem(
             )
         } else {
             if (!isInQueue) {
-                DownloadImage(
-                    isSmallItem,
-                    onDownloadAction = { onDownloadAction(item.filePath) }
-                )
+                Row(
+                    modifier = Modifier
+                        .padding(
+                            vertical = if (isSmallItem) 4.dp else 8.dp,
+                            horizontal = if (isSmallItem) 4.dp else 8.dp
+                        )
+                        .fillMaxWidth(if (isSmallItem) 0.5f else 0.32f)
+                        .align(Alignment.TopEnd),
+                    horizontalArrangement = Arrangement.spacedBy(if (isSmallItem) 4.dp else 8.dp)
+                ) {
+                    RegenerateBox(
+                        isSmallItem = isSmallItem,
+                        onClickAction = { onRegenerateImageClick(item.id) },
+                        modifier = Modifier.weight(1f)
+                    )
+                    DownloadImage(
+                        isSmallItem = isSmallItem,
+                        onDownloadAction = { onDownloadAction(item.filePath) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun BoxScope.DownloadImage(
+private fun DownloadImage(
     isSmallItem: Boolean,
     onDownloadAction: () -> Unit,
     modifier: Modifier = Modifier
@@ -1103,14 +1180,9 @@ private fun BoxScope.DownloadImage(
         )
     }
 
-    val verticalPadding by remember(isSmallItem) { mutableStateOf(if (isSmallItem) 4.dp else 8.dp) }
-
-    val horizontalPadding by remember(isSmallItem) { mutableStateOf(if (isSmallItem) 4.dp else 8.dp) }
-
     Box(
         modifier = modifier
-            .padding(vertical = verticalPadding, horizontal = horizontalPadding)
-            .fillMaxWidth(if (isSmallItem) 0.24f else 0.15f)
+            .fillMaxWidth()
             .aspectRatio(1f)
             .background(
                 color = Color_Blue_Grey_800_945.copy(alpha = .75f),
@@ -1119,10 +1191,45 @@ private fun BoxScope.DownloadImage(
             .clip(shape)
             .clickable { onDownloadAction() }
             .padding(10.dp)
-            .align(Alignment.TopEnd)
     ) {
         ViraIcon(
             drawable = R.drawable.ic_download_audio,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Composable
+private fun RegenerateBox(
+    isSmallItem: Boolean,
+    onClickAction: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val shape by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                RoundedCornerShape(16.dp)
+            } else {
+                RoundedCornerShape(18.dp)
+            }
+        )
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .background(
+                color = Color_Blue_Grey_800_945.copy(alpha = .75f),
+                shape = shape
+            )
+            .clip(shape)
+            .clickable { onClickAction() }
+            .padding(10.dp)
+    ) {
+        ViraIcon(
+            drawable = R.drawable.ic_regenerate,
             contentDescription = null,
             modifier = Modifier.fillMaxSize()
         )

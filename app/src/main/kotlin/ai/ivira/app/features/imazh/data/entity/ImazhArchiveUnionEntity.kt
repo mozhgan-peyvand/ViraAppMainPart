@@ -9,6 +9,7 @@ data class ImazhArchiveUnionEntity(
     val imagePath: String,
     val filePath: String,
     val keywords: List<String>,
+    val englishKeywords: List<String>,
     val prompt: String,
     val englishPrompt: String,
     val negativePrompt: String,
@@ -23,6 +24,7 @@ data class ImazhArchiveUnionEntity(
     fun toImazhTrackingFileEntity() = ImazhTrackingFileEntity(
         token = token,
         keywords = keywords,
+        englishKeywords = englishKeywords,
         prompt = prompt,
         englishPrompt = englishPrompt,
         negativePrompt = negativePrompt,
@@ -46,6 +48,7 @@ data class ImazhArchiveUnionEntity(
         imagePath = imagePath,
         filePath = filePath,
         keywords = keywords,
+        englishKeywords = englishKeywords,
         prompt = prompt,
         englishPrompt = englishPrompt,
         negativePrompt = negativePrompt,
