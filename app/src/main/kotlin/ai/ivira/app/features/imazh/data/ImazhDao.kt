@@ -34,14 +34,16 @@ interface ImazhDao {
                 '' AS imagePath, '' AS filePath, keywords, englishKeywords, prompt, englishPrompt, negativePrompt, englishNegativePrompt, style, 
                    insertSystemTime,  processEstimation, insertBootTime, lastFailureSystemTime, lastFailureBootTime
             FROM ImazhTrackingFileEntity
+            ORDER BY insertSystemTime DESC
         )
         UNION
         SELECT * FROM (
             SELECT id, '' AS token, 'processed' as archiveType,
                 imagePath, filePath, keywords, englishKeywords, prompt, englishPrompt, negativePrompt, englishNegativePrompt, style,
-                0 AS insertSystemTime, 0 AS insertBootTime, 0 AS lastFailureSystemTime, 0 AS lastFailureBootTime,
+                createdAt AS insertSystemTime, 0 AS insertBootTime, 0 AS lastFailureSystemTime, 0 AS lastFailureBootTime,
                 0 AS processEstimation
             FROM ImazhProcessedFileEntity
+            ORDER BY createdAt DESC
         )
     """
     )
