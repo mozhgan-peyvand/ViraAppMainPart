@@ -15,6 +15,14 @@ interface ImazhDao {
     @Query("SELECT * FROM ImazhHistoryEntity ORDER BY createdAt DESC LIMIT 5")
     fun getRecentHistory(): Flow<List<ImazhHistoryEntity>>
 
+    @Query(
+        """
+            DELETE FROM ImazhHistoryEntity 
+            WHERE prompt NOT IN (SELECT prompt FROM ImazhHistoryEntity ORDER BY createdAt DESC LIMIT 5)
+        """
+    )
+    fun deleteOldHistory()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addPromptToHistory(item: ImazhHistoryEntity)
 

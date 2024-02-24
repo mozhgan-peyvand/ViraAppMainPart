@@ -50,7 +50,10 @@ class ImazhLocalDataSource @Inject constructor(
     }.flowOn(IO)
 
     suspend fun addPromptToHistory(item: ImazhHistoryEntity) {
-        dao.addPromptToHistory(item)
+        db.withTransaction {
+            dao.addPromptToHistory(item)
+            dao.deleteOldHistory()
+        }
     }
 
     suspend fun insertTrackingFile(value: ImazhTrackingFileEntity) {
