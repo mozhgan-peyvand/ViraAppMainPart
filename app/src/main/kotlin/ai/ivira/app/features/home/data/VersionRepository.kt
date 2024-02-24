@@ -63,10 +63,17 @@ class VersionRepository @Inject constructor(
     }
 
     fun shouldShowBottomSheet(): Boolean {
-        val shouldShowUpdateBottomSheet = sharedPref.getLong(
+        var shouldShowUpdateBottomSheet = sharedPref.getLong(
             CHECK_UPDATE_PERIODICALLY_KEY,
-            System.currentTimeMillis()
+            -1
         )
+
+        if (shouldShowUpdateBottomSheet == -1L) {
+            sharedPref.edit()
+                .putLong(CHECK_UPDATE_PERIODICALLY_KEY, System.currentTimeMillis())
+                .apply()
+            shouldShowUpdateBottomSheet = System.currentTimeMillis()
+        }
 
         val showUpdateBottomSheetAgain =
             shouldShowUpdateBottomSheet + SHOWING_UPDATE_LATER_INTERVAL < System.currentTimeMillis()
