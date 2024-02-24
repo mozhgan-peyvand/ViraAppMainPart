@@ -112,11 +112,25 @@ import kotlinx.coroutines.launch
 
 private const val CHAR_COUNT = 2500
 
+@Composable
+fun AvashoFileCreationScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(AvashoAnalytics.screenViewFileCreation)
+    }
+
+    AvashoFileCreationScreen(
+        navController = navController,
+        viewModel = hiltViewModel()
+    )
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun AvashoFileCreationScreen(
+private fun AvashoFileCreationScreen(
     navController: NavHostController,
-    viewModel: AvashoFileCreationViewModel = hiltViewModel()
+    viewModel: AvashoFileCreationViewModel
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
@@ -679,7 +693,8 @@ private fun AvashoFileCreationPreview() {
     ViraTheme {
         CompositionLocalProvider(LocalLayoutDirection provides Rtl) {
             AvashoFileCreationScreen(
-                rememberNavController()
+                navController = rememberNavController(),
+                viewModel = hiltViewModel()
             )
         }
     }

@@ -1,9 +1,11 @@
 package ai.ivira.app.features.avasho.ui.onboarding
 
 import ai.ivira.app.R
+import ai.ivira.app.features.avasho.ui.AvashoAnalytics
 import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoArchiveScreen
 import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoOnboardingScreen
 import ai.ivira.app.utils.ui.BulletParagraph
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -57,6 +59,12 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 
 @Composable
 fun AvashoOnboardingScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(AvashoAnalytics.screenViewOnboarding)
+    }
+
     AvashoOnboardingScreen(
         navController = navController,
         viewModel = hiltViewModel()

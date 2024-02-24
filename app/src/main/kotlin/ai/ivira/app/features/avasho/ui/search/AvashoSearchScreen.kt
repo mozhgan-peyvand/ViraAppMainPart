@@ -2,6 +2,8 @@ package ai.ivira.app.features.avasho.ui.search
 
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.SnackBar
+import ai.ivira.app.features.avasho.ui.AvashoAnalytics
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -35,6 +37,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -58,7 +61,13 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 private const val SELECTED_ITEM_KEY = "selectedItemId"
 
 @Composable
-fun AvashoSearchScreenRouter(navController: NavHostController) {
+fun AvashoSearchScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(AvashoAnalytics.screenViewSearch)
+    }
+
     AvashoSearchScreen(
         navHostController = navController, viewModel = hiltViewModel()
     )
@@ -236,6 +245,6 @@ private fun SearchToolbar(
 @Composable
 private fun AvashoSearchScreenPreview() {
     ViraPreview {
-        AvashoSearchScreenRouter(navController = rememberNavController())
+        AvashoSearchScreenRoute(navController = rememberNavController())
     }
 }

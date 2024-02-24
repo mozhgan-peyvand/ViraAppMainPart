@@ -1,9 +1,25 @@
 package ai.ivira.app.features.avasho.ui
 
+import ai.ivira.app.utils.ui.analytics.events.ScreenViewEvent
 import ai.ivira.app.utils.ui.analytics.events.SpecialEvent
 
 object AvashoAnalytics {
     private const val PREFIX = "avasho"
+
+    // region screenView
+    val screenViewArchiveList: ScreenViewEvent
+        get() = ScreenViewEvent("Avasho Archive", "AvashoArchiveListScreen")
+
+    val screenViewFileCreation: ScreenViewEvent
+        get() = ScreenViewEvent("Avasho New Voice", "AvashoFileCreationScreen")
+
+    val screenViewOnboarding: ScreenViewEvent
+        get() = ScreenViewEvent("Avasho Onboarding", "AvashoOnboardingScreen")
+
+    val screenViewSearch: ScreenViewEvent
+        get() = ScreenViewEvent("Avasho Search", "AvashoSearchScreen")
+
+    // endregion
 
     // region specialEvents
     val uploadIconClick: SpecialEvent

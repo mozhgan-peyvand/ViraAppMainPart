@@ -141,6 +141,11 @@ private const val SELECTED_ITEM_KEY = "selectedItemId"
 @Composable
 fun AvashoArchiveListScreenRoute(navController: NavHostController) {
     val activity = LocalContext.current as ComponentActivity
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(AvashoAnalytics.screenViewArchiveList)
+    }
 
     AvashoArchiveListScreen(
         navController = navController,
