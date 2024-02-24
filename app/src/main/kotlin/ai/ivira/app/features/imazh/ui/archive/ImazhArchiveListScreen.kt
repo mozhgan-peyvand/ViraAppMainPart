@@ -12,6 +12,7 @@ import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhDetailsScreen
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhNewImageDescriptorScreen
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.Delete
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.DeleteConfirmation
+import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.FileAccessPermissionDenied
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.RegenerateImageConfirmation
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.SelectionModeDeleteConfirmation
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhArchiveView
@@ -426,7 +427,7 @@ private fun ImazhArchiveListScreen(
                         )
                     }
 
-                    ImazhArchiveBottomSheetType.FileAccessPermissionDenied -> {
+                    FileAccessPermissionDenied -> {
                         AccessDeniedToOpenFileBottomSheet(
                             cancelAction = {
                                 coroutineScope.launch {
@@ -538,7 +539,7 @@ private fun ImazhArchiveListScreen(
                                     if (!isSdkVersionBetween23And29()) {
                                         viewModel.saveToDownloadFolder(
                                             filePath = filePath,
-                                            fileName = File(filePath).name
+                                            fileName = File(filePath).nameWithoutExtension
                                         ).also { isSuccess ->
                                             if (isSuccess) {
                                                 showMessage(
@@ -565,7 +566,7 @@ private fun ImazhArchiveListScreen(
                                         }
                                     } else if (viewModel.hasDeniedPermissionPermanently(permission)) {
                                         coroutineScope.launch {
-                                            selectedSheet = ImazhArchiveBottomSheetType.FileAccessPermissionDenied
+                                            selectedSheet = FileAccessPermissionDenied
                                             modalBottomSheetState.hide()
                                             if (!modalBottomSheetState.isVisible) {
                                                 modalBottomSheetState.show()

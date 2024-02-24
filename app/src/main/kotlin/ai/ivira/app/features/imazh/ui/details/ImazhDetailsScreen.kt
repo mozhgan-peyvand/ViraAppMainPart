@@ -1,18 +1,26 @@
 package ai.ivira.app.features.imazh.ui.details
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.ui.ImazhAnalytics
 import ai.ivira.app.features.imazh.ui.details.ImazhDetailBottomSheetType.DeleteConfirmation
+import ai.ivira.app.features.imazh.ui.details.ImazhDetailBottomSheetType.FileAccessPermissionDenied
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhStyleItem
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
+import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.convertByteToMB
+import ai.ivira.app.utils.ui.hasPermission
 import ai.ivira.app.utils.ui.hide
+import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
+import ai.ivira.app.utils.ui.isSdkVersionBetween23And29
+import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_On_Surface
@@ -23,13 +31,18 @@ import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.labelMedium
 import ai.ivira.app.utils.ui.toBitmap
 import ai.ivira.app.utils.ui.widgets.ViraIcon
+import android.Manifest
+import android.app.Activity
 import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -47,6 +60,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
@@ -62,13 +76,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -92,7 +110,9 @@ private fun ImazhDetailsScreen(
     viewModel: ImazhDetailsViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val scaffoldState = rememberScaffoldState()
+    val context = LocalContext.current
+    val snackBarState = remember { SnackbarHostState() }
+    val scaffoldState = rememberScaffoldState(snackbarHostState = snackBarState)
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true,
@@ -104,8 +124,52 @@ private fun ImazhDetailsScreen(
     val scrollState = rememberScrollState()
     val photoInfo by viewModel.archiveFile.collectAsStateWithLifecycle()
 
+    val writeStoragePermission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+    val writeStoragePermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            viewModel.saveItemToDownloadFolder().also { isSuccess ->
+                if (isSuccess) {
+                    showMessage(
+                        snackBarState,
+                        coroutineScope,
+                        context.getString(R.string.msg_file_saved_successfully)
+                    )
+                }
+            }
+        } else {
+            viewModel.putDeniedPermissionToSharedPref(
+                permission = writeStoragePermission,
+                deniedPermanently = isPermissionDeniedPermanently(
+                    activity = context as Activity,
+                    permission = writeStoragePermission
+                )
+            )
+            showMessage(
+                snackBarState,
+                coroutineScope,
+                context.getString(R.string.lbl_need_to_access_file_permission)
+            )
+        }
+    }
+
     BackHandler(modalBottomSheetState.isVisible) {
         modalBottomSheetState.hide(coroutineScope)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.uiViewState.collectLatest {
+            if (it is UiError && it.isSnack) {
+                modalBottomSheetState.hide(coroutineScope)
+                delay(100)
+                showMessage(
+                    snackBarState,
+                    coroutineScope,
+                    it.message
+                )
+            }
+        }
     }
 
     Scaffold(
@@ -137,6 +201,21 @@ private fun ImazhDetailsScreen(
                             fileName = ""
                         )
                     }
+                    FileAccessPermissionDenied -> {
+                        AccessDeniedToOpenFileBottomSheet(
+                            cancelAction = {
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            },
+                            submitAction = {
+                                navigateToAppSettings(activity = context as Activity)
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        )
+                    }
                 }
             }
         ) {
@@ -152,6 +231,36 @@ private fun ImazhDetailsScreen(
                         coroutineScope.launch {
                             modalBottomSheetState.show()
                         }
+                    },
+                    onShareClick = {
+                        viewModel.shareItem(context)
+                    },
+                    onSaveClick = {
+                        if (!isSdkVersionBetween23And29()
+                            || context.hasPermission(writeStoragePermission)
+                        ) {
+                            viewModel.saveItemToDownloadFolder().also { isSuccess ->
+                                if (isSuccess) {
+                                    showMessage(
+                                        snackBarState,
+                                        coroutineScope,
+                                        context.getString(R.string.msg_file_saved_successfully)
+                                    )
+                                }
+                            }
+                        } else if (viewModel.hasDeniedPermissionPermanently(writeStoragePermission)) {
+                            coroutineScope.launch {
+                                selectedSheet = FileAccessPermissionDenied
+                                modalBottomSheetState.hide()
+                                if (!modalBottomSheetState.isVisible) {
+                                    modalBottomSheetState.show()
+                                }
+                            }
+                        } else {
+                            // Asking for permission
+                            writeStoragePermissionLauncher.launch(writeStoragePermission)
+                        }
+
                     }
                 )
 
@@ -169,9 +278,9 @@ private fun ImazhDetailsScreen(
                             bitmap = bitmap.asImageBitmap(),
                             contentDescription = null,
                             modifier = Modifier
+                                .padding(top = 8.dp)
                                 .fillMaxWidth()
                                 .aspectRatio(1f)
-                                .padding(top = 8.dp)
                         )
                     }
 
@@ -214,7 +323,10 @@ private fun ImageDescription(
 ) {
     Section(
         title = R.string.lbl_image_prompt,
+        modifier = Modifier.padding(top = 30.dp),
         content = {
+            Spacer(modifier = Modifier.size(8.dp))
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -229,7 +341,7 @@ private fun ImageDescription(
 
                 Text(
                     color = Color_Text_3,
-                    style = MaterialTheme.typography.body2,
+                    style = MaterialTheme.typography.caption.copy(fontSize = 14.sp),
                     text = createdAt
                 )
 
@@ -269,7 +381,10 @@ private fun ImageDescription(
 private fun Keyword(list: List<String>) {
     Section(
         title = R.string.lbl_image_attributes,
+        modifier = Modifier.padding(top = 24.dp),
         content = {
+            Spacer(modifier = Modifier.size(20.dp))
+
             FlowRow(modifier = Modifier.fillMaxWidth()) {
                 list.forEach { imageStyle ->
                     Text(
@@ -277,7 +392,7 @@ private fun Keyword(list: List<String>) {
                         color = Color_On_Surface,
                         style = MaterialTheme.typography.button,
                         modifier = Modifier
-                            .padding(top = 8.dp, end = 8.dp)
+                            .padding(end = 8.dp)
                             .background(Color_Primary_Opacity_15, RoundedCornerShape(8.dp))
                             .padding(horizontal = 12.dp, vertical = 4.dp)
                     )
@@ -291,7 +406,10 @@ private fun Keyword(list: List<String>) {
 private fun NegativePrompt(value: String) {
     Section(
         title = R.string.lbl_negative_prompt,
+        modifier = Modifier.padding(top = 20.dp),
         content = {
+            Spacer(modifier = Modifier.size(12.dp))
+
             Text(
                 text = value,
                 color = Color_Text_3,
@@ -305,7 +423,10 @@ private fun NegativePrompt(value: String) {
 private fun Style(style: ImazhImageStyle) {
     Section(
         title = R.string.lbl_image_style,
+        modifier = Modifier.padding(top = 12.dp),
         content = {
+            Spacer(modifier = Modifier.size(20.dp))
+
             ImazhStyleItem(
                 style = style,
                 isSelected = false,
@@ -320,6 +441,8 @@ private fun Style(style: ImazhImageStyle) {
 private fun TopBar(
     onBackClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onShareClick: () -> Unit,
+    onSaveClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -362,26 +485,45 @@ private fun TopBar(
                 modifier = Modifier.padding(12.dp)
             )
         }
+
+        IconButton(
+            onClick = {
+                safeClick(event = onShareClick)
+            }
+        ) {
+            ViraIcon(
+                drawable = R.drawable.ic_share_new,
+                contentDescription = stringResource(id = R.string.lbl_share_file),
+                modifier = Modifier.padding(12.dp)
+            )
+        }
+
+        IconButton(
+            onClick = {
+                safeClick(event = onSaveClick)
+            }
+        ) {
+            ViraIcon(
+                drawable = R.drawable.ic_download_audio,
+                contentDescription = stringResource(id = R.string.lbl_save),
+                modifier = Modifier.padding(12.dp)
+            )
+        }
     }
 }
 
 @Composable
 private fun Section(
     @StringRes title: Int,
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 24.dp)
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(id = title),
             style = MaterialTheme.typography.subtitle1,
             color = Color_Text_1
         )
-
-        Spacer(modifier = Modifier.size(20.dp))
 
         content()
     }
