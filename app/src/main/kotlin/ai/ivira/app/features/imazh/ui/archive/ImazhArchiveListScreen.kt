@@ -7,6 +7,7 @@ import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileB
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RegenerateItemConfirmationBottomSheet
 import ai.ivira.app.features.config.ui.ConfigViewModel
+import ai.ivira.app.features.imazh.ui.ImazhAnalytics
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhDetailsScreen
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhNewImageDescriptorScreen
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.Delete
@@ -21,6 +22,7 @@ import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.OnLifecycleEvent
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.computeSecondAndMinute
 import ai.ivira.app.utils.ui.computeTextBySecondAndMinute
 import ai.ivira.app.utils.ui.hasPermission
@@ -150,6 +152,12 @@ import java.io.File
 @Composable
 fun ImazhArchiveListScreenRoute(navController: NavHostController) {
     val activity = LocalContext.current as ComponentActivity
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(ImazhAnalytics.screenViewArchiveList)
+    }
+
     ImazhArchiveListScreen(
         navController = navController,
         viewModel = hiltViewModel(),

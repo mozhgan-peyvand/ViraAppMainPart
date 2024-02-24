@@ -3,9 +3,11 @@ package ai.ivira.app.features.imazh.ui.details
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
+import ai.ivira.app.features.imazh.ui.ImazhAnalytics
 import ai.ivira.app.features.imazh.ui.details.ImazhDetailBottomSheetType.DeleteConfirmation
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhStyleItem
 import ai.ivira.app.utils.common.orZero
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.convertByteToMB
 import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
@@ -49,6 +51,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,6 +74,12 @@ import java.io.File
 
 @Composable
 fun ImazhDetailsScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(ImazhAnalytics.screenViewDetails)
+    }
+
     ImazhDetailsScreen(
         navController = navController,
         viewModel = hiltViewModel()

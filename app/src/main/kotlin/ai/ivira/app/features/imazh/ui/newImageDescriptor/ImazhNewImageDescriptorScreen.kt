@@ -3,6 +3,7 @@ package ai.ivira.app.features.imazh.ui.newImageDescriptor
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
+import ai.ivira.app.features.imazh.ui.ImazhAnalytics
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.NEGATIVE_PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhKeywordItem
@@ -25,6 +26,7 @@ import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.ViraBalloon
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.hideAndShow
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
@@ -144,6 +146,12 @@ private const val EXPANSION_VISIBILITY_DELAY = 100
 
 @Composable
 fun ImazhNewImageDescriptorScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(ImazhAnalytics.screenViewNewImageDescriptor)
+    }
+
     ImazhNewImageDescriptorScreen(
         navController = navController,
         viewModel = hiltViewModel()

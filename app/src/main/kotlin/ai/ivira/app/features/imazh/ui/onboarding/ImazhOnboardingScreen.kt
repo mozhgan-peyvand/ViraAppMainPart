@@ -1,7 +1,9 @@
 package ai.ivira.app.features.imazh.ui.onboarding
 
 import ai.ivira.app.R
+import ai.ivira.app.features.imazh.ui.ImazhAnalytics
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
@@ -29,8 +31,17 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 
 @Composable
-fun ImazhOnboardingRouter(navController: NavHostController) {
-    ImazhOnboardingScreen(viewModel = hiltViewModel(), navController = navController)
+fun ImazhOnboardingScreenRoute(navController: NavHostController) {
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(ImazhAnalytics.screenViewOnboarding)
+    }
+
+    ImazhOnboardingScreen(
+        viewModel = hiltViewModel(),
+        navController = navController
+    )
 }
 
 @Composable
