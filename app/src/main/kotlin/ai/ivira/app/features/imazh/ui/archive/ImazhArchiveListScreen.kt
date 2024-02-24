@@ -75,7 +75,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -131,6 +130,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -790,6 +790,7 @@ private fun ArchiveListContent(
     val horizontalArrangement = remember(isGrid) {
         if (isGrid) Arrangement.spacedBy(16.dp) else Arrangement.Center
     }
+    val iconSize = remember(isGrid) { mutableStateOf(if (isGrid) 40.dp else 52.dp) }
 
     LazyVerticalGrid(
         columns = columns,
@@ -813,6 +814,7 @@ private fun ArchiveListContent(
                 is ImazhProcessedFileView -> {
                     ImazhProcessedItem(
                         item = item,
+                        iconSize = iconSize.value,
                         isSmallItem = isGrid,
                         isInDownloadQueue = { id -> isInDownloadQueue(id) },
                         isError = failureList.contains(item.id),
@@ -837,6 +839,7 @@ private fun ArchiveListContent(
                 is ImazhTrackingFileView -> {
                     ImazhTrackingItem(
                         item = item,
+                        iconSize = iconSize.value,
                         isSmallItem = isGrid,
                         estimateTime = { item.computeFileEstimateProcess() },
                         onMenuClick = { trackingItem -> onMenuClick(trackingItem) }
@@ -1031,6 +1034,7 @@ private fun ImazhProcessedItem(
     isSelectionMode: Boolean,
     showPrompt: Boolean,
     isError: Boolean,
+    iconSize: Dp,
     isInDownloadQueue: (Int) -> Boolean,
     onClick: (Int) -> Unit,
     onMenuClick: (ImazhProcessedFileView) -> Unit,
@@ -1086,22 +1090,12 @@ private fun ImazhProcessedItem(
                 )
             }
         } else {
-            IconButton(
-                onClick = {
-                    safeClick { onMenuClick(item) }
-                },
-                modifier = Modifier
-                    .padding(end = 8.dp, top = 8.dp)
-                    .size(42.dp)
-                    .align(Alignment.TopEnd)
-                    .background(Color_Background_Menu, RoundedCornerShape(12.dp))
-            ) {
-                ViraImage(
-                    drawable = R.drawable.ic_dots_menu,
-                    contentDescription = null,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
+            MenuIcon(
+                iconSize = iconSize,
+                isSmallItem = isSmallItem,
+                modifier = Modifier.align(Alignment.TopEnd),
+                onMenuClick = { onMenuClick(item) }
+            )
 
             if (isError) {
                 BodyError(
@@ -1150,7 +1144,9 @@ private fun ImazhProcessedItem(
         if (isSelectionMode) {
             SelectBox(
                 isSelected = isSelected,
-                isSmallItem = isSmallItem
+                isSmallItem = isSmallItem,
+                iconSize = iconSize,
+                modifier = Modifier.align(Alignment.TopStart)
             )
         } else {
             if (!isInQueue) {
@@ -1160,19 +1156,18 @@ private fun ImazhProcessedItem(
                             vertical = if (isSmallItem) 4.dp else 8.dp,
                             horizontal = if (isSmallItem) 4.dp else 8.dp
                         )
-                        .fillMaxWidth(if (isSmallItem) 0.5f else 0.32f)
                         .align(Alignment.TopEnd),
                     horizontalArrangement = Arrangement.spacedBy(if (isSmallItem) 4.dp else 8.dp)
                 ) {
                     RegenerateBox(
                         isSmallItem = isSmallItem,
-                        onClickAction = { onRegenerateImageClick(item.id) },
-                        modifier = Modifier.weight(1f)
+                        iconSize = iconSize,
+                        onClickAction = { onRegenerateImageClick(item.id) }
                     )
                     DownloadImage(
                         isSmallItem = isSmallItem,
-                        onDownloadAction = { onDownloadAction(item.filePath) },
-                        modifier = Modifier.weight(1f)
+                        iconSize = iconSize,
+                        onDownloadAction = { onDownloadAction(item.filePath) }
                     )
                 }
             }
@@ -1181,81 +1176,11 @@ private fun ImazhProcessedItem(
 }
 
 @Composable
-private fun DownloadImage(
+private fun MenuIcon(
     isSmallItem: Boolean,
-    onDownloadAction: () -> Unit,
+    iconSize: Dp,
+    onMenuClick: () -> Unit,
     modifier: Modifier = Modifier
-) {
-    val shape by remember(isSmallItem) {
-        mutableStateOf(
-            if (isSmallItem) {
-                RoundedCornerShape(16.dp)
-            } else {
-                RoundedCornerShape(18.dp)
-            }
-        )
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .background(
-                color = Color_Blue_Grey_800_945.copy(alpha = .75f),
-                shape = shape
-            )
-            .clip(shape)
-            .clickable { onDownloadAction() }
-            .padding(10.dp)
-    ) {
-        ViraIcon(
-            drawable = R.drawable.ic_download_audio,
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-@Composable
-private fun RegenerateBox(
-    isSmallItem: Boolean,
-    onClickAction: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val shape by remember(isSmallItem) {
-        mutableStateOf(
-            if (isSmallItem) {
-                RoundedCornerShape(16.dp)
-            } else {
-                RoundedCornerShape(18.dp)
-            }
-        )
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .background(
-                color = Color_Blue_Grey_800_945.copy(alpha = .75f),
-                shape = shape
-            )
-            .clip(shape)
-            .clickable { onClickAction() }
-            .padding(10.dp)
-    ) {
-        ViraIcon(
-            drawable = R.drawable.ic_regenerate,
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-@Composable
-private fun BoxScope.SelectBox(
-    isSmallItem: Boolean,
-    isSelected: Boolean
 ) {
     val shape by remember(isSmallItem) {
         mutableStateOf(
@@ -1272,11 +1197,120 @@ private fun BoxScope.SelectBox(
     val horizontalPadding by remember(isSmallItem) { mutableStateOf(if (isSmallItem) 4.dp else 8.dp) }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .padding(vertical = verticalPadding, horizontal = horizontalPadding)
-            .fillMaxWidth(if (isSmallItem) 0.24f else 0.15f)
-            .aspectRatio(1f)
-            .align(Alignment.TopStart)
+            .size(iconSize)
+            .background(Color_Background_Menu, shape)
+            .clip(shape)
+            .clickable { safeClick { onMenuClick() } }
+    ) {
+        ViraImage(
+            drawable = R.drawable.ic_dots_menu,
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
+        )
+    }
+}
+
+@Composable
+private fun DownloadImage(
+    isSmallItem: Boolean,
+    iconSize: Dp,
+    onDownloadAction: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val shape by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                RoundedCornerShape(16.dp)
+            } else {
+                RoundedCornerShape(18.dp)
+            }
+        )
+    }
+
+    Box(
+        modifier = modifier
+            .size(iconSize)
+            .background(
+                color = Color_Blue_Grey_800_945.copy(alpha = .75f),
+                shape = shape
+            )
+            .clip(shape)
+            .clickable { safeClick { onDownloadAction() } }
+            .padding(10.dp)
+    ) {
+        ViraIcon(
+            drawable = R.drawable.ic_download_audio,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Composable
+private fun RegenerateBox(
+    isSmallItem: Boolean,
+    iconSize: Dp,
+    onClickAction: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val shape by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                RoundedCornerShape(16.dp)
+            } else {
+                RoundedCornerShape(18.dp)
+            }
+        )
+    }
+
+    Box(
+        modifier = modifier
+            .size(iconSize)
+            .background(
+                color = Color_Blue_Grey_800_945.copy(alpha = .75f),
+                shape = shape
+            )
+            .clip(shape)
+            .clickable { safeClick { onClickAction() } }
+            .padding(10.dp)
+    ) {
+        ViraIcon(
+            drawable = R.drawable.ic_regenerate,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Composable
+private fun SelectBox(
+    isSmallItem: Boolean,
+    isSelected: Boolean,
+    iconSize: Dp,
+    modifier: Modifier = Modifier
+) {
+    val shape by remember(isSmallItem) {
+        mutableStateOf(
+            if (isSmallItem) {
+                RoundedCornerShape(16.dp)
+            } else {
+                RoundedCornerShape(18.dp)
+            }
+        )
+    }
+
+    val verticalPadding by remember(isSmallItem) { mutableStateOf(if (isSmallItem) 4.dp else 8.dp) }
+
+    val horizontalPadding by remember(isSmallItem) { mutableStateOf(if (isSmallItem) 4.dp else 8.dp) }
+
+    Box(
+        modifier = modifier
+            .padding(vertical = verticalPadding, horizontal = horizontalPadding)
+            .size(iconSize)
             .background(
                 color = if (isSelected) Color_Primary else Color_Card_Stroke,
                 shape = shape
@@ -1308,6 +1342,7 @@ private fun BoxScope.SelectBox(
 private fun ImazhTrackingItem(
     item: ImazhTrackingFileView,
     isSmallItem: Boolean,
+    iconSize: Dp,
     estimateTime: () -> Double,
     onMenuClick: (ImazhTrackingFileView) -> Unit,
     modifier: Modifier = Modifier
@@ -1366,16 +1401,6 @@ private fun ImazhTrackingItem(
         )
     }
 
-    val menuButtonSize by remember(isSmallItem) {
-        mutableStateOf(
-            if (isSmallItem) {
-                30.dp
-            } else {
-                42.dp
-            }
-        )
-    }
-
     val composition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(R.raw.lottie_puzzle)
     )
@@ -1420,22 +1445,12 @@ private fun ImazhTrackingItem(
             .clip(RoundedCornerShape(16.dp))
             .background(Color_Card)
     ) {
-        IconButton(
-            onClick = {
-                safeClick { onMenuClick(item) }
-            },
-            modifier = Modifier
-                .padding(end = 8.dp, top = 8.dp)
-                .size(menuButtonSize)
-                .align(Alignment.TopEnd)
-                .background(Color_Background_Menu, RoundedCornerShape(12.dp))
-        ) {
-            ViraImage(
-                drawable = R.drawable.ic_dots_menu,
-                contentDescription = null,
-                modifier = Modifier.padding(8.dp)
-            )
-        }
+        MenuIcon(
+            isSmallItem = isSmallItem,
+            iconSize = iconSize,
+            modifier = Modifier.align(Alignment.TopEnd),
+            onMenuClick = { onMenuClick(item) }
+        )
 
         Column(modifier = Modifier.fillMaxSize()) {
             Column(
