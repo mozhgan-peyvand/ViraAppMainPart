@@ -794,7 +794,7 @@ private fun PromptInputText(
             ViraBalloon(
                 text = stringResource(id = R.string.msg_firs_run_random_prompt),
                 marginVertical = 0,
-                marginHorizontal = 0,
+                marginHorizontal = 16,
                 onDismiss = {
                     coroutineScope.launch { tooltipHelper.next() }
                 }
@@ -1130,7 +1130,7 @@ private fun Header(
         ViraBalloon(
             text = infoTooltipMessage?.let { stringResource(id = it) } ?: "",
             marginVertical = 0,
-            marginHorizontal = 0,
+            marginHorizontal = 16,
             arrowPositionPercent = if (hasInfo) 0.1f else 0.5f,
             onDismiss = { onTooltipDismiss() }
         ) {
