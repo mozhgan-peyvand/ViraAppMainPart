@@ -318,7 +318,6 @@ private fun ImazhNewImageDescriptorScreen(
             is UiSuccess -> {
                 // FIXME: Fix this. It's not Jaaleb!
                 if (promptIsValid) {
-                    setNewImageResult(navController)
                     navController.navigateUp()
                     viewModel.clearUiState()
                 }
@@ -1294,12 +1293,4 @@ private fun ImazhNewImageDescriptorScreenPreview() {
             viewModel = hiltViewModel()
         )
     }
-}
-
-const val KEY_NEW_IMAGE_RESULT = "newImageResult"
-
-private fun setNewImageResult(navController: NavHostController) {
-    navController.previousBackStackEntry
-        ?.savedStateHandle
-        ?.set(KEY_NEW_IMAGE_RESULT, true)
 }

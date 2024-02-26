@@ -6,6 +6,7 @@ import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Downl
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleDownload
 import ai.ivira.app.features.imazh.data.ImazhRepository
 import ai.ivira.app.features.imazh.data.entity.ImazhArchiveFilesEntity
+import ai.ivira.app.features.imazh.ui.archive.model.ImazhArchiveView
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
 import ai.ivira.app.features.imazh.ui.archive.model.toImazhProcessedFileView
 import ai.ivira.app.features.imazh.ui.archive.model.toImazhTrackingFileView
@@ -71,6 +72,10 @@ class ImazhArchiveListViewModel @Inject constructor(
 
     private var downloadJob: Job? = null
 
+    private var _firstItem: ImazhArchiveView? = null
+    private var _firstItemIsChanged = mutableStateOf(false)
+    val firstItemIsChanged: State<Boolean> = _firstItemIsChanged
+
     val allArchiveFiles = combine(
         repository.getAllArchiveFiles(),
         networkStatusTracker.networkStatus,
@@ -127,8 +132,17 @@ class ImazhArchiveListViewModel @Inject constructor(
                     downloadQueue.update { newQueue }
                 }
             )
+        }.also {
+            updateFirstItemState(it.filterNot { it is ImazhProcessedFileView }.firstOrNull())
         }
     }.stateIn(initial = emptyList())
+
+    private fun updateFirstItemState(firstItem: ImazhArchiveView?) {
+        if (firstItem != _firstItem) {
+            _firstItemIsChanged.value = firstItem != null
+        }
+        _firstItem = firstItem
+    }
 
     val filesInSelection = combine(downloadQueue, allArchiveFiles) { _, allArchiveFiles ->
         allArchiveFiles
@@ -399,5 +413,9 @@ class ImazhArchiveListViewModel @Inject constructor(
 
     fun resetItemIdForRegenerate() {
         itemIdForRegenerate = -1
+    }
+
+    fun resetFirstItemChanged() {
+        _firstItemIsChanged.value = false
     }
 }

@@ -18,7 +18,6 @@ import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.Select
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhArchiveView
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhTrackingFileView
-import ai.ivira.app.features.imazh.ui.newImageDescriptor.KEY_NEW_IMAGE_RESULT
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.OnLifecycleEvent
 import ai.ivira.app.utils.ui.UiError
@@ -144,9 +143,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -187,12 +184,6 @@ private fun ImazhArchiveListScreen(
     val isScrollingUp by listState.isScrollingUp()
     val isTrackingEmpty by viewModel.isTrackingEmpty.collectAsStateWithLifecycle()
     val isDownloadQueueEmpty by viewModel.isDownloadQueueEmpty.collectAsStateWithLifecycle()
-    val isScrolledDown by remember {
-        derivedStateOf {
-            listState.firstVisibleItemIndex > 0 ||
-                listState.firstVisibleItemScrollOffset > 0
-        }
-    }
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true,
@@ -208,11 +199,10 @@ private fun ImazhArchiveListScreen(
         derivedStateOf { filesInSelection.size == selectedItemIds.size }
     }
 
-    val newImageResult = getNewImageResult(navController)?.collectAsState(initial = false)
-    LaunchedEffect(newImageResult, isScrolledDown) {
-        if (newImageResult?.value == true && isScrolledDown) {
-            listState.scrollToItem(0)
-            resetNewImageResult(navController)
+    LaunchedEffect(viewModel.firstItemIsChanged.value) {
+        if (viewModel.firstItemIsChanged.value) {
+            listState.scrollToItem(0, 0)
+            viewModel.resetFirstItemChanged()
         }
     }
 
@@ -1718,17 +1708,4 @@ fun Preview() {
             viewModel = hiltViewModel(), configViewModel = hiltViewModel()
         )
     }
-}
-
-private fun getNewImageResult(navController: NavHostController): Flow<Boolean>? {
-    return navController.currentBackStackEntry
-        ?.savedStateHandle
-        ?.getStateFlow(KEY_NEW_IMAGE_RESULT, false)
-        ?.map { it }
-}
-
-private fun resetNewImageResult(navController: NavHostController) {
-    navController.currentBackStackEntry
-        ?.savedStateHandle
-        ?.remove<Boolean>(KEY_NEW_IMAGE_RESULT)
 }
