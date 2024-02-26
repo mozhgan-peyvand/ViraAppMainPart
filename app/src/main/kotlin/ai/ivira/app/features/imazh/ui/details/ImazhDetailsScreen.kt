@@ -9,8 +9,8 @@ import ai.ivira.app.features.imazh.ui.details.ImazhDetailBottomSheetType.DeleteC
 import ai.ivira.app.features.imazh.ui.details.ImazhDetailBottomSheetType.FileAccessPermissionDenied
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhStyleItem
 import ai.ivira.app.utils.common.orZero
-import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.UiError
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.convertByteToMB
 import ai.ivira.app.utils.ui.hasPermission
 import ai.ivira.app.utils.ui.hide
@@ -236,8 +236,8 @@ private fun ImazhDetailsScreen(
                         viewModel.shareItem(context)
                     },
                     onSaveClick = {
-                        if (!isSdkVersionBetween23And29()
-                            || context.hasPermission(writeStoragePermission)
+                        if (!isSdkVersionBetween23And29() ||
+                            context.hasPermission(writeStoragePermission)
                         ) {
                             viewModel.saveItemToDownloadFolder().also { isSuccess ->
                                 if (isSuccess) {
@@ -260,7 +260,6 @@ private fun ImazhDetailsScreen(
                             // Asking for permission
                             writeStoragePermissionLauncher.launch(writeStoragePermission)
                         }
-
                     }
                 )
 
