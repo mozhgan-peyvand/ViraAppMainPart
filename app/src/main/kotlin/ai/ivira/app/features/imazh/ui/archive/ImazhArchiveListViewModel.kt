@@ -6,6 +6,7 @@ import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Downl
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleDownload
 import ai.ivira.app.features.imazh.data.ImazhRepository
 import ai.ivira.app.features.imazh.data.entity.ImazhArchiveFilesEntity
+import ai.ivira.app.features.imazh.ui.ImazhAnalytics
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhArchiveView
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
 import ai.ivira.app.features.imazh.ui.archive.model.toImazhProcessedFileView
@@ -20,6 +21,7 @@ import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.analytics.EventHandler
 import ai.ivira.app.utils.ui.combine
 import ai.ivira.app.utils.ui.shareMultipleImage
 import ai.ivira.app.utils.ui.stateIn
@@ -54,6 +56,7 @@ class ImazhArchiveListViewModel @Inject constructor(
     private val application: Application,
     private val fileOperationHelper: FileOperationHelper,
     private val uiException: UiException,
+    private val eventHandler: EventHandler,
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
     var isGrid = MutableStateFlow(true)
@@ -309,6 +312,7 @@ class ImazhArchiveListViewModel @Inject constructor(
     }
 
     fun shareSelectedItems(context: Context) {
+        eventHandler.specialEvent(ImazhAnalytics.sharePicture)
         val files = filesInSelection.value
             .filter { file -> _selectedItemIds.value.any { it == file.id } }
 
@@ -368,6 +372,7 @@ class ImazhArchiveListViewModel @Inject constructor(
     }
 
     fun saveToDownloadFolder(filePath: String, fileName: String): Boolean {
+        eventHandler.specialEvent(ImazhAnalytics.downloadPicture)
         if (storageUtils.getAvailableSpace() <= File(filePath).length()) {
             viewModelScope.launch {
                 _uiViewState.emit(
@@ -389,6 +394,7 @@ class ImazhArchiveListViewModel @Inject constructor(
             _isRegeneratingImage.value = true
             when (repository.regeneratePromptImage(itemIdForRegenerate)) {
                 is AppResult.Success -> {
+                    eventHandler.specialEvent(ImazhAnalytics.createFile)
                     _uiViewState.emit(UiSuccess)
                     onCompletionCallback()
                 }

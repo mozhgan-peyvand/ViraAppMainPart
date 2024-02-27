@@ -2,11 +2,13 @@ package ai.ivira.app.features.imazh.ui.details
 
 import ai.ivira.app.R
 import ai.ivira.app.features.imazh.data.ImazhRepository
+import ai.ivira.app.features.imazh.ui.ImazhAnalytics
 import ai.ivira.app.features.imazh.ui.archive.model.toImazhProcessedFileView
 import ai.ivira.app.utils.common.file.FileOperationHelper
 import ai.ivira.app.utils.ui.StorageUtils
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiStatus
+import ai.ivira.app.utils.ui.analytics.EventHandler
 import ai.ivira.app.utils.ui.shareMultipleImage
 import ai.ivira.app.utils.ui.stateIn
 import android.app.Application
@@ -36,6 +38,7 @@ class ImazhDetailsViewModel @Inject constructor(
     private val sharedPref: SharedPreferences,
     private val storageUtils: StorageUtils,
     private val fileOperationHelper: FileOperationHelper,
+    private val eventHandler: EventHandler,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     val archiveFile = savedStateHandle.getStateFlow("id", -1)
@@ -73,6 +76,7 @@ class ImazhDetailsViewModel @Inject constructor(
     }
 
     fun shareItem(context: Context) {
+        eventHandler.specialEvent(ImazhAnalytics.sharePicture)
         filePath?.let { filePath ->
             if (File(filePath).exists()) {
                 val uri = FileProvider.getUriForFile(
@@ -102,6 +106,7 @@ class ImazhDetailsViewModel @Inject constructor(
     }
 
     fun saveItemToDownloadFolder(): Boolean {
+        eventHandler.specialEvent(ImazhAnalytics.downloadPicture)
         filePath?.let { filePath ->
             if (storageUtils.getAvailableSpace() <= File(filePath).length()) {
                 viewModelScope.launch {

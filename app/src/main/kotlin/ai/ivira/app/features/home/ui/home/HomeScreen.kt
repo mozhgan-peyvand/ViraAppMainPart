@@ -642,6 +642,7 @@ private fun HomeScreen(
                                 sheetSelected = UnavailableTile
                                 modalBottomSheetState.hideAndShow(coroutineScope)
                             } else {
+                                eventHandler.specialEvent(HomeAnalytics.openImazh)
                                 homeViewModel.navigateToImazh()
                             }
                         }

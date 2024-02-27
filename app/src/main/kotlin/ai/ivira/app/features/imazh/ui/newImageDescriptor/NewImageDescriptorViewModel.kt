@@ -2,6 +2,7 @@ package ai.ivira.app.features.imazh.ui.newImageDescriptor
 
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.data.ImazhRepository
+import ai.ivira.app.features.imazh.ui.ImazhAnalytics
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhHistoryView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.toImazhHistoryView
@@ -13,6 +14,7 @@ import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.analytics.EventHandler
 import ai.ivira.app.utils.ui.stateIn
 import android.content.SharedPreferences
 import androidx.compose.runtime.MutableState
@@ -42,7 +44,8 @@ private const val IMAZH_NEW_IMAGE_DESCRIPTOR_FIRST_RUN_KEY = "imazhNewImageDescr
 class NewImageDescriptorViewModel @Inject constructor(
     private val imazhRepository: ImazhRepository,
     private val sharedPref: SharedPreferences,
-    private val uiException: UiException
+    private val uiException: UiException,
+    private val eventHandler: EventHandler
 ) : ViewModel() {
     private val _uiViewState = MutableStateFlow<UiStatus>(UiIdle)
     val uiViewState = _uiViewState.asStateFlow()
@@ -126,25 +129,14 @@ class NewImageDescriptorViewModel @Inject constructor(
     }
 
     fun selectStyle(newStyle: ImazhImageStyle) {
+        eventHandler.specialEvent(ImazhAnalytics.selectStyle)
         _selectedStyle.value = newStyle
-    }
-
-    fun addKeywords(vararg newKeywords: ImazhKeywordView) {
-        _selectedKeywords.value = _selectedKeywords.value.plus(newKeywords)
-    }
-
-    fun removeKeywords(vararg newKeywords: ImazhKeywordView) {
-        _selectedKeywords.value = _selectedKeywords.value.minus(newKeywords.toSet())
     }
 
     fun removeKeyword(newKeyword: String) {
         _selectedKeywords.value = _selectedKeywords.value.filter { keyword ->
             keyword.keywordName != newKeyword
         }
-    }
-
-    fun resetKeywords() {
-        _selectedKeywords.value = emptyList()
     }
 
     fun setNegativePrompt(newNegativeWords: String) {
@@ -158,6 +150,7 @@ class NewImageDescriptorViewModel @Inject constructor(
     }
 
     fun updateKeywordList(set: List<ImazhKeywordView>) {
+        eventHandler.specialEvent(ImazhAnalytics.addKeywords)
         viewModelScope.launch {
             _selectedKeywords.value = set
         }
@@ -177,6 +170,9 @@ class NewImageDescriptorViewModel @Inject constructor(
                         UiSuccess
                     }.also {
                         _promptIsValid.value = result.data
+                        if (result.data) {
+                            eventHandler.specialEvent(ImazhAnalytics.createFile)
+                        }
                     }
                 }
 
