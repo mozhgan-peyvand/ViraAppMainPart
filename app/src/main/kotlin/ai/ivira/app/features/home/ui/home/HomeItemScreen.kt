@@ -1,12 +1,9 @@
 package ai.ivira.app.features.home.ui.home
 
 import ai.ivira.app.R
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Imazh
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNegar
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ViraSiar
-import ai.ivira.app.utils.ui.theme.Indigo_300_2
-import ai.ivira.app.utils.ui.theme.Light_green_300
+import ai.ivira.app.utils.ui.theme.Indigo_100
+import ai.ivira.app.utils.ui.theme.Indigo_300
+import ai.ivira.app.utils.ui.theme.Pink_100
 import ai.ivira.app.utils.ui.theme.Teal_200
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -17,34 +14,63 @@ data class HomeItemScreen(
     @StringRes val title: Int,
     val textColor: Color,
     @StringRes val description: Int,
-    val homeItemType: HomeItemBottomSheetType
+    @DrawableRes val banner: Int,
+    val isComingSoon: Boolean,
+    val homeItemType: HomeItemType
 ) {
     companion object {
-        val items: List<HomeItemScreen>
+        private val avaNegar = HomeItemScreen(
+            icon = R.drawable.img_ava_negar,
+            title = R.string.lbl_ava_negar,
+            textColor = Indigo_100,
+            description = R.string.lbl_ava_negar_desc,
+            banner = R.drawable.img_banner_avanegar,
+            isComingSoon = false,
+            homeItemType = HomeItemType.Avanegar
+        )
+        private val avaSho = HomeItemScreen(
+            icon = R.drawable.img_ava_sho,
+            title = R.string.lbl_ava_sho,
+            textColor = Indigo_300,
+            description = R.string.lbl_ava_sho_desc,
+            banner = R.drawable.img_banner_avasho,
+            isComingSoon = false,
+            homeItemType = HomeItemType.Avasho
+        )
+        private val imazh = HomeItemScreen(
+            icon = R.drawable.img_imazh,
+            title = R.string.lbl_imazh,
+            textColor = Teal_200,
+            description = R.string.lbl_imazh_desc,
+            banner = R.drawable.img_banner_imazh,
+            isComingSoon = false,
+            homeItemType = HomeItemType.Imazh
+        )
+
+        private val hamAhang = HomeItemScreen(
+            icon = R.drawable.img_hamahang,
+            textColor = Pink_100,
+            title = R.string.lbl_hamahang,
+            description = R.string.lbl_hamahang,
+            banner = R.drawable.img_banner_hamahang,
+            isComingSoon = true,
+            homeItemType = HomeItemType.Hamahang
+        )
+        val mainItemList: List<HomeItemScreen>
             get() {
-                return listOf(
-                    HomeItemScreen(
-                        icon = R.drawable.img_imazh_disabled,
-                        title = R.string.lbl_imazh,
-                        textColor = Teal_200,
-                        description = R.string.lbl_imazh_desc,
-                        homeItemType = Imazh
-                    ),
-                    HomeItemScreen(
-                        icon = R.drawable.img_nevise_negar_disabled,
-                        textColor = Indigo_300_2,
-                        title = R.string.lbl_nevise_negar,
-                        description = R.string.lbl_nevise_negar_desc,
-                        homeItemType = NeviseNegar
-                    ),
-                    HomeItemScreen(
-                        icon = R.drawable.img_virasiar_disabled,
-                        title = R.string.lbl_virasiar,
-                        textColor = Light_green_300,
-                        description = R.string.lbl_virasiar_desc,
-                        homeItemType = ViraSiar
-                    )
-                )
+                return listOf(avaNegar, avaSho, imazh, hamAhang)
+            }
+
+        val bannerItemList: List<HomeItemScreen>
+            get() {
+                return listOf(imazh, avaNegar, avaSho, hamAhang)
             }
     }
+}
+
+enum class HomeItemType {
+    Avanegar,
+    Avasho,
+    Imazh,
+    Hamahang
 }

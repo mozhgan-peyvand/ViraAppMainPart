@@ -56,9 +56,9 @@ val Color_State_Layer_2 = White_opacity_10
 val Color_Card_Stroke = White_opacity_17
 val Color_BG_Bottom_Sheet = Blue_Gray_900
 val Light_blue_50 = Color(0xFFD8FBFF)
+val Indigo_100 = Color(0xFFBDD3E7)
 val Indigo_300 = Color(0xFF8A8AB2)
 val Indigo_300_2 = Color(0xFFA1A1B2)
-val Light_green_300 = Color(0xFFB6BaA5)
 val Teal_200 = Color(0xFF95B2A9)
 val Blue_Grey_900_2 = Color(0xFF0E0E0F)
 val Blue_Grey_800_2 = Color(0xFF3E3E40)
@@ -69,6 +69,8 @@ val Cyan_200 = Color(0xFF93C2ea)
 val Color_Info = Color(0xFFF17E2A)
 val Color_Info_700 = Color(0xFFAB591E)
 val Color_Info_Opacity_15 = Color(0xFF7E2A26).copy(alpha = 0.15f)
+val Pink_100 = Color(0xFFF3D1E4)
+val Deep_Purple_500 = Color(0xFF353238)
 
 val Color_Home_Avasho_Subtitle = Color(0XFFCACAFF)
 val Color_Surface_Tooltip = Deep_Purple_50

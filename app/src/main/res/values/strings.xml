@@ -4,20 +4,17 @@
     <string name="lbl_ava_negar">آوانگار</string>
     <string name="lbl_ava_sho">آواشو</string>
     <string name="lbl_ava_sho_desc">تبدیل متن به گفتار</string>
-    <string name="lbl_virasiar">ویراسیار</string>
-    <string name="lbl_virasiar_desc">ویراستار هوشمند متن</string>
     <string name="lbl_imazh">ایماژ</string>
-    <string name="lbl_nevise_negar">نویسه‌نگار</string>
     <string name="lbl_imazh_desc">تولید تصویر از متن</string>
-    <string name="lbl_nevise_negar_desc">استخراج متن از تصویر</string>
     <string name="lbl_change_voice_to_text">تبدیل صوت به متن</string>
+    <string name="lbl_hamahang">همآهنگ</string>
     <string name="coming_soon">به زودی</string>
     <string name="lbl_assistant_smart_voice"> دستیار صوتی هوشمند</string>
     <string name="lbl_about_us">درباره ما</string>
     <string name="lbl_contact_us">ارتباط با ما:</string>
     <string name="lbl_invite_friends">معرفی به دوستان</string>
     <string name="lbl_start">شروع</string>
-
+    <string name="lbl_sound_imitation">تقلید صدا</string>
 
     <string name="lbl_back">بازگشت</string>
     <string name="msg_if_click_back_file_will_be_deleted">با بازگشت به صفحه اصلی، فایل صوتی حذف خواهد شد. برای جلوگیری از حذف فایل ابتدا فایل را به متن تبدیل کنید.</string>
@@ -195,10 +192,7 @@
     <string name="msg_general_recorder_pause_error">مشکلی در توقف ضبط رخ داد.</string>
     <string name="msg_general_recorder_start_error">مشکلی در شروع ضبط رخ داد.</string>
     <string name="msg_general_recorder_stop_error">مشکلی در پایان ضبط رخ داد.</string>
-    <string name="nevise_negar_item_bottomsheet_explain">سرویس نویسه نگار با قابلیت استخراج متن از تصویر و فایل pdf، در نسخه های بعد فعال خواهد شد.</string>
     <string name="avasho_item_bottomsheet_explain">سرویس آواشو با قابلیت تبدیل متن به گفتار با لحن طبیعی انسان، در نسخه های بعد فعال خواهد شد.</string>
-    <string name="vira_sayar_item_bottomsheet_explain">سرویس ویراسیار با قابلیت ویرایش هوشمند متون فارسی، در نسخه های بعد فعال خواهد شد.</string>
-    <string name="imazh_item_bottomsheet_explain">سرویس ایماژ با قابلیت تولید تصویر از توضیح متنی، در نسخه های بعد فعال خواهد شد.</string>
     <string name="lbl_introduce_text">ابزارهای جذاب هوش مصنوعی همچون سرویس تبدیل گفتار به متن در اپلیکیشن ویرا</string>
     <string name="lbl_download">دانلود:</string>
     <string name="lbl_show_minute">دقیقه</string>

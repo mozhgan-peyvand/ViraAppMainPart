@@ -53,7 +53,8 @@ fun HorizontalInfinitePager(
 
             HorizontalPager(
                 state = pagerState,
-                modifier = modifier.fillMaxSize()
+                pageSpacing = 8.dp,
+                modifier = Modifier.fillMaxSize()
             ) { item ->
 
                 val page by remember {
@@ -67,7 +68,7 @@ fun HorizontalInfinitePager(
                 pageIndexMapping = { it % realItemSize },
                 activeColor = Color.White,
                 modifier = Modifier
-                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                    .padding(horizontal = 8.dp, vertical = 12.dp)
                     .align(Alignment.BottomCenter)
             )
 

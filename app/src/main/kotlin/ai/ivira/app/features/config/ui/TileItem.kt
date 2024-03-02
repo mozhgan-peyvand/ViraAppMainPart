@@ -18,7 +18,7 @@ sealed class TileItem(
     ) : TileItem(
         key = key,
         available = available,
-        iconRes = R.drawable.img_ava_negar_2,
+        iconRes = R.drawable.img_ava_negar,
         titleRes = R.string.lbl_ava_negar,
         unavailableStateMessage = unavailableStateMessage
     )

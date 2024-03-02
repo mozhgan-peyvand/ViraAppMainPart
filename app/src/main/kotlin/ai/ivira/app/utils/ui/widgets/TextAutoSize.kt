@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
@@ -21,6 +22,7 @@ fun TextAutoSize(
     textScale: TextAutoSizeRange,
     modifier: Modifier = Modifier,
     maxLine: Int = Int.MAX_VALUE,
+    textAlign: TextAlign? = null,
     color: Color = Color.Unspecified,
     style: TextStyle = LocalTextStyle.current
 ) {
@@ -32,6 +34,7 @@ fun TextAutoSize(
         color = color,
         maxLines = maxLine,
         style = style,
+        textAlign = textAlign,
         fontSize = fontSizeValue.sp,
         onTextLayout = onTextLayout@{ textResult ->
             if (!textResult.hasVisualOverflow) {
