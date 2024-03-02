@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,12 +18,15 @@ class HomeOnboardingViewModel @Inject constructor(
         private set
 
     fun onBoardingShown() {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.saveOnBoardingState(completed = true, key = PreferencesKey.mainOnBoardingKey)
+        viewModelScope.launch(IO) {
+            repository.saveOnBoardingState(
+                completed = true,
+                key = PreferencesKey.mainOnBoardingKey
+            )
         }
     }
 
-    fun navigateToMainOnboarding() {
+    fun navigateToHomeScreen() {
         shouldNavigate.value = true
     }
 }

@@ -20,8 +20,6 @@ object HomeAnalytics {
     val screenViewOnboardingStart: ScreenViewEvent
         get() = ScreenViewEvent("Home Onboarding Start", "HomeMainOnboardingScreen")
 
-    val screenViewOnboardingSlides: ScreenViewEvent
-        get() = ScreenViewEvent("Home Onboarding Slides", "HomeOnboardingScreen")
     // endregion screenView
 
     // region onboarding

@@ -2,7 +2,6 @@ package ai.ivira.app.features.home.ui
 
 import ai.ivira.app.features.home.ui.about_us.AboutUsScreenRoute
 import ai.ivira.app.features.home.ui.home.HomeScreenRoute
-import ai.ivira.app.features.home.ui.onboarding.HomeMainOnboardingScreenRoute
 import ai.ivira.app.features.home.ui.onboarding.HomeOnboardingScreenRoute
 import ai.ivira.app.utils.ui.navigation.ANIMATION_NAVIGATION_DURATION_FADE
 import ai.ivira.app.utils.ui.navigation.ANIMATION_NAVIGATION_DURATION_SLIDE
@@ -20,11 +19,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 
 fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
-    navigateWithSlideAnimationAndFadeInEnter(
-        route = HomeScreenRoutes.HomeMainOnboardingScreen.route
-    ) {
-        HomeMainOnboardingScreenRoute(navController = navController)
-    }
     navigateWithSlideAnimation(route = HomeScreenRoutes.HomeOnboardingScreen.route) {
         HomeOnboardingScreenRoute(navController = navController)
     }
