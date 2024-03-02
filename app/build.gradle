@@ -203,6 +203,9 @@ android {
 
 dependencies {
 
+    implementation(project(":design-system:bottomsheet"))
+    implementation(project(":design-system:theme"))
+
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation "androidx.core:core-splashscreen:1.0.1"
 
