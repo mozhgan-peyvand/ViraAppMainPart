@@ -273,6 +273,4 @@ class ImazhRepository @Inject constructor(
     }
 
     fun sai() = remoteDataSource.sai()
-
-    fun bi() = remoteDataSource.bi()
 }

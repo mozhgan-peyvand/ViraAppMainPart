@@ -19,7 +19,6 @@ import androidx.core.content.edit
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil.request.ImageRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -64,15 +63,6 @@ class ImazhDetailsViewModel @Inject constructor(
                 File(imagePath).delete()
             }
         }
-    }
-
-    fun getImageBuilder(
-        imageBuilder: ImageRequest.Builder,
-        urlPath: String
-    ): ImageRequest.Builder {
-        return imageBuilder
-            .setHeader("ApiKey", imazhRepository.sai())
-            .data(imazhRepository.bi() + urlPath)
     }
 
     fun shareItem(context: Context) {

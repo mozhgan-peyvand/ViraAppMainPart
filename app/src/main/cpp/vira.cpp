@@ -28,13 +28,6 @@ Java_ai_ivira_app_features_imazh_data_ImazhRemoteDataSource_bu(JNIEnv *env, jobj
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_ai_ivira_app_features_imazh_data_ImazhRemoteDataSource_bi(JNIEnv *env, jobject thiz) {
-    std::string bi = "http://192.168.33.21:3002";
-    return env->NewStringUTF(bi.c_str());
-}
-
-extern "C"
-JNIEXPORT jstring JNICALL
 Java_ai_ivira_app_features_avasho_data_AvashoRepository_bu(JNIEnv *env, jobject thiz) {
     std::string BU = "9.8!)v~u-8t%\";$08b8(c\";$08c6;84--(";
     std::string key = "QZL";
@@ -190,8 +183,15 @@ Java_ai_ivira_app_features_avasho_data_AvashoRemoteDataSource_sak(JNIEnv *env, j
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_ai_ivira_app_features_imazh_data_ImazhRemoteDataSource_sai(JNIEnv *env, jobject thiz) {
-    std::string AK = "2f632ed518a52e2b972a4a81f01f6f58fcd38f9ae324769ec2a5f1e9642ac7accac10f894eb2b7fd807a86934b8b4443f42c30f5decf54745d3d4e0716dacc5a";
-    return env->NewStringUTF(AK.c_str());
+
+    std::string AK = "jz0i/en)3<+nh/f<u4:~4=.0`xbkx2;,bj|28|0?{oata<y3jybn+e<ua?\177\060<t4nu4`,o?~4m,e;)nl+0jz4l\177\062=y3l,4;zf?{fmzem.0i~gk/fotbm)g?y5?)cl(ea,";
+    std::string key = "YMV";
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+    return env->NewStringUTF(dec.c_str());
 }
 
 extern "C"
