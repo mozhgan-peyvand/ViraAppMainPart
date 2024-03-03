@@ -1,5 +1,15 @@
 [
   {
+    "versionCode": 30102000,
+    "versionName": "1.2.0",
+    "releaseNotes": [
+      {
+        "type": 2,
+        "title": "افزوده شدن سرویس تولید تصویر از متن (ایماژ)"
+      }
+    ]
+  },
+  {
     "versionCode": 30101020,
     "versionName": "1.1.2",
     "releaseNotes": [
