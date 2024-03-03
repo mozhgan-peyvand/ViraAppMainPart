@@ -378,7 +378,10 @@ private fun Keyword(list: List<String>) {
         content = {
             Spacer(modifier = Modifier.size(20.dp))
 
-            FlowRow(modifier = Modifier.fillMaxWidth()) {
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 list.forEach { imageStyle ->
                     Text(
                         text = imageStyle,

@@ -45,7 +45,6 @@ import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.theme.Cyan_200
-import ai.ivira.app.utils.ui.theme.labelMedium
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import android.view.ViewTreeObserver
 import androidx.activity.compose.BackHandler
@@ -925,7 +924,7 @@ private fun Style(
             sectionActionButton = {
                 SectionActionButton(
                     stringRes = if (selectedStyle != ImazhImageStyle.None) R.string.lbl_change else R.string.lbl_select,
-                    iconRes = if (selectedStyle != ImazhImageStyle.None) R.drawable.ic_change else R.drawable.ic_add_small,
+                    iconRes = if (selectedStyle != ImazhImageStyle.None) R.drawable.ic_edit else R.drawable.ic_add_small,
                     action = openStyleBottomSheet
                 )
             },
@@ -1258,9 +1257,7 @@ private fun SectionActionButton(
         )
         Text(
             text = stringResource(id = stringRes),
-            style = MaterialTheme.typography.labelMedium.copy(
-                color = Cyan_200
-            )
+            style = MaterialTheme.typography.overline.copy(color = Cyan_200)
         )
     }
 }

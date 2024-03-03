@@ -8,9 +8,9 @@ import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
-import ai.ivira.app.utils.ui.theme.Color_On_Surface_Variant
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Text_1
+import ai.ivira.app.utils.ui.theme.Color_Text_3
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -173,7 +173,7 @@ private fun TabSection(
                         tabName = it
                     },
                     selectedContentColor = Color_Primary,
-                    unselectedContentColor = Color_On_Surface_Variant,
+                    unselectedContentColor = Color_Text_3,
                     modifier = Modifier.background(Color_BG_Bottom_Sheet)
                 )
             }

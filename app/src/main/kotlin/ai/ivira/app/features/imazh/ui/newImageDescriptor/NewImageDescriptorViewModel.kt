@@ -3,6 +3,8 @@ package ai.ivira.app.features.imazh.ui.newImageDescriptor
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.data.ImazhRepository
 import ai.ivira.app.features.imazh.ui.ImazhAnalytics
+import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
+import ai.ivira.app.features.imazh.ui.archive.model.toImazhProcessedFileView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhHistoryView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordView
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.toImazhHistoryView
@@ -22,6 +24,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +34,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -45,7 +49,8 @@ class NewImageDescriptorViewModel @Inject constructor(
     private val imazhRepository: ImazhRepository,
     private val sharedPref: SharedPreferences,
     private val uiException: UiException,
-    private val eventHandler: EventHandler
+    private val eventHandler: EventHandler,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _uiViewState = MutableStateFlow<UiStatus>(UiIdle)
     val uiViewState = _uiViewState.asStateFlow()
@@ -84,6 +89,15 @@ class NewImageDescriptorViewModel @Inject constructor(
     val shouldShowFirstRun: State<Boolean> = _shouldShowFirstRun
 
     init {
+        viewModelScope.launch {
+            savedStateHandle.get<Int>("id")?.let { id ->
+                if (id != -1) {
+                    imazhRepository.getProcessedFileEntity(id)
+                        ?.toImazhProcessedFileView()
+                        ?.let { updateFieldsWithRegenerateTarget(it) }
+                }
+            }
+        }
         viewModelScope.launch(IO) {
             imazhRepository.getRecentHistory().collectLatest { list ->
                 withContext(Main) {
@@ -93,6 +107,15 @@ class NewImageDescriptorViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private suspend fun updateFieldsWithRegenerateTarget(target: ImazhProcessedFileView) {
+        val keywords = imazhKeywords.first().values.flatten()
+            .filter { target.keywords.contains(it.keywordName) }
+        changePrompt(target.prompt)
+        _selectedKeywords.value = keywords
+        _selectedStyle.value = target.style
+        setNegativePrompt(target.negativePrompt)
     }
 
     fun doNotShowFirstRunAgain() {
@@ -151,9 +174,7 @@ class NewImageDescriptorViewModel @Inject constructor(
 
     fun updateKeywordList(set: List<ImazhKeywordView>) {
         eventHandler.specialEvent(ImazhAnalytics.addKeywords)
-        viewModelScope.launch {
-            _selectedKeywords.value = set
-        }
+        _selectedKeywords.value = set
     }
 
     fun generateImage() {

@@ -5,7 +5,6 @@ import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.DeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
-import ai.ivira.app.features.ava_negar.ui.archive.sheets.RegenerateItemConfirmationBottomSheet
 import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.features.imazh.ui.ImazhAnalytics
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhDetailsScreen
@@ -13,7 +12,6 @@ import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes.ImazhNewImageDescriptorS
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.Delete
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.DeleteConfirmation
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.FileAccessPermissionDenied
-import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.RegenerateImageConfirmation
 import ai.ivira.app.features.imazh.ui.archive.ImazhArchiveBottomSheetType.SelectionModeDeleteConfirmation
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhArchiveView
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
@@ -429,21 +427,6 @@ private fun ImazhArchiveListScreen(
                             }
                         )
                     }
-
-                    RegenerateImageConfirmation -> {
-                        RegenerateItemConfirmationBottomSheet(
-                            cancelAction = {
-                                viewModel.resetItemIdForRegenerate()
-                                modalBottomSheetState.hide(coroutineScope)
-                            },
-                            regenerateAction = {
-                                viewModel.regenerateImage {
-                                    modalBottomSheetState.hide(coroutineScope)
-                                }
-                            },
-                            isLoading = viewModel.isRegeneratingImage.value
-                        )
-                    }
                 }
             }
         ) {
@@ -580,14 +563,9 @@ private fun ImazhArchiveListScreen(
                                         )
                                     )
                                 } else {
-                                    viewModel.setItemIdForRegenerate(itemId)
-                                    coroutineScope.launch {
-                                        selectedSheet = RegenerateImageConfirmation
-                                        modalBottomSheetState.hide()
-                                        if (!modalBottomSheetState.isVisible) {
-                                            modalBottomSheetState.show()
-                                        }
-                                    }
+                                    navController.navigate(
+                                        ImazhNewImageDescriptorScreen.createRoute(itemId)
+                                    )
                                 }
                             }
                         )
@@ -614,7 +592,9 @@ private fun ImazhArchiveListScreen(
                                 return@onClick
                             }
 
-                            navController.navigate(route = ImazhNewImageDescriptorScreen.route)
+                            navController.navigate(
+                                ImazhNewImageDescriptorScreen.createRoute()
+                            )
                         },
                         isVisible = isVisible
                     )

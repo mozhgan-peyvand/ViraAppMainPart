@@ -15,7 +15,12 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 
 fun NavGraphBuilder.imazhNavGraph(navController: NavHostController) {
-    navigateWithSlideAnimation(route = ImazhNewImageDescriptorScreen.route) {
+    navigateWithSlideAnimation(
+        route = ImazhNewImageDescriptorScreen.route,
+        arguments = listOf(
+            navArgument(name = "id") { type = NavType.IntType }
+        )
+    ) {
         ImazhNewImageDescriptorScreenRoute(navController)
     }
     navigateWithSlideAnimation(route = ImazhOnboardingScreen.route) {

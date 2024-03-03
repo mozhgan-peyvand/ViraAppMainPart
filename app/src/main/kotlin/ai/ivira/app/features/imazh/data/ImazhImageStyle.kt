@@ -26,7 +26,7 @@ enum class ImazhImageStyle(
 
     companion object {
         fun findByKey(key: String): ImazhImageStyle {
-            return ImazhImageStyle.entries.first { it.key == key }
+            return entries.first { it.key == key }
         }
     }
 }

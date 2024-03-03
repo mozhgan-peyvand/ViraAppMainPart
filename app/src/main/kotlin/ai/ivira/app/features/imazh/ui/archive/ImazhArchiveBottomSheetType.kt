@@ -4,6 +4,5 @@ enum class ImazhArchiveBottomSheetType {
     Delete,
     DeleteConfirmation,
     SelectionModeDeleteConfirmation,
-    FileAccessPermissionDenied,
-    RegenerateImageConfirmation
+    FileAccessPermissionDenied
 }

@@ -12,7 +12,6 @@ import ai.ivira.app.features.imazh.data.entity.TextToImageResult
 import ai.ivira.app.features.imazh.data.entity.ValidateRequestNetwork
 import ai.ivira.app.features.imazh.data.entity.attitudeKeyword
 import ai.ivira.app.features.imazh.data.entity.lightAngleKeyword
-import ai.ivira.app.utils.common.file.FileOperationHelper
 import ai.ivira.app.utils.data.NetworkHandler
 import ai.ivira.app.utils.data.TrackTime
 import ai.ivira.app.utils.data.api_result.ApiResult
@@ -34,8 +33,7 @@ class ImazhRepository @Inject constructor(
     private val localDataSource: ImazhLocalDataSource,
     private val remoteDataSource: ImazhRemoteDataSource,
     private val networkHandler: NetworkHandler,
-    private val randomPromptGenerator: RandomPromptGenerator,
-    private val fileOperationHelper: FileOperationHelper
+    private val randomPromptGenerator: RandomPromptGenerator
 ) {
     // it should be sortedMapOf because we need items based on this order
     fun getKeywords(): Flow<Map<String, Set<ImazhKeywordEntity>>> = flow {
@@ -215,6 +213,9 @@ class ImazhRepository @Inject constructor(
 
     fun getPhotoInfo(id: Int): Flow<ImazhProcessedFileEntity?> = localDataSource.getPhotoInfo(id)
 
+    suspend fun getProcessedFileEntity(id: Int): ImazhProcessedFileEntity? =
+        localDataSource.getProcessedFileEntity(id)
+
     fun getImageStyles(): Flow<List<ImazhImageStyle>> = flowOf(
         ImazhImageStyle.values().toList()
     )
@@ -246,8 +247,6 @@ class ImazhRepository @Inject constructor(
             .mod(styles.size)
         return styles[random]
     }
-
-    fun getAllProcessedFiles() = localDataSource.getAllProcessedFiles()
 
     suspend fun downloadFile(
         id: Int,
