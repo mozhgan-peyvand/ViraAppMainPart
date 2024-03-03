@@ -47,7 +47,7 @@ data class HomeItemScreen(
             homeItemType = HomeItemType.Imazh
         )
 
-        private val hamAhang = HomeItemScreen(
+        val hamahang = HomeItemScreen(
             icon = R.drawable.img_hamahang,
             textColor = Pink_100,
             title = R.string.lbl_hamahang,
@@ -58,12 +58,12 @@ data class HomeItemScreen(
         )
         val mainItemList: List<HomeItemScreen>
             get() {
-                return listOf(avaNegar, avaSho, imazh, hamAhang)
+                return listOf(avaNegar, avaSho, imazh, hamahang)
             }
 
         val bannerItemList: List<HomeItemScreen>
             get() {
-                return listOf(imazh, avaNegar, avaSho, hamAhang)
+                return listOf(imazh, avaNegar, avaSho, hamahang)
             }
     }
 }

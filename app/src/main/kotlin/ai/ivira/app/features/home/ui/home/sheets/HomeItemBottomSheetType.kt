@@ -5,5 +5,6 @@ enum class HomeItemBottomSheetType(val value: String) {
     UpdateApp("update"),
     ForceUpdate("forceUpdate"),
     Changelog("changelog"),
-    UnavailableTile("unavailableFeature")
+    UnavailableTile("unavailableFeature"),
+    Hamahang("hamahang")
 }

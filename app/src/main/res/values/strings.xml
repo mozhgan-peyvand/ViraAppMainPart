@@ -34,6 +34,7 @@
     <string name="lbl_uploading_file">در حال آپلود فایل…</string>
     <string name="lbl_uploading">در حال آپلود فایل</string>
     <string name="lbl_waiting_for_upload">در انتظار آپلود فایل</string>
+    <string name="lbl_hamahang_item_bottomsheet_explain">سرویس همآهنگ با قابلیت تقلید صدای افراد مختلف، در نسخه‌ی بعد فعال خواهد شد.</string>
 
     <string name="lbl_make_your_first_file">اولین فایل خود را ایجاد کنید.</string>
     <string name="lbl_dont_have_file">فایلی برای نمایش ندارید.</string>

@@ -14,6 +14,7 @@ import ai.ivira.app.features.home.ui.HomeScreenRoutes.AboutUs
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Changelog
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ForceUpdate
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Hamahang
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NotificationPermission
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UnavailableTile
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UpdateApp
@@ -217,7 +218,10 @@ private fun HomeScreen(
                     }
                 }
                 HomeItemType.Hamahang -> {
-                    // TODO implement for Hamahang
+                    coroutineScope.launch {
+                        sheetSelected = Hamahang
+                        modalBottomSheetState.show()
+                    }
                 }
             }
         }
@@ -607,6 +611,18 @@ private fun HomeScreen(
                             }
                         )
                     }
+                    Hamahang -> {
+                        HomeItemBottomSheet(
+                            iconRes = HomeItemScreen.hamahang.icon,
+                            title = stringResource(HomeItemScreen.hamahang.title),
+                            textBody = stringResource(R.string.lbl_hamahang_item_bottomsheet_explain),
+                            action = {
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        )
+                    }
                 }
             },
             modifier = Modifier.padding(innerPadding)
@@ -645,15 +661,6 @@ private fun HomeScreen(
                                     .aspectRatio(2.34f),
                                 itemContent = { index ->
                                     val item = bannerList[index]
-                                    val onClick = if (item.isComingSoon) {
-                                        Modifier
-                                    } else {
-                                        Modifier.clickable {
-                                            safeClick {
-                                                onItemClick(item.homeItemType)
-                                            }
-                                        }
-                                    }
 
                                     ViraImage(
                                         drawable = item.banner,
@@ -662,7 +669,11 @@ private fun HomeScreen(
                                         modifier = Modifier
                                             .fillMaxSize()
                                             .clip(MaterialTheme.shapes.medium)
-                                            .then(onClick)
+                                            .clickable {
+                                                safeClick {
+                                                    onItemClick(item.homeItemType)
+                                                }
+                                            }
                                     )
                                 }
                             )
@@ -709,13 +720,6 @@ private fun HomeItem(
 ) {
     val iconSize = 67.dp
     val halfOfIconSize = remember(iconSize) { iconSize / 2 }
-    val onClick = if (item.isComingSoon) {
-        Modifier
-    } else {
-        Modifier.clickable {
-            safeClick { onItemClick(item.homeItemType) }
-        }
-    }
 
     Box(modifier = modifier.height(148.dp)) {
         Column(
@@ -725,7 +729,9 @@ private fun HomeItem(
                 .padding(top = halfOfIconSize)
                 .background(Color_Card, MaterialTheme.shapes.medium)
                 .clip(MaterialTheme.shapes.medium)
-                .then(onClick)
+                .clickable {
+                    safeClick { onItemClick(item.homeItemType) }
+                }
         ) {
             Spacer(modifier = Modifier.size(halfOfIconSize))
 
