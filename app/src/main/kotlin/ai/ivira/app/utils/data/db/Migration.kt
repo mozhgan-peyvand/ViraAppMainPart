@@ -55,6 +55,7 @@ object Migration {
                 db.execSQL("DROP TABLE `AvanegarTrackingFileEntity`")
                 db.execSQL("ALTER TABLE `AvanegarTrackingFileEntityNew` RENAME TO `AvanegarTrackingFileEntity`")
             }
+
             override fun migrate(db: SupportSQLiteDatabase) {
                 migrateTrackingData(db)
 
@@ -70,6 +71,16 @@ object Migration {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `TileConfigEntity` (`name` TEXT NOT NULL, `message` TEXT NOT NULL, `status` INTEGER NOT NULL, PRIMARY KEY(`name`))")
                 db.execSQL("ALTER TABLE AvashoProcessedFileEntity ADD COLUMN `isSeen` INTEGER DEFAULT 1 not null")
+            }
+        }
+    }
+
+    fun migration4_5(): Migration {
+        return object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `ImazhProcessedFileEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `imagePath` TEXT NOT NULL, `filePath` TEXT NOT NULL, `keywords` TEXT NOT NULL, `englishKeywords` TEXT NOT NULL, `prompt` TEXT NOT NULL, `englishPrompt` TEXT NOT NULL, `negativePrompt` TEXT NOT NULL, `englishNegativePrompt` TEXT NOT NULL, `style` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `ImazhHistoryEntity` (`prompt` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`prompt`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `ImazhTrackingFileEntity` (`token` TEXT NOT NULL, `keywords` TEXT NOT NULL, `englishKeywords` TEXT NOT NULL, `prompt` TEXT NOT NULL, `englishPrompt` TEXT NOT NULL, `negativePrompt` TEXT NOT NULL, `englishNegativePrompt` TEXT NOT NULL, `style` TEXT NOT NULL, `processEstimation` INTEGER, `insertSystemTime` INTEGER NOT NULL, `insertBootTime` INTEGER NOT NULL, `lastFailureSystemTime` INTEGER, `lastFailureBootTime` INTEGER, PRIMARY KEY(`token`))")
             }
         }
     }

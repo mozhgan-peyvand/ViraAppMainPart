@@ -129,6 +129,9 @@ android {
         freeCompilerArgs += "-opt-in=com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi"
         freeCompilerArgs += "-opt-in=androidx.compose.animation.ExperimentalAnimationApi"
         freeCompilerArgs += "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"
+        freeCompilerArgs += "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"
+        freeCompilerArgs += "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
+        freeCompilerArgs += "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi"
         jvmTarget = '17'
     }
     buildFeatures {
@@ -286,4 +289,7 @@ dependencies {
 
     //Balloon
     implementation "com.github.skydoves:balloon-compose:1.6.3"
+
+    // Coil
+    implementation "io.coil-kt:coil-compose:2.5.0"
 }

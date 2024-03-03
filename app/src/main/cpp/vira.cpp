@@ -1,9 +1,7 @@
 #include <jni.h>
 #include <string>
 
-extern "C"
-JNIEXPORT jstring JNICALL
-Java_ai_ivira_app_utils_common_di_NetworkModule_bu(JNIEnv *env, jobject thiz) {
+jstring bu(JNIEnv *env) {
     std::string BU = "9.8!)v~u-8t%\";$08b8(c";
     std::string key = "QZL";
 
@@ -14,6 +12,18 @@ Java_ai_ivira_app_utils_common_di_NetworkModule_bu(JNIEnv *env, jobject thiz) {
 
 
     return env->NewStringUTF(dec.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_utils_common_di_NetworkModule_bu(JNIEnv *env, jobject thiz) {
+    return bu(env);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_imazh_data_ImazhRemoteDataSource_bu(JNIEnv *env, jobject thiz) {
+    return bu(env);
 }
 
 extern "C"
@@ -172,8 +182,36 @@ Java_ai_ivira_app_features_avasho_data_AvashoRemoteDataSource_sak(JNIEnv *env, j
 
 extern "C"
 JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_imazh_data_ImazhRemoteDataSource_sai(JNIEnv *env, jobject thiz) {
+
+    std::string AK = "jz0i/en)3<+nh/f<u4:~4=.0`xbkx2;,bj|28|0?{oata<y3jybn+e<ua?\177\060<t4nu4`,o?~4m,e;)nl+0jz4l\177\062=y3l,4;zf?{fmzem.0i~gk/fotbm)g?y5?)cl(ea,";
+    std::string key = "YMV";
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+    return env->NewStringUTF(dec.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
 Java_ai_ivira_app_features_ava_1negar_data_AvanegarRemoteDataSource_nak(JNIEnv *env, jobject thiz) {
     return ak(env);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_imazh_data_ImazhRemoteDataSource_iak(JNIEnv *env, jobject thiz) {
+    std::string AK = "jz0i/en)3<+nh/f<u4:~4=.0`xbkx2;,bj|28|0?{oata<y3jybn+e<ua?\177\060<t4nu4`,o?~4m,e;)nl+0jz4l\177\062=y3l,4;zf?{fmzem.0i~gk/fotbm)g?y5?)cl(ea,";
+    std::string key = "YMV";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+    return env->NewStringUTF(dec.c_str());
 }
 
 extern "C"

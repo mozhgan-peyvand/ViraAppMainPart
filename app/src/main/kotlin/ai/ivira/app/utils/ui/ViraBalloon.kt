@@ -52,11 +52,12 @@ fun ViraBalloon(
     marginVertical: Int = 0,
     overLayShape: BalloonOverlayShape = BalloonOverlayRect,
     arrowPosition: ArrowPositionRules = ALIGN_ANCHOR,
+    arrowPositionPercent: Float = 0.5f,
     content: @Composable BalloonWindow.() -> Unit
 ) {
     val builder = rememberBalloonBuilder {
         setArrowSize(10)
-        setArrowPosition(0.5f)
+        setArrowPosition(arrowPositionPercent)
         setArrowPositionRules(arrowPosition)
         setWidth(WRAP)
         setHeight(WRAP)

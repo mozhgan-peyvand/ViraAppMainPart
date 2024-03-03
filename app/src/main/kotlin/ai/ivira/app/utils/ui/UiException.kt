@@ -44,4 +44,6 @@ class UiException @Inject constructor(
 
     fun getAvashoErrorMessageTextContainsInappropriateWords(): String =
         context.getString(R.string.msg_your_text_contains_inappropriate_words)
+
+    fun getErrorMessageInvalidItemId(): String = context.getString(R.string.msg_there_is_a_problem)
 }

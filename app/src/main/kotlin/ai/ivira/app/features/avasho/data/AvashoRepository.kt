@@ -4,6 +4,7 @@ import ai.ivira.app.features.avasho.data.entity.AvashoTrackingFileEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoUploadingFileEntity
 import ai.ivira.app.utils.common.file.AVASHO_FOLDER_PATH
 import ai.ivira.app.utils.common.file.FileOperationHelper
+import ai.ivira.app.utils.common.file.MP3_EXTENSION
 import ai.ivira.app.utils.data.NetworkHandler
 import ai.ivira.app.utils.data.TrackTime
 import ai.ivira.app.utils.data.api_result.ApiResult
@@ -140,7 +141,8 @@ class AvashoRepository @Inject constructor(
         return if (networkHandler.hasNetworkConnection()) {
             val file = fileOperationHelper.getFile(
                 fileName = "${System.currentTimeMillis()}_$fileName",
-                path = AVASHO_FOLDER_PATH
+                path = AVASHO_FOLDER_PATH,
+                extension = MP3_EXTENSION
             )
 
             val result = avashoRemoteDataSource.downloadFile(url, file, progress).toAppResult()

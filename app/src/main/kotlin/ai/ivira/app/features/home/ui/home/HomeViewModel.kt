@@ -10,6 +10,7 @@ import ai.ivira.app.features.home.data.VersionRepository
 import ai.ivira.app.features.home.ui.home.version.model.ChangelogView
 import ai.ivira.app.features.home.ui.home.version.model.toChangelogView
 import ai.ivira.app.features.home.ui.home.version.model.toVersionView
+import ai.ivira.app.features.imazh.ui.onboarding.IMAZH_ONBOARDING_COMPLETED
 import ai.ivira.app.utils.common.event.ViraEvent
 import ai.ivira.app.utils.common.event.ViraPublisher
 import ai.ivira.app.utils.data.NetworkStatus
@@ -100,6 +101,7 @@ class HomeViewModel @Inject constructor(
 
     var shouldNavigate = mutableStateOf(false)
     var shouldNavigateToAvasho = mutableStateOf(false)
+    var shouldNavigateToImazh = mutableStateOf(false)
     var shouldShowNotificationBottomSheet = false
         private set
 
@@ -128,6 +130,9 @@ class HomeViewModel @Inject constructor(
         private set
 
     var avashoOnboardingHasBeenShown = mutableStateOf(false)
+        private set
+
+    var imazhOnboardingHasBeenShown = mutableStateOf(false)
         private set
 
     val unavailableTileToShowBottomSheet: MutableState<TileItem?> = mutableStateOf(null)
@@ -160,10 +165,21 @@ class HomeViewModel @Inject constructor(
             false
         )
 
+        imazhOnboardingHasBeenShown.value = sharedPref.getBoolean(
+            IMAZH_ONBOARDING_COMPLETED,
+            false
+        )
+
         prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == AVASHO_ONBOARDING_COMPLETED) {
                 avashoOnboardingHasBeenShown.value = sharedPref.getBoolean(
                     AVASHO_ONBOARDING_COMPLETED,
+                    false
+                )
+            }
+            if (key == IMAZH_ONBOARDING_COMPLETED) {
+                imazhOnboardingHasBeenShown.value = sharedPref.getBoolean(
+                    IMAZH_ONBOARDING_COMPLETED,
                     false
                 )
             }
@@ -188,6 +204,10 @@ class HomeViewModel @Inject constructor(
 
     fun navigateToAvasho() {
         shouldNavigateToAvasho.value = true
+    }
+
+    fun navigateToImazh() {
+        shouldNavigateToImazh.value = true
     }
 
     fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) {

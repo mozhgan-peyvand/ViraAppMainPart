@@ -12,20 +12,18 @@ import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.features.home.ui.HomeScreenRoutes.AboutUs
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Changelog
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ForceUpdate
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Imazh
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NeviseNegar
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Hamahang
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NotificationPermission
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UnavailableTile
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UpdateApp
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ViraSiar
 import ai.ivira.app.features.home.ui.home.version.sheets.ChangelogBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.ForceUpdateScreen
 import ai.ivira.app.features.home.ui.home.version.sheets.UpToDateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateLoadingBottomSheet
+import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes
 import ai.ivira.app.utils.common.CommonConstants.LANDING_URL
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.UiError
@@ -44,17 +42,18 @@ import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.shareText
 import ai.ivira.app.utils.ui.sheets.AccessNotificationBottomSheet
 import ai.ivira.app.utils.ui.showMessage
+import ai.ivira.app.utils.ui.theme.Blue_Grey_900_2
 import ai.ivira.app.utils.ui.theme.Blue_gray_900
-import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Card
-import ai.ivira.app.utils.ui.theme.Color_Home_Avasho_Subtitle
-import ai.ivira.app.utils.ui.theme.Color_OutLine
-import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
-import ai.ivira.app.utils.ui.theme.Light_blue_50
+import ai.ivira.app.utils.ui.theme.Deep_Purple_500
+import ai.ivira.app.utils.ui.theme.Pink_100
 import ai.ivira.app.utils.ui.theme.labelMedium
+import ai.ivira.app.utils.ui.widgets.HorizontalInfinitePager
+import ai.ivira.app.utils.ui.widgets.TextAutoSize
+import ai.ivira.app.utils.ui.widgets.TextAutoSizeRange
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.Manifest.permission
@@ -65,26 +64,31 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Divider
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
@@ -97,6 +101,7 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -106,16 +111,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
+
+private const val MARQUEE_DELAY = 4000L
+private const val CHANGE_COLOR_DELAY = 2000
+private const val TEXT_ANIMATION_TRANSITION = 1000
 
 @Composable
 fun HomeScreenRoute(navController: NavHostController) {
@@ -154,7 +168,7 @@ private fun HomeScreen(
 
     val showUpdateBottomSheet by homeViewModel.showUpdateBottomSheet.collectAsStateWithLifecycle()
 
-    var sheetSelected by rememberSaveable { mutableStateOf(Imazh) }
+    var sheetSelected by rememberSaveable { mutableStateOf(UnavailableTile) }
 
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -164,10 +178,54 @@ private fun HomeScreen(
 
     val avanegarTile by configViewModel.avanegarTileConfig.collectAsStateWithLifecycle(initialValue = null)
     val avashoTile by configViewModel.avashoTileConfig.collectAsStateWithLifecycle(initialValue = null)
+    val imazhTile by configViewModel.imazhTileConfig.collectAsStateWithLifecycle(initialValue = null)
 
     val shouldShowForceUpdateBottomSheet by homeViewModel.shouldShowForceUpdateBottomSheet.collectAsStateWithLifecycle()
     val shouldShowChangeLogBottomSheet by homeViewModel.shouldShowChangeLogBottomSheet.collectAsStateWithLifecycle()
     val updatedChangelogList by homeViewModel.updatedChangelogList.collectAsStateWithLifecycle()
+
+    val onItemClick: (selectedItemType: HomeItemType) -> Unit = remember {
+        { itemType ->
+            when (itemType) {
+                HomeItemType.Avanegar -> {
+                    if (avanegarTile?.available == false) {
+                        homeViewModel.unavailableTileToShowBottomSheet.value = avanegarTile
+                        sheetSelected = UnavailableTile
+                        modalBottomSheetState.hideAndShow(coroutineScope)
+                    } else {
+                        eventHandler.specialEvent(HomeAnalytics.openAvanegar)
+                        homeViewModel.navigate()
+                    }
+                }
+                HomeItemType.Avasho -> {
+                    if (avashoTile?.available == false) {
+                        homeViewModel.unavailableTileToShowBottomSheet.value = avashoTile
+                        sheetSelected = UnavailableTile
+                        modalBottomSheetState.hideAndShow(coroutineScope)
+                    } else {
+                        eventHandler.specialEvent(HomeAnalytics.openAvasho)
+                        homeViewModel.navigateToAvasho()
+                    }
+                }
+                HomeItemType.Imazh -> {
+                    if (imazhTile?.available == false) {
+                        homeViewModel.unavailableTileToShowBottomSheet.value = imazhTile
+                        sheetSelected = UnavailableTile
+                        modalBottomSheetState.hideAndShow(coroutineScope)
+                    } else {
+                        eventHandler.specialEvent(HomeAnalytics.openImazh)
+                        homeViewModel.navigateToImazh()
+                    }
+                }
+                HomeItemType.Hamahang -> {
+                    coroutineScope.launch {
+                        sheetSelected = Hamahang
+                        modalBottomSheetState.show()
+                    }
+                }
+            }
+        }
+    }
 
     LaunchedEffect(
         configViewModel.shouldShowAvanegarUnavailableBottomSheet.value
@@ -194,6 +252,20 @@ private fun HomeScreen(
                 modalBottomSheetState.show()
             }
             configViewModel.resetAvashoUnavailableFeature()
+        }
+    }
+
+    LaunchedEffect(
+        configViewModel.shouldShowImazhUnavailableBottomSheet.value
+    ) {
+        if (configViewModel.shouldShowImazhUnavailableBottomSheet.value) {
+            coroutineScope.launch {
+                homeViewModel.unavailableTileToShowBottomSheet.value = imazhTile
+                sheetSelected = UnavailableTile
+                if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
+                modalBottomSheetState.show()
+            }
+            configViewModel.resetImazhUnavailableFeature()
         }
     }
 
@@ -251,6 +323,20 @@ private fun HomeScreen(
             }
 
             homeViewModel.shouldNavigateToAvasho.value = false
+        }
+    }
+
+    LaunchedEffect(
+        homeViewModel.imazhOnboardingHasBeenShown.value,
+        homeViewModel.shouldNavigateToImazh.value
+    ) {
+        if (homeViewModel.shouldNavigateToImazh.value) {
+            if (!homeViewModel.imazhOnboardingHasBeenShown.value) {
+                navController.navigate(ImazhScreenRoutes.ImazhOnboardingScreen.route)
+            } else {
+                navController.navigate(ImazhScreenRoutes.ImazhArchiveListScreen.route)
+            }
+            homeViewModel.shouldNavigateToImazh.value = false
         }
     }
 
@@ -401,51 +487,6 @@ private fun HomeScreen(
             scrimColor = Color.Black.copy(alpha = 0.5f),
             sheetContent = sheetContent@{
                 when (sheetSelected) {
-                    Imazh -> {
-                        HomeItemBottomSheet(
-                            iconRes = R.drawable.img_imazh_1,
-                            title = stringResource(id = R.string.lbl_imazh),
-                            textBody = stringResource(
-                                id = R.string.imazh_item_bottomsheet_explain
-                            ),
-                            action = {
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
-                        )
-                    }
-
-                    NeviseNegar -> {
-                        HomeItemBottomSheet(
-                            iconRes = R.drawable.img_nevise_negar,
-                            title = stringResource(id = R.string.lbl_nevise_negar),
-                            textBody = stringResource(
-                                id = R.string.nevise_negar_item_bottomsheet_explain
-                            ),
-                            action = {
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
-                        )
-                    }
-
-                    ViraSiar -> {
-                        HomeItemBottomSheet(
-                            iconRes = R.drawable.img_virasiar,
-                            title = stringResource(id = R.string.lbl_virasiar),
-                            textBody = stringResource(
-                                id = R.string.vira_sayar_item_bottomsheet_explain
-                            ),
-                            action = {
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
-                        )
-                    }
-
                     UpdateApp -> {
                         if (showUpdateBottomSheet || uiState is UiSuccess) {
                             if (changeLogList.isNotEmpty()) {
@@ -570,79 +611,76 @@ private fun HomeScreen(
                             }
                         )
                     }
+                    Hamahang -> {
+                        HomeItemBottomSheet(
+                            iconRes = HomeItemScreen.hamahang.icon,
+                            title = stringResource(HomeItemScreen.hamahang.title),
+                            textBody = stringResource(R.string.lbl_hamahang_item_bottomsheet_explain),
+                            action = {
+                                coroutineScope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }
+                        )
+                    }
+                }
+            },
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            val list = remember { HomeItemScreen.mainItemList }
+            val bannerList = remember { HomeItemScreen.bannerItemList }
+
+            Column(modifier = Modifier.fillMaxSize()) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.weight(0.6f)
+                ) {
+                    items(
+                        items = list,
+                        key = { item ->
+                            item.title
+                        }
+                    ) {
+                        HomeItem(
+                            item = it,
+                            onItemClick = { item ->
+                                onItemClick(item)
+                            }
+                        )
+                    }
+                    item(span = { GridItemSpan(2) }) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Spacer(modifier = Modifier.size(24.dp))
+                            HorizontalInfinitePager(
+                                realItemSize = bannerList.size,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(2.34f),
+                                itemContent = { index ->
+                                    val item = bannerList[index]
+
+                                    ViraImage(
+                                        drawable = item.banner,
+                                        contentDescription = null,
+                                        contentScale = ContentScale.FillWidth,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(MaterialTheme.shapes.medium)
+                                            .clickable {
+                                                safeClick {
+                                                    onItemClick(item.homeItemType)
+                                                }
+                                            }
+                                    )
+                                }
+                            )
+                        }
+                    }
                 }
             }
-        ) {
-            HomeBody(
-                paddingValues = innerPadding,
-                onAvanegarClick = {
-                    if (avanegarTile?.available == false) {
-                        homeViewModel.unavailableTileToShowBottomSheet.value = avanegarTile
-                        sheetSelected = UnavailableTile
-                        modalBottomSheetState.hideAndShow(coroutineScope)
-                    } else {
-                        eventHandler.specialEvent(HomeAnalytics.openAvanegar)
-                        homeViewModel.navigate()
-                    }
-                },
-                onAvashoClick = {
-                    if (avashoTile?.available == false) {
-                        homeViewModel.unavailableTileToShowBottomSheet.value = avashoTile
-                        sheetSelected = UnavailableTile
-                        modalBottomSheetState.hideAndShow(coroutineScope)
-                    } else {
-                        eventHandler.specialEvent(HomeAnalytics.openAvasho)
-                        homeViewModel.navigateToAvasho()
-                    }
-                },
-                onItemClick = { homeItem ->
-                    when (homeItem) {
-                        NeviseNegar -> {
-                            eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
-                            coroutineScope.launch {
-                                sheetSelected = NeviseNegar
-                                modalBottomSheetState.hide()
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                }
-                            }
-                        }
-
-                        ViraSiar -> {
-                            eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
-                            coroutineScope.launch {
-                                sheetSelected = ViraSiar
-                                modalBottomSheetState.hide()
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                }
-                            }
-                        }
-
-                        Imazh -> {
-                            eventHandler.specialEvent(HomeAnalytics.selectComingSoonItem(homeItem))
-                            coroutineScope.launch {
-                                sheetSelected = Imazh
-                                modalBottomSheetState.hide()
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                }
-                            }
-                        }
-
-                        NotificationPermission -> {}
-
-                        UpdateApp -> {}
-
-                        ForceUpdate -> {}
-
-                        UnavailableTile -> {}
-
-                        Changelog -> {}
-                    }
-                },
-                modifier = Modifier.padding(top = 8.dp)
-            )
         }
     }
 }
@@ -653,7 +691,7 @@ fun HomeAppBar(openDrawer: () -> Unit) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, top = 20.dp, bottom = 22.dp)
+            .padding(vertical = 36.dp, horizontal = 8.dp)
     ) {
         ViraImage(
             drawable = R.drawable.ic_app_logo_name_linear,
@@ -675,210 +713,28 @@ fun HomeAppBar(openDrawer: () -> Unit) {
 }
 
 @Composable
-private fun HomeBody(
-    paddingValues: PaddingValues,
-    onAvanegarClick: () -> Unit,
-    onAvashoClick: () -> Unit,
-    onItemClick: (HomeItemBottomSheetType) -> Unit,
+private fun HomeItem(
+    item: HomeItemScreen,
+    onItemClick: (HomeItemType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val homeItem = remember { HomeItemScreen.items }
+    val iconSize = 67.dp
+    val halfOfIconSize = remember(iconSize) { iconSize / 2 }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-            .background(Color_BG)
-    ) {
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            elevation = 0.dp,
-            onClick = {
-                safeClick {
-                    onAvanegarClick()
-                }
-            },
-            modifier = modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth()
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .background(Color.Transparent)
-                    .padding(end = 24.dp)
-                    .heightIn(min = 128.dp)
-            ) {
-                ViraImage(
-                    drawable = R.drawable.img_ava_negar_2,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(start = 30.dp)
-                        .size(width = 68.dp, height = 80.dp)
-                )
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.lbl_ava_negar),
-                        style = MaterialTheme.typography.h6,
-                        color = Color_Text_1
-                    )
-                    Text(
-                        text = stringResource(id = R.string.lbl_ava_negar_desc),
-                        color = Light_blue_50,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(48.dp)
-                        .background(Color_Primary_200)
-                ) {
-                    ViraImage(
-                        drawable = R.drawable.ic_arrow_crooked,
-                        colorFilter = ColorFilter.tint(Color.Black),
-                        contentDescription = null
-                    )
-                }
-            }
-        }
-        Card(
-            modifier = modifier
-                .padding(start = 16.dp, end = 16.dp)
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            elevation = 0.dp,
-            onClick = {
-                safeClick {
-                    onAvashoClick()
-                }
-            }
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .background(Color.Transparent)
-                    .padding(end = 24.dp)
-                    .heightIn(min = 128.dp)
-            ) {
-                ViraImage(
-                    drawable = R.drawable.img_ava_sho_2,
-                    contentDescription = stringResource(id = R.string.lbl_ava_sho_desc),
-                    modifier = Modifier
-                        .padding(start = 30.dp)
-                        .size(width = 68.dp, height = 80.dp)
-                )
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 20.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.lbl_ava_sho),
-                        style = MaterialTheme.typography.h6,
-                        color = Color_Text_1
-                    )
-                    Text(
-                        text = stringResource(id = R.string.lbl_ava_sho_desc),
-                        color = Color_Home_Avasho_Subtitle,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(48.dp)
-                        .background(Color_Primary_200)
-                ) {
-                    ViraImage(
-                        drawable = R.drawable.ic_arrow_crooked,
-                        colorFilter = ColorFilter.tint(Color.Black),
-                        contentDescription = null
-                    )
-                }
-            }
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 36.dp, start = 16.dp, end = 16.dp)
-        ) {
-            Divider(
-                color = Color_OutLine,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(1.dp)
-            )
-
-            Text(
-                text = stringResource(id = R.string.coming_soon_vira),
-                style = MaterialTheme.typography.subtitle2,
-                color = Color_Text_2,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1f)
-            )
-
-            Divider(
-                color = Color_OutLine,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(1.dp)
-            )
-        }
-
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(homeItem) { item ->
-                HomeBodyItem(
-                    item = item,
-                    onItemClick = { onItemClick(item.homeItemType) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun HomeBodyItem(
-    item: HomeItemScreen,
-    onItemClick: (HomeItemBottomSheetType) -> Unit
-) {
-    Card(
-        elevation = 0.dp,
-        backgroundColor = Color_Card,
-        onClick = {
-            safeClick {
-                onItemClick(item.homeItemType)
-            }
-        },
-        modifier = Modifier
-            .background(Color.Transparent)
-            .heightIn(min = 148.dp)
-            .widthIn(min = 156.dp)
-            .padding(top = 32.dp)
-    ) {
+    Box(modifier = modifier.height(148.dp)) {
         Column(
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = halfOfIconSize)
+                .background(Color_Card, MaterialTheme.shapes.medium)
+                .clip(MaterialTheme.shapes.medium)
+                .clickable {
+                    safeClick { onItemClick(item.homeItemType) }
+                }
         ) {
-            ViraImage(
-                drawable = item.icon,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp)
-            )
+            Spacer(modifier = Modifier.size(halfOfIconSize))
+
             Text(
                 text = stringResource(id = item.title),
                 style = MaterialTheme.typography.subtitle1,
@@ -887,10 +743,80 @@ fun HomeBodyItem(
 
             Spacer(modifier = Modifier.size(4.dp))
 
-            Text(
-                text = stringResource(id = item.description),
-                style = MaterialTheme.typography.labelMedium,
-                color = item.textColor
+            if (item.isComingSoon) {
+                MarqueeText(modifier = Modifier.fillMaxWidth(0.45f))
+            } else {
+                Text(
+                    text = stringResource(id = item.description),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = item.textColor
+                )
+            }
+        }
+
+        ViraImage(
+            drawable = item.icon,
+            contentDescription = null,
+            modifier = Modifier
+                .size(iconSize)
+                .align(Alignment.TopCenter)
+        )
+    }
+}
+
+@Composable
+private fun MarqueeText(modifier: Modifier = Modifier) {
+    var index by rememberSaveable { mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            yield()
+            delay(MARQUEE_DELAY)
+            index = (index + 1) % 2
+        }
+    }
+
+    val textColor by animateColorAsState(
+        targetValue = if (index == 0) Color_Text_2 else Pink_100,
+        animationSpec = tween(CHANGE_COLOR_DELAY),
+        label = "color"
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .background(Blue_Grey_900_2, RoundedCornerShape(18.dp))
+            .border(0.5.dp, Deep_Purple_500, RoundedCornerShape(18.dp))
+    ) {
+        AnimatedContent(
+            targetState = index,
+            label = "text",
+            transitionSpec = {
+                ContentTransform(
+                    slideIn(
+                        initialOffset = { IntOffset(-300, 0) },
+                        animationSpec = tween(TEXT_ANIMATION_TRANSITION)
+                    ),
+                    slideOut(
+                        targetOffset = { IntOffset(300, 0) },
+                        animationSpec = tween(TEXT_ANIMATION_TRANSITION)
+                    )
+                )
+            }
+        ) { itemIndex ->
+            val itemRes = if (itemIndex == 0) R.string.coming_soon else R.string.lbl_sound_imitation
+            TextAutoSize(
+                text = stringResource(id = itemRes),
+                textScale = TextAutoSizeRange(
+                    min = 8.sp,
+                    max = MaterialTheme.typography.overline.fontSize
+                ),
+                style = MaterialTheme.typography.overline,
+                color = textColor,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp, horizontal = 12.dp)
             )
         }
     }
@@ -898,13 +824,11 @@ fun HomeBodyItem(
 
 @ViraDarkPreview
 @Composable
-private fun HomeBodyPreview() {
+private fun HomeItemPreview() {
     ViraPreview {
-        HomeBody(
-            paddingValues = PaddingValues(0.dp),
-            onAvanegarClick = {},
-            onItemClick = {},
-            onAvashoClick = {}
+        HomeItem(
+            item = HomeItemScreen.mainItemList.first(),
+            onItemClick = {}
         )
     }
 }

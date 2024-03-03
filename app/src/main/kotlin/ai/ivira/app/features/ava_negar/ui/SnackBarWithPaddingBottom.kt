@@ -1,6 +1,8 @@
 package ai.ivira.app.features.ava_negar.ui
 
 import ai.ivira.app.utils.ui.theme.Color_On_Surface_Inverse
+import ai.ivira.app.utils.ui.theme.Color_Red
+import ai.ivira.app.utils.ui.theme.Color_Red_800
 import ai.ivira.app.utils.ui.theme.Color_Surface_Inverse
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import androidx.compose.foundation.background
@@ -57,7 +59,8 @@ fun SnackBarWithPaddingBottom(
 fun SnackBar(
     snackbarHostState: SnackbarHostState,
     paddingBottom: Dp = 0.dp,
-    maxLine: Int = 1
+    maxLine: Int = 1,
+    isError: Boolean = false
 ) {
     SnackbarHost(
         hostState = snackbarHostState,
@@ -66,7 +69,10 @@ fun SnackBar(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color_Surface_Inverse, RoundedCornerShape(5.dp))
+                    .background(
+                        if (isError) Color_Red_800 else Color_Surface_Inverse,
+                        RoundedCornerShape(5.dp)
+                    )
             ) {
                 Text(
                     maxLines = maxLine,
@@ -74,7 +80,7 @@ fun SnackBar(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     text = it.message,
                     style = MaterialTheme.typography.body2,
-                    color = Color_On_Surface_Inverse
+                    color = if (isError) Color_Red else Color_On_Surface_Inverse
                 )
             }
         }

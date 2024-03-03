@@ -18,7 +18,7 @@ sealed class TileItem(
     ) : TileItem(
         key = key,
         available = available,
-        iconRes = R.drawable.img_ava_negar_2,
+        iconRes = R.drawable.img_ava_negar,
         titleRes = R.string.lbl_ava_negar,
         unavailableStateMessage = unavailableStateMessage
     )
@@ -32,6 +32,18 @@ sealed class TileItem(
         available = available,
         iconRes = R.drawable.img_ava_sho,
         titleRes = R.string.lbl_avasho,
+        unavailableStateMessage = unavailableStateMessage
+    )
+
+    class Imazh(
+        key: String,
+        available: Boolean,
+        unavailableStateMessage: String
+    ) : TileItem(
+        key = key,
+        available = available,
+        iconRes = R.drawable.img_imazh,
+        titleRes = R.string.lbl_imazh,
         unavailableStateMessage = unavailableStateMessage
     )
 }

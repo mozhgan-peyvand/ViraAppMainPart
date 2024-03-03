@@ -4,20 +4,17 @@
     <string name="lbl_ava_negar">آوانگار</string>
     <string name="lbl_ava_sho">آواشو</string>
     <string name="lbl_ava_sho_desc">تبدیل متن به گفتار</string>
-    <string name="lbl_virasiar">ویراسیار</string>
-    <string name="lbl_virasiar_desc">ویراستار هوشمند متن</string>
     <string name="lbl_imazh">ایماژ</string>
-    <string name="lbl_nevise_negar">نویسه‌نگار</string>
     <string name="lbl_imazh_desc">تولید تصویر از متن</string>
-    <string name="lbl_nevise_negar_desc">استخراج متن از تصویر</string>
     <string name="lbl_change_voice_to_text">تبدیل صوت به متن</string>
+    <string name="lbl_hamahang">همآهنگ</string>
     <string name="coming_soon">به زودی</string>
     <string name="lbl_assistant_smart_voice"> دستیار صوتی هوشمند</string>
     <string name="lbl_about_us">درباره ما</string>
     <string name="lbl_contact_us">ارتباط با ما:</string>
     <string name="lbl_invite_friends">معرفی به دوستان</string>
     <string name="lbl_start">شروع</string>
-
+    <string name="lbl_sound_imitation">تقلید صدا</string>
 
     <string name="lbl_back">بازگشت</string>
     <string name="msg_if_click_back_file_will_be_deleted">با بازگشت به صفحه اصلی، فایل صوتی حذف خواهد شد. برای جلوگیری از حذف فایل ابتدا فایل را به متن تبدیل کنید.</string>
@@ -37,6 +34,7 @@
     <string name="lbl_uploading_file">در حال آپلود فایل…</string>
     <string name="lbl_uploading">در حال آپلود فایل</string>
     <string name="lbl_waiting_for_upload">در انتظار آپلود فایل</string>
+    <string name="lbl_hamahang_item_bottomsheet_explain">سرویس همآهنگ با قابلیت تقلید صدای افراد مختلف، در نسخه‌ی بعد فعال خواهد شد.</string>
 
     <string name="lbl_make_your_first_file">اولین فایل خود را ایجاد کنید.</string>
     <string name="lbl_dont_have_file">فایلی برای نمایش ندارید.</string>
@@ -120,6 +118,7 @@
     <string name="desc_start_recording">شروع ضبط صدا</string>
     <string name="desc_start_playing">پخش صدا</string>
     <string name="desc_stop_playing">توقف صدا</string>
+    <string name="desc_btn_delete">حذف</string>
     <!--endregion-->
 
     <!-- region onBoarding -->
@@ -194,10 +193,7 @@
     <string name="msg_general_recorder_pause_error">مشکلی در توقف ضبط رخ داد.</string>
     <string name="msg_general_recorder_start_error">مشکلی در شروع ضبط رخ داد.</string>
     <string name="msg_general_recorder_stop_error">مشکلی در پایان ضبط رخ داد.</string>
-    <string name="nevise_negar_item_bottomsheet_explain">سرویس نویسه نگار با قابلیت استخراج متن از تصویر و فایل pdf، در نسخه های بعد فعال خواهد شد.</string>
     <string name="avasho_item_bottomsheet_explain">سرویس آواشو با قابلیت تبدیل متن به گفتار با لحن طبیعی انسان، در نسخه های بعد فعال خواهد شد.</string>
-    <string name="vira_sayar_item_bottomsheet_explain">سرویس ویراسیار با قابلیت ویرایش هوشمند متون فارسی، در نسخه های بعد فعال خواهد شد.</string>
-    <string name="imazh_item_bottomsheet_explain">سرویس ایماژ با قابلیت تولید تصویر از توضیح متنی، در نسخه های بعد فعال خواهد شد.</string>
     <string name="lbl_introduce_text">ابزارهای جذاب هوش مصنوعی همچون سرویس تبدیل گفتار به متن در اپلیکیشن ویرا</string>
     <string name="lbl_download">دانلود:</string>
     <string name="lbl_show_minute">دقیقه</string>
@@ -245,4 +241,47 @@
     <string name="lbl_download_audio_file">دانلود فایل صوتی</string>
     <string name="msg_not_enough_space">فضای کافی وجود ندارد</string>
     <string name="msg_file_saved_successfully">فایل در downloads ذخیره شد</string>
+
+    <string name="lbl_image_prompt">توصیف تصویر</string>
+    <string name="lbl_image_attributes">خصوصیات تصویر</string>
+    <string name="lbl_add">افزودن</string>
+    <string name="lbl_image_style">سبک تصویر</string>
+    <string name="lbl_select">انتخاب</string>
+    <string name="lbl_negative_prompt">کلمات منفی</string>
+    <string name="lbl_generate_image">تولید تصویر</string>
+    <string name="msg_describe_your_image">تصویر مدنظر خود را توصیف کنید…</string>
+    <string name="lbl_imazh_negative_prompt_placeholder">ویژگی‌هایی که نمی‌خواهید در تصویر باشند را بنویسید…</string>
+    <string name="lbl_details">جزئیات</string>
+    <string name="lbl_info">توضیحات</string>
+    <string name="lbl_change">تغییر</string>
+    <string name="lbl_history">تاریخچه</string>
+    <string name="lbl_random">تصادفی</string>
+    <string name="lbl_last_prompts">آخرین توصیف‌ها</string>
+    <string name="lbl_random_description">توصیف تصادفی</string>
+    <string name="lbl_continue">ادامه</string>
+    <string name="msg_random_description">با انتخاب این گزینه، توضیحات قبلی حذف شده و توصیف تصادفی جایگزین خواهد شد.</string>
+    <string name="lbl_image_explanations">توضیحات عکس</string>
+    <string name="lbl_size">حجم :</string>
+    <string name="msg_exit_while_editing">با بازگشت به صفحه اصلی، اطلاعات این صفحه حذف خواهد شد.  برای جلوگیری از حذف، ابتدا اطلاعات را به تصویر تبدیل کنید.</string>
+    <string name="msg_exit_while_uploading">با بازگشت به صفحه اصلی، اطلاعات این صفحه حذف خواهد شد.  برای جلوگیری از حذف، تا اتمام فرآیند تبدیل صبرکنید.</string>
+    <string name="lbl_description_result">نتیجه توصیف</string>
+    <string name="lbl_downloading_image">در حال دانلود عکس…</string>
+    <string name="lbl_generating_image">در حال تولید عکس…</string>
+    <string name="lbl_processing_queue">در صف اتمام پردازش…</string>
+    <string name="lbl_approximate">حدود</string>
+
+    <string name="msg_inappropriate_prompt_error">توصیف شما حاوی محتوای نامناسب است ، لطفا آن را اصلاح نموده و مجددا امتحان کنید.</string>
+    <string name="lbl_imazh_on_boarding_describe">ایده ها و خلاقیت های ذهنی خود را با یک توضیح متنی به تصویر تبدیل کنید.</string>
+    <string name="msg_firs_run_image_description">دراین بخش، تصویر مورد نظرتان را توصیف کنید و \nبرای تولید تصویر بهتر، جزئیات بیشتری بنویسید.</string>
+    <string name="msg_firs_run_random_prompt">می‌توانید از این گزینه برای تولید نمونه \nتوصیف تصویر استفاده کنید.</string>
+    <string name="msg_firs_run_keywords">می‌توانید برای اضافه کردن جزئیات بیشتر به \nتوصیف تصویر، از کلمات کلیدی استفاده کنید. </string>
+    <string name="msg_firs_run_negative_prompt">در این بخش، ویژگی هایی که نمی‌خواهید در \nتصویر تولیدی وجود داشته باشد را بنویسید. \nبه عنوان مثال، با نوشتن کلمه "آبی"، رنگ آبی \nکمتری در تصویر تولیدی وجود خواهد داشت.</string>
+
+    <string name="lbl_imazh_select_all">انتخاب همه</string>
+    <string name="lbl_selected_files">(های) انتخاب شده</string>
+    <string name="msg_no_item_selected">فایلی انتخاب نشده است</string>
+
+    <string name="lbl_regenerate_image">تولید مجدد تصویر</string>
+    <string name="msg_regenerate_image">با انتخاب این گزینه، تصویر جدیدی طبق توصیف شما تولید خواهد شد.</string>
+    <string name="lbl_cancel_2">لغو</string>
 </resources>

@@ -96,13 +96,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
@@ -201,8 +199,12 @@ private fun AvaNegarArchiveListScreen(
     var fileUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     val isGrid by archiveListViewModel.isGrid.collectAsStateWithLifecycle()
     val uploadingId by archiveListViewModel.uploadingId.collectAsStateWithLifecycle()
-    val listState = rememberLazyListState()
-    val isVisible by listState.isScrollingUp()
+    val listState = rememberLazyGridState()
+    var isVisible by rememberSaveable { mutableStateOf(true) }
+    val isScrollingUp by listState.isScrollingUp()
+
+    LaunchedEffect(isGrid) { isVisible = true }
+    LaunchedEffect(isScrollingUp) { isVisible = isScrollingUp }
 
     val (selectedSheet, setSelectedSheet) = rememberSaveable {
         mutableStateOf(
@@ -1059,7 +1061,7 @@ private fun ArchiveBody(
     isGrid: Boolean,
     brush: Brush,
     uploadingId: String,
-    listState: LazyListState,
+    listState: LazyGridState,
     onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (id: Int, title: String) -> Unit,
@@ -1160,33 +1162,42 @@ private fun ArchiveList(
     isGrid: Boolean,
     brush: Brush,
     uploadingId: String,
-    listState: LazyListState,
+    listState: LazyGridState,
     onTryAgainCLick: (AvanegarUploadingFileView) -> Unit,
     onMenuClick: (ArchiveView) -> Unit,
     onItemClick: (id: Int, title: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (isGrid) {
-        LazyVerticalGrid(
-            modifier = modifier,
-            columns = GridCells.Adaptive(128.dp),
-            contentPadding = PaddingValues(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(
-                items = list,
-                key = { item ->
-                    when (item) {
-                        is AvanegarProcessedFileView -> item.id
+    val columns = remember(isGrid) {
+        if (isGrid) GridCells.Adaptive(128.dp) else GridCells.Fixed(1)
+    }
+    val horizontalArrangement = remember(isGrid) {
+        if (isGrid) Arrangement.spacedBy(16.dp) else Arrangement.Center
+    }
+    val gridModifier = remember(isGrid) {
+        modifier.then(if (isGrid) Modifier else Modifier.fillMaxWidth())
+    }
 
-                        is AvanegarTrackingFileView -> item.token
-
-                        is AvanegarUploadingFileView -> item.id
-                        else -> {}
-                    }
+    LazyVerticalGrid(
+        columns = columns,
+        state = listState,
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = horizontalArrangement,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = gridModifier
+    ) {
+        items(
+            items = list,
+            key = { item ->
+                when (item) {
+                    is AvanegarProcessedFileView -> item.id
+                    is AvanegarTrackingFileView -> item.token
+                    is AvanegarUploadingFileView -> item.id
+                    else -> {}
                 }
-            ) {
+            }
+        ) {
+            if (isGrid) {
                 when (it) {
                     is AvanegarProcessedFileView -> {
                         ArchiveProcessedFileElementGrid(
@@ -1199,7 +1210,6 @@ private fun ArchiveList(
                             }
                         )
                     }
-
                     is AvanegarTrackingFileView -> {
                         ArchiveTrackingFileElementGrid(
                             archiveTrackingView = it,
@@ -1209,7 +1219,6 @@ private fun ArchiveList(
                             estimateTime = { it.computeFileEstimateProcess() }
                         )
                     }
-
                     is AvanegarUploadingFileView -> {
                         ArchiveUploadingFileElementGrid(
                             archiveUploadingFileView = it,
@@ -1225,16 +1234,7 @@ private fun ArchiveList(
                         )
                     }
                 }
-            }
-        }
-    } else {
-        LazyColumn(
-            state = listState,
-            modifier = modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(list) {
+            } else {
                 when (it) {
                     is AvanegarProcessedFileView -> {
                         ArchiveProcessedFileElementColumn(
@@ -1247,7 +1247,6 @@ private fun ArchiveList(
                             }
                         )
                     }
-
                     is AvanegarTrackingFileView -> {
                         ArchiveTrackingFileElementsColumn(
                             archiveTrackingView = it,
@@ -1258,7 +1257,6 @@ private fun ArchiveList(
                             estimateTime = { it.computeFileEstimateProcess() }
                         )
                     }
-
                     is AvanegarUploadingFileView -> {
                         ArchiveUploadingFileElementColumn(
                             archiveUploadingFileView = it,
@@ -1345,6 +1343,7 @@ private fun columnBrush(): Brush {
     }
 }
 
+// Duplicate DecreaseEstimateTime 1
 @Composable
 fun DecreaseEstimateTime(
     estimationTime: Int,

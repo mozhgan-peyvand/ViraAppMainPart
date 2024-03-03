@@ -13,9 +13,16 @@ import ai.ivira.app.features.config.data.TileConfigEntity
 import ai.ivira.app.features.home.data.VersionDao
 import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
 import ai.ivira.app.features.home.data.entity.VersionEntity
+import ai.ivira.app.features.imazh.data.ImazhDao
+import ai.ivira.app.features.imazh.data.ImazhListConvertor
+import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
+import ai.ivira.app.features.imazh.data.entity.ImazhProcessedFileEntity
+import ai.ivira.app.features.imazh.data.entity.ImazhTrackingFileEntity
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
+@TypeConverters(ImazhListConvertor::class)
 @Database(
     entities = [
         AvanegarProcessedFileEntity::class,
@@ -26,9 +33,12 @@ import androidx.room.RoomDatabase
         AvashoProcessedFileEntity::class,
         AvashoTrackingFileEntity::class,
         AvashoUploadingFileEntity::class,
-        TileConfigEntity::class
+        TileConfigEntity::class,
+        ImazhHistoryEntity::class,
+        ImazhProcessedFileEntity::class,
+        ImazhTrackingFileEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class ViraDb : RoomDatabase() {
@@ -36,4 +46,5 @@ abstract class ViraDb : RoomDatabase() {
     abstract fun versionDao(): VersionDao
     abstract fun avashoDao(): AvashoDao
     abstract fun tileConfigDao(): ConfigDao
+    abstract fun imazhDao(): ImazhDao
 }

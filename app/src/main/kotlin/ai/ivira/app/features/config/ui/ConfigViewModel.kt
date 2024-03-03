@@ -49,12 +49,18 @@ class ConfigViewModel @Inject constructor(
     val avashoTileConfig = tiles
         .map { it.firstOrNull { tile -> tile is TileItem.Avasho } }
         .stateIn(initial = null)
+    val imazhTileConfig = tiles
+        .map { it.firstOrNull { tile -> tile is TileItem.Imazh } }
+        .stateIn(initial = null)
 
     private val _shouldShowAvanegarUnavailableBottomSheet = mutableStateOf(false)
     val shouldShowAvanegarUnavailableBottomSheet: State<Boolean> = _shouldShowAvanegarUnavailableBottomSheet
 
     private val _shouldShowAvashoUnavailableBottomSheet = mutableStateOf(false)
     val shouldShowAvashoUnavailableBottomSheet: State<Boolean> = _shouldShowAvashoUnavailableBottomSheet
+
+    private val _shouldShowImazhUnavailableBottomSheet = mutableStateOf(false)
+    val shouldShowImazhUnavailableBottomSheet: State<Boolean> = _shouldShowImazhUnavailableBottomSheet
 
     fun showAvanegarUnavailableFeature() {
         _shouldShowAvanegarUnavailableBottomSheet.value = true
@@ -70,6 +76,14 @@ class ConfigViewModel @Inject constructor(
 
     fun resetAvashoUnavailableFeature() {
         _shouldShowAvashoUnavailableBottomSheet.value = false
+    }
+
+    fun showImazhUnavailableFeature() {
+        _shouldShowImazhUnavailableBottomSheet.value = true
+    }
+
+    fun resetImazhUnavailableFeature() {
+        _shouldShowImazhUnavailableBottomSheet.value = false
     }
 
     companion object {

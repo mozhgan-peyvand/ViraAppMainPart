@@ -29,16 +29,18 @@ fun DeleteBottomSheet(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = fileName,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.h6,
-            color = Color_Text_1,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp, start = 16.dp, end = 16.dp)
-        )
+        if (fileName.isNotBlank()) {
+            Text(
+                text = fileName,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.h6,
+                color = Color_Text_1,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp, start = 16.dp, end = 16.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.size(24.dp))
 
