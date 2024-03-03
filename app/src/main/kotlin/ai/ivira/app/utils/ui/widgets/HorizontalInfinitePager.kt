@@ -72,7 +72,7 @@ fun HorizontalInfinitePager(
                     .align(Alignment.BottomCenter)
             )
 
-            LaunchedEffect(isDraggedState, isPressState) {
+            LaunchedEffect(isDraggedState.value, isPressState.value) {
                 snapshotFlow { isDraggedState.value && isPressState.value }
                     .collectLatest { isMove ->
                         if (!isMove) {
