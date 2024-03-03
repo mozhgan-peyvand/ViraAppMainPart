@@ -636,34 +636,37 @@ private fun HomeScreen(
                         )
                     }
                     item(span = { GridItemSpan(2) }) {
-                        HorizontalInfinitePager(
-                            realItemSize = bannerList.size,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(2.34f),
-                            itemContent = { index ->
-                                val item = bannerList[index]
-                                val onClick = if (item.isComingSoon) {
-                                    Modifier
-                                } else {
-                                    Modifier.clickable {
-                                        safeClick {
-                                            onItemClick(item.homeItemType)
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Spacer(modifier = Modifier.size(24.dp))
+                            HorizontalInfinitePager(
+                                realItemSize = bannerList.size,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(2.34f),
+                                itemContent = { index ->
+                                    val item = bannerList[index]
+                                    val onClick = if (item.isComingSoon) {
+                                        Modifier
+                                    } else {
+                                        Modifier.clickable {
+                                            safeClick {
+                                                onItemClick(item.homeItemType)
+                                            }
                                         }
                                     }
-                                }
 
-                                ViraImage(
-                                    drawable = item.banner,
-                                    contentDescription = null,
-                                    contentScale = ContentScale.FillWidth,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(MaterialTheme.shapes.medium)
-                                        .then(onClick)
-                                )
-                            }
-                        )
+                                    ViraImage(
+                                        drawable = item.banner,
+                                        contentDescription = null,
+                                        contentScale = ContentScale.FillWidth,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(MaterialTheme.shapes.medium)
+                                            .then(onClick)
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
