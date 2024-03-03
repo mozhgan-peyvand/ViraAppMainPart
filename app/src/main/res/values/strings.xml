@@ -156,17 +156,6 @@
     <string name="lbl_avasho_onboarding_second_description_fourth">تبدیل متن به گفتار با لحن طبیعی انسان</string>
     <string name="lbl_avasho_onboarding_second_description_fifth">خوانش و پردازش بلادرنگ</string>
 
-    <!-- Main -->
-    <string name="lbl_avanegar_service">سرویس تبدیل گفتار به متن، ‌آوانگار</string>
-    <string name="lbl_avanegar_service_details">تنها سرویس تبدیل گفتار به متن فارسی با قابلیت تشخیص تمامی لهجه های بومی ایرانی</string>
-    <string name="lbl_convert_text_to_speech_service">سرویس تبدیل متن به گفتار، ‌آواشو</string>
-    <string name="lbl_convert_text_to_speech_service_details">تنها سرویس تبدیل متن به گفتار فارسی مبتنی بر فناوری هوش مصنوعی با قابلیت خوانش بلادرنگ متون با لحن طبیعی انسان</string>
-    <string name="lbl_soon_in_vira">به‌زودی در ویرا</string>
-    <string name="lbl_soon_in_vira_description_first">ایماژ: &#160; ایجاد تصویر از توضیح متنی</string>
-    <string name="lbl_soon_in_vira_description_second">نویسه نگار : &#160; استخراج متن از تصویر و فایل</string>
-    <string name="lbl_soon_in_vira_description_third">ویراسیار : &#160; ویرایشگر هوشمند متون فارسی</string>
-    <!-- endregion -->
-
     <!-- region tooltop -->
     <string name="tt_can_type_text_here">اینجا می‌توانید متن خود را\n برای تبدیل به صوت تایپ کنید و برای \n دریافت خروجی بهتر، علائم نگارشی را رعایت \n نموده و از ادبیات محاوره ای استفاده نکنید.</string>
     <string name="tt_can_select_file_from_here">از این قسمت نیز می‌توانید\n فایل متنی خود را وارد کنید.</string>

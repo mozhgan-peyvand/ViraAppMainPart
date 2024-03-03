@@ -68,7 +68,7 @@ private fun SplashScreen(
             } else {
                 navController.popBackStack()
                 navController.navigate(
-                    route = HomeScreenRoutes.HomeMainOnboardingScreen.route
+                    route = HomeScreenRoutes.HomeOnboardingScreen.route
                 )
             }
         }
