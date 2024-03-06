@@ -1,6 +1,9 @@
 package ai.ivira.app.features.imazh.ui.newImageDescriptor
 
 import ai.ivira.app.R
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheet
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
+import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.ui.ImazhAnalytics
@@ -10,7 +13,9 @@ import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhKeywordI
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhStyleItem
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordChipType
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.model.ImazhKeywordView
-import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.HistoryBottomSheet
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhBackConfirmationWhileEditingBottomSheet
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhBackConfirmationWhileGeneratingBottomSheet
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhHistoryBottomSheet
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhKeywordBottomSheet
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.BackWhileEditing
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.BackWhileGenerate
@@ -18,8 +23,8 @@ import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDes
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.Keywords
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.RandomPrompt
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhNewImageDescriptionBottomSheetType.Style
-import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.RandomConfirmationBottomSheet
-import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.SelectStyleBottomSheet
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhRandomConfirmationBottomSheet
+import ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets.ImazhSelectStyleBottomSheet
 import ai.ivira.app.utils.ui.TooltipHelper
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
@@ -27,15 +32,11 @@ import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.ViraBalloon
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
-import ai.ivira.app.utils.ui.hide
-import ai.ivira.app.utils.ui.hideAndShow
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
-import ai.ivira.app.utils.ui.show
 import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_BG
-import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Border
 import ai.ivira.app.utils.ui.theme.Color_Info_700
 import ai.ivira.app.utils.ui.theme.Color_Primary
@@ -87,14 +88,11 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -193,11 +191,7 @@ private fun ImazhNewImageDescriptorScreen(
         mutableStateOf(History)
     }
 
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true,
-        confirmValueChange = { true }
-    )
+    val sheetState = rememberViraBottomSheetState()
 
     val actionBack: () -> Unit = remember {
         {
@@ -207,11 +201,11 @@ private fun ImazhNewImageDescriptorScreen(
                 },
                 backWhileEditing = {
                     setSelectedSheet(BackWhileEditing)
-                    modalBottomSheetState.show(coroutineScope)
+                    sheetState.show()
                 },
                 backWhileGenerating = {
                     setSelectedSheet(BackWhileGenerate)
-                    modalBottomSheetState.show(coroutineScope)
+                    sheetState.show()
                 }
             )
         }
@@ -268,19 +262,15 @@ private fun ImazhNewImageDescriptorScreen(
         }
     }
 
-    LaunchedEffect(modalBottomSheetState.isVisible) {
-        if (modalBottomSheetState.isVisible) {
+    LaunchedEffect(sheetState.isVisible) {
+        if (sheetState.isVisible) {
             focusManager.clearFocus()
             snackbarHostState.currentSnackbarData?.dismiss()
         }
     }
 
-    BackHandler {
-        if (modalBottomSheetState.isVisible) {
-            modalBottomSheetState.hide(coroutineScope)
-        } else {
-            actionBack()
-        }
+    BackHandler(!sheetState.showBottomSheet) {
+        actionBack()
     }
 
     DisposableEffect(Unit) {
@@ -350,48 +340,133 @@ private fun ImazhNewImageDescriptorScreen(
             .fillMaxSize()
             .background(Color_BG)
     ) { paddingValues ->
-        ModalBottomSheetLayout(
-            sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
-            sheetBackgroundColor = Color_BG_Bottom_Sheet,
-            scrimColor = Color.Black.copy(alpha = 0.5f),
-            sheetState = modalBottomSheetState,
-            sheetContent = {
-                when (selectedSheet) {
+        Column(Modifier.fillMaxSize()) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(state = scrollState)
+                    .padding(paddingValues = paddingValues)
+            ) {
+                Prompt(
+                    prompt = viewModel.prompt.value,
+                    promptIsValid = promptIsValid,
+                    isHistoryButtonVisible = isHistoryButtonVisible,
+                    onPromptChange = viewModel::changePrompt,
+                    resetPrompt = viewModel::resetPrompt,
+                    onHistoryClick = {
+                        setSelectedSheet(History)
+                        sheetState.show()
+                    },
+                    onRandomClick = {
+                        viewModel.generateRandomPrompt(
+                            confirmationCallback = {
+                                setSelectedSheet(RandomPrompt)
+                                sheetState.show()
+                            }
+                        )
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .onGloballyPositioned {
+                            promptPosition.intValue = it.positionInRoot().y.roundToInt()
+                        },
+                    tooltipHelper = tooltipHelper,
+                    onRandomPromptPositionChange = { randomPromptPosition.intValue = it }
+                )
+
+                Keywords(
+                    keywords = viewModel.selectedKeywords.value.toList(),
+                    onAddKeywordClick = {
+                        setSelectedSheet(Keywords)
+                        sheetState.show()
+                    },
+                    onChipClick = { item ->
+                        viewModel.removeKeyword(item)
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .onGloballyPositioned {
+                            keywordsPosition.intValue = it.positionInRoot().y.roundToInt()
+                        },
+                    tooltipHelper = tooltipHelper
+                )
+
+                Style(
+                    selectedStyle = viewModel.selectedStyle.value,
+                    isExpandable = viewModel.selectedStyle.value != ImazhImageStyle.None,
+                    openStyleBottomSheet = {
+                        setSelectedSheet(Style)
+                        sheetState.show()
+                    },
+                    selectStyleCallBack = {
+                        viewModel.selectStyle(it)
+                    },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
+                NegativePrompt(
+                    negativePrompt = viewModel.negativePrompt.value,
+                    onNegativePromptChange = viewModel::setNegativePrompt,
+                    resetNegativePrompt = viewModel::resetNegativePrompt,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 16.dp)
+                        .onGloballyPositioned {
+                            negativePromptPosition.intValue = it.positionInRoot().y.roundToInt()
+                        },
+                    tooltipHelper = tooltipHelper,
+                    isFirstRun = viewModel.shouldShowFirstRun.value
+                )
+            }
+
+            if (!isKeyboardVisible) {
+                ConfirmButton(
+                    onClick = viewModel::generateImage,
+                    enabled = isOkToGenerate,
+                    isLoading = isLoading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+            }
+        }
+    }
+
+    if (sheetState.showBottomSheet) {
+        ViraBottomSheet(sheetState = sheetState) {
+            ViraBottomSheetContent(selectedSheet) { selected ->
+                when (selected) {
                     History -> {
-                        HistoryBottomSheet(
+                        ImazhHistoryBottomSheet(
                             onAcceptClick = { prompt ->
                                 viewModel.changePrompt(prompt)
-                                coroutineScope.launch {
-                                    if (modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.hide()
-                                    }
-                                }
+                                sheetState.hide()
                             }
                         )
                     }
                     RandomPrompt -> {
-                        RandomConfirmationBottomSheet(
+                        ImazhRandomConfirmationBottomSheet(
                             cancelAction = {
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                             },
                             deleteAction = {
                                 viewModel.resetPrompt()
                                 viewModel.generateRandomPrompt(
-                                    confirmationCallback = {
-                                        modalBottomSheetState.hideAndShow(coroutineScope)
-                                    }
+                                    confirmationCallback = { }
                                 )
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                             }
                         )
                     }
                     Style -> {
-                        SelectStyleBottomSheet(
+                        ImazhSelectStyleBottomSheet(
                             styles = availableStyles,
                             selectedStyle = viewModel.selectedStyle.value,
                             confirmSelectionCallBack = {
                                 viewModel.selectStyle(it)
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                             }
                         )
                     }
@@ -401,137 +476,36 @@ private fun ImazhNewImageDescriptorScreen(
                             selectedChips = viewModel.selectedKeywords.value,
                             onAcceptClick = { list ->
                                 viewModel.updateKeywordList(list)
-                                coroutineScope.launch {
-                                    if (modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.hide()
-                                    }
-                                }
+                                sheetState.hide()
                             }
                         )
                     }
                     BackWhileGenerate -> {
-                        BackConfirmationWhileGeneratingBottomSheet(
+                        ImazhBackConfirmationWhileGeneratingBottomSheet(
                             continueAction = {
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                             },
                             deleteAction = {
                                 viewModel.cancelConvertTextToImageRequest()
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                                 navController.navigateUp()
                             }
                         )
                     }
                     BackWhileEditing -> {
-                        BackConfirmationWhileEditingBottomSheet(
+                        ImazhBackConfirmationWhileEditingBottomSheet(
                             generateAction = {
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                                 if (viewModel.prompt.value.isNotBlank()) {
                                     viewModel.generateImage()
                                 }
                             },
                             deleteAction = {
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                                 navController.navigateUp()
                             }
                         )
                     }
-                }
-            }
-        ) {
-            Column(Modifier.fillMaxSize()) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .verticalScroll(state = scrollState)
-                        .padding(paddingValues = paddingValues)
-                ) {
-                    Prompt(
-                        prompt = viewModel.prompt.value,
-                        promptIsValid = promptIsValid,
-                        isHistoryButtonVisible = isHistoryButtonVisible,
-                        onPromptChange = viewModel::changePrompt,
-                        resetPrompt = viewModel::resetPrompt,
-                        onHistoryClick = {
-                            coroutineScope.launch {
-                                setSelectedSheet(History)
-                                modalBottomSheetState.show()
-                            }
-                        },
-                        onRandomClick = {
-                            viewModel.generateRandomPrompt(
-                                confirmationCallback = {
-                                    setSelectedSheet(RandomPrompt)
-                                    modalBottomSheetState.show(coroutineScope)
-                                }
-                            )
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .onGloballyPositioned {
-                                promptPosition.intValue = it.positionInRoot().y.roundToInt()
-                            },
-                        tooltipHelper = tooltipHelper,
-                        onRandomPromptPositionChange = { randomPromptPosition.intValue = it }
-                    )
-
-                    Keywords(
-                        keywords = viewModel.selectedKeywords.value.toList(),
-                        onAddKeywordClick = {
-                            coroutineScope.launch {
-                                setSelectedSheet(Keywords)
-                                modalBottomSheetState.show()
-                            }
-                        },
-                        onChipClick = { item ->
-                            viewModel.removeKeyword(item)
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .onGloballyPositioned {
-                                keywordsPosition.intValue = it.positionInRoot().y.roundToInt()
-                            },
-                        tooltipHelper = tooltipHelper
-                    )
-
-                    Style(
-                        selectedStyle = viewModel.selectedStyle.value,
-                        isExpandable = viewModel.selectedStyle.value != ImazhImageStyle.None,
-                        openStyleBottomSheet = {
-                            setSelectedSheet(Style)
-                            modalBottomSheetState.show(coroutineScope)
-                        },
-                        selectStyleCallBack = {
-                            viewModel.selectStyle(it)
-                        },
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-
-                    NegativePrompt(
-                        negativePrompt = viewModel.negativePrompt.value,
-                        onNegativePromptChange = viewModel::setNegativePrompt,
-                        resetNegativePrompt = viewModel::resetNegativePrompt,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .padding(bottom = 16.dp)
-                            .onGloballyPositioned {
-                                negativePromptPosition.intValue = it.positionInRoot().y.roundToInt()
-                            },
-                        tooltipHelper = tooltipHelper,
-                        isFirstRun = viewModel.shouldShowFirstRun.value
-                    )
-                }
-
-                if (!isKeyboardVisible) {
-                    ConfirmButton(
-                        onClick = viewModel::generateImage,
-                        enabled = isOkToGenerate,
-                        isLoading = isLoading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                    )
                 }
             }
         }

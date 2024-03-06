@@ -1,6 +1,7 @@
-package ai.ivira.app.features.imazh.ui.newImageDescriptor
+package ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets
 
 import ai.ivira.app.R
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
@@ -21,12 +22,11 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun BackConfirmationWhileEditingBottomSheet(
-    generateAction: () -> Unit,
+fun ImazhBackConfirmationWhileGeneratingBottomSheet(
+    continueAction: () -> Unit,
     deleteAction: () -> Unit
 ) {
     Column(
@@ -40,7 +40,7 @@ fun BackConfirmationWhileEditingBottomSheet(
             modifier = Modifier.padding(bottom = 16.dp)
         )
         Text(
-            text = stringResource(id = R.string.msg_exit_while_editing),
+            text = stringResource(id = R.string.msg_exit_while_uploading),
             style = MaterialTheme.typography.body2,
             modifier = Modifier.padding(bottom = 28.dp)
         )
@@ -53,7 +53,7 @@ fun BackConfirmationWhileEditingBottomSheet(
                 modifier = Modifier.weight(1f),
                 onClick = {
                     safeClick {
-                        generateAction()
+                        continueAction()
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
@@ -63,7 +63,7 @@ fun BackConfirmationWhileEditingBottomSheet(
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = stringResource(id = R.string.lbl_generate_image),
+                    text = stringResource(id = R.string.lbl_continue),
                     style = MaterialTheme.typography.button
                 )
             }
@@ -98,12 +98,12 @@ fun BackConfirmationWhileEditingBottomSheet(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
-fun PreviewBackConfirmationWhileEditingBottomSheet() {
+private fun PreviewImazhBackConfirmationWhileGeneratingBottomSheet() {
     ViraPreview {
-        BackConfirmationWhileEditingBottomSheet(
-            generateAction = {},
+        ImazhBackConfirmationWhileGeneratingBottomSheet(
+            continueAction = {},
             deleteAction = {}
         )
     }

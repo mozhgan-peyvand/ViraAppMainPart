@@ -202,7 +202,7 @@ private fun TabSection(
 
 @ViraDarkPreview
 @Composable
-private fun ImazhKeywordBottomSheetPreview() {
+private fun PreviewImazhKeywordBottomSheet() {
     ViraPreview {
         ImazhKeywordBottomSheet(
             map = mapOf(),

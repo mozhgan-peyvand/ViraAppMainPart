@@ -1,6 +1,9 @@
 package ai.ivira.app.features.imazh.ui.archive
 
 import ai.ivira.app.R
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheet
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
+import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.DeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
@@ -24,7 +27,6 @@ import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.computeSecondAndMinute
 import ai.ivira.app.utils.ui.computeTextBySecondAndMinute
 import ai.ivira.app.utils.ui.hasPermission
-import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isScrollingUp
 import ai.ivira.app.utils.ui.isSdkVersionBetween23And29
@@ -32,7 +34,6 @@ import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.showMessage
-import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_BG_Imazh_Tracking_Text
 import ai.ivira.app.utils.ui.theme.Color_Background_Menu
 import ai.ivira.app.utils.ui.theme.Color_Blue_Grey_800_945
@@ -59,7 +60,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -92,13 +92,10 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -113,9 +110,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -179,11 +174,7 @@ private fun ImazhArchiveListScreen(
     val isScrollingUp by listState.isScrollingUp()
     val isTrackingEmpty by viewModel.isTrackingEmpty.collectAsStateWithLifecycle()
     val isDownloadQueueEmpty by viewModel.isDownloadQueueEmpty.collectAsStateWithLifecycle()
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true,
-        confirmValueChange = { true }
-    )
+    val sheetState = rememberViraBottomSheetState()
     var selectedSheet by rememberSaveable { mutableStateOf(Delete) }
     val selectedMenuItem = remember { mutableStateOf<ImazhArchiveView?>(null) }
     var selectedFilePathDownloadItem by remember { mutableStateOf<String?>(null) }
@@ -215,7 +206,7 @@ private fun ImazhArchiveListScreen(
     LaunchedEffect(Unit) {
         viewModel.uiViewState.collectLatest {
             if (it is UiError && it.isSnack) {
-                modalBottomSheetState.hide(coroutineScope)
+                sheetState.hide()
                 delay(100)
                 showMessage(
                     snackBarState,
@@ -226,12 +217,9 @@ private fun ImazhArchiveListScreen(
         }
     }
 
-    BackHandler(isSelectionMode || modalBottomSheetState.isVisible) {
-        if (modalBottomSheetState.isVisible) {
-            modalBottomSheetState.hide(coroutineScope)
-        } else if (isSelectionMode) {
-            viewModel.clearSelectionMode()
-        }
+    BackHandler(isSelectionMode && !sheetState.showBottomSheet) {
+        // coming here means isSelectionMode is true
+        viewModel.clearSelectionMode()
     }
 
     OnLifecycleEvent(
@@ -308,10 +296,7 @@ private fun ImazhArchiveListScreen(
                             if (selectedItemIds.isNotEmpty()) {
                                 coroutineScope.launch {
                                     selectedSheet = SelectionModeDeleteConfirmation
-                                    modalBottomSheetState.hide()
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    }
+                                    sheetState.show()
                                 }
                             } else {
                                 showMessage(snackBarState, coroutineScope, noOperationMessage)
@@ -330,7 +315,6 @@ private fun ImazhArchiveListScreen(
                         },
                         allItemsAreSelected = allItemsAreSelected,
                         isSharingEnabled = !viewModel.isDeletingFiles.value,
-                        isClickable = !(selectedSheet == SelectionModeDeleteConfirmation && modalBottomSheetState.isVisible),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
@@ -351,23 +335,183 @@ private fun ImazhArchiveListScreen(
             }
         }
     ) { paddingValues ->
-        ModalBottomSheetLayout(
-            sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
-            sheetBackgroundColor = Color_BG_Bottom_Sheet,
-            scrimColor = Color.Black.copy(alpha = 0.5f),
-            sheetState = modalBottomSheetState,
-            sheetContent = sheetContent@{
-                when (selectedSheet) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (archiveFiles.isEmpty()) {
+                ArchiveEmptyBody()
+            } else {
+                Column {
+                    // TODO: Don't show it when download state is added
+                    val isNetworkAvailable by remember(networkStatus) {
+                        mutableStateOf(networkStatus is NetworkStatus.Available)
+                    }
+                    val hasVpnConnection by remember(networkStatus) {
+                        mutableStateOf(networkStatus.let { it is NetworkStatus.Available && it.hasVpn })
+                    }
+                    val isBannerError by remember(uiViewState) {
+                        mutableStateOf(uiViewState.let { it is UiError && !it.isSnack })
+                    }
+                    val shouldShowBanner by remember(isTrackingEmpty, isDownloadQueueEmpty) {
+                        mutableStateOf(!isTrackingEmpty || !isDownloadQueueEmpty)
+                    }
+                    ViraBannerWithAnimation(
+                        // FIXME: Should this be displaying only if upload is in progress?
+                        isVisible = shouldShowBanner &&
+                            !isSelectionMode &&
+                            (!isNetworkAvailable || hasVpnConnection || isBannerError),
+                        bannerInfo = if (uiViewState is UiError) {
+                            ViraBannerInfo.Error(
+                                message = (uiViewState as UiError).message,
+                                iconRes = R.drawable.ic_failure_network
+                            )
+                        } else if (hasVpnConnection) {
+                            ViraBannerInfo.Warning(
+                                message = stringResource(id = R.string.msg_vpn_is_connected_error),
+                                iconRes = R.drawable.ic_warning_vpn
+                            )
+                        } else {
+                            ViraBannerInfo.Error(
+                                message = stringResource(id = R.string.msg_internet_disconnected),
+                                iconRes = R.drawable.ic_failure_network
+                            )
+                        }
+                    )
+
+                    ArchiveListContent(
+                        archiveFiles = if (isSelectionMode) filesInSelection else archiveFiles,
+                        listState = listState,
+                        isGrid = isGrid,
+                        failureList = downloadFailureList,
+                        isInDownloadQueue = { id -> viewModel.isInDownloadQueue(id) },
+                        onProcessedItemClick = { id ->
+                            navController.navigate(ImazhDetailsScreen.createRoute(id))
+                        },
+                        onMenuClick = { imazhArchiveView ->
+                            selectedMenuItem.value = imazhArchiveView
+                            coroutineScope.launch {
+                                selectedSheet = Delete
+                                sheetState.show()
+                            }
+                        },
+                        onProcessedItemLongClick = { id ->
+                            viewModel.enableSelectionMode()
+                            viewModel.selectDeselectItems(id)
+                        },
+                        isSelectionMode = isSelectionMode,
+                        selectedItemIds = selectedItemIds,
+                        onTryAgainClick = { processedItem ->
+                            viewModel.startDownloading(processedItem)
+                        },
+                        onDownloadAction = onClick@{ imazhFilePathItem ->
+                            selectedFilePathDownloadItem = imazhFilePathItem
+                            selectedFilePathDownloadItem?.let { filePath ->
+                                if (!isSdkVersionBetween23And29()) {
+                                    viewModel.saveToDownloadFolder(
+                                        filePath = filePath,
+                                        fileName = File(filePath).nameWithoutExtension
+                                    ).also { isSuccess ->
+                                        if (isSuccess) {
+                                            showMessage(
+                                                snackBarState,
+                                                coroutineScope,
+                                                context.getString(R.string.msg_file_saved_successfully)
+                                            )
+                                        }
+                                    }
+                                    return@onClick
+                                }
+                                if (context.hasPermission(permission)) {
+                                    viewModel.saveToDownloadFolder(
+                                        filePath = filePath,
+                                        fileName = File(filePath).nameWithoutExtension
+                                    ).also { isSuccess ->
+                                        if (isSuccess) {
+                                            showMessage(
+                                                snackBarState,
+                                                coroutineScope,
+                                                context.getString(R.string.msg_file_saved_successfully)
+                                            )
+                                        }
+                                    }
+                                } else if (viewModel.hasDeniedPermissionPermanently(permission)) {
+                                    coroutineScope.launch {
+                                        selectedSheet = FileAccessPermissionDenied
+                                        sheetState.show()
+                                    }
+                                } else {
+                                    // Asking for permission
+                                    writeStoragePermission.launch(permission)
+                                }
+                            }
+                        },
+                        onRegenerateImageClick = { itemId ->
+                            if (!isTrackingEmpty) {
+                                val hasError = uiViewState is UiError
+                                showMessage(
+                                    snackBarState,
+                                    coroutineScope,
+                                    context.getString(
+                                        if (hasError) {
+                                            R.string.msg_wait_for_connection_to_server
+                                        } else {
+                                            R.string.msg_wait_process_finish_or_cancel_it
+                                        }
+                                    )
+                                )
+                            } else {
+                                navController.navigate(
+                                    ImazhNewImageDescriptorScreen.createRoute(itemId)
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+
+            if (!isSelectionMode) {
+                ImazhArchiveFab(
+                    modifier = Modifier.align(Alignment.BottomStart),
+                    onClick = onClick@{
+                        if (!isTrackingEmpty) {
+                            val hasError = uiViewState is UiError
+                            showMessage(
+                                snackBarState,
+                                coroutineScope,
+                                context.getString(
+                                    if (hasError) {
+                                        R.string.msg_wait_for_connection_to_server
+                                    } else {
+                                        R.string.msg_wait_process_finish_or_cancel_it
+                                    }
+                                )
+                            )
+                            return@onClick
+                        }
+
+                        navController.navigate(
+                            ImazhNewImageDescriptorScreen.createRoute()
+                        )
+                    },
+                    isVisible = isVisible
+                )
+            }
+        }
+    }
+
+    if (sheetState.showBottomSheet) {
+        ViraBottomSheet(sheetState = sheetState) {
+            ViraBottomSheetContent(selectedSheet) sheetContent@{ selected ->
+                when (selected) {
                     Delete -> {
                         DeleteBottomSheet(
                             fileName = "",
                             onDelete = {
                                 coroutineScope.launch {
                                     selectedSheet = DeleteConfirmation
-                                    modalBottomSheetState.hide()
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    }
+                                    sheetState.show()
                                 }
                             }
                         )
@@ -388,10 +532,10 @@ private fun ImazhArchiveListScreen(
                                     }
                                 }
 
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                             },
                             cancelAction = {
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                             },
                             fileName = ""
                         )
@@ -403,10 +547,10 @@ private fun ImazhArchiveListScreen(
                                 coroutineScope.launch(IO) {
                                     viewModel.deleteSelectedItems()
                                 }
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                             },
                             cancelAction = {
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                             },
                             fileName = stringResource(id = R.string.lbl_selected_files)
                         )
@@ -415,189 +559,14 @@ private fun ImazhArchiveListScreen(
                     FileAccessPermissionDenied -> {
                         AccessDeniedToOpenFileBottomSheet(
                             cancelAction = {
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                sheetState.hide()
                             },
                             submitAction = {
                                 navigateToAppSettings(activity = context as Activity)
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                sheetState.hide()
                             }
                         )
                     }
-                }
-            }
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                if (archiveFiles.isEmpty()) {
-                    ArchiveEmptyBody()
-                } else {
-                    Column {
-                        // TODO: Don't show it when download state is added
-                        val isNetworkAvailable by remember(networkStatus) {
-                            mutableStateOf(networkStatus is NetworkStatus.Available)
-                        }
-                        val hasVpnConnection by remember(networkStatus) {
-                            mutableStateOf(networkStatus.let { it is NetworkStatus.Available && it.hasVpn })
-                        }
-                        val isBannerError by remember(uiViewState) {
-                            mutableStateOf(uiViewState.let { it is UiError && !it.isSnack })
-                        }
-                        val shouldShowBanner by remember(isTrackingEmpty, isDownloadQueueEmpty) {
-                            mutableStateOf(!isTrackingEmpty || !isDownloadQueueEmpty)
-                        }
-                        ViraBannerWithAnimation(
-                            // FIXME: Should this be displaying only if upload is in progress?
-                            isVisible = shouldShowBanner &&
-                                !isSelectionMode &&
-                                (!isNetworkAvailable || hasVpnConnection || isBannerError),
-                            bannerInfo = if (uiViewState is UiError) {
-                                ViraBannerInfo.Error(
-                                    message = (uiViewState as UiError).message,
-                                    iconRes = R.drawable.ic_failure_network
-                                )
-                            } else if (hasVpnConnection) {
-                                ViraBannerInfo.Warning(
-                                    message = stringResource(id = R.string.msg_vpn_is_connected_error),
-                                    iconRes = R.drawable.ic_warning_vpn
-                                )
-                            } else {
-                                ViraBannerInfo.Error(
-                                    message = stringResource(id = R.string.msg_internet_disconnected),
-                                    iconRes = R.drawable.ic_failure_network
-                                )
-                            }
-                        )
-
-                        ArchiveListContent(
-                            archiveFiles = if (isSelectionMode) filesInSelection else archiveFiles,
-                            listState = listState,
-                            isGrid = isGrid,
-                            failureList = downloadFailureList,
-                            isInDownloadQueue = { id -> viewModel.isInDownloadQueue(id) },
-                            onProcessedItemClick = { id ->
-                                navController.navigate(ImazhDetailsScreen.createRoute(id))
-                            },
-                            onMenuClick = { imazhArchiveView ->
-                                selectedMenuItem.value = imazhArchiveView
-                                coroutineScope.launch {
-                                    selectedSheet = Delete
-                                    modalBottomSheetState.hide()
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    }
-                                }
-                            },
-                            onProcessedItemLongClick = { id ->
-                                viewModel.enableSelectionMode()
-                                viewModel.selectDeselectItems(id)
-                            },
-                            isSelectionMode = isSelectionMode,
-                            selectedItemIds = selectedItemIds,
-                            onTryAgainClick = { processedItem ->
-                                viewModel.startDownloading(processedItem)
-                            },
-                            onDownloadAction = onClick@{ imazhFilePathItem ->
-                                selectedFilePathDownloadItem = imazhFilePathItem
-                                selectedFilePathDownloadItem?.let { filePath ->
-                                    if (!isSdkVersionBetween23And29()) {
-                                        viewModel.saveToDownloadFolder(
-                                            filePath = filePath,
-                                            fileName = File(filePath).nameWithoutExtension
-                                        ).also { isSuccess ->
-                                            if (isSuccess) {
-                                                showMessage(
-                                                    snackBarState,
-                                                    coroutineScope,
-                                                    context.getString(R.string.msg_file_saved_successfully)
-                                                )
-                                            }
-                                        }
-                                        return@onClick
-                                    }
-                                    if (context.hasPermission(permission)) {
-                                        viewModel.saveToDownloadFolder(
-                                            filePath = filePath,
-                                            fileName = File(filePath).nameWithoutExtension
-                                        ).also { isSuccess ->
-                                            if (isSuccess) {
-                                                showMessage(
-                                                    snackBarState,
-                                                    coroutineScope,
-                                                    context.getString(R.string.msg_file_saved_successfully)
-                                                )
-                                            }
-                                        }
-                                    } else if (viewModel.hasDeniedPermissionPermanently(permission)) {
-                                        coroutineScope.launch {
-                                            selectedSheet = FileAccessPermissionDenied
-                                            modalBottomSheetState.hide()
-                                            if (!modalBottomSheetState.isVisible) {
-                                                modalBottomSheetState.show()
-                                            }
-                                        }
-                                    } else {
-                                        // Asking for permission
-                                        writeStoragePermission.launch(permission)
-                                    }
-                                }
-                            },
-                            onRegenerateImageClick = { itemId ->
-                                if (!isTrackingEmpty) {
-                                    val hasError = uiViewState is UiError
-                                    showMessage(
-                                        snackBarState,
-                                        coroutineScope,
-                                        context.getString(
-                                            if (hasError) {
-                                                R.string.msg_wait_for_connection_to_server
-                                            } else {
-                                                R.string.msg_wait_process_finish_or_cancel_it
-                                            }
-                                        )
-                                    )
-                                } else {
-                                    navController.navigate(
-                                        ImazhNewImageDescriptorScreen.createRoute(itemId)
-                                    )
-                                }
-                            }
-                        )
-                    }
-                }
-
-                if (!isSelectionMode) {
-                    ImazhArchiveFab(
-                        modifier = Modifier.align(Alignment.BottomStart),
-                        onClick = onClick@{
-                            if (!isTrackingEmpty) {
-                                val hasError = uiViewState is UiError
-                                showMessage(
-                                    snackBarState,
-                                    coroutineScope,
-                                    context.getString(
-                                        if (hasError) {
-                                            R.string.msg_wait_for_connection_to_server
-                                        } else {
-                                            R.string.msg_wait_process_finish_or_cancel_it
-                                        }
-                                    )
-                                )
-                                return@onClick
-                            }
-
-                            navController.navigate(
-                                ImazhNewImageDescriptorScreen.createRoute()
-                            )
-                        },
-                        isVisible = isVisible
-                    )
                 }
             }
         }
@@ -611,14 +580,11 @@ fun ImazhSelectionModeAppBar(
     onShareClick: () -> Unit,
     onCancelClick: () -> Unit,
     isSharingEnabled: Boolean,
-    isClickable: Boolean,
     allItemsAreSelected: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val alpha by animateFloatAsState(targetValue = if (isClickable) 1f else 0.6f, label = "alpha")
-
     Row(
-        modifier = modifier.alpha(alpha),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
@@ -634,10 +600,7 @@ fun ImazhSelectionModeAppBar(
                             color = Color_Primary,
                             shape = RoundedCornerShape(8.dp)
                         )
-                        .clickable(
-                            enabled = isClickable,
-                            onClick = onSelectAllClick
-                        )
+                        .clickable(onClick = onSelectAllClick)
                 ) {
                     ViraIcon(
                         drawable = R.drawable.ic_selected,
@@ -655,10 +618,7 @@ fun ImazhSelectionModeAppBar(
                             color = Color_White,
                             shape = RoundedCornerShape(8.dp)
                         )
-                        .clickable(
-                            enabled = isClickable,
-                            onClick = onSelectAllClick
-                        )
+                        .clickable(onClick = onSelectAllClick)
                 )
             }
 
@@ -669,17 +629,13 @@ fun ImazhSelectionModeAppBar(
                 style = MaterialTheme.typography.subtitle2,
                 color = MaterialTheme.colors.onSurface,
                 textAlign = TextAlign.Start,
-                modifier = Modifier.clickable(
-                    enabled = isClickable,
-                    onClick = onSelectAllClick
-                )
+                modifier = Modifier.clickable(onClick = onSelectAllClick)
             )
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
         IconButton(
-            enabled = isClickable,
             onClick = {
                 safeClick {
                     onDeleteClick()
@@ -697,7 +653,7 @@ fun ImazhSelectionModeAppBar(
         }
 
         IconButton(
-            enabled = isClickable && isSharingEnabled,
+            enabled = isSharingEnabled,
             onClick = {
                 safeClick {
                     onShareClick()
@@ -715,7 +671,6 @@ fun ImazhSelectionModeAppBar(
         }
 
         IconButton(
-            enabled = isClickable,
             onClick = {
                 safeClick {
                     onCancelClick()

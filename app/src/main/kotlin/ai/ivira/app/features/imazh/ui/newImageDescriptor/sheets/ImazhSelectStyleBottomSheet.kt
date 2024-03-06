@@ -36,7 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SelectStyleBottomSheet(
+fun ImazhSelectStyleBottomSheet(
     styles: List<ImazhImageStyle>,
     selectedStyle: ImazhImageStyle,
     confirmSelectionCallBack: (ImazhImageStyle) -> Unit
@@ -107,9 +107,9 @@ fun SelectStyleBottomSheet(
 
 @Preview
 @Composable
-fun PreviewSelectStyleBottomSheet() {
+fun PreviewImazhSelectStyleBottomSheet() {
     ViraPreview {
-        SelectStyleBottomSheet(
+        ImazhSelectStyleBottomSheet(
             styles = ImazhImageStyle.values().toList(),
             selectedStyle = ImazhImageStyle.None,
             confirmSelectionCallBack = {}

@@ -1,6 +1,9 @@
 package ai.ivira.app.features.imazh.ui.details
 
 import ai.ivira.app.R
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheet
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
+import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
@@ -13,7 +16,6 @@ import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.convertByteToMB
 import ai.ivira.app.utils.ui.hasPermission
-import ai.ivira.app.utils.ui.hide
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isSdkVersionBetween23And29
 import ai.ivira.app.utils.ui.navigateToAppSettings
@@ -22,7 +24,6 @@ import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_BG
-import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_On_Surface
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
@@ -32,7 +33,6 @@ import ai.ivira.app.utils.ui.theme.labelMedium
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import android.Manifest
 import android.app.Activity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -54,12 +54,9 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,7 +68,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -110,11 +106,7 @@ private fun ImazhDetailsScreen(
     val context = LocalContext.current
     val snackBarState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackBarState)
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true,
-        confirmValueChange = { true }
-    )
+    val sheetState = rememberViraBottomSheetState()
 
     var selectedSheet by rememberSaveable { mutableStateOf(DeleteConfirmation) }
 
@@ -151,14 +143,10 @@ private fun ImazhDetailsScreen(
         }
     }
 
-    BackHandler(modalBottomSheetState.isVisible) {
-        modalBottomSheetState.hide(coroutineScope)
-    }
-
     LaunchedEffect(Unit) {
         viewModel.uiViewState.collectLatest {
             if (it is UiError && it.isSnack) {
-                modalBottomSheetState.hide(coroutineScope)
+                sheetState.hide()
                 delay(100)
                 showMessage(
                     snackBarState,
@@ -176,24 +164,106 @@ private fun ImazhDetailsScreen(
             .fillMaxSize()
             .background(Color_BG)
     ) { paddingValues ->
-        ModalBottomSheetLayout(
-            sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
-            sheetBackgroundColor = Color_BG_Bottom_Sheet,
-            scrimColor = Color.Black.copy(alpha = 0.5f),
-            sheetState = modalBottomSheetState,
-            sheetContent = sheetContent@{
-                when (selectedSheet) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            TopBar(
+                onBackClick = navController::navigateUp,
+                onDeleteClick = {
+                    selectedSheet = DeleteConfirmation
+                    sheetState.show()
+                },
+                onShareClick = {
+                    viewModel.shareItem(context)
+                },
+                onSaveClick = {
+                    if (!isSdkVersionBetween23And29() ||
+                        context.hasPermission(writeStoragePermission)
+                    ) {
+                        viewModel.saveItemToDownloadFolder().also { isSuccess ->
+                            if (isSuccess) {
+                                showMessage(
+                                    snackBarState,
+                                    coroutineScope,
+                                    context.getString(R.string.msg_file_saved_successfully)
+                                )
+                            }
+                        }
+                    } else if (viewModel.hasDeniedPermissionPermanently(writeStoragePermission)) {
+                        coroutineScope.launch {
+                            selectedSheet = FileAccessPermissionDenied
+                            sheetState.show()
+                        }
+                    } else {
+                        // Asking for permission
+                        writeStoragePermissionLauncher.launch(writeStoragePermission)
+                    }
+                }
+            )
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(scrollState)
+            ) bodyColumn@{
+                val info = photoInfo ?: return@bodyColumn
+                val file = File(info.filePath)
+
+                AsyncImage(
+                    model = info.filePath,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                )
+
+                Column(
+                    modifier = Modifier.padding(
+                        start = 20.dp,
+                        end = 20.dp,
+                        bottom = 20.dp
+                    )
+                ) {
+                    ImageDescription(
+                        description = info.prompt,
+                        createdAt = info.createdAt,
+                        imageSize = file.length().toDouble()
+                    )
+
+                    if (info.keywords.isNotEmpty()) {
+                        Keyword(list = info.keywords)
+                    }
+
+                    if (info.negativePrompt.isNotEmpty()) {
+                        NegativePrompt(value = info.negativePrompt)
+                    }
+
+                    if (info.style != ImazhImageStyle.None) {
+                        Style(style = info.style)
+                    }
+                }
+            }
+        }
+    }
+
+    if (sheetState.showBottomSheet) {
+        ViraBottomSheet(sheetState = sheetState) {
+            ViraBottomSheetContent(selectedSheet) sheetContent@{ selected ->
+                when (selected) {
                     DeleteConfirmation -> {
                         val info = photoInfo ?: return@sheetContent
 
                         FileItemConfirmationDeleteBottomSheet(
                             deleteAction = {
                                 viewModel.removeImage(info.id, info.filePath)
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                                 navController.navigateUp()
                             },
                             cancelAction = {
-                                modalBottomSheetState.hide(coroutineScope)
+                                sheetState.hide()
                             },
                             fileName = ""
                         )
@@ -201,106 +271,13 @@ private fun ImazhDetailsScreen(
                     FileAccessPermissionDenied -> {
                         AccessDeniedToOpenFileBottomSheet(
                             cancelAction = {
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                sheetState.hide()
                             },
                             submitAction = {
                                 navigateToAppSettings(activity = context as Activity)
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                sheetState.hide()
                             }
                         )
-                    }
-                }
-            }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                TopBar(
-                    onBackClick = navController::navigateUp,
-                    onDeleteClick = {
-                        selectedSheet = DeleteConfirmation
-                        coroutineScope.launch {
-                            modalBottomSheetState.show()
-                        }
-                    },
-                    onShareClick = {
-                        viewModel.shareItem(context)
-                    },
-                    onSaveClick = {
-                        if (!isSdkVersionBetween23And29() ||
-                            context.hasPermission(writeStoragePermission)
-                        ) {
-                            viewModel.saveItemToDownloadFolder().also { isSuccess ->
-                                if (isSuccess) {
-                                    showMessage(
-                                        snackBarState,
-                                        coroutineScope,
-                                        context.getString(R.string.msg_file_saved_successfully)
-                                    )
-                                }
-                            }
-                        } else if (viewModel.hasDeniedPermissionPermanently(writeStoragePermission)) {
-                            coroutineScope.launch {
-                                selectedSheet = FileAccessPermissionDenied
-                                modalBottomSheetState.hide()
-                                if (!modalBottomSheetState.isVisible) {
-                                    modalBottomSheetState.show()
-                                }
-                            }
-                        } else {
-                            // Asking for permission
-                            writeStoragePermissionLauncher.launch(writeStoragePermission)
-                        }
-                    }
-                )
-
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(scrollState)
-                ) bodyColumn@{
-                    val info = photoInfo ?: return@bodyColumn
-                    val file = File(info.filePath)
-
-                    AsyncImage(
-                        model = info.filePath,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                    )
-
-                    Column(
-                        modifier = Modifier.padding(
-                            start = 20.dp,
-                            end = 20.dp,
-                            bottom = 20.dp
-                        )
-                    ) {
-                        ImageDescription(
-                            description = info.prompt,
-                            createdAt = info.createdAt,
-                            imageSize = file.length().toDouble()
-                        )
-
-                        if (info.keywords.isNotEmpty()) {
-                            Keyword(list = info.keywords)
-                        }
-
-                        if (info.negativePrompt.isNotEmpty()) {
-                            NegativePrompt(value = info.negativePrompt)
-                        }
-
-                        if (info.style != ImazhImageStyle.None) {
-                            Style(style = info.style)
-                        }
                     }
                 }
             }
