@@ -52,12 +52,23 @@ class ViraBottomSheetState internal constructor(
     val currentValue: ViraBottomSheetValue get() = bottomSheetState.currentValue
     val targetValue: ViraBottomSheetValue get() = bottomSheetState.targetValue
     val hasExpandedState: Boolean get() = bottomSheetState.hasExpandedState
+    val progress: Float get() = bottomSheetState.progress
 
     var showBottomSheet by mutableStateOf(false)
         private set
 
     fun show() {
         showBottomSheet = true
+    }
+
+    fun halfExpand() {
+        require(!bottomSheetState.skipPartiallyExpanded) {
+            "Can not half expand because skipPartiallyExpanded is true"
+        }
+
+        coroutineScope.launch {
+            bottomSheetState.animateTo(ViraBottomSheetValue.PartiallyExpanded)
+        }
     }
 
     fun hide() {

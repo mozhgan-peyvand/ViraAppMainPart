@@ -1,6 +1,7 @@
 package ai.ivira.app.features.avasho.ui.archive
 
 import ai.ivira.app.R
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetValue
 import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus
 import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.FailureUpload
 import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.Idle
@@ -42,8 +43,6 @@ import ai.ivira.app.utils.ui.stateIn
 import android.app.Application
 import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.ModalBottomSheetValue.Hidden
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
@@ -113,7 +112,7 @@ class AvashoArchiveListViewModel @Inject constructor(
 
     val networkStatus = networkStatusTracker.networkStatus.stateIn(initial = Unavailable)
     var selectedAvashoItemBottomSheet = mutableStateOf<AvashoArchiveView?>(null)
-    var bottomSheetInitialValue = mutableStateOf<ModalBottomSheetValue>(Hidden)
+    var bottomSheetInitialValue = mutableStateOf(ViraBottomSheetValue.Hidden)
 
     private var job: Job? = null
     private var downloadJob: Job? = null

@@ -1,6 +1,9 @@
 package ai.ivira.app.features.avasho.ui.file_creation
 
 import ai.ivira.app.R
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheet
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
+import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.ChooseFileContentBottomSheet
@@ -20,7 +23,6 @@ import ai.ivira.app.utils.ui.openFileIntentAndroidTiramisu
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_BG
-import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Surface_Container_High
@@ -35,7 +37,6 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ScrollState
@@ -58,14 +59,11 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue.Hidden
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -105,7 +103,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.skydoves.balloon.overlay.BalloonOverlayCircle
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -150,8 +148,8 @@ private fun AvashoFileCreationScreen(
             val data = result.data
             val uri = data?.data
             if (uri != null) {
-                coroutineScope.launch(Dispatchers.IO) {
-                    try {
+                coroutineScope.launch(IO) {
+                    runCatching {
                         // The reason this is added because **use** function closes inputStream!
                         // noinspection Recycle
                         val inputStream = context.contentResolver.openInputStream(uri)
@@ -165,7 +163,6 @@ private fun AvashoFileCreationScreen(
                                 }
                             }.orEmpty()
                         )
-                    } catch (e: Exception) {
                     }
                 }
             }
@@ -214,10 +211,7 @@ private fun AvashoFileCreationScreen(
     val shouldShowTooltip by viewModel.shouldShowTooltip
 
     val fileName = rememberSaveable { mutableStateOf(viewModel.getCurrentDefaultName()) }
-    val bottomSheetState = rememberModalBottomSheetState(
-        initialValue = Hidden,
-        skipHalfExpanded = true
-    )
+    val sheetState = rememberViraBottomSheetState()
 
     val eventHandler = LocalEventHandler.current
 
@@ -235,12 +229,6 @@ private fun AvashoFileCreationScreen(
         }
     }
 
-    BackHandler(bottomSheetState.isVisible) {
-        coroutineScope.launch {
-            bottomSheetState.hide()
-        }
-    }
-
     Scaffold(
         backgroundColor = Color_BG,
         scaffoldState = scaffoldState,
@@ -252,13 +240,80 @@ private fun AvashoFileCreationScreen(
             )
         }
     ) { padding ->
-        ModalBottomSheetLayout(
-            sheetState = bottomSheetState,
-            sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
-            sheetBackgroundColor = Color_BG_Bottom_Sheet,
-            scrimColor = Color.Black.copy(alpha = 0.5f),
-            modifier = Modifier.padding(padding),
-            sheetContent = {
+        var shouldShowUploadTooltip by rememberSaveable {
+            mutableStateOf(false)
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color_BG)
+                .padding(padding)
+        ) {
+            TopAppBar(
+                isUndoEnabled = viewModel.canUndo(),
+                isRedoEnabled = viewModel.canRedo(),
+                shouldShowUploadTooltip = shouldShowUploadTooltip,
+                onUndoClick = {
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                    viewModel.undo()
+                },
+                onRedoClick = {
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                    viewModel.redo()
+                },
+                onBackAction = {
+                    // todo should handle the situation when the textField is not empty
+                    navController.navigateUp()
+                },
+                uploadAction = {
+                    eventHandler.specialEvent(AvashoAnalytics.uploadIconClick)
+                    focusManager.clearFocus()
+                    setSelectedSheet(ChooseFile)
+                    sheetState.show()
+                },
+                onTooltipDismiss = {
+                    viewModel.doNotShowTooltipAgain()
+                    shouldShowUploadTooltip = false
+                    focusRequester.requestFocus()
+                }
+            )
+
+            Body(
+                text = viewModel.textBody.value,
+                focusRequester = focusRequester,
+                shouldShowEditTextTooltip = shouldShowTooltip && !shouldShowUploadTooltip,
+                scrollState = scrollState,
+                onTooltipDismiss = {
+                    if (shouldShowTooltip) {
+                        shouldShowUploadTooltip = true
+                    }
+                },
+                onTextChange = {
+                    viewModel.addTextToList(it)
+                },
+                modifier = Modifier.weight(1f)
+            )
+
+            ConfirmButton(
+                enabled = viewModel.textBody.value.isNotEmpty() && uiViewState !is UiLoading,
+                isLoading = uiViewState is UiLoading,
+                onClick = {
+                    keyboardController?.hide()
+                    viewModel.checkSpeech(speech = viewModel.textBody.value) {
+                        setSelectedSheet(OpenForChooseSpeaker)
+                        sheetState.show()
+                    }
+                }
+            )
+        }
+    }
+
+    if (sheetState.showBottomSheet) {
+        ViraBottomSheet(sheetState = sheetState) {
+            ViraBottomSheetContent(selectedSheet) { selectedSheet ->
                 when (selectedSheet) {
                     OpenForChooseSpeaker -> {
                         SelectSpeakerBottomSheet(
@@ -282,23 +337,20 @@ private fun AvashoFileCreationScreen(
                         )
                     }
                     FileAccessPermissionDenied -> {
-                        AccessDeniedToOpenFileBottomSheet(cancelAction = {
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
+                        AccessDeniedToOpenFileBottomSheet(
+                            cancelAction = {
+                                sheetState.hide()
+                            },
+                            submitAction = {
+                                navigateToAppSettings(activity = context as Activity)
+                                sheetState.hide()
                             }
-                        }, submitAction = {
-                            navigateToAppSettings(activity = context as Activity)
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                        })
+                        )
                     }
                     ChooseFile -> {
                         ChooseFileContentBottomSheet(
                             onOpenFile = {
-                                coroutineScope.launch {
-                                    bottomSheetState.hide()
-                                }
+                                sheetState.hide()
 
                                 if (Build.VERSION.SDK_INT >= 33) {
                                     launchOpenFile.launch(
@@ -321,14 +373,7 @@ private fun AvashoFileCreationScreen(
                                         )
                                     ) {
                                         setSelectedSheet(FileAccessPermissionDenied)
-                                        coroutineScope.launch {
-                                            bottomSheetState.hide()
-                                            if (!bottomSheetState.isVisible) {
-                                                bottomSheetState.show()
-                                            } else {
-                                                bottomSheetState.hide()
-                                            }
-                                        }
+                                        sheetState.show()
                                     } else {
                                         // Asking for permission
                                         chooseReadTextPermLauncher.launch(
@@ -341,87 +386,6 @@ private fun AvashoFileCreationScreen(
                         )
                     }
                 }
-            }
-        ) {
-            var shouldShowUploadTooltip by rememberSaveable {
-                mutableStateOf(false)
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color_BG)
-            ) {
-                TopAppBar(
-                    isUndoEnabled = viewModel.canUndo(),
-                    isRedoEnabled = viewModel.canRedo(),
-                    shouldShowUploadTooltip = shouldShowUploadTooltip,
-                    onUndoClick = {
-                        focusManager.clearFocus()
-                        keyboardController?.hide()
-                        viewModel.undo()
-                    },
-                    onRedoClick = {
-                        focusManager.clearFocus()
-                        keyboardController?.hide()
-                        viewModel.redo()
-                    },
-                    onBackAction = {
-                        // todo should handle the situation when the textField is not empty
-                        navController.navigateUp()
-                    },
-                    uploadAction = {
-                        eventHandler.specialEvent(AvashoAnalytics.uploadIconClick)
-                        focusManager.clearFocus()
-                        setSelectedSheet(ChooseFile)
-                        coroutineScope.launch {
-                            if (!bottomSheetState.isVisible) {
-                                bottomSheetState.show()
-                            } else {
-                                bottomSheetState.hide()
-                            }
-                        }
-                    },
-                    onTooltipDismiss = {
-                        viewModel.doNotShowTooltipAgain()
-                        shouldShowUploadTooltip = false
-                        focusRequester.requestFocus()
-                    }
-                )
-
-                Body(
-                    text = viewModel.textBody.value,
-                    focusRequester = focusRequester,
-                    shouldShowEditTextTooltip = shouldShowTooltip && !shouldShowUploadTooltip,
-                    scrollState = scrollState,
-                    onTooltipDismiss = {
-                        if (shouldShowTooltip) {
-                            shouldShowUploadTooltip = true
-                        }
-                    },
-                    onTextChange = {
-                        viewModel.addTextToList(it)
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-
-                ConfirmButton(
-                    enabled = viewModel.textBody.value.isNotEmpty() && uiViewState !is UiLoading,
-                    isLoading = uiViewState is UiLoading,
-                    onClick = {
-                        keyboardController?.hide()
-                        viewModel.checkSpeech(speech = viewModel.textBody.value) {
-                            setSelectedSheet(OpenForChooseSpeaker)
-                            coroutineScope.launch {
-                                if (!bottomSheetState.isVisible) {
-                                    bottomSheetState.show()
-                                } else {
-                                    bottomSheetState.hide()
-                                }
-                            }
-                        }
-                    }
-                )
             }
         }
     }
