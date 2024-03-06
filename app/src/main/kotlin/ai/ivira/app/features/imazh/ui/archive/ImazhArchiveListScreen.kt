@@ -1040,8 +1040,11 @@ private fun ImazhProcessedItem(
         }
 
         if (showPrompt) {
+            val prompt by remember(item) {
+                mutableStateOf(item.prompt.replace("\\s+".toRegex(), " "))
+            }
             Text(
-                text = item.prompt,
+                text = prompt,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = if (isSmallItem) {
@@ -1330,6 +1333,10 @@ private fun ImazhTrackingItem(
         restartOnPlay = true
     )
 
+    val prompt by remember(item) {
+        mutableStateOf(item.prompt.replace("\\s+".toRegex(), " "))
+    }
+
     val getNewEstimateTime = remember(item.token, item.lastFailure) {
         mutableIntStateOf(estimateTime().toInt())
     }
@@ -1429,7 +1436,7 @@ private fun ImazhTrackingItem(
             }
 
             Text(
-                text = item.prompt,
+                text = prompt,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = textStyle,

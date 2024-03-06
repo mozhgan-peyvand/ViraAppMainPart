@@ -46,7 +46,9 @@ class ImazhRemoteDataSource @Inject constructor(
             val result = imazhService.validateAndTranslatePrompt(
                 apiKey = sai(),
                 url = bu() + "sahab/gateway/service/nsfwDetector/data",
-                data = promptData
+                data = promptData.copy(
+                    data = promptData.data.replace("\\s+".toRegex(), " ")
+                )
             )
         ) {
             is ApiResult.Success -> ApiResult.Success(result.data.data)
@@ -72,7 +74,7 @@ class ImazhRemoteDataSource @Inject constructor(
         }
     }
 
-    external fun sai(): String
+    private external fun sai(): String
     private external fun iak(): String
     private external fun bu(): String
 }

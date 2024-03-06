@@ -8,7 +8,7 @@ data class ValidateRequestNetwork(
     val data: String,
     val style: String,
     @Json(name = "negative_prompt")
-    val negativePrompt: String,
+    val negativePrompt: String = "",
     @Json(name = "online_translation")
     val onlineTranslation: Boolean
 )

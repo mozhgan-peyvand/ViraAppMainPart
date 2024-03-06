@@ -80,8 +80,6 @@ class ImazhLocalDataSource @Inject constructor(
                         englishKeywords = tracking.englishKeywords,
                         prompt = tracking.prompt,
                         englishPrompt = tracking.englishPrompt,
-                        negativePrompt = tracking.negativePrompt,
-                        englishNegativePrompt = tracking.englishNegativePrompt,
                         style = tracking.style,
                         createdAt = PersianDate().time
                     )
@@ -89,8 +87,6 @@ class ImazhLocalDataSource @Inject constructor(
             }
         }
     }
-
-    fun getAllProcessedFiles() = dao.getAllProcessedFiles()
 
     fun getPhotoInfo(id: Int) = dao.getPhotoInfo(id)
 

@@ -38,7 +38,7 @@ import androidx.room.TypeConverters
         ImazhProcessedFileEntity::class,
         ImazhTrackingFileEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class ViraDb : RoomDatabase() {

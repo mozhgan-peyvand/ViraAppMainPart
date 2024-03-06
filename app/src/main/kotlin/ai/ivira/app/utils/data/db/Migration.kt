@@ -84,4 +84,27 @@ object Migration {
             }
         }
     }
+
+    fun migration5_6(): Migration {
+        return object : Migration(5, 6) {
+            private fun migrateImazhProcessedFileEntity(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `ImazhProcessedFileEntityNew` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `imagePath` TEXT NOT NULL, `filePath` TEXT NOT NULL, `keywords` TEXT NOT NULL, `englishKeywords` TEXT NOT NULL, `prompt` TEXT NOT NULL, `englishPrompt` TEXT NOT NULL, `style` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)")
+                db.execSQL("INSERT INTO 'ImazhProcessedFileEntityNew' (id, imagePath, filePath, keywords, englishKeywords, prompt, englishPrompt, style, createdAt) SELECT id, imagePath, filePath, keywords, englishKeywords, prompt, englishPrompt, style, createdAt FROM `ImazhProcessedFileEntity`")
+                db.execSQL("DROP TABLE `ImazhProcessedFileEntity`")
+                db.execSQL("ALTER TABLE `ImazhProcessedFileEntityNew` RENAME TO `ImazhProcessedFileEntity`")
+            }
+
+            private fun migrateImazhTrackingFileEntity(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `ImazhTrackingFileEntityNew` (`token` TEXT NOT NULL, `keywords` TEXT NOT NULL, `englishKeywords` TEXT NOT NULL, `prompt` TEXT NOT NULL, `englishPrompt` TEXT NOT NULL, `style` TEXT NOT NULL, `processEstimation` INTEGER, `insertSystemTime` INTEGER NOT NULL, `insertBootTime` INTEGER NOT NULL, `lastFailureSystemTime` INTEGER, `lastFailureBootTime` INTEGER, PRIMARY KEY(`token`))")
+                db.execSQL("INSERT INTO 'ImazhTrackingFileEntityNew' (token, keywords, englishKeywords, prompt, englishPrompt, style, processEstimation, insertSystemTime, insertBootTime, lastFailureSystemTime, lastFailureBootTime) SELECT token, keywords, englishKeywords, prompt, englishPrompt, style, processEstimation, insertSystemTime, insertBootTime, lastFailureSystemTime, lastFailureBootTime FROM 'ImazhTrackingFileEntity'")
+                db.execSQL("DROP TABLE `ImazhTrackingFileEntity`")
+                db.execSQL("ALTER TABLE `ImazhTrackingFileEntityNew` RENAME TO `ImazhTrackingFileEntity`")
+            }
+
+            override fun migrate(db: SupportSQLiteDatabase) {
+                migrateImazhProcessedFileEntity(db)
+                migrateImazhTrackingFileEntity(db)
+            }
+        }
+    }
 }
