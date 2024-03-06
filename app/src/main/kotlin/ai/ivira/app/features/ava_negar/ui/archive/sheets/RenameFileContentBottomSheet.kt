@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Composable
 fun RenameFileContentBottomSheet(
@@ -99,7 +100,7 @@ fun RenameFileContentBottomSheet(
                 ),
             textStyle = MaterialTheme.typography.body2.copy(
                 fontFamily = FontFamily(
-                    Font(R.font.bahij_helvetica_neue_vira_edition_roman)
+                    Font(ThemeR.font.bahij_helvetica_neue_vira_edition_roman)
                 )
             ),
             colors = TextFieldDefaults.textFieldColors(

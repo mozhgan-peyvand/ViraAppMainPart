@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun HistoryBottomSheet(
+fun ImazhHistoryBottomSheet(
     viewModel: NewImageDescriptorViewModel = hiltViewModel(),
     onAcceptClick: (String) -> Unit
 ) {
@@ -191,15 +191,15 @@ private fun HistoryItem(
 
 @ViraDarkPreview
 @Composable
-private fun HistoryBottomSheetPreview() {
+private fun PreviewImazhHistoryBottomSheet() {
     ViraPreview {
-        HistoryBottomSheet(hiltViewModel(), {})
+        ImazhHistoryBottomSheet(hiltViewModel(), {})
     }
 }
 
 @ViraDarkPreview
 @Composable
-private fun HistoryItemPreview() {
+private fun PreviewHistoryItem() {
     ViraPreview {
         HistoryItem(
             ImazhHistoryView(

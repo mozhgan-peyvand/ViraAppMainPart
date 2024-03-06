@@ -88,6 +88,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import pl.droidsonroids.gif.GifDrawable
 import pl.droidsonroids.gif.GifImageView
+import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Composable
 fun AvaNegarVoiceRecordingScreenRoute(navController: NavHostController) {
@@ -585,7 +586,7 @@ private fun VoiceRecordingHintSection(
                 Row {
                     val body2Font = MaterialTheme.typography.body2.copy(
                         fontFamily = FontFamily(
-                            Font(R.font.bahij_helvetica_neue_vira_edition_roman)
+                            Font(ThemeR.font.bahij_helvetica_neue_vira_edition_roman)
                         )
                     )
                     CompositionLocalProvider(LocalTextStyle provides body2Font) {

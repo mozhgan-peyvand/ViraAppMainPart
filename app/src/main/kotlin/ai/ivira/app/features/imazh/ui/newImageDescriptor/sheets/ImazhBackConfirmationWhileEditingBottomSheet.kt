@@ -1,6 +1,7 @@
 package ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets
 
 import ai.ivira.app.R
+import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
@@ -21,12 +22,11 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun RandomConfirmationBottomSheet(
-    cancelAction: () -> Unit,
+fun ImazhBackConfirmationWhileEditingBottomSheet(
+    generateAction: () -> Unit,
     deleteAction: () -> Unit
 ) {
     Column(
@@ -35,12 +35,12 @@ fun RandomConfirmationBottomSheet(
             .padding(20.dp)
     ) {
         Text(
-            text = stringResource(id = R.string.lbl_random_description),
+            text = stringResource(id = R.string.lbl_back),
             style = MaterialTheme.typography.h6,
             modifier = Modifier.padding(bottom = 16.dp)
         )
         Text(
-            text = stringResource(id = R.string.msg_random_description),
+            text = stringResource(id = R.string.msg_exit_while_editing),
             style = MaterialTheme.typography.body2,
             modifier = Modifier.padding(bottom = 28.dp)
         )
@@ -53,7 +53,7 @@ fun RandomConfirmationBottomSheet(
                 modifier = Modifier.weight(1f),
                 onClick = {
                     safeClick {
-                        cancelAction()
+                        generateAction()
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
@@ -63,7 +63,7 @@ fun RandomConfirmationBottomSheet(
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = stringResource(id = R.string.lbl_back),
+                    text = stringResource(id = R.string.lbl_generate_image),
                     style = MaterialTheme.typography.button
                 )
             }
@@ -98,12 +98,12 @@ fun RandomConfirmationBottomSheet(
     }
 }
 
-@Preview
+@ViraDarkPreview
 @Composable
-fun PreviewRandomConfirmationBottomSheet() {
+private fun PreviewImazhBackConfirmationWhileEditingBottomSheet() {
     ViraPreview {
-        RandomConfirmationBottomSheet(
-            cancelAction = {},
+        ImazhBackConfirmationWhileEditingBottomSheet(
+            generateAction = {},
             deleteAction = {}
         )
     }

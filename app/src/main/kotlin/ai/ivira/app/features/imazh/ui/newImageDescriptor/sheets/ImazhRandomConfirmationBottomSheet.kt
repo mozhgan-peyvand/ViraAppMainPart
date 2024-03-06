@@ -1,4 +1,4 @@
-package ai.ivira.app.features.imazh.ui.newImageDescriptor
+package ai.ivira.app.features.imazh.ui.newImageDescriptor.sheets
 
 import ai.ivira.app.R
 import ai.ivira.app.utils.ui.preview.ViraPreview
@@ -25,8 +25,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun BackConfirmationWhileGeneratingBottomSheet(
-    continueAction: () -> Unit,
+fun ImazhRandomConfirmationBottomSheet(
+    cancelAction: () -> Unit,
     deleteAction: () -> Unit
 ) {
     Column(
@@ -35,12 +35,12 @@ fun BackConfirmationWhileGeneratingBottomSheet(
             .padding(20.dp)
     ) {
         Text(
-            text = stringResource(id = R.string.lbl_back),
+            text = stringResource(id = R.string.lbl_random_description),
             style = MaterialTheme.typography.h6,
             modifier = Modifier.padding(bottom = 16.dp)
         )
         Text(
-            text = stringResource(id = R.string.msg_exit_while_uploading),
+            text = stringResource(id = R.string.msg_random_description),
             style = MaterialTheme.typography.body2,
             modifier = Modifier.padding(bottom = 28.dp)
         )
@@ -53,7 +53,7 @@ fun BackConfirmationWhileGeneratingBottomSheet(
                 modifier = Modifier.weight(1f),
                 onClick = {
                     safeClick {
-                        continueAction()
+                        cancelAction()
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
@@ -63,7 +63,7 @@ fun BackConfirmationWhileGeneratingBottomSheet(
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = stringResource(id = R.string.lbl_continue),
+                    text = stringResource(id = R.string.lbl_back),
                     style = MaterialTheme.typography.button
                 )
             }
@@ -100,10 +100,10 @@ fun BackConfirmationWhileGeneratingBottomSheet(
 
 @Preview
 @Composable
-fun PreviewBackConfirmationWhileGeneratingBottomSheet() {
+fun PreviewImazhRandomConfirmationBottomSheet() {
     ViraPreview {
-        BackConfirmationWhileGeneratingBottomSheet(
-            continueAction = {},
+        ImazhRandomConfirmationBottomSheet(
+            cancelAction = {},
             deleteAction = {}
         )
     }

@@ -1,6 +1,6 @@
 package ai.ivira.app.utils.ui.theme
 
-import ai.ivira.app.R
+import ai.ivira.app.designsystem.theme.R
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font

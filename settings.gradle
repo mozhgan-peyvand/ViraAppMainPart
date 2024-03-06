@@ -25,3 +25,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Intelligent Assistant"
 include ':app'
+include ":design-system:bottomsheet"
+include ":design-system:theme"
