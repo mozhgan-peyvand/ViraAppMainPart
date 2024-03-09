@@ -126,6 +126,9 @@ internal class ViraInternalBottomSheetState(
     val hasExpandedState: Boolean
         get() = anchoredDraggableState.anchors.hasAnchorFor(Expanded)
 
+    val progress: Float
+        get() = anchoredDraggableState.progress
+
     /**
      * Whether the modal bottom sheet has a partially expanded state defined.
      */
