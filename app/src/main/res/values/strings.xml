@@ -37,6 +37,7 @@
     <string name="lbl_hamahang_item_bottomsheet_explain">سرویس همآهنگ با قابلیت تقلید صدای افراد مختلف، در نسخه‌ی بعد فعال خواهد شد.</string>
 
     <string name="lbl_make_your_first_file">اولین فایل خود را ایجاد کنید.</string>
+    <string name="lbl_make_your_first_image">اولین تصویر خود را ایجاد کنید.</string>
     <string name="lbl_dont_have_file">فایلی برای نمایش ندارید.</string>
     <string name="lbl_choose_file">انتخاب فایل</string>
     <string name="lbl_you_can_only_choose_one_file">شما تنها میتوانید یک فایل برای پردازش ارسال کنید</string>
@@ -203,6 +204,7 @@
     <string name="lbl_wait_for_end_process">در انتظار اتمام پردازش</string>
     <string name="lbl_avasho">آواشو</string>
     <string name="lbl_dose_not_exist_any_file">فایلی در آرشیو خود ندارید</string>
+    <string name="lbl_there_is_no_image_in_archive">هنوز تصویری درآرشیو وجود ندارد.</string>
     <string name="lbl_pause_recording">توقف ضبط</string>
     <string name="lbl_notification">اعلانات</string>
     <string name="lbl_enable_notification_for_recording_when_screen_is_locked">برای جلوگیری از قطع ضبط صدا هنگام قفل شدن گوشی یا هنگام خروج از صفحات برنامه، لازم است اعلانات اپلیکیشن را فعال کنید.</string>

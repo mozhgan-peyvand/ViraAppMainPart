@@ -861,7 +861,7 @@ private fun ArchiveEmptyBody(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = stringResource(id = R.string.lbl_dose_not_exist_any_file),
+                text = stringResource(id = R.string.lbl_there_is_no_image_in_archive),
                 style = MaterialTheme.typography.subtitle1,
                 color = Color_Text_1,
                 modifier = Modifier
@@ -871,7 +871,7 @@ private fun ArchiveEmptyBody(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = stringResource(id = R.string.lbl_make_your_first_file),
+                text = stringResource(id = R.string.lbl_make_your_first_image),
                 style = MaterialTheme.typography.caption,
                 color = Color_Text_3,
                 modifier = Modifier
