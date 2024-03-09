@@ -229,6 +229,7 @@ private fun SearchToolbar(
                 textColor = Color_Text_1,
                 placeholderColor = Color_Text_3
             ),
+            singleLine = true,
             modifier = Modifier
                 .weight(1f)
                 .focusRequester(focusRequester)

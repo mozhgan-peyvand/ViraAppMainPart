@@ -206,8 +206,6 @@ private fun AvashoArchiveListScreen(
 
     var selectedAvashoItem by viewModel.selectedAvashoItemBottomSheet
 
-    var bottomSheetInitialValue by viewModel.bottomSheetInitialValue
-
     var shouldShowSnackBarWithPadding by remember { mutableStateOf(true) }
     val eventHandler = LocalEventHandler.current
     val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -352,6 +350,7 @@ private fun AvashoArchiveListScreen(
                 onBackClick = {
                     navController.navigateUp()
                 },
+                searchEnabled = archiveFiles.isNotEmpty(),
                 onSearch = {
                     if (selectedFileId != -1) {
                         selectedFileIndex = -1
@@ -838,6 +837,7 @@ private fun ArchiveEmptyBody(
 
 @Composable
 private fun ArchiveAppBar(
+    searchEnabled: Boolean,
     onBackClick: () -> Unit,
     onSearch: () -> Unit,
     modifier: Modifier = Modifier
@@ -872,18 +872,20 @@ private fun ArchiveAppBar(
             textAlign = TextAlign.Start,
             modifier = Modifier.weight(1f)
         )
-        IconButton(
-            onClick = {
-                safeClick {
-                    onSearch()
+        if (searchEnabled) {
+            IconButton(
+                onClick = {
+                    safeClick {
+                        onSearch()
+                    }
                 }
+            ) {
+                ViraIcon(
+                    drawable = R.drawable.ic_search,
+                    contentDescription = stringResource(id = R.string.desc_search),
+                    modifier = Modifier.padding(12.dp)
+                )
             }
-        ) {
-            ViraIcon(
-                drawable = R.drawable.ic_search,
-                contentDescription = stringResource(id = R.string.desc_search),
-                modifier = Modifier.padding(12.dp)
-            )
         }
     }
 }

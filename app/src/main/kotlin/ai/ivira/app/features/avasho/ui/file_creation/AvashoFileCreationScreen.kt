@@ -39,7 +39,6 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,9 +50,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.IconButton
@@ -131,7 +128,6 @@ private fun AvashoFileCreationScreen(
     viewModel: AvashoFileCreationViewModel
 ) {
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
@@ -285,7 +281,6 @@ private fun AvashoFileCreationScreen(
                 text = viewModel.textBody.value,
                 focusRequester = focusRequester,
                 shouldShowEditTextTooltip = shouldShowTooltip && !shouldShowUploadTooltip,
-                scrollState = scrollState,
                 onTooltipDismiss = {
                     if (shouldShowTooltip) {
                         shouldShowUploadTooltip = true
@@ -495,7 +490,6 @@ private fun Body(
     text: String,
     focusRequester: FocusRequester,
     shouldShowEditTextTooltip: Boolean,
-    scrollState: ScrollState,
     onTextChange: (String) -> Unit,
     onTooltipDismiss: () -> Unit,
     modifier: Modifier = Modifier
@@ -507,11 +501,7 @@ private fun Body(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
             TextField(
                 value = text,
                 textStyle = MaterialTheme.typography.body1,
