@@ -1,8 +1,11 @@
 package ai.ivira.app.features.ava_negar.ui.details
 
 import ai.ivira.app.R
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheet
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetDefaults
+import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
-import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Processed
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
@@ -21,7 +24,6 @@ import ai.ivira.app.utils.ui.sharePdf
 import ai.ivira.app.utils.ui.shareTXT
 import ai.ivira.app.utils.ui.shareText
 import ai.ivira.app.utils.ui.showMessage
-import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_BG_Solid_2
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
@@ -49,13 +51,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
@@ -64,7 +63,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -74,6 +72,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -98,9 +97,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 const val TIME_INTERVAL = 2000
 
@@ -138,7 +135,6 @@ private fun AvaNegarArchiveDetailScreen(
     val scrollState = rememberScrollState(0)
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
     val focusManager = LocalFocusManager.current
-    val playerState by viewModel::playerState
 
     var isConvertingTxt by rememberSaveable { mutableStateOf(false) }
     var isConvertingPdf by rememberSaveable { mutableStateOf(false) }
@@ -149,11 +145,7 @@ private fun AvaNegarArchiveDetailScreen(
 
     val processItem = viewModel.archiveFile.collectAsStateWithLifecycle()
 
-    val bottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true,
-        confirmValueChange = { !isConvertingPdf && !isConvertingTxt }
-    )
+    val bottomSheetState = rememberViraBottomSheetState(confirmValueChange = { !isConvertingPdf && !isConvertingTxt })
     val fileName = rememberSaveable { mutableStateOf<String?>(null) }
 
     val localClipBoardManager = LocalClipboardManager.current
@@ -164,37 +156,9 @@ private fun AvaNegarArchiveDetailScreen(
     }
     var isKeyboardVisible by remember { mutableStateOf(false) }
 
-    var backPressedInterval: Long = 0
-
-    BackHandler {
-        if (bottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
-            coroutineScope.launch(IO) {
-                if (!isConvertingTxt && !isConvertingPdf) {
-                    bottomSheetState.hide()
-                } else {
-                    if (backPressedInterval + TIME_INTERVAL < System.currentTimeMillis()) {
-                        withContext(Main) {
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.msg_back_again_to_cancel_converting),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-
-                        backPressedInterval = System.currentTimeMillis()
-                    } else {
-                        withContext(Main) {
-                            isConvertingPdf = false
-                            isConvertingTxt = false
-                            bottomSheetState.hide()
-                        }
-                    }
-                }
-            }
-        } else {
-            focusManager.clearFocus()
-            navController.navigateUp()
-        }
+    BackHandler(!bottomSheetState.showBottomSheet) {
+        focusManager.clearFocus()
+        navController.navigateUp()
     }
 
     LaunchedEffect(isConvertingPdf) {
@@ -285,195 +249,195 @@ private fun AvaNegarArchiveDetailScreen(
             view.viewTreeObserver.removeOnPreDrawListener(listener)
         }
     }
-
-    ModalBottomSheetLayout(
-        sheetState = bottomSheetState,
-        sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
-        sheetBackgroundColor = Color_BG_Bottom_Sheet,
-        scrimColor = Color.Black.copy(alpha = 0.5f),
-        sheetContent = {
-            when (selectedSheet) {
-                ArchiveDetailBottomSheetType.Menu -> {
-                    // to close keyboard before opening bottomSheet
-                    focusManager.clearFocus()
-                    MenuDetailsScreenBottomSheet(
-                        onRenameAction = {
-                            setSelectedSheet(ArchiveDetailBottomSheetType.Rename)
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                                if (!bottomSheetState.isVisible) {
-                                    bottomSheetState.show()
-                                } else {
-                                    bottomSheetState.hide()
-                                }
-                            }
-                        },
-                        onRemoveFileAction = {
-                            setSelectedSheet(ArchiveDetailBottomSheetType.Delete)
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                                if (!bottomSheetState.isVisible) {
-                                    bottomSheetState.show()
-                                } else {
-                                    bottomSheetState.hide()
-                                }
-                            }
-                        }
-                    )
-                }
-
-                ArchiveDetailBottomSheetType.Delete -> {
-                    FileItemConfirmationDeleteBottomSheet(
-                        deleteAction = {
-                            eventHandler.selectItem(AvanegarAnalytics.selectDeleteFile(Processed))
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                                navController.popBackStack()
-                            }
-                            viewModel.removeFile(viewModel.processItemId.intValue)
-                        },
-                        cancelAction = {
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                        },
-                        fileName = viewModel.archiveFile.value?.title ?: ""
-                    )
-                }
-
-                ArchiveDetailBottomSheetType.Rename -> {
-                    RenameFileBottomSheet(
-                        fileName = fileName.value ?: processItem.value?.title.orEmpty(),
-                        shouldShowKeyBoard = shouldShowKeyBoard,
-                        reNameAction = { name ->
-                            fileName.value = name
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                            viewModel.updateTitle(
-                                title = name,
-                                id = viewModel.processItemId.intValue
-                            )
-                        }
-                    )
-                }
-
-                ArchiveDetailBottomSheetType.Share -> {
-                    ShareDetailItemBottomSheet(
-                        isConverting = isConvertingPdf || isConvertingTxt,
-                        onPdfClick = {
-                            viewModel.saveEditedText()
-                            isConvertingPdf = true
-                        },
-                        onTextClick = {
-                            viewModel.saveEditedText()
-                            isConvertingTxt = true
-                        },
-                        onOnlyTextClick = {
-                            viewModel.saveEditedText()
-                            shareText(
-                                context = context,
-                                text = processItem.value?.text.orEmpty()
-                            )
-                            coroutineScope.launch {
-                                bottomSheetState.hide()
-                            }
-                        },
-                        fileId = itemId?.let { "$it" }
-                    )
-                }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        scaffoldState = scaffoldState,
+        snackbarHost = {
+            if (bottomSheetState.isVisible) {
+                SnackBarWithPaddingBottom(it, true, 500f)
+            } else {
+                SnackBar(it)
             }
-        }
-    ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            scaffoldState = scaffoldState,
-            snackbarHost = {
-                if (bottomSheetState.isVisible) {
-                    SnackBarWithPaddingBottom(it, true, 500f)
-                } else {
-                    SnackBar(it)
-                }
-            },
-            topBar = {
-                AvaNegarProcessedArchiveDetailTopAppBar(
-                    title = processItem.value?.title.orEmpty(),
-                    isUndoEnabled = viewModel.canUndo(),
-                    isRedoEnabled = viewModel.canRedo(),
-                    onUndoClick = {
-                        keyboardController?.hide()
-                        viewModel.undo()
-                    },
-                    onRedoClick = {
-                        keyboardController?.hide()
-                        viewModel.redo()
-                    },
-                    onBackAction = {
-                        // TODO: pass action not navController
-                        navController.popBackStack()
-                    },
-                    onMenuAction = {
-                        setSelectedSheet(ArchiveDetailBottomSheetType.Menu)
-                        coroutineScope.launch {
-                            if (!bottomSheetState.isVisible) {
-                                bottomSheetState.show()
-                            } else {
-                                bottomSheetState.hide()
-                            }
-                        }
-                    },
-                    scrollStateValue = scrollState.value
-                )
-            },
-            bottomBar = bottomBar@{
-                if (isKeyboardVisible) return@bottomBar
-
-                AvaNegarProcessedArchiveDetailBottomBar(
-                    onShareClick = {
-                        setSelectedSheet(ArchiveDetailBottomSheetType.Share)
-                        coroutineScope.launch {
-                            bottomSheetState.hide()
-                            if (!bottomSheetState.isVisible) {
-                                bottomSheetState.show()
-                            } else {
-                                bottomSheetState.hide()
-                            }
-                        }
-                    },
-                    onCopyOnClick = {
-                        localClipBoardManager.setText(
-                            AnnotatedString(
-                                processItem.value?.text.orEmpty()
-                            )
-                        )
-
-                        showMessage(
-                            snackbarHostState,
-                            coroutineScope,
-                            context.getString(R.string.lbl_text_save_in_clipboard)
-                        )
-                    }
-                )
-            }
-        ) { padding ->
-            AvaNegarProcessedArchiveDetailBody(
-                paddingValues = padding,
-                text = viewModel.textBody.value,
-                onTextChange = {
-                    viewModel.addTextToList(it)
+        },
+        topBar = {
+            AvaNegarProcessedArchiveDetailTopAppBar(
+                title = processItem.value?.title.orEmpty(),
+                isUndoEnabled = viewModel.canUndo(),
+                isRedoEnabled = viewModel.canRedo(),
+                onUndoClick = {
+                    keyboardController?.hide()
+                    viewModel.undo()
                 },
-                playerState = viewModel.playerState,
-                scrollState = scrollState,
-                scrollStateValue = scrollState.value,
-                fileNotExist = viewModel.fileNotExist.value,
-                fileNotExistAction = {
+                onRedoClick = {
+                    keyboardController?.hide()
+                    viewModel.redo()
+                },
+                onBackAction = {
+                    // TODO: pass action not navController
+                    navController.popBackStack()
+                },
+                onMenuAction = {
+                    setSelectedSheet(ArchiveDetailBottomSheetType.Menu)
+                    bottomSheetState.show()
+                },
+                scrollStateValue = scrollState.value
+            )
+        },
+        bottomBar = bottomBar@{
+            if (isKeyboardVisible) return@bottomBar
+
+            AvaNegarProcessedArchiveDetailBottomBar(
+                onShareClick = {
+                    setSelectedSheet(ArchiveDetailBottomSheetType.Share)
+                    bottomSheetState.show()
+                },
+                onCopyOnClick = {
+                    localClipBoardManager.setText(
+                        AnnotatedString(
+                            processItem.value?.text.orEmpty()
+                        )
+                    )
+
                     showMessage(
                         snackbarHostState,
                         coroutineScope,
-                        context.getString(R.string.msg_invalid_file)
+                        context.getString(R.string.lbl_text_save_in_clipboard)
                     )
                 }
             )
+        }
+    ) { padding ->
+        AvaNegarProcessedArchiveDetailBody(
+            paddingValues = padding,
+            text = viewModel.textBody.value,
+            onTextChange = {
+                viewModel.addTextToList(it)
+            },
+            playerState = viewModel.playerState,
+            scrollState = scrollState,
+            scrollStateValue = scrollState.value,
+            fileNotExist = viewModel.fileNotExist.value,
+            fileNotExistAction = {
+                showMessage(
+                    snackbarHostState,
+                    coroutineScope,
+                    context.getString(R.string.msg_invalid_file)
+                )
+            }
+        )
+    }
+
+    if (bottomSheetState.showBottomSheet) {
+        // this is needed so in onBackPressed the currect value of it is used
+        val selectedSheetUpdated by rememberUpdatedState(newValue = selectedSheet)
+        var backPressedInterval: Long = 0
+
+        ViraBottomSheet(
+            sheetState = bottomSheetState,
+            properties = ViraBottomSheetDefaults.properties(shouldDismissOnBackPress = false),
+            onBackPressed = {
+                when (selectedSheetUpdated) {
+                    ArchiveDetailBottomSheetType.Delete,
+                    ArchiveDetailBottomSheetType.Menu,
+                    ArchiveDetailBottomSheetType.Rename -> bottomSheetState.hide()
+                    ArchiveDetailBottomSheetType.Share -> {
+                        if (!isConvertingTxt && !isConvertingPdf) {
+                            bottomSheetState.hide()
+                        } else {
+                            if (backPressedInterval + TIME_INTERVAL < System.currentTimeMillis()) {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.msg_back_again_to_cancel_converting),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                backPressedInterval = System.currentTimeMillis()
+                            } else {
+                                isConvertingPdf = false
+                                isConvertingTxt = false
+                                bottomSheetState.hide()
+                            }
+                        }
+                    }
+                }
+            }
+        ) {
+            ViraBottomSheetContent(selectedSheet) {
+                when (selectedSheet) {
+                    ArchiveDetailBottomSheetType.Menu -> {
+                        // to close keyboard before opening bottomSheet
+                        focusManager.clearFocus()
+                        MenuDetailsScreenBottomSheet(
+                            onRenameAction = {
+                                setSelectedSheet(ArchiveDetailBottomSheetType.Rename)
+                                bottomSheetState.show()
+                            },
+                            onRemoveFileAction = {
+                                setSelectedSheet(ArchiveDetailBottomSheetType.Delete)
+                                bottomSheetState.show()
+                            }
+                        )
+                    }
+
+                    ArchiveDetailBottomSheetType.Delete -> {
+                        FileItemConfirmationDeleteBottomSheet(
+                            deleteAction = {
+                                eventHandler.selectItem(
+                                    AvanegarAnalytics.selectDeleteFile(
+                                        AvanegarAnalytics.AvanegarFileType.Processed
+                                    )
+                                )
+
+                                bottomSheetState.hide()
+                                navController.popBackStack()
+                                viewModel.removeFile(viewModel.processItemId.intValue)
+                            },
+                            cancelAction = {
+                                bottomSheetState.hide()
+                            },
+                            fileName = viewModel.archiveFile.value?.title ?: ""
+                        )
+                    }
+
+                    ArchiveDetailBottomSheetType.Rename -> {
+                        RenameFileBottomSheet(
+                            fileName = fileName.value ?: processItem.value?.title.orEmpty(),
+                            shouldShowKeyBoard = shouldShowKeyBoard,
+                            reNameAction = { name ->
+                                fileName.value = name
+                                bottomSheetState.hide()
+                                viewModel.updateTitle(
+                                    title = name,
+                                    id = viewModel.processItemId.intValue
+                                )
+                            }
+                        )
+                    }
+
+                    ArchiveDetailBottomSheetType.Share -> {
+                        ShareDetailItemBottomSheet(
+                            isConverting = isConvertingPdf || isConvertingTxt,
+                            onPdfClick = {
+                                viewModel.saveEditedText()
+                                isConvertingPdf = true
+                            },
+                            onTextClick = {
+                                viewModel.saveEditedText()
+                                isConvertingTxt = true
+                            },
+                            onOnlyTextClick = {
+                                viewModel.saveEditedText()
+                                shareText(
+                                    context = context,
+                                    text = processItem.value?.text.orEmpty()
+                                )
+                                bottomSheetState.hide()
+                            },
+                            fileId = itemId?.let { "$it" }
+                        )
+                    }
+                }
+            }
         }
     }
 }

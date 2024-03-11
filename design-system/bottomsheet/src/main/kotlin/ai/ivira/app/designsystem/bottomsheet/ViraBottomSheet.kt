@@ -107,6 +107,9 @@ import kotlin.math.max
  * params.
  * @param properties [ViraBottomSheetProperties] for further customization of this
  * modal bottom sheet's behavior.
+ * @param onBackPressed can be used when  [ViraBottomSheetProperties.shouldDismissOnBackPress] is set to false,
+ * this callback will be called we the user presses the back button while bottom sheet is open.
+ * hiding the bottomSheet must be done manually at that point.
  * @param content The content to be displayed inside the bottom sheet.
  */
 @Composable
@@ -122,6 +125,7 @@ fun ViraBottomSheet(
     scrimColor: Color = ViraBottomSheetDefaults.ScrimColor,
     dragHandle: @Composable (() -> Unit)? = null, // = { BottomSheetDefaults.DragHandle() },
     properties: ViraBottomSheetProperties = ViraBottomSheetDefaults.properties(),
+    onBackPressed: () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit
 ) {
     ViraBottomSheet(
@@ -139,6 +143,7 @@ fun ViraBottomSheet(
         scrimColor = scrimColor,
         dragHandle = dragHandle,
         properties = properties,
+        onBackPressed = onBackPressed,
         content = content
     )
 }
@@ -158,6 +163,7 @@ internal fun ViraBottomSheet(
     dragHandle: @Composable (() -> Unit)? = null, // = { BottomSheetDefaults.DragHandle() },
     // windowInsets: WindowInsets = BottomSheetDefaults.windowInsets, // FIXME: needed for edge-to-edge
     properties: ViraBottomSheetProperties = ViraBottomSheetDefaults.properties(),
+    onBackPressed: () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -178,6 +184,7 @@ internal fun ViraBottomSheet(
 
     ViraModalBottomSheetPopup(
         properties = properties,
+        onBackPressed = onBackPressed,
         onDismissRequest = {
             if (sheetState.currentValue == Expanded && sheetState.hasPartiallyExpandedState) {
                 scope.launch { sheetState.partialExpand() }
@@ -366,6 +373,7 @@ private fun Modifier.modalBottomSheetAnchors(
 internal fun ViraModalBottomSheetPopup(
     properties: ViraBottomSheetProperties,
     onDismissRequest: () -> Unit,
+    onBackPressed: () -> Unit,
     // windowInsets: WindowInsets, // FIXME: needed for edge-to-edge
     content: @Composable () -> Unit
 ) {
@@ -378,6 +386,7 @@ internal fun ViraModalBottomSheetPopup(
         ViraModalBottomSheetWindow(
             properties = properties,
             onDismissRequest = onDismissRequest,
+            onBackPressed = onBackPressed,
             composeView = view,
             saveId = id
         ).apply {
@@ -420,6 +429,7 @@ internal fun ViraModalBottomSheetPopup(
 private class ViraModalBottomSheetWindow(
     private val properties: ViraBottomSheetProperties,
     private var onDismissRequest: () -> Unit,
+    private var onBackPressed: () -> Unit,
     private val composeView: View,
     saveId: UUID
 ) : AbstractComposeView(composeView.context),
@@ -524,7 +534,7 @@ private class ViraModalBottomSheetWindow(
      * Taken from PopupWindow. Calls [onDismissRequest] when back button is pressed.
      */
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (event.keyCode == KeyEvent.KEYCODE_BACK && properties.shouldDismissOnBackPress) {
+        if (event.keyCode == KeyEvent.KEYCODE_BACK) {
             if (keyDispatcherState == null) {
                 return super.dispatchKeyEvent(event)
             }
@@ -535,7 +545,11 @@ private class ViraModalBottomSheetWindow(
             } else if (event.action == KeyEvent.ACTION_UP) {
                 val state = keyDispatcherState
                 if (state != null && state.isTracking(event) && !event.isCanceled) {
-                    onDismissRequest()
+                    if (!properties.shouldDismissOnBackPress) {
+                        onBackPressed()
+                    } else {
+                        onDismissRequest()
+                    }
                     return true
                 }
             }
