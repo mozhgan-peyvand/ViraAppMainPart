@@ -13,6 +13,7 @@ import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoArchiveScreen
 import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoOnboardingScreen
 import ai.ivira.app.features.config.ui.ConfigViewModel
+import ai.ivira.app.features.hamahang.ui.HamahangScreenRoutes
 import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.features.home.ui.HomeScreenRoutes.AboutUs
@@ -223,10 +224,7 @@ private fun HomeScreen(
                     }
                 }
                 HomeItemType.Hamahang -> {
-                    coroutineScope.launch {
-                        sheetSelected = Hamahang
-                        sheetState.show()
-                    }
+                    navController.navigate(HamahangScreenRoutes.HamahangArchiveListScreen.route)
                 }
             }
         }
