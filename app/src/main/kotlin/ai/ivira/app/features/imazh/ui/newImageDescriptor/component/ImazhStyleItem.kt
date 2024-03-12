@@ -77,7 +77,7 @@ fun ImazhStyleItem(
                 contentDescription = style.key,
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(100.dp)
                     .clip(RoundedCornerShape(4.dp))
             )
             if (style == ImazhImageStyle.None) {

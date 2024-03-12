@@ -44,7 +44,7 @@ fun ImazhSelectStyleBottomSheet(
     val configuration = LocalConfiguration.current
     val unconfirmedSelectedStyle = rememberSaveable(selectedStyle) { mutableStateOf(selectedStyle) }
     val height by remember(configuration.screenHeightDp) {
-        mutableStateOf(configuration.screenHeightDp.dp * 0.64f)
+        mutableStateOf(configuration.screenHeightDp.dp * 0.72f)
     }
 
     Column(
@@ -52,7 +52,7 @@ fun ImazhSelectStyleBottomSheet(
             .fillMaxWidth()
             .heightIn(max = height)
             .padding(bottom = 20.dp, top = 32.dp)
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 12.dp)
     ) {
         Text(
             text = stringResource(id = R.string.lbl_image_style),
