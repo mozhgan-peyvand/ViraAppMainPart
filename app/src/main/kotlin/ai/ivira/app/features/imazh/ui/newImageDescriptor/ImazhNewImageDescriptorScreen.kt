@@ -7,7 +7,6 @@ import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.imazh.data.ImazhImageStyle
 import ai.ivira.app.features.imazh.ui.ImazhAnalytics
-import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.NEGATIVE_PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.NewImageDescriptorViewModel.Companion.PROMPT_CHARACTER_LIMIT
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhKeywordItem
 import ai.ivira.app.features.imazh.ui.newImageDescriptor.component.ImazhStyleItem
@@ -75,12 +74,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -122,6 +123,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -215,7 +217,6 @@ private fun ImazhNewImageDescriptorScreen(
 
     val promptPosition = remember { mutableIntStateOf(0) }
     val randomPromptPosition = remember { mutableIntStateOf(0) }
-    val negativePromptPosition = remember { mutableIntStateOf(0) }
     val keywordsPosition = remember { mutableIntStateOf(0) }
     val topBarPosition = remember { mutableIntStateOf(0) }
 
@@ -235,10 +236,6 @@ private fun ImazhNewImageDescriptorScreen(
                         promptPosition.intValue - topBarPosition.intValue
                     ),
                     Pair(
-                        ImazhTooltip.NegativePrompt,
-                        negativePromptPosition.intValue - topBarPosition.intValue
-                    ),
-                    Pair(
                         ImazhTooltip.RandomPrompt,
                         randomPromptPosition.intValue - topBarPosition.intValue
                     )
@@ -253,7 +250,7 @@ private fun ImazhNewImageDescriptorScreen(
             showMessage(
                 snackbarHostState,
                 coroutineScope,
-                context.getString(R.string.msg_inappropriate_prompt_error)
+                context.getString(R.string.msg_your_text_contains_inappropriate_words)
             )
         } else {
             snackbarHostState.currentSnackbarData?.dismiss()
@@ -404,20 +401,6 @@ private fun ImazhNewImageDescriptorScreen(
                         viewModel.selectStyle(it)
                     },
                     modifier = Modifier.padding(horizontal = 16.dp)
-                )
-
-                NegativePrompt(
-                    negativePrompt = viewModel.negativePrompt.value,
-                    onNegativePromptChange = viewModel::setNegativePrompt,
-                    resetNegativePrompt = viewModel::resetNegativePrompt,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 16.dp)
-                        .onGloballyPositioned {
-                            negativePromptPosition.intValue = it.positionInRoot().y.roundToInt()
-                        },
-                    tooltipHelper = tooltipHelper,
-                    isFirstRun = viewModel.shouldShowFirstRun.value
                 )
             }
 
@@ -937,108 +920,6 @@ private fun Style(
 }
 
 @Composable
-private fun NegativePrompt(
-    negativePrompt: String,
-    onNegativePromptChange: (String) -> Unit,
-    resetNegativePrompt: () -> Unit,
-    tooltipHelper: TooltipHelper,
-    isFirstRun: Boolean,
-    modifier: Modifier = Modifier
-) {
-    var expandState by rememberSaveable(isFirstRun) {
-        if (isFirstRun) {
-            mutableStateOf(ExpandState.Expanded)
-        } else {
-            mutableStateOf(ExpandState.Collapsed)
-        }
-    }
-    val coroutineScope = rememberCoroutineScope()
-
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Header(
-            title = R.string.lbl_negative_prompt,
-            hasExpandButton = true,
-            expandState = expandState,
-            expandable = true,
-            onExpandClick = { expandState = it.toggleState() },
-            hasInfo = false,
-            setupInfoTooltip = {
-                coroutineScope.launch {
-                    tooltipHelper.setupSingleTooltipRunner(ImazhTooltip.NegativePrompt, null)
-                }
-            },
-            onTooltipDismiss = { coroutineScope.launch { tooltipHelper.next() } },
-            showInfoTooltip = tooltipHelper.getTooltipStateByKey(ImazhTooltip.NegativePrompt)?.value
-                ?: false,
-            infoTooltipMessage = R.string.msg_firs_run_negative_prompt
-        )
-
-        AnimatableContent(
-            isVisible = expandState == ExpandState.Expanded,
-            content = {
-                NegativePromptInputText(
-                    text = negativePrompt,
-                    onTextChange = onNegativePromptChange,
-                    resetText = resetNegativePrompt,
-                    charLimit = NEGATIVE_PROMPT_CHARACTER_LIMIT
-                )
-            }
-        )
-    }
-}
-
-@Composable
-private fun NegativePromptInputText(
-    text: String,
-    onTextChange: (String) -> Unit,
-    resetText: () -> Unit,
-    modifier: Modifier = Modifier,
-    charLimit: Int? = null
-) {
-    val focusRequester = remember { FocusRequester() }
-
-    Column(
-        modifier = modifier
-            .border(
-                width = 1.dp,
-                color = Color_Border,
-                shape = RoundedCornerShape(4.dp)
-            )
-    ) {
-        InputTextSection(
-            text = text,
-            placeHolder = stringResource(id = R.string.lbl_imazh_negative_prompt_placeholder),
-            focusRequester = focusRequester,
-            onTextChange = onTextChange
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ClearTextIcon(
-                enabled = text.isNotBlank(),
-                clear = resetText
-            )
-
-            charLimit?.let {
-                Text(
-                    text = buildString {
-                        append(text.length)
-                        append("/")
-                        append(it.toString())
-                    },
-                    style = MaterialTheme.typography.caption
-                )
-            }
-        }
-    }
-}
-
-@Composable
 private fun InputTextSection(
     text: String,
     placeHolder: String,
@@ -1066,6 +947,7 @@ private fun InputTextSection(
         ),
         maxLines = 5,
         minLines = 5,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         modifier = modifier
             .fillMaxWidth()
             .focusRequester(focusRequester)
@@ -1214,6 +1096,7 @@ private fun SectionActionButton(
 ) {
     Row(
         modifier = modifier
+            .sizeIn(minWidth = 80.dp, minHeight = 32.dp)
             .clip(shape = RoundedCornerShape(8.dp))
             .background(color = Color_Primary_Opacity_15)
             .clickable {

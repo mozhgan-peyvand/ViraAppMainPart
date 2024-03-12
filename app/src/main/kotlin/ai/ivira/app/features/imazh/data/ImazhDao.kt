@@ -39,7 +39,7 @@ interface ImazhDao {
         """
         SELECT * FROM (
             SELECT 0 AS id, token, 'tracking' as archiveType,
-                '' AS imagePath, '' AS filePath, keywords, englishKeywords, prompt, englishPrompt, negativePrompt, englishNegativePrompt, style, 
+                '' AS imagePath, '' AS filePath, keywords, englishKeywords, prompt, englishPrompt, style, 
                    insertSystemTime,  processEstimation, insertBootTime, lastFailureSystemTime, lastFailureBootTime
             FROM ImazhTrackingFileEntity
             ORDER BY insertSystemTime DESC
@@ -47,7 +47,7 @@ interface ImazhDao {
         UNION
         SELECT * FROM (
             SELECT id, '' AS token, 'processed' as archiveType,
-                imagePath, filePath, keywords, englishKeywords, prompt, englishPrompt, negativePrompt, englishNegativePrompt, style,
+                imagePath, filePath, keywords, englishKeywords, prompt, englishPrompt, style,
                 createdAt AS insertSystemTime, 0 AS insertBootTime, 0 AS lastFailureSystemTime, 0 AS lastFailureBootTime,
                 0 AS processEstimation
             FROM ImazhProcessedFileEntity

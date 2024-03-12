@@ -12,8 +12,6 @@ data class ImazhArchiveUnionEntity(
     val englishKeywords: List<String>,
     val prompt: String,
     val englishPrompt: String,
-    val negativePrompt: String,
-    val englishNegativePrompt: String,
     val style: String,
     val insertBootTime: Long,
     val insertSystemTime: Long,
@@ -27,8 +25,6 @@ data class ImazhArchiveUnionEntity(
         englishKeywords = englishKeywords,
         prompt = prompt,
         englishPrompt = englishPrompt,
-        negativePrompt = negativePrompt,
-        englishNegativePrompt = englishNegativePrompt,
         style = style,
         insertAt = TrackTime(insertSystemTime, insertBootTime),
         processEstimation = processEstimation,
@@ -51,8 +47,6 @@ data class ImazhArchiveUnionEntity(
         englishKeywords = englishKeywords,
         prompt = prompt,
         englishPrompt = englishPrompt,
-        negativePrompt = negativePrompt,
-        englishNegativePrompt = englishNegativePrompt,
         style = style,
         createdAt = insertSystemTime
     )

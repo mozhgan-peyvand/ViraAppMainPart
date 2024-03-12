@@ -93,7 +93,7 @@
     <string name="msg_invalid_file">فایل نامعتبر می باشد</string>
     <string name="msg_file_duration_exceeds_max">فایل صوتی نمی‌تواند بیش از 60 دقیقه باشد</string>
     <string name="msg_request_failed_try_again_later">متاسفانه درخواست شما با خطا مواجه شد، لطفا مدتی منتظر بمانید و سپس دوباره امتحان کنید</string>
-    <string name="msg_your_text_contains_inappropriate_words">متن شما حاوی کلمات نامناسب است، لطفا آن را اصلاح نموده و مجدد امتحان کنید.</string>
+    <string name="msg_your_text_contains_inappropriate_words">امکان تولید تصویر از محتوای مدنظر شما وجود ندارد، لطفا آن را اصلاح نموده و مجددا امتحان کنید.</string>
     <!--endregion -->
 
     <string name="msg_convert_error">خطایی رخ داده است</string>
@@ -249,10 +249,8 @@
     <string name="lbl_add">افزودن</string>
     <string name="lbl_image_style">سبک تصویر</string>
     <string name="lbl_select">انتخاب</string>
-    <string name="lbl_negative_prompt">کلمات منفی</string>
     <string name="lbl_generate_image">تولید تصویر</string>
     <string name="msg_describe_your_image">تصویر مدنظر خود را توصیف کنید…</string>
-    <string name="lbl_imazh_negative_prompt_placeholder">ویژگی‌هایی که نمی‌خواهید در تصویر باشند را بنویسید…</string>
     <string name="lbl_details">جزئیات</string>
     <string name="lbl_info">توضیحات</string>
     <string name="lbl_change">تغییر</string>
@@ -272,12 +270,10 @@
     <string name="lbl_processing_queue">در صف اتمام پردازش…</string>
     <string name="lbl_approximate">حدود</string>
 
-    <string name="msg_inappropriate_prompt_error">توصیف شما حاوی محتوای نامناسب است ، لطفا آن را اصلاح نموده و مجددا امتحان کنید.</string>
     <string name="lbl_imazh_on_boarding_describe">ایده ها و خلاقیت های ذهنی خود را با یک توضیح متنی به تصویر تبدیل کنید.</string>
     <string name="msg_firs_run_image_description">دراین بخش، تصویر مورد نظرتان را توصیف کنید و \nبرای تولید تصویر بهتر، جزئیات بیشتری بنویسید.</string>
     <string name="msg_firs_run_random_prompt">می‌توانید از این گزینه برای تولید نمونه \nتوصیف تصویر استفاده کنید.</string>
     <string name="msg_firs_run_keywords">می‌توانید برای اضافه کردن جزئیات بیشتر به \nتوصیف تصویر، از کلمات کلیدی استفاده کنید. </string>
-    <string name="msg_firs_run_negative_prompt">در این بخش، ویژگی هایی که نمی‌خواهید در \nتصویر تولیدی وجود داشته باشد را بنویسید. \nبه عنوان مثال، با نوشتن کلمه "آبی"، رنگ آبی \nکمتری در تصویر تولیدی وجود خواهد داشت.</string>
 
     <string name="lbl_imazh_select_all">انتخاب همه</string>
     <string name="lbl_selected_files">(های) انتخاب شده</string>

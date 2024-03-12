@@ -9,7 +9,6 @@ data class ImazhTrackingFileView(
     val token: String,
     val keywords: List<String>,
     val prompt: String,
-    val negativePrompt: String,
     val style: String,
     val processEstimation: Int?,
     val lastFailure: Boolean,
@@ -42,7 +41,6 @@ fun ImazhTrackingFileEntity.toImazhTrackingFileView() = ImazhTrackingFileView(
     bootElapsedTime = insertAt.bootTime,
     keywords = keywords,
     prompt = prompt,
-    negativePrompt = negativePrompt,
     style = style,
     lastFailure = lastFailure != null
 )

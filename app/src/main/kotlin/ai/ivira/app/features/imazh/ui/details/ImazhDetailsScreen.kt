@@ -237,10 +237,6 @@ private fun ImazhDetailsScreen(
                         Keyword(list = info.keywords)
                     }
 
-                    if (info.negativePrompt.isNotEmpty()) {
-                        NegativePrompt(value = info.negativePrompt)
-                    }
-
                     if (info.style != ImazhImageStyle.None) {
                         Style(style = info.style)
                     }
@@ -371,23 +367,6 @@ private fun Keyword(list: List<String>) {
                     )
                 }
             }
-        }
-    )
-}
-
-@Composable
-private fun NegativePrompt(value: String) {
-    Section(
-        title = R.string.lbl_negative_prompt,
-        modifier = Modifier.padding(top = 20.dp),
-        content = {
-            Spacer(modifier = Modifier.size(12.dp))
-
-            Text(
-                text = value,
-                color = Color_Text_3,
-                style = MaterialTheme.typography.body1
-            )
         }
     )
 }
