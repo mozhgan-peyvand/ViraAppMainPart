@@ -1,5 +1,15 @@
 [
   {
+    "versionCode": 30102020,
+    "versionName": "1.2.2",
+    "releaseNotes": [
+      {
+        "type": 1,
+        "title": "بهبود تجربه ی کاربری سرویس ایماژ"
+      }
+    ]
+  },
+  {
     "versionCode": 30102000,
     "versionName": "1.2.0",
     "releaseNotes": [
