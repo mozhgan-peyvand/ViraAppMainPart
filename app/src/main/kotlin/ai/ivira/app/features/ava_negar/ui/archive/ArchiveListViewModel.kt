@@ -38,6 +38,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.text.format.DateUtils
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -262,7 +263,7 @@ class ArchiveListViewModel @Inject constructor(
                 eventHandler.specialEvent(AvanegarAnalytics.fileDurationExceed)
                 _uiViewState.emit(
                     UiError(
-                        uiException.getErrorMessageMaxLengthExceeded(),
+                        uiException.getErrorMessageMaxLengthExceeded((MAX_FILE_DURATION_MS / DateUtils.MINUTE_IN_MILLIS).toInt()),
                         isSnack = true
                     )
                 )
@@ -397,7 +398,7 @@ class ArchiveListViewModel @Inject constructor(
             eventHandler.specialEvent(AvanegarAnalytics.fileDurationExceed)
             _uiViewState.emit(
                 UiError(
-                    uiException.getErrorMessageMaxLengthExceeded(),
+                    uiException.getErrorMessageMaxLengthExceeded((MAX_FILE_DURATION_MS / DateUtils.MINUTE_IN_MILLIS).toInt()),
                     isSnack = true
                 )
             )

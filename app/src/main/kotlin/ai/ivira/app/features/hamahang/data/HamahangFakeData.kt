@@ -54,7 +54,7 @@ class HamahangFakeData @Inject constructor(
             fileUrl = "/service/voiceConversion/135531d6e06911eead3c0242ac110003.mp3",
             filePath = internalFile.absolutePath,
             inputFilePath = internalFile.absolutePath,
-            speaker = HamahangSpeaker.KHIABANI.name,
+            speaker = HamahangSpeaker.Khiabani.name,
             createdAt = PersianDate().apply { hour -= 1 }.time,
             isSeen = false
         ),
@@ -64,7 +64,7 @@ class HamahangFakeData @Inject constructor(
             fileUrl = "/service/voiceConversion/135531d6e06911eead3c0242ac110003.mp3",
             filePath = internalFile.absolutePath,
             inputFilePath = internalFile.absolutePath,
-            speaker = HamahangSpeaker.KHIABANI.name,
+            speaker = HamahangSpeaker.Khiabani.name,
             createdAt = PersianDate().time,
             isSeen = true
         )
@@ -75,7 +75,7 @@ class HamahangFakeData @Inject constructor(
             token = UUID.randomUUID().toString(),
             title = "صدای استاد 1",
             inputFilePath = internalFile.absolutePath,
-            speaker = HamahangSpeaker.KHIABANI.name,
+            speaker = HamahangSpeaker.Khiabani.name,
             processEstimation = 450,
             insertAt = TrackTime(
                 systemTime = System.currentTimeMillis(),
@@ -87,7 +87,7 @@ class HamahangFakeData @Inject constructor(
             token = UUID.randomUUID().toString(),
             title = "صدای استاد 2",
             inputFilePath = internalFile.absolutePath,
-            speaker = HamahangSpeaker.KHIABANI.name,
+            speaker = HamahangSpeaker.Khiabani.name,
             processEstimation = null,
             insertAt = TrackTime(
                 systemTime = PersianDate().time,
@@ -102,7 +102,7 @@ class HamahangFakeData @Inject constructor(
             id = "per",
             title = "صدای چاووشی",
             inputFilePath = internalFile.absolutePath,
-            speaker = HamahangSpeaker.KHIABANI.name,
+            speaker = HamahangSpeaker.Khiabani.name,
             createdAt = PersianDate().time
 
         )

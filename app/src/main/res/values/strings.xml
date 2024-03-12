@@ -90,7 +90,7 @@
     <string name="msg_connection_error">اتصال به اینترنت برقرار نمی باشد</string>
     <string name="msg_server_error">ارتباط با سرور موقتا برقرار نمی باشد</string>
     <string name="msg_invalid_file">فایل نامعتبر می باشد</string>
-    <string name="msg_file_duration_exceeds_max">فایل صوتی نمی‌تواند بیش از 60 دقیقه باشد</string>
+    <string name="msg_file_duration_exceeds_max">فایل صوتی نمی‌تواند بیش از %1$d دقیقه باشد</string>
     <string name="msg_request_failed_try_again_later">متاسفانه درخواست شما با خطا مواجه شد، لطفا مدتی منتظر بمانید و سپس دوباره امتحان کنید</string>
     <string name="msg_your_text_contains_inappropriate_words">امکان تولید تصویر از محتوای مدنظر شما وجود ندارد، لطفا آن را اصلاح نموده و مجددا امتحان کنید.</string>
     <!--endregion -->
@@ -326,5 +326,15 @@
     <string name="lbl_terms_user_responsibility_part1">تمام اصول و رویه‌های ویرا با قوانین جمهوری اسلامی ایران، قانون تجارت الکترونیکی و قانون حمایت از حقوق مصرف‌کننده و سایر قوانین مرتبط مطابقت دارد. به همین ترتیب، کاربر نیز موظف به رعایت قوانین مرتبط با خود است. در صورتی که در آینده تغییراتی در قوانین مصوب، رویه‌ها و خدمات ویرا ایجاد شود، از طریق درگاه‌های ارتباطی ویرا به شما اطلاع داده خواهد شد. استفاده مستمر شما از اپلیکیشن به معنی پذیرش هرگونه تغییر است. همچنین، برای دسترسی به جدیدترین خدمات و تغییرات ویرا، از بروز بودن نسخه اپلیکیشن خود اطمینان حاصل کنید.</string>
     <string name="lbl_terms_user_responsibility_part2">هرگونه استفاده از سرویس های این اپلیکیشن تحت مسئولیت کاربر است و در صورت بروز هرگونه خسارت یا مشکل قانونی ناشی از استفاده از این خدمات، ویرا مسئولیتی نخواهد پذیرفت.</string>
     <string name="lbl_terms_user_responsibility_part3">همچنین کاربر متعهد می‌شود حقوق معنوی ویرا و شرکای تجاری او را حفظ نماید و از این اپلیکیشن برای اهداف غیرمندرج استفاده نکند.</string>
+
+    <string name="lbl_input_audio">صدای ورودی</string>
+    <string name="lbl_select_speaker">انتخاب گوینده</string>
+    <string name="lbl_upload">بارگذاری</string>
+    <string name="msg_input_audio_desc">دیالوگ یا متن صحبت از این صدا استخراج میشود. برای ضبط صدا دکمه میکروفون را بزنید، و یا فایل صدا را بارگذاری کنید.</string>
+    <string name="msg_select_speaker_desc">گوینده موردنظر را از میان صداها انتخاب کنید. فایل نهایی با این صدا پخش میشود.</string>
+    <string name="lbl_generate_audio">تولید صدا</string>
+    <string name="lbl_hamahang_choose_file">بارگذاری فایل جدید</string>
+    <string name="msg_hamahang_choose_file_desc">شما تنها می توانید یک فایل برای پردازش ارسال کنید.\n
+فرمت های مجاز :mp3 \nحداکثر زمان فایل: 2 دقیقه</string>
 
 </resources>

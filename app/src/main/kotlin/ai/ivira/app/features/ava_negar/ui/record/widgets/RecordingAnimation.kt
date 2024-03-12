@@ -3,6 +3,7 @@ package ai.ivira.app.features.ava_negar.ui.record.widgets
 import ai.ivira.app.R
 import ai.ivira.app.utils.ui.safeClickable
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ContentTransform
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun RecordingAnimation(
     isRecording: Boolean,
+    @DrawableRes iconResWhileRecording: Int,
     onRecordClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -159,7 +161,7 @@ fun RecordingAnimation(
             ) { isRecording ->
                 if (isRecording) {
                     ViraImage(
-                        drawable = R.drawable.ic_pause_2,
+                        drawable = iconResWhileRecording,
                         contentDescription = null,
                         modifier = Modifier.size(32.dp)
                     )
