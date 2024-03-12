@@ -65,6 +65,9 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-test-manifest:1.5.0'
     implementation "androidx.compose.compiler:compiler:1.5.2"
 
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.6.2"
+    implementation "androidx.savedstate:savedstate:1.2.1"
 
     // coroutine
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
