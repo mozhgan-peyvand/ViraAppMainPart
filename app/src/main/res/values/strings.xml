@@ -282,4 +282,5 @@
     <string name="lbl_regenerate_image">تولید مجدد تصویر</string>
     <string name="msg_regenerate_image">با انتخاب این گزینه، تصویر جدیدی طبق توصیف شما تولید خواهد شد.</string>
     <string name="lbl_cancel_2">لغو</string>
+    <string name="lbl_nsfw_generated_image">تصویر به دلیل داشتن محتوای نامناسب تار شده است.</string>
 </resources>

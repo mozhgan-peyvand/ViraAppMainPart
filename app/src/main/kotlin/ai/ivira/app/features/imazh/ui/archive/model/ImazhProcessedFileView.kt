@@ -16,7 +16,8 @@ data class ImazhProcessedFileView(
     val createdAt: String,
     val fileSize: Long?,
     val downloadedBytes: Long?,
-    val downloadingPercent: Float
+    val downloadingPercent: Float,
+    val nsfw: Boolean
 ) : ImazhArchiveView
 
 fun ImazhProcessedFileEntity.toImazhProcessedFileView(
@@ -34,7 +35,8 @@ fun ImazhProcessedFileEntity.toImazhProcessedFileView(
     createdAt = convertDate(createdAt),
     fileSize = if (filePath.isNotEmpty()) File(filePath).length() else fileSize,
     downloadedBytes = downloadedBytes,
-    downloadingPercent = if (downloadingId == id) downloadingPercent else -1f
+    downloadingPercent = if (downloadingId == id) downloadingPercent else -1f,
+    nsfw = nsfw
 )
 
 // duplicate 2

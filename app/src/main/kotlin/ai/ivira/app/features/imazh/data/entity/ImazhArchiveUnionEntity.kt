@@ -17,7 +17,8 @@ data class ImazhArchiveUnionEntity(
     val insertSystemTime: Long,
     val lastFailureSystemTime: Long?,
     val lastFailureBootTime: Long?,
-    val processEstimation: Int?
+    val processEstimation: Int?,
+    val nsfw: Boolean
 ) {
     fun toImazhTrackingFileEntity() = ImazhTrackingFileEntity(
         token = token,
@@ -48,6 +49,7 @@ data class ImazhArchiveUnionEntity(
         prompt = prompt,
         englishPrompt = englishPrompt,
         style = style,
-        createdAt = insertSystemTime
+        createdAt = insertSystemTime,
+        nsfw = nsfw
     )
 }
