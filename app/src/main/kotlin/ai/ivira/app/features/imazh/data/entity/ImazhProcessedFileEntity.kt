@@ -14,5 +14,6 @@ data class ImazhProcessedFileEntity(
     val prompt: String,
     val englishPrompt: String,
     val style: String,
-    val createdAt: Long
+    val createdAt: Long,
+    val nsfw: Boolean
 )

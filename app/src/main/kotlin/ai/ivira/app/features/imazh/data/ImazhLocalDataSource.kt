@@ -4,6 +4,7 @@ import ai.ivira.app.features.imazh.data.entity.ImazhArchiveFilesEntity
 import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
 import ai.ivira.app.features.imazh.data.entity.ImazhProcessedFileEntity
 import ai.ivira.app.features.imazh.data.entity.ImazhTrackingFileEntity
+import ai.ivira.app.features.imazh.data.entity.ImazhTrackingResultEntity
 import ai.ivira.app.utils.common.file.FileOperationHelper
 import ai.ivira.app.utils.common.file.IMAZH_FOLDER_PATH
 import ai.ivira.app.utils.common.file.PNG_EXTENSION
@@ -60,7 +61,7 @@ class ImazhLocalDataSource @Inject constructor(
         dao.insertTrackingFile(value)
     }
 
-    suspend fun insertProcessedFromTracking(token: String, imagePath: String) {
+    suspend fun insertProcessedFromTracking(token: String, result: ImazhTrackingResultEntity) {
         val file = fileOperationHelper.getFile(
             fileName = "${System.currentTimeMillis()}_${UUID.randomUUID().mostSignificantBits}",
             path = IMAZH_FOLDER_PATH,
@@ -74,14 +75,15 @@ class ImazhLocalDataSource @Inject constructor(
                 dao.insertProcessedFile(
                     ImazhProcessedFileEntity(
                         id = 0,
-                        imagePath = imagePath,
+                        imagePath = result.filePath,
                         filePath = file.absolutePath,
                         keywords = tracking.keywords,
                         englishKeywords = tracking.englishKeywords,
                         prompt = tracking.prompt,
                         englishPrompt = tracking.englishPrompt,
                         style = tracking.style,
-                        createdAt = PersianDate().time
+                        createdAt = PersianDate().time,
+                        nsfw = result.nsfw
                     )
                 )
             }

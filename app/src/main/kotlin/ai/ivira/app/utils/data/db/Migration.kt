@@ -88,8 +88,8 @@ object Migration {
     fun migration5_6(): Migration {
         return object : Migration(5, 6) {
             private fun migrateImazhProcessedFileEntity(db: SupportSQLiteDatabase) {
-                db.execSQL("CREATE TABLE IF NOT EXISTS `ImazhProcessedFileEntityNew` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `imagePath` TEXT NOT NULL, `filePath` TEXT NOT NULL, `keywords` TEXT NOT NULL, `englishKeywords` TEXT NOT NULL, `prompt` TEXT NOT NULL, `englishPrompt` TEXT NOT NULL, `style` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)")
-                db.execSQL("INSERT INTO 'ImazhProcessedFileEntityNew' (id, imagePath, filePath, keywords, englishKeywords, prompt, englishPrompt, style, createdAt) SELECT id, imagePath, filePath, keywords, englishKeywords, prompt, englishPrompt, style, createdAt FROM `ImazhProcessedFileEntity`")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `ImazhProcessedFileEntityNew` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `imagePath` TEXT NOT NULL, `filePath` TEXT NOT NULL, `keywords` TEXT NOT NULL, `englishKeywords` TEXT NOT NULL, `prompt` TEXT NOT NULL, `englishPrompt` TEXT NOT NULL, `style` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `nsfw` INTEGER NOT NULL)")
+                db.execSQL("INSERT INTO 'ImazhProcessedFileEntityNew' (id, imagePath, filePath, keywords, englishKeywords, prompt, englishPrompt, style, createdAt, nsfw) SELECT id, imagePath, filePath, keywords, englishKeywords, prompt, englishPrompt, style, createdAt, 0 AS nsfw FROM `ImazhProcessedFileEntity`")
                 db.execSQL("DROP TABLE `ImazhProcessedFileEntity`")
                 db.execSQL("ALTER TABLE `ImazhProcessedFileEntityNew` RENAME TO `ImazhProcessedFileEntity`")
             }

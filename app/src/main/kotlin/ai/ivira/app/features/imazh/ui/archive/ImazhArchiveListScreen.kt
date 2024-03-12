@@ -971,7 +971,7 @@ private fun ImazhProcessedItem(
             if (isSmallItem) {
                 Modifier.padding(vertical = 4.dp, horizontal = 12.dp)
             } else {
-                Modifier.padding(vertical = 12.dp, horizontal = 22.dp)
+                Modifier.padding(vertical = 10.dp, horizontal = 22.dp)
             }
         )
     }
@@ -1043,22 +1043,38 @@ private fun ImazhProcessedItem(
             val prompt by remember(item) {
                 mutableStateOf(item.prompt.replace("\\s+".toRegex(), " "))
             }
-            Text(
-                text = prompt,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                style = if (isSmallItem) {
-                    MaterialTheme.typography.body2
-                } else {
-                    MaterialTheme.typography.body1
-                },
+            Column(
+                horizontalAlignment = Alignment.Start,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color_Blue_Grey_800_945.copy(alpha = 0.75f))
                     .then(textPaddingModifier)
                     .align(Alignment.BottomCenter)
                     .zIndex(1f)
-            )
+            ) {
+                if (item.nsfw) {
+                    Text(
+                        text = stringResource(id = R.string.lbl_nsfw_generated_image),
+                        style = if (isSmallItem) {
+                            MaterialTheme.typography.body2
+                        } else {
+                            MaterialTheme.typography.subtitle2
+                        },
+                        color = Color_Red
+                    )
+                }
+                Text(
+                    text = prompt,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = if (isSmallItem) {
+                        MaterialTheme.typography.body2
+                    } else {
+                        MaterialTheme.typography.body1
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
 
         if (isSelectionMode) {
@@ -1069,7 +1085,7 @@ private fun ImazhProcessedItem(
                 modifier = Modifier.align(Alignment.TopStart)
             )
         } else {
-            if (!isInQueue) {
+            if (!isInQueue && !item.nsfw) {
                 Row(
                     modifier = Modifier
                         .padding(

@@ -1,10 +1,12 @@
 package ai.ivira.app.features.imazh.data
 
+import ai.ivira.app.features.imazh.data.entity.ImazhTrackingResultEntity
 import ai.ivira.app.features.imazh.data.entity.NFSWResultNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageRequestNetwork
 import ai.ivira.app.features.imazh.data.entity.TextToImageResult
 import ai.ivira.app.features.imazh.data.entity.ValidateRequestNetwork
 import ai.ivira.app.utils.common.file.DownloadFileRequest
+import ai.ivira.app.utils.common.orFalse
 import ai.ivira.app.utils.data.api_result.ApiResult
 import java.io.File
 import javax.inject.Inject
@@ -27,7 +29,7 @@ class ImazhRemoteDataSource @Inject constructor(
         }
     }
 
-    suspend fun trackImageResult(fileToken: String): ApiResult<String> {
+    suspend fun trackImageResult(fileToken: String): ApiResult<ImazhTrackingResultEntity> {
         val result = imazhService.trackImageResult(
             apiKey = iak(),
             fileToken = fileToken
@@ -35,7 +37,12 @@ class ImazhRemoteDataSource @Inject constructor(
 
         return when (result) {
             is ApiResult.Error -> ApiResult.Error(result.error)
-            is ApiResult.Success -> ApiResult.Success(result.data.data.filePath)
+            is ApiResult.Success -> ApiResult.Success(
+                ImazhTrackingResultEntity(
+                    filePath = result.data.data.filePath,
+                    nsfw = result.data.data.nsfw.orFalse()
+                )
+            )
         }
     }
 
