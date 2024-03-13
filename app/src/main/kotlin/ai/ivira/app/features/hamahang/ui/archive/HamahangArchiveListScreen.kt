@@ -21,7 +21,7 @@ fun HamahangArchiveListScreenRoute(navController: NavController) {
 
 @Composable
 private fun HamahangArchiveListScreen(
-    navigateToDetailScreen: (id: String) -> Unit,
+    navigateToDetailScreen: (id: Int) -> Unit,
     navigateToNewAudio: () -> Unit,
     navigateUp: () -> Unit
 ) {

@@ -239,14 +239,14 @@ private fun HamahangNewAudioScreen(
 private fun HamahangNewAudioUI(
     isOkToGenerate: Boolean,
     mode: HamahangAudioBoxMode,
-    selectedSpeaker: HamahangSpeaker?,
-    speakers: List<HamahangSpeaker>,
+    selectedSpeaker: HamahangSpeakerView?,
+    speakers: List<HamahangSpeakerView>,
     selectedSheet: HamahangNewAudioBottomSheetType,
     context: Context,
     scaffoldState: ScaffoldState,
     scrollState: ScrollState,
     sheetState: ViraBottomSheetState,
-    changeSpeaker: (HamahangSpeaker) -> Unit,
+    changeSpeaker: (HamahangSpeakerView) -> Unit,
     onBackClick: () -> Unit,
     onGenerateClick: () -> Unit,
     onUploadFileClick: () -> Unit,
@@ -377,7 +377,6 @@ private fun InputAudioSection(
             startRecording = startRecording,
             modifier = Modifier.fillMaxWidth()
         )
-
     }
 }
 
@@ -412,9 +411,9 @@ private fun UploadFileButton(
 
 @Composable
 private fun SelectSpeakerSection(
-    speakers: List<HamahangSpeaker>,
-    selectedSpeaker: HamahangSpeaker?,
-    changeSpeaker: (HamahangSpeaker) -> Unit,
+    speakers: List<HamahangSpeakerView>,
+    selectedSpeaker: HamahangSpeakerView?,
+    changeSpeaker: (HamahangSpeakerView) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -451,9 +450,9 @@ private const val SPEAKER_ITEMS_IN_ROW = 3
 
 @Composable
 private fun SpeakerSelection(
-    speakers: List<HamahangSpeaker>,
-    selectedSpeaker: HamahangSpeaker?,
-    changeSpeaker: (HamahangSpeaker) -> Unit,
+    speakers: List<HamahangSpeakerView>,
+    selectedSpeaker: HamahangSpeakerView?,
+    changeSpeaker: (HamahangSpeakerView) -> Unit,
     modifier: Modifier = Modifier,
     itemsInRow: Int = SPEAKER_ITEMS_IN_ROW
 ) {
@@ -484,7 +483,7 @@ private fun SpeakerSelection(
 
 @Composable
 private fun SpeakerItem(
-    item: HamahangSpeaker,
+    item: HamahangSpeakerView,
     isSelected: Boolean,
     onItemClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -634,7 +633,7 @@ private fun PreviewHamahangNewAudioUI() {
             startRecording = {},
             stopRecording = {},
             openFiles = {},
-            speakers = HamahangSpeaker.values().asList(),
+            speakers = HamahangSpeakerView.values().asList(),
             context = LocalContext.current
         )
     }

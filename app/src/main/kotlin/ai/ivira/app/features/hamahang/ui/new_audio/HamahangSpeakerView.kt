@@ -3,7 +3,7 @@ package ai.ivira.app.features.hamahang.ui.new_audio
 import ai.ivira.app.R
 import androidx.annotation.DrawableRes
 
-enum class HamahangSpeaker(
+enum class HamahangSpeakerView(
     val viewName: String,
     @DrawableRes val iconRes: Int
 ) {
@@ -12,5 +12,11 @@ enum class HamahangSpeaker(
     Modiri(viewName = "مدیری", iconRes = R.drawable.img_speaker_modiri),
     Hatami(viewName = "حاتمی", iconRes = R.drawable.img_speaker_hatami),
     Chavoshi(viewName = "چاوشی", iconRes = R.drawable.img_speaker_chavoshi),
-    Golzar(viewName = "گلزار", iconRes = R.drawable.img_speaker_golzar),
+    Golzar(viewName = "گلزار", iconRes = R.drawable.img_speaker_golzar);
+
+    companion object {
+        fun findByName(name: String): HamahangSpeakerView {
+            return HamahangSpeakerView.entries.first { it.name == name }
+        }
+    }
 }

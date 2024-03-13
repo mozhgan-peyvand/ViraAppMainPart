@@ -21,7 +21,7 @@ fun NavGraphBuilder.hamahangNavGraph(navController: NavHostController) {
     navigateWithSlideAnimation(
         route = HamahangScreenRoutes.HamahangDetailScreen.route,
         arguments = listOf(
-            navArgument(name = "id") { type = NavType.StringType }
+            navArgument(name = "id") { type = NavType.IntType }
         )
     ) {
         HamahangDetailScreenRoute(navController)

@@ -37,8 +37,8 @@ class HamahangNewAudioViewModel @Inject constructor(
     private val _mode = MutableStateFlow<HamahangAudioBoxMode>(HamahangAudioBoxMode.Idle)
     val mode = _mode.asStateFlow()
 
-    val speakers: List<HamahangSpeaker> = HamahangSpeaker.values().asList()
-    private val _selectedSpeaker = MutableStateFlow<HamahangSpeaker?>(null)
+    val speakers: List<HamahangSpeakerView> = HamahangSpeakerView.values().asList()
+    private val _selectedSpeaker = MutableStateFlow<HamahangSpeakerView?>(null)
     val selectedSpeaker = _selectedSpeaker.asStateFlow()
 
     val isOkToGenerate = combine(_mode, _selectedSpeaker) { mode, selectedSpeaker ->
@@ -53,7 +53,7 @@ class HamahangNewAudioViewModel @Inject constructor(
         }
     }
 
-    fun changeSpeaker(speaker: HamahangSpeaker) {
+    fun changeSpeaker(speaker: HamahangSpeakerView) {
         _selectedSpeaker.value =
             if (selectedSpeaker.value == speaker) null else speaker
     }

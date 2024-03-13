@@ -6,7 +6,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class HamahangNewAudioResult(
     val inputPath: String,
-    val speaker: HamahangSpeaker
+    val speaker: HamahangSpeakerView
 ) : Parcelable {
     companion object {
         const val NEW_FILE_AUDIO_RESULT = "newFileAudioResult"

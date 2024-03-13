@@ -40,6 +40,7 @@ class HamahangRepository @Inject constructor(
     }
 
     suspend fun deleteProcessedFile(id: Int) {
+        // todo delete from database and fileStorage
         delay(50)
         processedFiles.value = processedFiles.value.filter { it.id != id }.toMutableList()
     }
