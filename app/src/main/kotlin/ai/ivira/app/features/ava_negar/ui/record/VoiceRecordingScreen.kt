@@ -633,8 +633,7 @@ private fun VoiceRecordingControlsSection(
             iconResWhileRecording = R.drawable.ic_pause_2,
             onRecordClick = {
                 if (isRecording) pauseRecord() else startRecord()
-            },
-            modifier = Modifier.size(170.dp)
+            }
         )
 
         if (isRecording || hasPaused || isStopped) {

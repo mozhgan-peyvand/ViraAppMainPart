@@ -1,22 +1,28 @@
 package ai.ivira.app.features.hamahang.ui.new_audio
 
 import ai.ivira.app.BuildConfig
+import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.hamahang.ui.new_audio.components.HamahangAudioBoxMode
+import ai.ivira.app.utils.common.file.FileCache
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.stateIn
+import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
+import android.media.MediaPlayer
 import android.net.Uri
 import android.text.format.DateUtils
 import androidx.annotation.WorkerThread
 import androidx.core.content.edit
+import androidx.core.net.toFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -29,7 +35,9 @@ import javax.inject.Inject
 @HiltViewModel
 class HamahangNewAudioViewModel @Inject constructor(
     private val sharedPref: SharedPreferences,
-    private val uiException: UiException
+    private val fileCache: FileCache,
+    private val uiException: UiException,
+    application: Application
 ) : ViewModel() {
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewState
@@ -44,6 +52,9 @@ class HamahangNewAudioViewModel @Inject constructor(
     val isOkToGenerate = combine(_mode, _selectedSpeaker) { mode, selectedSpeaker ->
         mode is HamahangAudioBoxMode.Preview && selectedSpeaker != null
     }.stateIn(false)
+
+    private val mediaPlayer = MediaPlayer()
+    val playerState = VoicePlayerState(mediaPlayer, application)
 
     private lateinit var retriever: MediaMetadataRetriever
 
@@ -126,12 +137,70 @@ class HamahangNewAudioViewModel @Inject constructor(
                 retriever.release()
             }
         }
+        playerState.clear()
     }
 
-    fun setUploadedFile(filePath: String?) {
-        filePath?.let {
-            _mode.value = HamahangAudioBoxMode.Preview(File(it))
+    fun setUploadedFile(uri: Uri?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (uri == null) {
+                _uiViewState.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
+                return@launch
+            }
+
+            val absolutePath = if (uri.scheme == "file") {
+                uri.toFile().absolutePath
+            } else {
+                createFileFromUri(uri)?.absolutePath
+            }
+
+            if (absolutePath.isNullOrBlank()) {
+                _uiViewState.emit(UiError(uiException.getErrorMessageInvalidFile()))
+                return@launch
+            }
+
+            val fileDuration = getFileDuration(absolutePath)
+            if (fileDuration <= 0L) {
+                _uiViewState.emit(UiError(uiException.getErrorMessageInvalidFile(), isSnack = true))
+                return@launch
+            }
+
+            // Duplicate 2: check file durations
+            if (fileDuration > MAX_FILE_DURATION_MS) {
+                _uiViewState.emit(
+                    UiError(
+                        uiException.getErrorMessageMaxLengthExceeded((MAX_FILE_DURATION_MS / DateUtils.MINUTE_IN_MILLIS).toInt()),
+                        isSnack = true
+                    )
+                )
+                return@launch
+            }
+
+            _mode.value = HamahangAudioBoxMode.Preview(File(absolutePath))
         }
+    }
+
+    private suspend fun createFileFromUri(uri: Uri): File? {
+        return fileCache.cacheUri(uri)
+    }
+
+    // Duplicate 3: file duration
+    @WorkerThread
+    private fun getFileDuration(filePath: String): Long {
+        if (!this::retriever.isInitialized) return 0L
+
+        return kotlin.runCatching {
+            retriever.setDataSource(filePath)
+            val time: String? =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            time?.toLong()
+        }.getOrNull().orZero()
+    }
+
+    fun deleteFile() {
+        playerState.stopPlaying()
+        playerState.reset()
+        (_mode.value as? HamahangAudioBoxMode.Preview)?.file?.delete()
+        _mode.value = HamahangAudioBoxMode.Idle
     }
 
     companion object {

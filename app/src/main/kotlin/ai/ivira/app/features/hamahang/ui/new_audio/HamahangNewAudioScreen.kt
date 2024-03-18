@@ -6,13 +6,17 @@ import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
 import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetState
 import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
+import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
+import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.hamahang.ui.new_audio.HamahangNewAudioResult.Companion.NEW_FILE_AUDIO_RESULT
 import ai.ivira.app.features.hamahang.ui.new_audio.components.HamahangAudioBox
 import ai.ivira.app.features.hamahang.ui.new_audio.components.HamahangAudioBoxMode
 import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangNewAudioBottomSheetType
+import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangNewAudioBottomSheetType.DeleteFileConfirmation
 import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangNewAudioBottomSheetType.FileAccessPermissionDenied
 import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangNewAudioBottomSheetType.UploadFile
 import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangUploadFileBottomSheet
+import ai.ivira.app.utils.ui.OnLifecycleEvent
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.hasPermission
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
@@ -33,10 +37,13 @@ import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.Manifest
 import android.app.Activity
+import android.app.Application
 import android.content.Context
+import android.media.MediaPlayer
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -74,7 +81,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -95,6 +101,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -133,11 +140,14 @@ private fun HamahangNewAudioScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val sheetState = rememberViraBottomSheetState()
-    var selectedSheet by rememberSaveable { mutableStateOf(UploadFile) }
+    var selectedSheet by rememberSaveable(
+        stateSaver = HamahangNewAudioBottomSheetType.Saver()
+    ) { mutableStateOf(UploadFile) }
 
-    val mode by viewModel.mode.collectAsState()
-    val isOkToGenerate by viewModel.isOkToGenerate.collectAsState(false)
-    val selectedSpeaker by viewModel.selectedSpeaker.collectAsState()
+    val mode by viewModel.mode.collectAsStateWithLifecycle()
+    val isOkToGenerate by viewModel.isOkToGenerate.collectAsStateWithLifecycle(false)
+    val selectedSpeaker by viewModel.selectedSpeaker.collectAsStateWithLifecycle()
+    val playerState by viewModel::playerState
 
     val launchOpenFile = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -146,7 +156,7 @@ private fun HamahangNewAudioScreen(
             coroutineScope.launch {
                 if (viewModel.checkIfUriDurationIsOk(context, it.data?.data)) {
                     kotlin.runCatching {
-                        viewModel.setUploadedFile(filePath = it.data?.data?.path)
+                        viewModel.setUploadedFile(uri = it.data?.data)
                     }
                 }
             }
@@ -181,6 +191,24 @@ private fun HamahangNewAudioScreen(
         }
     }
 
+    OnLifecycleEvent(
+        onPause = {
+            if (playerState.isPlaying) {
+                playerState.stopPlaying()
+            }
+        }
+    )
+
+    LaunchedEffect(mode) {
+        (mode as? HamahangAudioBoxMode.Preview)?.let { previewItem ->
+            playerState.tryInitWith(
+                file = previewItem.file,
+                forcePrepare = true,
+                autoStart = false
+            )
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.uiViewState.collectLatest {
             if (it is UiError && it.isSnack) {
@@ -199,15 +227,49 @@ private fun HamahangNewAudioScreen(
         isOkToGenerate = isOkToGenerate,
         onBackClick = { navigateUp(null) }, // TODO: add result as param
         onUploadFileClick = {
-            selectedSheet = UploadFile
+            when (mode) {
+                HamahangAudioBoxMode.Idle -> selectedSheet = UploadFile
+                is HamahangAudioBoxMode.Preview -> selectedSheet = DeleteFileConfirmation(fromUpload = true)
+                HamahangAudioBoxMode.Recording -> {
+                    // TODO: Add related action
+                }
+            }
             sheetState.show()
         },
-        onGenerateClick = {},
+        onGenerateClick = {
+            if (playerState.isPlaying) {
+                playerState.stopPlaying()
+            }
+        },
         changeSpeaker = { viewModel.changeSpeaker(it) },
         sheetState = sheetState,
         selectedSheet = selectedSheet,
         startRecording = viewModel::startRecording,
         stopRecording = viewModel::stopRecording,
+        onDeleteClick = {
+            selectedSheet = DeleteFileConfirmation(fromUpload = false)
+            sheetState.show()
+        },
+        deleteFileAction = {
+            when (mode) {
+                HamahangAudioBoxMode.Idle -> sheetState.hide()
+                is HamahangAudioBoxMode.Preview -> {
+                    (selectedSheet as? DeleteFileConfirmation)?.let { previewMode ->
+                        viewModel.deleteFile()
+                        if (previewMode.fromUpload) {
+                            selectedSheet = UploadFile
+                            sheetState.show()
+                        } else {
+                            sheetState.hide()
+                        }
+                    }
+                }
+                HamahangAudioBoxMode.Recording -> {
+                    // TODO: Add related action
+                }
+            }
+        },
+        playerState = playerState,
         openFiles = {
             sheetState.hide()
 
@@ -242,11 +304,14 @@ private fun HamahangNewAudioUI(
     selectedSpeaker: HamahangSpeakerView?,
     speakers: List<HamahangSpeakerView>,
     selectedSheet: HamahangNewAudioBottomSheetType,
+    playerState: VoicePlayerState,
     context: Context,
     scaffoldState: ScaffoldState,
     scrollState: ScrollState,
     sheetState: ViraBottomSheetState,
     changeSpeaker: (HamahangSpeakerView) -> Unit,
+    onDeleteClick: () -> Unit,
+    deleteFileAction: () -> Unit,
     onBackClick: () -> Unit,
     onGenerateClick: () -> Unit,
     onUploadFileClick: () -> Unit,
@@ -281,6 +346,8 @@ private fun HamahangNewAudioUI(
             ) {
                 InputAudioSection(
                     mode = mode,
+                    playerState = playerState,
+                    onDeleteClick = onDeleteClick,
                     onUploadFileClick = onUploadFileClick,
                     startRecording = startRecording,
                     stopRecording = stopRecording,
@@ -327,6 +394,13 @@ private fun HamahangNewAudioUI(
                             }
                         )
                     }
+                    is DeleteFileConfirmation -> {
+                        FileItemConfirmationDeleteBottomSheet(
+                            deleteAction = deleteFileAction,
+                            cancelAction = { sheetState.hide() },
+                            fileName = ""
+                        )
+                    }
                 }
             }
         }
@@ -336,8 +410,10 @@ private fun HamahangNewAudioUI(
 @Composable
 private fun InputAudioSection(
     mode: HamahangAudioBoxMode,
+    playerState: VoicePlayerState,
     startRecording: () -> Unit,
     stopRecording: () -> Unit,
+    onDeleteClick: () -> Unit,
     onUploadFileClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -375,6 +451,8 @@ private fun InputAudioSection(
             mode = mode,
             stopRecording = stopRecording,
             startRecording = startRecording,
+            playerState = playerState,
+            onDeleteClick = onDeleteClick,
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -614,10 +692,17 @@ private fun ConfirmButton(
     }
 }
 
+// FIXME: Has problem rendering preview
+@RequiresApi(34)
 @Preview
 @Composable
 private fun PreviewHamahangNewAudioUI() {
     ViraPreview {
+        val context = LocalContext.current
+        val fakePlayerState = VoicePlayerState(
+            MediaPlayer(context),
+            context.applicationContext as Application
+        )
         HamahangNewAudioUI(
             mode = HamahangAudioBoxMode.Idle,
             selectedSpeaker = null,
@@ -634,6 +719,9 @@ private fun PreviewHamahangNewAudioUI() {
             stopRecording = {},
             openFiles = {},
             speakers = HamahangSpeakerView.values().asList(),
+            playerState = fakePlayerState,
+            onDeleteClick = {},
+            deleteFileAction = {},
             context = LocalContext.current
         )
     }
