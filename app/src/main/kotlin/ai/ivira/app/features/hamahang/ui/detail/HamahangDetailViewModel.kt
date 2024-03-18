@@ -44,7 +44,7 @@ class HamahangDetailViewModel @Inject constructor(
             if (id == -1) {
                 flowOf(null)
             } else {
-                repository.getArchiveFile(id).map { value ->
+                repository.getProcessedFiles(id).map { value ->
                     value?.toHamahangProcessedFileView()
                 }
             }
@@ -60,10 +60,7 @@ class HamahangDetailViewModel @Inject constructor(
 
     fun removeAudio(id: Int, filePath: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteProcessedFile(id)
-            runCatching {
-                File(filePath).delete()
-            }
+            repository.deleteProcessedFile(id, filePath)
         }
     }
 

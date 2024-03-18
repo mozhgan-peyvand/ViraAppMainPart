@@ -1,5 +1,6 @@
 package ai.ivira.app.features.hamahang.data
 
+import ai.ivira.app.features.hamahang.data.entity.HamahangVoiceConversionNetwork
 import ai.ivira.app.utils.common.file.DownloadFileRequest
 import ai.ivira.app.utils.data.api_result.ApiResult
 import okhttp3.MultipartBody
@@ -16,7 +17,7 @@ class HamahangRemoteDataSource @Inject constructor(
     suspend fun voiceConversion(
         multiPartFile: MultipartBody.Part,
         speaker: RequestBody
-    ): ApiResult<String> {
+    ): ApiResult<HamahangVoiceConversionNetwork> {
         val result = service.voiceConversion(
             token = token,
             file = multiPartFile,
@@ -24,7 +25,7 @@ class HamahangRemoteDataSource @Inject constructor(
         )
 
         return when (result) {
-            is ApiResult.Success -> ApiResult.Success(result.data.data.token)
+            is ApiResult.Success -> ApiResult.Success(result.data.data)
             is ApiResult.Error -> ApiResult.Error(result.error)
         }
     }
