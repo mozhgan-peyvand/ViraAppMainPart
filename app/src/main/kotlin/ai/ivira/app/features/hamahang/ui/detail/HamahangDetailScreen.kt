@@ -561,7 +561,10 @@ private fun HamahangDetailUIPreview() {
         inputFilePath = "",
         speaker = HamahangSpeakerView.Chavoshi,
         createdAt = "time",
-        isSeen = false
+        isSeen = false,
+        downloadedBytes = 0,
+        downloadingPercent = 0f,
+        fileDuration = 0
     )
 
     ViraPreview {
