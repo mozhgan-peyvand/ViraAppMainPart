@@ -4,7 +4,7 @@ import ai.ivira.app.features.hamahang.data.entity.HamahangUploadingFileEntity
 
 data class HamahangUploadingFileView(
     val id: String,
-    val title: String,
+    override val title: String,
     val inputFilePath: String,
     val speaker: String,
     val createdAt: Long,

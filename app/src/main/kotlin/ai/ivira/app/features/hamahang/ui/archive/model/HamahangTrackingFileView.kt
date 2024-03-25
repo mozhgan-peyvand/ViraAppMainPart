@@ -6,7 +6,7 @@ import saman.zamani.persiandate.PersianDate
 
 data class HamahangTrackingFileView(
     val token: String,
-    val title: String,
+    override val title: String,
     val inputFilePath: String,
     val speaker: String,
     val processEstimation: Int?,

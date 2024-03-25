@@ -7,6 +7,7 @@ import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Failu
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleDownload
 import ai.ivira.app.features.hamahang.data.HamahangRepository
 import ai.ivira.app.features.hamahang.data.entity.HamahangArchiveFilesEntity
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangArchiveView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangUploadingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangProcessedFileView
@@ -78,6 +79,8 @@ class HamahangArchiveListViewModel @Inject constructor(
     private var job: Job? = null
     private var downloadJob: Job? = null
 
+    val networkStatus = networkStatusTracker.networkStatus.stateIn(initial = NetworkStatus.Unavailable)
+
     var processArchiveFileList = mutableStateOf<List<HamahangProcessedFileView>>(emptyList())
         private set
 
@@ -87,6 +90,8 @@ class HamahangArchiveListViewModel @Inject constructor(
     val isDownloadQueueEmpty = combine(downloadQueue, downloadFailureList) { queue, failure ->
         queue.isEmpty() && failure.isEmpty()
     }.stateIn(initial = true)
+
+    var selectedHamahangItem = mutableStateOf<HamahangArchiveView?>(null)
 
     val allArchiveFiles = combine(
         networkStatusTracker.networkStatus,
@@ -185,6 +190,7 @@ class HamahangArchiveListViewModel @Inject constructor(
                         downloadingPercent = downloadingFile?.downloadingPercent.orZero(),
                         downloadingId = downloadingFile?.id ?: -1,
                         downloadedBytes = downloadingFile?.downloadedBytes,
+                        fileSize = downloadingFile?.fileSize,
                         retriever = retriever
                     )
                 }.also { processedList ->
@@ -250,6 +256,24 @@ class HamahangArchiveListViewModel @Inject constructor(
         _uploadStatus.value = UploadingFileStatus.IsNotUploading
     }
 
+    fun markFileAsSeen(id: Int) = viewModelScope.launch(IO) {
+        repository.markFileAsSeen(id = id, isSeen = true)
+    }
+
+    fun addFileToDownloadQueue(item: HamahangProcessedFileView) {
+        downloadQueue.update { currentQueue ->
+            if (currentQueue.contains(item)) {
+                currentQueue
+            } else {
+                currentQueue.plus(item)
+            }
+        }
+
+        if (_downloadStatus.value == FailureDownload) {
+            _downloadStatus.value = IdleDownload
+        }
+    }
+
     private suspend fun resetEverything() {
         job?.cancel()
         job = null
@@ -267,20 +291,6 @@ class HamahangArchiveListViewModel @Inject constructor(
             }
         }
         downloadQueue.value = listOf()
-    }
-
-    fun addFileToDownloadQueue(item: HamahangProcessedFileView) {
-        downloadQueue.update { currentQueue ->
-            if (currentQueue.contains(item)) {
-                currentQueue
-            } else {
-                currentQueue.plus(item)
-            }
-        }
-
-        if (_downloadStatus.value == FailureDownload) {
-            _downloadStatus.value = IdleDownload
-        }
     }
 
     private fun voiceConversion(

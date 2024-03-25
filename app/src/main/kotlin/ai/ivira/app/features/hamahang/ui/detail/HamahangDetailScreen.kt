@@ -564,7 +564,8 @@ private fun HamahangDetailUIPreview() {
         isSeen = false,
         downloadedBytes = 0,
         downloadingPercent = 0f,
-        fileDuration = 0
+        fileDuration = 0,
+        fileSize = 0
     )
 
     ViraPreview {

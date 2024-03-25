@@ -10,7 +10,7 @@ import java.io.File
 
 data class HamahangProcessedFileView(
     val id: Int,
-    val title: String,
+    override val title: String,
     val fileUrl: String,
     val filePath: String,
     val inputFilePath: String,
@@ -19,12 +19,14 @@ data class HamahangProcessedFileView(
     val isSeen: Boolean,
     val downloadedBytes: Long?,
     val downloadingPercent: Float,
-    val fileDuration: Long
+    val fileDuration: Long,
+    val fileSize: Long?
 ) : HamahangArchiveView
 
 fun HamahangProcessedFileEntity.toHamahangProcessedFileView(
     downloadingId: Int = -1,
     downloadingPercent: Float = -1f,
+    fileSize: Long? = 0,
     downloadedBytes: Long? = null,
     retriever: MediaMetadataRetriever? = null
 ) = HamahangProcessedFileView(
@@ -45,7 +47,8 @@ fun HamahangProcessedFileEntity.toHamahangProcessedFileView(
         )
     } else {
         0L
-    }
+    },
+    fileSize = if (filePath.isNotEmpty()) File(filePath).length() else fileSize
 )
 
 // duplicate 3
