@@ -570,11 +570,15 @@ private class ViraModalBottomSheetWindow(
     }
 
     private fun maybeRegisterBackCallback() {
-        if (!properties.shouldDismissOnBackPress || Build.VERSION.SDK_INT < 33) {
+        if (Build.VERSION.SDK_INT < 33) {
             return
         }
         if (backCallback == null) {
-            backCallback = Api33Impl.createBackCallback(onDismissRequest)
+            backCallback = Api33Impl.createBackCallback(
+                properties.shouldDismissOnBackPress,
+                onDismissRequest,
+                onBackPressed
+            )
         }
         Api33Impl.maybeRegisterBackCallback(this, backCallback)
     }
@@ -608,8 +612,14 @@ private class ViraModalBottomSheetWindow(
     private object Api33Impl {
         @JvmStatic
         @DoNotInline
-        fun createBackCallback(onDismissRequest: () -> Unit) =
-            OnBackInvokedCallback(onDismissRequest)
+        fun createBackCallback(shouldDismiss: Boolean, onDismissRequest: () -> Unit, onBackPressed: () -> Unit) =
+            OnBackInvokedCallback {
+                if (shouldDismiss) {
+                    onDismissRequest()
+                } else {
+                    onBackPressed()
+                }
+            }
 
         @JvmStatic
         @DoNotInline
