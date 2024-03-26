@@ -2,6 +2,10 @@ package ai.ivira.app.features.home.ui.home
 
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheet
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetDefaults
+import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarArchiveList
 import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarOnboarding
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
@@ -31,8 +35,6 @@ import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.hasNotificationPermission
-import ai.ivira.app.utils.ui.hide
-import ai.ivira.app.utils.ui.hideAndShow
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isSdkVersion33orHigher
 import ai.ivira.app.utils.ui.navigateToAppSettings
@@ -44,7 +46,6 @@ import ai.ivira.app.utils.ui.sheets.AccessNotificationBottomSheet
 import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Blue_Grey_900_2
 import ai.ivira.app.utils.ui.theme.Blue_gray_900
-import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
@@ -91,12 +92,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -105,6 +103,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -169,12 +168,7 @@ private fun HomeScreen(
     val showUpdateBottomSheet by homeViewModel.showUpdateBottomSheet.collectAsStateWithLifecycle()
 
     var sheetSelected by rememberSaveable { mutableStateOf(UnavailableTile) }
-
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true,
-        confirmValueChange = { sheetSelected != ForceUpdate }
-    )
+    val sheetState = rememberViraBottomSheetState(confirmValueChange = { sheetSelected != ForceUpdate })
 
     val avanegarTile by configViewModel.avanegarTileConfig.collectAsStateWithLifecycle(initialValue = null)
     val avashoTile by configViewModel.avashoTileConfig.collectAsStateWithLifecycle(initialValue = null)
@@ -191,7 +185,7 @@ private fun HomeScreen(
                     if (avanegarTile?.available == false) {
                         homeViewModel.unavailableTileToShowBottomSheet.value = avanegarTile
                         sheetSelected = UnavailableTile
-                        modalBottomSheetState.hideAndShow(coroutineScope)
+                        sheetState.show()
                     } else {
                         eventHandler.specialEvent(HomeAnalytics.openAvanegar)
                         homeViewModel.navigate()
@@ -201,7 +195,7 @@ private fun HomeScreen(
                     if (avashoTile?.available == false) {
                         homeViewModel.unavailableTileToShowBottomSheet.value = avashoTile
                         sheetSelected = UnavailableTile
-                        modalBottomSheetState.hideAndShow(coroutineScope)
+                        sheetState.show()
                     } else {
                         eventHandler.specialEvent(HomeAnalytics.openAvasho)
                         homeViewModel.navigateToAvasho()
@@ -211,7 +205,7 @@ private fun HomeScreen(
                     if (imazhTile?.available == false) {
                         homeViewModel.unavailableTileToShowBottomSheet.value = imazhTile
                         sheetSelected = UnavailableTile
-                        modalBottomSheetState.hideAndShow(coroutineScope)
+                        sheetState.show()
                     } else {
                         eventHandler.specialEvent(HomeAnalytics.openImazh)
                         homeViewModel.navigateToImazh()
@@ -220,7 +214,7 @@ private fun HomeScreen(
                 HomeItemType.Hamahang -> {
                     coroutineScope.launch {
                         sheetSelected = Hamahang
-                        modalBottomSheetState.show()
+                        sheetState.show()
                     }
                 }
             }
@@ -234,8 +228,7 @@ private fun HomeScreen(
             coroutineScope.launch {
                 homeViewModel.unavailableTileToShowBottomSheet.value = avanegarTile
                 sheetSelected = UnavailableTile
-                if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
-                modalBottomSheetState.show()
+                sheetState.show()
             }
             configViewModel.resetAvanegarUnavailableFeature()
         }
@@ -248,8 +241,7 @@ private fun HomeScreen(
             coroutineScope.launch {
                 homeViewModel.unavailableTileToShowBottomSheet.value = avashoTile
                 sheetSelected = UnavailableTile
-                if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
-                modalBottomSheetState.show()
+                sheetState.show()
             }
             configViewModel.resetAvashoUnavailableFeature()
         }
@@ -262,22 +254,15 @@ private fun HomeScreen(
             coroutineScope.launch {
                 homeViewModel.unavailableTileToShowBottomSheet.value = imazhTile
                 sheetSelected = UnavailableTile
-                if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
-                modalBottomSheetState.show()
+                sheetState.show()
             }
             configViewModel.resetImazhUnavailableFeature()
         }
     }
 
-    BackHandler(scaffoldState.drawerState.isOpen) {
+    BackHandler(!sheetState.showBottomSheet || scaffoldState.drawerState.isOpen) {
         coroutineScope.launch {
             scaffoldState.drawerState.close()
-        }
-    }
-
-    BackHandler(modalBottomSheetState.isVisible) {
-        coroutineScope.launch {
-            modalBottomSheetState.hide()
         }
     }
 
@@ -348,22 +333,15 @@ private fun HomeScreen(
         ) {
             coroutineScope.launch {
                 sheetSelected = NotificationPermission
-                if (!modalBottomSheetState.isVisible) {
-                    modalBottomSheetState.show()
-                }
+                sheetState.show()
             }
         }
     }
 
     LaunchedEffect(showUpdateBottomSheet) {
         if (homeViewModel.canShowBottomSheet && showUpdateBottomSheet) {
-            coroutineScope.launch {
-                sheetSelected = UpdateApp
-                modalBottomSheetState.hide()
-                if (!modalBottomSheetState.isVisible) {
-                    modalBottomSheetState.show()
-                }
-            }
+            sheetSelected = UpdateApp
+            sheetState.show()
         }
     }
 
@@ -371,9 +349,7 @@ private fun HomeScreen(
         if (shouldShowChangeLogBottomSheet) {
             if (updatedChangelogList.isNotEmpty()) {
                 sheetSelected = Changelog
-                launch {
-                    modalBottomSheetState.show()
-                }
+                sheetState.show()
                 homeViewModel.changeLogBottomSheetIsShow()
             }
         }
@@ -382,8 +358,7 @@ private fun HomeScreen(
     LaunchedEffect(shouldShowForceUpdateBottomSheet) {
         if (shouldShowForceUpdateBottomSheet) {
             sheetSelected = ForceUpdate
-            modalBottomSheetState.hide()
-            modalBottomSheetState.show()
+            sheetState.show()
         }
     }
 
@@ -446,12 +421,8 @@ private fun HomeScreen(
                         return@DrawerHeader
                     }
 
-                    coroutineScope.launch {
-                        sheetSelected = UpdateApp
-                        if (!modalBottomSheetState.isVisible) {
-                            modalBottomSheetState.show()
-                        }
-                    }
+                    sheetSelected = UpdateApp
+                    sheetState.show()
 
                     homeViewModel.getUpdateList()
                 }
@@ -470,12 +441,85 @@ private fun HomeScreen(
             )
         }
     ) { innerPadding ->
-        ModalBottomSheetLayout(
-            sheetState = modalBottomSheetState,
-            sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
-            sheetBackgroundColor = Color_BG_Bottom_Sheet,
-            scrimColor = Color.Black.copy(alpha = 0.5f),
-            sheetContent = sheetContent@{
+
+        val list = remember { HomeItemScreen.mainItemList }
+        val bannerList = remember { HomeItemScreen.bannerItemList }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.weight(0.6f)
+            ) {
+                items(
+                    items = list,
+                    key = { item ->
+                        item.title
+                    }
+                ) {
+                    HomeItem(
+                        item = it,
+                        onItemClick = { item ->
+                            onItemClick(item)
+                        }
+                    )
+                }
+                item(span = { GridItemSpan(2) }) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Spacer(modifier = Modifier.size(24.dp))
+                        HorizontalInfinitePager(
+                            realItemSize = bannerList.size,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(2.34f),
+                            itemContent = { index ->
+                                val item = bannerList[index]
+
+                                ViraImage(
+                                    drawable = item.banner,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.FillWidth,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(MaterialTheme.shapes.medium)
+                                        .clickable {
+                                            safeClick {
+                                                onItemClick(item.homeItemType)
+                                            }
+                                        }
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    if (sheetState.showBottomSheet) {
+        val selectedSheetUpdated by rememberUpdatedState(newValue = sheetSelected)
+
+        ViraBottomSheet(
+            sheetState = sheetState,
+            properties = ViraBottomSheetDefaults.properties(shouldDismissOnBackPress = false),
+            onBackPressed = {
+                when (selectedSheetUpdated) {
+                    UpdateApp,
+                    NotificationPermission,
+                    UnavailableTile,
+                    Changelog,
+                    Hamahang -> sheetState.hide()
+                    ForceUpdate -> (context as Activity).finish()
+                }
+            }
+        ) {
+            ViraBottomSheetContent(targetState = sheetSelected) {
                 when (sheetSelected) {
                     UpdateApp -> {
                         if (showUpdateBottomSheet || uiState is UiSuccess) {
@@ -484,9 +528,7 @@ private fun HomeScreen(
                                     item = changeLogList,
                                     onUpdateClick = {
                                         eventHandler.specialEvent(HomeAnalytics.updateApp)
-                                        coroutineScope.launch {
-                                            modalBottomSheetState.hide()
-                                        }
+                                        sheetState.hide()
                                         kotlin.runCatching {
                                             val intent = Intent(Intent.ACTION_VIEW)
                                             intent.data = Uri.parse(BuildConfig.SHARE_URL)
@@ -496,31 +538,20 @@ private fun HomeScreen(
                                     onLaterClick = {
                                         eventHandler.specialEvent(HomeAnalytics.showUpdateLater)
                                         homeViewModel.showLater()
-                                        coroutineScope.launch {
-                                            modalBottomSheetState.hide()
-                                        }
+                                        sheetState.hide()
                                     }
                                 )
                             } else {
-                                UpToDateBottomSheet(
-                                    onUnderstoodClick = {
-                                        coroutineScope.launch {
-                                            modalBottomSheetState.hide()
-                                        }
-                                    }
-                                )
+                                UpToDateBottomSheet(onUnderstoodClick = { sheetState.hide() })
                             }
                         } else if (uiState is UiLoading) {
                             UpdateLoadingBottomSheet()
                         } else if (uiState is UiLoading) {
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                            }
+                            sheetState.hide()
                         }
 
                         homeViewModel.doNotShowUpdateBottomSheetUntilNextLaunch()
                     }
-
                     ForceUpdate -> {
                         ForceUpdateScreen(
                             onUpdateClick = {
@@ -532,9 +563,8 @@ private fun HomeScreen(
                             }
                         )
                     }
-
                     NotificationPermission -> {
-                        if (!isSdkVersion33orHigher()) return@sheetContent
+                        if (!isSdkVersion33orHigher()) return@ViraBottomSheetContent
                         val notificationPermissionLauncher = rememberLauncherForActivityResult(
                             RequestPermission()
                         ) { isGranted ->
@@ -557,48 +587,36 @@ private fun HomeScreen(
                             },
                             onCancelClick = {
                                 homeViewModel.putCurrentTimeDayToSharedPref()
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                sheetState.hide()
                             },
                             onEnableClick = {
                                 notificationPermissionLauncher.launch(
                                     permission.POST_NOTIFICATIONS
                                 )
 
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                sheetState.hide()
                             },
                             onSettingClick = {
                                 navigateToAppSettings(activity = context as Activity)
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                sheetState.hide()
                             }
                         )
                         homeViewModel.doNotShowUtilNextLaunch()
                     }
-
                     UnavailableTile -> {
                         homeViewModel.unavailableTileToShowBottomSheet.value?.let { unavailableTile ->
                             HomeItemBottomSheet(
                                 iconRes = unavailableTile.iconRes,
                                 title = stringResource(id = unavailableTile.titleRes),
                                 textBody = unavailableTile.unavailableStateMessage,
-                                action = {
-                                    modalBottomSheetState.hide(coroutineScope)
-                                }
+                                action = { sheetState.hide() }
                             )
                         }
                     }
-
                     Changelog -> {
                         ChangelogBottomSheet(
                             item = updatedChangelogList,
-                            onUnderstoodClick = {
-                                modalBottomSheetState.hide(coroutineScope)
-                            }
+                            onUnderstoodClick = { sheetState.hide() }
                         )
                     }
                     Hamahang -> {
@@ -606,68 +624,8 @@ private fun HomeScreen(
                             iconRes = HomeItemScreen.hamahang.icon,
                             title = stringResource(HomeItemScreen.hamahang.title),
                             textBody = stringResource(R.string.lbl_hamahang_item_bottomsheet_explain),
-                            action = {
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
-                            }
+                            action = { sheetState.hide() }
                         )
-                    }
-                }
-            },
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            val list = remember { HomeItemScreen.mainItemList }
-            val bannerList = remember { HomeItemScreen.bannerItemList }
-
-            Column(modifier = Modifier.fillMaxSize()) {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.weight(0.6f)
-                ) {
-                    items(
-                        items = list,
-                        key = { item ->
-                            item.title
-                        }
-                    ) {
-                        HomeItem(
-                            item = it,
-                            onItemClick = { item ->
-                                onItemClick(item)
-                            }
-                        )
-                    }
-                    item(span = { GridItemSpan(2) }) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Spacer(modifier = Modifier.size(24.dp))
-                            HorizontalInfinitePager(
-                                realItemSize = bannerList.size,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .aspectRatio(2.34f),
-                                itemContent = { index ->
-                                    val item = bannerList[index]
-
-                                    ViraImage(
-                                        drawable = item.banner,
-                                        contentDescription = null,
-                                        contentScale = ContentScale.FillWidth,
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(MaterialTheme.shapes.medium)
-                                            .clickable {
-                                                safeClick {
-                                                    onItemClick(item.homeItemType)
-                                                }
-                                            }
-                                    )
-                                }
-                            )
-                        }
                     }
                 }
             }
