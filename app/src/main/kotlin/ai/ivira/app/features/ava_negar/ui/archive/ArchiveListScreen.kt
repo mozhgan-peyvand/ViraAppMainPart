@@ -1,14 +1,15 @@
 package ai.ivira.app.features.ava_negar.ui.archive
 
 import ai.ivira.app.R
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheet
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetDefaults
+import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarArchiveDetail
 import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarSearch
 import ai.ivira.app.features.ava_negar.AvanegarScreenRoutes.AvaNegarVoiceRecording
 import ai.ivira.app.features.ava_negar.AvanegarSentry
 import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics
-import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Processed
-import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Tracking
-import ai.ivira.app.features.ava_negar.ui.AvanegarAnalytics.AvanegarFileType.Uploading
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementColumn
 import ai.ivira.app.features.ava_negar.ui.archive.element.ArchiveProcessedFileElementGrid
@@ -56,7 +57,6 @@ import ai.ivira.app.utils.ui.shareText
 import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.BLue_a200_Opacity_40
 import ai.ivira.app.utils.ui.theme.Color_BG
-import ai.ivira.app.utils.ui.theme.Color_BG_Bottom_Sheet
 import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_3
@@ -70,7 +70,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -101,16 +100,12 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -120,6 +115,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -129,7 +125,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
@@ -145,11 +140,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 
 const val TRACKING_FILE_ANIMATION_DURATION_Column = 1300
@@ -207,21 +200,11 @@ private fun AvaNegarArchiveListScreen(
     LaunchedEffect(isScrollingUp) { isVisible = isScrollingUp }
 
     val (selectedSheet, setSelectedSheet) = rememberSaveable {
-        mutableStateOf(
-            ArchiveBottomSheetType.ChooseFile
-        )
+        mutableStateOf(ArchiveBottomSheetType.ChooseFile)
     }
 
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true,
+    val bottomSheetState = rememberViraBottomSheetState(
         confirmValueChange = { !isConvertingPdf && !isConvertingTxt }
-    )
-
-    val modalBottomSheetStateUpdate = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true,
-        confirmValueChange = { false }
     )
 
     val uploadingFileState by archiveListViewModel.isUploading.collectAsStateWithLifecycle(
@@ -256,13 +239,7 @@ private fun AvaNegarArchiveListScreen(
             coroutineScope.launch {
                 if (archiveListViewModel.checkIfUriDurationIsOk(context, it.data?.data)) {
                     setSelectedSheet(ArchiveBottomSheetType.RenameUploading)
-                    coroutineScope.launch {
-                        if (!modalBottomSheetState.isVisible) {
-                            modalBottomSheetState.show()
-                        } else {
-                            modalBottomSheetState.hide()
-                        }
-                    }
+                    bottomSheetState.show()
                     try {
                         fileName =
                             it.data?.data?.filename(context).orEmpty()
@@ -323,50 +300,6 @@ private fun AvaNegarArchiveListScreen(
         }
     }
 
-    var backPressedInterval by remember {
-        mutableLongStateOf(0)
-    }
-
-    BackHandler(modalBottomSheetStateUpdate.isVisible) {
-        // we want to disable back
-    }
-
-    BackHandler(modalBottomSheetState.isVisible && !modalBottomSheetStateUpdate.isVisible) {
-        if (modalBottomSheetState.isVisible) {
-            coroutineScope.launch {
-                if (modalBottomSheetState.targetValue != ModalBottomSheetValue.Hidden) {
-                    coroutineScope.launch(IO) {
-                        if (!isConvertingPdf && !isConvertingTxt) {
-                            modalBottomSheetState.hide()
-                        } else {
-                            if (backPressedInterval + TIME_INTERVAL < System.currentTimeMillis()) {
-                                withContext(Main) {
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(
-                                            R.string.msg_back_again_to_cancel_converting
-                                        ),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-
-                                backPressedInterval = System.currentTimeMillis()
-                            } else {
-                                withContext(Main) {
-                                    isConvertingPdf = false
-                                    isConvertingTxt = false
-                                    modalBottomSheetState.hide()
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    navHostController.navigateUp()
-                }
-            }
-        }
-    }
-
     val shouldShowKeyBoard = rememberSaveable { mutableStateOf(false) }
     val shouldShowKeyBoardUploadingName = rememberSaveable { mutableStateOf(false) }
 
@@ -375,8 +308,8 @@ private fun AvaNegarArchiveListScreen(
             archiveListViewModel.addFileToUploadingQueue(it.title, Uri.fromFile(File(it.filepath)))
         }
 
-    LaunchedEffect(modalBottomSheetState.currentValue) {
-        if (modalBottomSheetState.isVisible) {
+    LaunchedEffect(bottomSheetState.currentValue) {
+        if (bottomSheetState.isVisible) {
             if (selectedSheet.name == ArchiveBottomSheetType.Rename.name) {
                 shouldShowKeyBoard.value = true
             }
@@ -428,7 +361,7 @@ private fun AvaNegarArchiveListScreen(
 
     LaunchedEffect(shouldSharePdf) {
         if (shouldSharePdf) {
-            modalBottomSheetState.hide()
+            bottomSheetState.hide()
             archiveListViewModel.fileToShare?.let {
                 sharePdf(context = context, file = it)
                 shouldSharePdf = false
@@ -438,7 +371,7 @@ private fun AvaNegarArchiveListScreen(
 
     LaunchedEffect(shouldShareTxt) {
         if (shouldShareTxt) {
-            modalBottomSheetState.hide()
+            bottomSheetState.hide()
             archiveListViewModel.fileToShare?.let {
                 shareTXT(context = context, file = it)
                 shouldShareTxt = false
@@ -448,32 +381,282 @@ private fun AvaNegarArchiveListScreen(
 
     Scaffold(
         backgroundColor = MaterialTheme.colors.background,
+        topBar = {
+            ArchiveAppBar(
+                modifier = Modifier.padding(top = 8.dp),
+                onBackClick = { navHostController.navigateUp() },
+                isGrid = isGrid,
+                isListEmpty = archiveFiles.isEmpty(),
+                onUploadClick = {
+                    if (isUploadingAllowed) {
+                        eventHandler.specialEvent(AvanegarAnalytics.selectUploadFile)
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
+                        bottomSheetState.show()
+                    } else {
+                        val hasError = uiViewState is UiError && isThereAnyTrackingOrUploading
+                        AvanegarSentry.queueIsFull(hasError)
+                        eventHandler.specialEvent(AvanegarAnalytics.uploadNotAllowed(true))
+                        showMessage(
+                            snackbarHostState,
+                            coroutineScope,
+                            context.getString(
+                                if (hasError) {
+                                    R.string.msg_wait_for_connection_to_server
+                                } else {
+                                    R.string.msg_wait_process_finish_or_cancel_it
+                                }
+                            )
+                        )
+                    }
+                },
+                onChangeListTypeClick = {
+                    eventHandler.selectItem(AvanegarAnalytics.selectListViewType(!isGrid))
+                    archiveListViewModel.saveListType(!isGrid)
+                },
+                onSearchClick = {
+                    navHostController.navigate(AvaNegarSearch.route)
+                }
+            )
+        },
         modifier = Modifier.background(Color_BG),
         scaffoldState = scaffoldState,
         snackbarHost = {
             SnackBarWithPaddingBottom(it, true, 400f)
         }
     ) { innerPadding ->
-        ModalBottomSheetLayout(
-            sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
-            sheetBackgroundColor = Color_BG_Bottom_Sheet,
-            scrimColor = Color.Black.copy(alpha = 0.5f),
-            sheetState = modalBottomSheetState,
-            sheetContent = {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                val noNetworkAvailable by remember(networkStatus) {
+                    mutableStateOf(networkStatus is NetworkStatus.Unavailable)
+                }
+
+                val hasVpnConnection by remember(networkStatus) {
+                    mutableStateOf(networkStatus.let { it is NetworkStatus.Available && it.hasVpn })
+                }
+
+                val isBannerError by remember(uiViewState) {
+                    mutableStateOf(uiViewState.let { it is UiError && !it.isSnack })
+                }
+
+                val shouldShowError by remember(archiveFiles, isThereAnyTrackingOrUploading) {
+                    mutableStateOf(archiveFiles.isNotEmpty() && isThereAnyTrackingOrUploading)
+                }
+
+                ViraBannerWithAnimation(
+                    isVisible = (noNetworkAvailable || hasVpnConnection || isBannerError) && shouldShowError,
+                    bannerInfo = if (uiViewState is UiError) {
+                        ViraBannerInfo.Error(
+                            message = (uiViewState as UiError).message,
+                            iconRes = R.drawable.ic_failure_network
+                        )
+                    } else if (hasVpnConnection) {
+                        ViraBannerInfo.Warning(
+                            message = stringResource(id = R.string.msg_vpn_is_connected_error),
+                            iconRes = R.drawable.ic_warning_vpn
+                        )
+                    } else {
+                        ViraBannerInfo.Error(
+                            message = stringResource(id = R.string.msg_internet_disconnected),
+                            iconRes = R.drawable.ic_failure_network
+                        )
+                    }
+                )
+
+                ArchiveBody(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    archiveViewList = archiveFiles,
+                    failureList = failureList,
+                    isNetworkAvailable = !noNetworkAvailable,
+                    isUploading = uploadingFileState == UploadingFileStatus.Uploading,
+                    isGrid = isGrid,
+                    uploadingId = uploadingId,
+                    listState = listState,
+                    brush = if (isGrid) gridBrush() else columnBrush(),
+                    onTryAgainCLick = { archiveListViewModel.startUploading(it) },
+                    onMenuClick = { item ->
+                        when (item) {
+                            is AvanegarProcessedFileView -> {
+                                setSelectedSheet(ArchiveBottomSheetType.Detail)
+                                bottomSheetState.show()
+                                archiveListViewModel.archiveViewItem = item
+                                archiveListViewModel.processItem = item
+                                fileName = item.title
+                            }
+
+                            else -> {
+                                setSelectedSheet(ArchiveBottomSheetType.Delete)
+                                bottomSheetState.show()
+                                archiveListViewModel.archiveViewItem = item
+                                fileName = item.title
+                            }
+                        }
+                    },
+                    onItemClick = { id, title ->
+                        navHostController.navigate(
+                            AvaNegarArchiveDetail.createRoute(id, title)
+                        )
+                    }
+                )
+            }
+            AnimatedVisibility(
+                modifier = Modifier
+                    .align(BottomStart)
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = 16.dp
+                    ),
+                visible = isVisible,
+                enter = slideInVertically(
+                    // Enters by sliding down from offset -fullHeight to 0.
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(
+                        durationMillis = 250,
+                        easing = EaseInOut
+                    )
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(
+                        durationMillis = 150,
+                        easing = EaseInOut
+                    )
+                )
+
+            ) {
+                FloatingActionButton(
+                    backgroundColor = MaterialTheme.colors.primary,
+                    onClick = {
+                        safeClick {
+                            if (isUploadingAllowed) {
+                                eventHandler.specialEvent(
+                                    AvanegarAnalytics.selectRecordAudio(
+                                        if (context.hasRecordAudioPermission()) "1" else "0"
+                                    )
+                                )
+
+                                snackbarHostState.currentSnackbarData?.dismiss()
+
+                                if (context.packageManager.hasSystemFeature(
+                                        PackageManager.FEATURE_MICROPHONE
+                                    )
+                                ) {
+                                    // PermissionCheck Duplicate 2
+                                    if (context.hasRecordAudioPermission()) {
+                                        gotoRecordAudioScreen(navHostController)
+                                    } else {
+                                        // needs improvement, just need to save if permission is alreadyRequested
+                                        // and everytime check shouldShow
+                                        if (archiveListViewModel.hasDeniedPermissionPermanently(
+                                                Manifest.permission.RECORD_AUDIO
+                                            )
+                                        ) {
+                                            setSelectedSheet(
+                                                ArchiveBottomSheetType.AudioAccessPermissionDenied
+                                            )
+                                            bottomSheetState.show()
+                                        } else {
+                                            recordAudioPermLauncher.launch(
+                                                Manifest.permission.RECORD_AUDIO
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    showMessage(
+                                        snackbarHostState,
+                                        coroutineScope,
+                                        context.getString(
+                                            R.string.msg_no_microphone_found_on_phone
+                                        )
+                                    )
+                                }
+                            } else {
+                                val hasError = uiViewState is UiError && isThereAnyTrackingOrUploading
+                                AvanegarSentry.queueIsFull(hasError)
+                                eventHandler.specialEvent(
+                                    AvanegarAnalytics.uploadNotAllowed(
+                                        false
+                                    )
+                                )
+                                showMessage(
+                                    snackbarHostState,
+                                    coroutineScope,
+                                    context.getString(
+                                        if (hasError) {
+                                            R.string.msg_wait_for_connection_to_server
+                                        } else {
+                                            R.string.msg_wait_process_finish_or_cancel_it
+                                        }
+                                    )
+                                )
+                            }
+                        }
+                    }
+                ) {
+                    ViraIcon(
+                        drawable = R.drawable.ic_mic,
+                        contentDescription = stringResource(id = R.string.desc_record)
+                    )
+                }
+            }
+        }
+    }
+    if (bottomSheetState.showBottomSheet) {
+        var backPressedInterval by remember { mutableLongStateOf(0) }
+        // this is needed so in onBackPressed the currect value of it is used
+        val selectedSheetUpdated by rememberUpdatedState(newValue = selectedSheet)
+        ViraBottomSheet(
+            sheetState = bottomSheetState,
+            properties = ViraBottomSheetDefaults.properties(shouldDismissOnBackPress = false),
+            onBackPressed = {
+                when (selectedSheetUpdated) {
+                    ArchiveBottomSheetType.ChooseFile,
+                    ArchiveBottomSheetType.Rename,
+                    ArchiveBottomSheetType.Detail,
+                    ArchiveBottomSheetType.Delete,
+                    ArchiveBottomSheetType.DeleteConfirmation,
+                    ArchiveBottomSheetType.RenameUploading,
+                    ArchiveBottomSheetType.FileAccessPermissionDenied,
+                    ArchiveBottomSheetType.AudioAccessPermissionDenied -> bottomSheetState.hide()
+                    ArchiveBottomSheetType.Share -> {
+                        if (!isConvertingPdf && !isConvertingTxt) {
+                            bottomSheetState.hide()
+                        } else {
+                            if (backPressedInterval + TIME_INTERVAL < System.currentTimeMillis()) {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(
+                                        R.string.msg_back_again_to_cancel_converting
+                                    ),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                backPressedInterval = System.currentTimeMillis()
+                            } else {
+                                isConvertingPdf = false
+                                isConvertingTxt = false
+                                bottomSheetState.hide()
+                            }
+                        }
+                    }
+                }
+            }
+        ) {
+            ViraBottomSheetContent(selectedSheet) {
                 when (selectedSheet) {
                     ArchiveBottomSheetType.ChooseFile -> {
                         ChooseFileContentBottomSheet(
                             descriptionFileFormat = R.string.lbl_allowed_format,
                             descriptionTimeNeed = R.string.lbl_limit_time,
                             onOpenFile = {
-                                coroutineScope.launch {
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    } else {
-                                        modalBottomSheetState.hide()
-                                    }
-                                }
-
                                 // PermissionCheck Duplicate 1
                                 val permission = if (isSdkVersion33orHigher()) {
                                     Manifest.permission.READ_MEDIA_AUDIO
@@ -483,27 +666,21 @@ private fun AvaNegarArchiveListScreen(
 
                                 if (context.hasPermission(permission)) {
                                     launchOpenFile.launch(openAudioSelector())
+                                    bottomSheetState.hide()
                                 } else if (archiveListViewModel.hasDeniedPermissionPermanently(
                                         permission
                                     )
                                 ) {
                                     // needs improvement, just need to save if permission is alreadyRequested
                                     // and everytime check shouldShow
-
                                     setSelectedSheet(
                                         ArchiveBottomSheetType.FileAccessPermissionDenied
                                     )
-                                    coroutineScope.launch {
-                                        modalBottomSheetState.hide()
-                                        if (!modalBottomSheetState.isVisible) {
-                                            modalBottomSheetState.show()
-                                        } else {
-                                            modalBottomSheetState.hide()
-                                        }
-                                    }
+                                    bottomSheetState.show()
                                 } else {
                                     // Asking for permission
                                     chooseAudioPermLauncher.launch(permission)
+                                    bottomSheetState.hide()
                                 }
                             }
                         )
@@ -516,9 +693,7 @@ private fun AvaNegarArchiveListScreen(
                             renameAction = {
                                 fileName = it
                                 archiveListViewModel.addFileToUploadingQueue(it, fileUri)
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                bottomSheetState.hide()
                             }
                         )
                     }
@@ -533,9 +708,7 @@ private fun AvaNegarArchiveListScreen(
                                     title = name,
                                     id = archiveListViewModel.processItem?.id
                                 )
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                bottomSheetState.hide()
                             }
                         )
                     }
@@ -549,9 +722,7 @@ private fun AvaNegarArchiveListScreen(
                                         archiveListViewModel.processItem?.text.orEmpty()
                                     )
                                 )
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                bottomSheetState.hide()
 
                                 showMessage(
                                     snackbarHostState,
@@ -561,36 +732,15 @@ private fun AvaNegarArchiveListScreen(
                             },
                             shareItemAction = {
                                 setSelectedSheet(ArchiveBottomSheetType.Share)
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    } else {
-                                        modalBottomSheetState.hide()
-                                    }
-                                }
+                                bottomSheetState.show()
                             },
                             renameItemAction = {
                                 setSelectedSheet(ArchiveBottomSheetType.Rename)
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    } else {
-                                        modalBottomSheetState.hide()
-                                    }
-                                }
+                                bottomSheetState.show()
                             },
                             deleteItemAction = {
                                 setSelectedSheet(ArchiveBottomSheetType.DeleteConfirmation)
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    } else {
-                                        modalBottomSheetState.hide()
-                                    }
-                                }
+                                bottomSheetState.show()
                             }
                         )
                     }
@@ -605,9 +755,7 @@ private fun AvaNegarArchiveListScreen(
                                     context = context,
                                     text = archiveListViewModel.processItem?.text.orEmpty()
                                 )
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                bottomSheetState.hide()
                             },
                             fileId = archiveListViewModel.processItem?.id?.let { "$it" }
                         )
@@ -619,21 +767,21 @@ private fun AvaNegarArchiveListScreen(
                                 when (val file = archiveListViewModel.archiveViewItem) {
                                     is AvanegarTrackingFileView -> {
                                         eventHandler.selectItem(
-                                            AvanegarAnalytics.selectDeleteFile(Tracking)
+                                            AvanegarAnalytics.selectDeleteFile(AvanegarAnalytics.AvanegarFileType.Tracking)
                                         )
                                         archiveListViewModel.removeTrackingFile(file.token)
                                     }
 
                                     is AvanegarUploadingFileView -> {
                                         eventHandler.selectItem(
-                                            AvanegarAnalytics.selectDeleteFile(Uploading)
+                                            AvanegarAnalytics.selectDeleteFile(AvanegarAnalytics.AvanegarFileType.Uploading)
                                         )
                                         archiveListViewModel.removeUploadingFile(file)
                                     }
 
                                     is AvanegarProcessedFileView -> {
                                         eventHandler.selectItem(
-                                            AvanegarAnalytics.selectDeleteFile(Processed)
+                                            AvanegarAnalytics.selectDeleteFile(AvanegarAnalytics.AvanegarFileType.Processed)
                                         )
                                         archiveListViewModel.removeProcessedFile(
                                             archiveListViewModel.processItem?.id
@@ -644,14 +792,11 @@ private fun AvaNegarArchiveListScreen(
                                 File(
                                     archiveListViewModel.processItem?.filePath.orEmpty()
                                 ).delete()
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+
+                                bottomSheetState.hide()
                             },
                             cancelAction = {
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                bottomSheetState.hide()
                             },
                             fileName = archiveListViewModel.processItem?.title.orEmpty()
                         )
@@ -662,14 +807,7 @@ private fun AvaNegarArchiveListScreen(
                             fileName = archiveListViewModel.archiveViewItem?.title.orEmpty(),
                             onDelete = {
                                 setSelectedSheet(ArchiveBottomSheetType.DeleteConfirmation)
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    } else {
-                                        modalBottomSheetState.hide()
-                                    }
-                                }
+                                bottomSheetState.show()
                             }
                         )
                     }
@@ -677,274 +815,24 @@ private fun AvaNegarArchiveListScreen(
                     ArchiveBottomSheetType.AudioAccessPermissionDenied -> {
                         AccessDeniedToOpenMicrophoneBottomSheet(
                             cancelAction = {
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                bottomSheetState.hide()
                             },
                             submitAction = {
                                 navigateToAppSettings(activity = context as Activity)
-                                coroutineScope.launch {
-                                    modalBottomSheetState.hide()
-                                }
+                                bottomSheetState.hide()
                             }
                         )
                     }
 
                     ArchiveBottomSheetType.FileAccessPermissionDenied -> {
-                        AccessDeniedToOpenFileBottomSheet(cancelAction = {
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
+                        AccessDeniedToOpenFileBottomSheet(
+                            cancelAction = {
+                                bottomSheetState.hide()
+                            },
+                            submitAction = {
+                                navigateToAppSettings(activity = context as Activity)
+                                bottomSheetState.hide()
                             }
-                        }, submitAction = {
-                            navigateToAppSettings(activity = context as Activity)
-                            coroutineScope.launch {
-                                modalBottomSheetState.hide()
-                            }
-                        })
-                    }
-                }
-            }
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    ArchiveAppBar(
-                        modifier = Modifier.padding(top = 8.dp),
-                        onBackClick = { navHostController.navigateUp() },
-                        isGrid = isGrid,
-                        isListEmpty = archiveFiles.isEmpty(),
-                        onUploadClick = {
-                            if (isUploadingAllowed) {
-                                eventHandler.specialEvent(AvanegarAnalytics.selectUploadFile)
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                                setSelectedSheet(ArchiveBottomSheetType.ChooseFile)
-                                coroutineScope.launch {
-                                    if (!modalBottomSheetState.isVisible) {
-                                        modalBottomSheetState.show()
-                                    } else {
-                                        modalBottomSheetState.hide()
-                                    }
-                                }
-                            } else {
-                                val hasError = uiViewState is UiError && isThereAnyTrackingOrUploading
-                                AvanegarSentry.queueIsFull(hasError)
-                                eventHandler.specialEvent(AvanegarAnalytics.uploadNotAllowed(true))
-                                showMessage(
-                                    snackbarHostState,
-                                    coroutineScope,
-                                    context.getString(
-                                        if (hasError) {
-                                            R.string.msg_wait_for_connection_to_server
-                                        } else {
-                                            R.string.msg_wait_process_finish_or_cancel_it
-                                        }
-                                    )
-                                )
-                            }
-                        },
-                        onChangeListTypeClick = {
-                            eventHandler.selectItem(AvanegarAnalytics.selectListViewType(!isGrid))
-                            archiveListViewModel.saveListType(!isGrid)
-                        },
-                        onSearchClick = {
-                            navHostController.navigate(AvaNegarSearch.route)
-                        }
-                    )
-
-                    val noNetworkAvailable by remember(networkStatus) {
-                        mutableStateOf(networkStatus is NetworkStatus.Unavailable)
-                    }
-
-                    val hasVpnConnection by remember(networkStatus) {
-                        mutableStateOf(networkStatus.let { it is NetworkStatus.Available && it.hasVpn })
-                    }
-
-                    val isBannerError by remember(uiViewState) {
-                        mutableStateOf(uiViewState.let { it is UiError && !it.isSnack })
-                    }
-
-                    val shouldShowError by remember(archiveFiles, isThereAnyTrackingOrUploading) {
-                        mutableStateOf(archiveFiles.isNotEmpty() && isThereAnyTrackingOrUploading)
-                    }
-
-                    ViraBannerWithAnimation(
-                        isVisible = (noNetworkAvailable || hasVpnConnection || isBannerError) && shouldShowError,
-                        bannerInfo = if (uiViewState is UiError) {
-                            ViraBannerInfo.Error(
-                                message = (uiViewState as UiError).message,
-                                iconRes = R.drawable.ic_failure_network
-                            )
-                        } else if (hasVpnConnection) {
-                            ViraBannerInfo.Warning(
-                                message = stringResource(id = R.string.msg_vpn_is_connected_error),
-                                iconRes = R.drawable.ic_warning_vpn
-                            )
-                        } else {
-                            ViraBannerInfo.Error(
-                                message = stringResource(id = R.string.msg_internet_disconnected),
-                                iconRes = R.drawable.ic_failure_network
-                            )
-                        }
-                    )
-
-                    ArchiveBody(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        archiveViewList = archiveFiles,
-                        failureList = failureList,
-                        isNetworkAvailable = !noNetworkAvailable,
-                        isUploading = uploadingFileState == UploadingFileStatus.Uploading,
-                        isGrid = isGrid,
-                        uploadingId = uploadingId,
-                        listState = listState,
-                        brush = if (isGrid) gridBrush() else columnBrush(),
-                        onTryAgainCLick = { archiveListViewModel.startUploading(it) },
-                        onMenuClick = { item ->
-                            when (item) {
-                                is AvanegarProcessedFileView -> {
-                                    setSelectedSheet(ArchiveBottomSheetType.Detail)
-                                    coroutineScope.launch {
-                                        if (!modalBottomSheetState.isVisible) {
-                                            modalBottomSheetState.show()
-                                        } else {
-                                            modalBottomSheetState.hide()
-                                        }
-                                    }
-                                    archiveListViewModel.archiveViewItem = item
-                                    archiveListViewModel.processItem = item
-                                    fileName = item.title
-                                }
-
-                                else -> {
-                                    setSelectedSheet(ArchiveBottomSheetType.Delete)
-                                    coroutineScope.launch {
-                                        if (!modalBottomSheetState.isVisible) {
-                                            modalBottomSheetState.show()
-                                        } else {
-                                            modalBottomSheetState.hide()
-                                        }
-                                    }
-                                    archiveListViewModel.archiveViewItem = item
-                                    fileName = item.title
-                                }
-                            }
-                        },
-                        onItemClick = { id, title ->
-                            navHostController.navigate(
-                                AvaNegarArchiveDetail.createRoute(id, title)
-                            )
-                        }
-                    )
-                }
-                AnimatedVisibility(
-                    modifier = Modifier
-                        .align(BottomStart)
-                        .padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 8.dp,
-                            bottom = 16.dp
-                        ),
-                    visible = isVisible,
-                    enter = slideInVertically(
-                        // Enters by sliding down from offset -fullHeight to 0.
-                        initialOffsetY = { fullHeight -> fullHeight },
-                        animationSpec = tween(
-                            durationMillis = 250,
-                            easing = EaseInOut
-                        )
-                    ),
-                    exit = slideOutVertically(
-                        targetOffsetY = { fullHeight -> fullHeight },
-                        animationSpec = tween(
-                            durationMillis = 150,
-                            easing = EaseInOut
-                        )
-                    )
-
-                ) {
-                    FloatingActionButton(
-                        backgroundColor = MaterialTheme.colors.primary,
-                        onClick = {
-                            safeClick {
-                                if (isUploadingAllowed) {
-                                    eventHandler.specialEvent(
-                                        AvanegarAnalytics.selectRecordAudio(
-                                            if (context.hasRecordAudioPermission()) "1" else "0"
-                                        )
-                                    )
-
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-
-                                    if (context.packageManager.hasSystemFeature(
-                                            PackageManager.FEATURE_MICROPHONE
-                                        )
-                                    ) {
-                                        // PermissionCheck Duplicate 2
-                                        if (context.hasRecordAudioPermission()) {
-                                            gotoRecordAudioScreen(navHostController)
-                                        } else {
-                                            // needs improvement, just need to save if permission is alreadyRequested
-                                            // and everytime check shouldShow
-                                            if (archiveListViewModel.hasDeniedPermissionPermanently(
-                                                    Manifest.permission.RECORD_AUDIO
-                                                )
-                                            ) {
-                                                setSelectedSheet(
-                                                    ArchiveBottomSheetType.AudioAccessPermissionDenied
-                                                )
-                                                coroutineScope.launch {
-                                                    if (!modalBottomSheetState.isVisible) {
-                                                        modalBottomSheetState.show()
-                                                    } else {
-                                                        modalBottomSheetState.hide()
-                                                    }
-                                                }
-                                            } else {
-                                                recordAudioPermLauncher.launch(
-                                                    Manifest.permission.RECORD_AUDIO
-                                                )
-                                            }
-                                        }
-                                    } else {
-                                        showMessage(
-                                            snackbarHostState,
-                                            coroutineScope,
-                                            context.getString(
-                                                R.string.msg_no_microphone_found_on_phone
-                                            )
-                                        )
-                                    }
-                                } else {
-                                    val hasError = uiViewState is UiError && isThereAnyTrackingOrUploading
-                                    AvanegarSentry.queueIsFull(hasError)
-                                    eventHandler.specialEvent(
-                                        AvanegarAnalytics.uploadNotAllowed(
-                                            false
-                                        )
-                                    )
-                                    showMessage(
-                                        snackbarHostState,
-                                        coroutineScope,
-                                        context.getString(
-                                            if (hasError) {
-                                                R.string.msg_wait_for_connection_to_server
-                                            } else {
-                                                R.string.msg_wait_process_finish_or_cancel_it
-                                            }
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    ) {
-                        ViraIcon(
-                            drawable = R.drawable.ic_mic,
-                            contentDescription = stringResource(id = R.string.desc_record)
                         )
                     }
                 }
