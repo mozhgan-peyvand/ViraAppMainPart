@@ -355,16 +355,6 @@ private fun HomeScreen(
         }
     }
 
-    // fixme hamburger icon of drawer is clickable when bottomSheet is open
-    //  because ModalBottomSheet is child of Scaffold
-    LaunchedEffect(scaffoldState.drawerState.isOpen) {
-        if (modalBottomSheetState.isVisible) {
-            coroutineScope.launch {
-                modalBottomSheetState.hide()
-            }
-        }
-    }
-
     LaunchedEffect(showUpdateBottomSheet) {
         if (homeViewModel.canShowBottomSheet && showUpdateBottomSheet) {
             coroutineScope.launch {
