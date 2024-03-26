@@ -324,7 +324,7 @@ class HamahangArchiveListViewModel @Inject constructor(
             val result = repository.downloadFile(
                 id = processedFile.id,
                 url = processedFile.fileUrl,
-                fileName = processedFile.title
+                fileName = processedFile.filePath
             ) { byteRead, totalSize ->
                 val percent = byteRead / totalSize.toFloat()
 
