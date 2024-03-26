@@ -114,13 +114,7 @@ fun HamahangNewAudioScreenRoute(navController: NavController) {
             if (result != null) {
                 navController.previousBackStackEntry
                     ?.savedStateHandle
-                    ?.set(
-                        NEW_FILE_AUDIO_RESULT,
-                        HamahangNewAudioResult(
-                            inputPath = result.inputPath,
-                            speaker = result.speaker
-                        )
-                    )
+                    ?.set(NEW_FILE_AUDIO_RESULT, result)
             }
 
             navController.popBackStack()
@@ -225,7 +219,7 @@ private fun HamahangNewAudioScreen(
         scaffoldState = scaffoldState,
         scrollState = scrollState,
         isOkToGenerate = isOkToGenerate,
-        onBackClick = { navigateUp(null) }, // TODO: add result as param
+        onBackClick = { navigateUp(null) },
         onUploadFileClick = {
             when (mode) {
                 HamahangAudioBoxMode.Idle -> selectedSheet = UploadFile
@@ -240,6 +234,20 @@ private fun HamahangNewAudioScreen(
             if (playerState.isPlaying) {
                 playerState.stopPlaying()
             }
+            val m = viewModel.mode.value
+            val s = viewModel.selectedSpeaker.value
+            val title = viewModel.getCurrentDefaultName()
+            require(m is HamahangAudioBoxMode.Preview)
+            require(s != null)
+
+            viewModel.updateCurrentDefaultName()
+            navigateUp(
+                HamahangNewAudioResult(
+                    inputPath = m.file.absolutePath,
+                    speaker = s,
+                    title = title
+                )
+            )
         },
         changeSpeaker = { viewModel.changeSpeaker(it) },
         sheetState = sheetState,

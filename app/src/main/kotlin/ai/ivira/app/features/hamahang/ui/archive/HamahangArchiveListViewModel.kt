@@ -7,12 +7,14 @@ import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Failu
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleDownload
 import ai.ivira.app.features.hamahang.data.HamahangRepository
 import ai.ivira.app.features.hamahang.data.entity.HamahangArchiveFilesEntity
+import ai.ivira.app.features.hamahang.data.entity.HamahangUploadingFileEntity
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangArchiveView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangUploadingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangTrackingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangUploadingFileView
+import ai.ivira.app.features.hamahang.ui.new_audio.HamahangSpeakerView
 import ai.ivira.app.utils.common.file.UploadProgressCallback
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.data.NetworkStatus
@@ -41,6 +43,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import saman.zamani.persiandate.PersianDate
 import java.io.File
 import javax.inject.Inject
 
@@ -407,6 +410,20 @@ class HamahangArchiveListViewModel @Inject constructor(
                     uploadedBytes = bytesUploaded
                 )
             }
+        }
+    }
+
+    fun addFileToUploading(inputPath: String, speaker: HamahangSpeakerView, title: String) {
+        viewModelScope.launch(IO) {
+            repository.insertUploadingFile(
+                value = HamahangUploadingFileEntity(
+                    id = "${System.currentTimeMillis()}_$speaker",
+                    title = title,
+                    inputFilePath = inputPath,
+                    speaker = speaker.name,
+                    createdAt = PersianDate().time
+                )
+            )
         }
     }
 }

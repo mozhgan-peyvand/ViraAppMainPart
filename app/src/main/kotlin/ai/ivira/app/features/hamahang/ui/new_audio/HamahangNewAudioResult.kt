@@ -5,6 +5,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class HamahangNewAudioResult(
+    val title: String,
     val inputPath: String,
     val speaker: HamahangSpeakerView
 ) : Parcelable {

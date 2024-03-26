@@ -20,6 +20,7 @@ import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangTrackingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangUploadingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.convertDate
+import ai.ivira.app.features.hamahang.ui.new_audio.HamahangNewAudioResult
 import ai.ivira.app.features.hamahang.ui.new_audio.HamahangSpeakerView
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.UiError
@@ -104,8 +105,16 @@ private const val TRACKING_FILE_ANIMATION_DURATION_COLUMN = 1300
 fun HamahangArchiveListScreenRoute(
     navController: NavController
 ) {
+    val viewModel = hiltViewModel<HamahangArchiveListViewModel>()
+
+    navController.currentBackStackEntry?.savedStateHandle
+        ?.remove<HamahangNewAudioResult>(HamahangNewAudioResult.NEW_FILE_AUDIO_RESULT)
+        ?.let {
+            viewModel.addFileToUploading(it.inputPath, it.speaker, it.title)
+        }
+
     HamahangArchiveListScreen(
-        viewModel = hiltViewModel(),
+        viewModel = viewModel,
         navigateToDetailScreen = { id ->
             navController.navigate(HamahangScreenRoutes.HamahangDetailScreen.createRoute(id))
         },

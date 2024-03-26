@@ -1,10 +1,12 @@
 package ai.ivira.app.features.hamahang.ui.new_audio
 
 import ai.ivira.app.BuildConfig
+import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.hamahang.ui.new_audio.components.HamahangAudioBoxMode
 import ai.ivira.app.utils.common.file.FileCache
 import ai.ivira.app.utils.common.orZero
+import ai.ivira.app.utils.common.safeGetInt
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiStatus
@@ -19,7 +21,7 @@ import android.text.format.DateUtils
 import androidx.annotation.WorkerThread
 import androidx.core.content.edit
 import androidx.core.net.toFile
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +40,7 @@ class HamahangNewAudioViewModel @Inject constructor(
     private val fileCache: FileCache,
     private val uiException: UiException,
     application: Application
-) : ViewModel() {
+) : AndroidViewModel(application) {
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewState
 
@@ -91,6 +93,22 @@ class HamahangNewAudioViewModel @Inject constructor(
 
     private fun permissionDeniedPrefKey(permission: String): String {
         return "deniedPermission_$permission"
+    }
+
+    fun getCurrentDefaultName(): String {
+        return getApplication<Application>().getString(
+            R.string.lbl_default_voice_title,
+            sharedPref.safeGetInt(KEY_DEFAULT_VOICE_NAME_COUNTER, 1)
+        )
+    }
+
+    fun updateCurrentDefaultName() {
+        sharedPref.edit {
+            putInt(
+                KEY_DEFAULT_VOICE_NAME_COUNTER,
+                sharedPref.safeGetInt(KEY_DEFAULT_VOICE_NAME_COUNTER, 1) + 1
+            )
+        }
     }
 
     suspend fun checkIfUriDurationIsOk(context: Context, uri: Uri?): Boolean {
@@ -205,5 +223,6 @@ class HamahangNewAudioViewModel @Inject constructor(
 
     companion object {
         const val MAX_FILE_DURATION_MS = 2 * DateUtils.MINUTE_IN_MILLIS
+        private const val KEY_DEFAULT_VOICE_NAME_COUNTER = "hamahangDefaultNameCounter"
     }
 }
