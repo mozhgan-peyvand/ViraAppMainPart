@@ -10,22 +10,16 @@ import ai.ivira.app.utils.data.db.ViraDb
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
-import androidx.room.RoomDatabase
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV
 import androidx.security.crypto.EncryptedSharedPreferences.PrefValueEncryptionScheme
 import androidx.security.crypto.MasterKey.Builder
 import androidx.security.crypto.MasterKey.KeyScheme.AES256_GCM
-import androidx.sqlite.db.SupportSQLiteDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.launch
-import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -72,11 +66,7 @@ object LocalModule {
 
     @Singleton
     @Provides
-    fun provideViraDb(
-        @ApplicationContext context: Context,
-        fakeData: HamahangFakeData,
-        hamahangDaoProvider: Provider<HamahangDao>
-    ): ViraDb {
+    fun provideViraDb(@ApplicationContext context: Context): ViraDb {
         return Room
             .databaseBuilder(
                 context,
@@ -90,26 +80,6 @@ object LocalModule {
             .addMigrations(Migration.migration5_6())
             .addMigrations(Migration.migration6_7())
             .fallbackToDestructiveMigration()
-            .addCallback(object : RoomDatabase.Callback() {
-                override fun onCreate(db: SupportSQLiteDatabase) {
-                    super.onCreate(db)
-                    val dao = hamahangDaoProvider.get()
-
-                    CoroutineScope(IO).launch {
-                        fakeData.processedFiles.forEach {
-                            dao.insertProcessedFile(it)
-                        }
-
-                        fakeData.trackingFiles.forEach {
-                            dao.insertTrackingFile(it)
-                        }
-
-                        fakeData.uploadingFiles.forEach {
-                            dao.insertUploadingFile(it)
-                        }
-                    }
-                }
-            })
             .build()
     }
 

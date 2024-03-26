@@ -1,6 +1,7 @@
 package ai.ivira.app
 
 import ai.ivira.app.features.config.data.ConfigManager
+import ai.ivira.app.features.hamahang.HamahangTracker
 import ai.ivira.app.utils.common.notification.FirebaseTopic.Vira
 import ai.ivira.app.utils.common.notification.ViraFirebaseMessagingService.Companion.TAG
 import ai.ivira.app.utils.initializers.TrackersInitializer
@@ -26,6 +27,9 @@ const val IsSubScribeToVersion = "subScribeViraUpdateVersion"
 class ViraApp : Application(), ImageLoaderFactory {
     @Inject
     lateinit var sentryInitializer: SentryInitializer
+
+    @Inject
+    lateinit var hamahangTracker: HamahangTracker
 
     @Inject
     lateinit var trackersInitializer: Provider<TrackersInitializer>
