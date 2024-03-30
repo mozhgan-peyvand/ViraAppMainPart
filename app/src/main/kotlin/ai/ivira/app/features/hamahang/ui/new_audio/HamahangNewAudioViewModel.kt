@@ -17,6 +17,7 @@ import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.SystemClock
 import android.text.format.DateUtils
 import androidx.annotation.WorkerThread
 import androidx.core.content.edit
@@ -60,6 +61,14 @@ class HamahangNewAudioViewModel @Inject constructor(
 
     private lateinit var retriever: MediaMetadataRetriever
 
+    val voiceRecorderState = VoiceRecorderState(
+        context = application,
+        maxFileDurationInMillis = MAX_FILE_DURATION_MS,
+        coroutineScope = viewModelScope
+    ) {
+        stopRecording {}
+    }
+
     init {
         kotlin.runCatching {
             retriever = MediaMetadataRetriever()
@@ -71,12 +80,24 @@ class HamahangNewAudioViewModel @Inject constructor(
             if (selectedSpeaker.value == speaker) null else speaker
     }
 
-    fun startRecording() {
-        _mode.value = HamahangAudioBoxMode.Recording
+    fun startRecording(onFailureAction: () -> Unit) {
+        val name = "rec_${System.currentTimeMillis()}_${SystemClock.elapsedRealtime()}"
+        if (voiceRecorderState.recorder.start(name)) {
+            _mode.value = HamahangAudioBoxMode.Recording
+            voiceRecorderState.resetTimer()
+            voiceRecorderState.startTimer()
+        } else {
+            onFailureAction()
+        }
     }
 
-    fun stopRecording() {
-        _mode.value = HamahangAudioBoxMode.Preview(File(""))
+    fun stopRecording(onFailureAction: () -> Unit) {
+        if (voiceRecorderState.recorder.stop()) {
+            voiceRecorderState.pauseTimer()
+            _mode.value = HamahangAudioBoxMode.Preview(voiceRecorderState.getRecordedFile())
+        } else {
+            onFailureAction()
+        }
     }
 
     fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) {
@@ -155,7 +176,9 @@ class HamahangNewAudioViewModel @Inject constructor(
                 retriever.release()
             }
         }
+
         playerState.clear()
+        voiceRecorderState.clear()
     }
 
     fun setUploadedFile(uri: Uri?) {
@@ -217,12 +240,16 @@ class HamahangNewAudioViewModel @Inject constructor(
     fun deleteFile() {
         playerState.stopPlaying()
         playerState.reset()
-        (_mode.value as? HamahangAudioBoxMode.Preview)?.file?.delete()
+        kotlin.runCatching {
+            (_mode.value as? HamahangAudioBoxMode.Preview)?.file?.delete()
+        }
         _mode.value = HamahangAudioBoxMode.Idle
     }
 
     companion object {
-        const val MAX_FILE_DURATION_MS = 2 * DateUtils.MINUTE_IN_MILLIS
-        private const val KEY_DEFAULT_VOICE_NAME_COUNTER = "hamahangDefaultNameCounter"
+        private const val KEY_DEFAULT_VOICE_NAME_COUNTER = "defaultNameCounter"
+
+        // note: 1m is shown in ui, if changed, change that as well
+        private const val MAX_FILE_DURATION_MS = 1 * DateUtils.MINUTE_IN_MILLIS
     }
 }

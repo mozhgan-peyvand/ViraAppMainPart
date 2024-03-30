@@ -3,6 +3,7 @@ package ai.ivira.app.features.hamahang.ui.new_audio.components
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.ava_negar.ui.record.widgets.RecordingAnimation
+import ai.ivira.app.utils.ui.formatAsDuration
 import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Primary
@@ -13,6 +14,7 @@ import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_White
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -50,8 +52,10 @@ import java.io.File
 fun HamahangAudioBox(
     mode: HamahangAudioBoxMode,
     playerState: VoicePlayerState,
-    startRecording: () -> Unit,
-    stopRecording: () -> Unit,
+    recordedTimeInSec: Int,
+    maxDurationTimeInMS: Long,
+    onStartRecordClick: () -> Unit,
+    onStopRecordClick: () -> Unit,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -79,20 +83,53 @@ fun HamahangAudioBox(
             HamahangAudioBoxMode.Idle,
             HamahangAudioBoxMode.Recording -> {
                 val recording = mode is HamahangAudioBoxMode.Recording
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     RecordingAnimation(
                         isRecording = recording,
                         iconResWhileRecording = R.drawable.ic_stop,
-                        onRecordClick = if (recording) stopRecording else startRecording,
-                        modifier = Modifier.align(Alignment.Center)
+                        onRecordClick = if (recording) onStopRecordClick else onStartRecordClick,
+                        modifier = Modifier.size(170.dp)
                     )
+                    if (recording) {
+                        RecordingTimer(
+                            recordedTimeInSec = recordedTimeInSec,
+                            maxDurationTimeInMS = maxDurationTimeInMS,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun RecordingTimer(
+    recordedTimeInSec: Int,
+    maxDurationTimeInMS: Long,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = formatDuration(maxDurationTimeInMS),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.caption,
+            color = Color_Red
+        )
+        Text(text = " / ")
+        Text(
+            text = recordedTimeInSec.formatAsDuration(false),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.caption,
+            color = Color_Text_1
+        )
     }
 }
 

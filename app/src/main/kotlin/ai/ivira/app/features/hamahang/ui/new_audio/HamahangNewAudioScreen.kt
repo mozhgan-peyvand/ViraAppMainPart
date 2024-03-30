@@ -6,19 +6,24 @@ import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
 import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetState
 import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
+import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenMicrophoneBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
+import ai.ivira.app.features.ava_negar.ui.record.sheets.MicrophoneNotAvailableBottomSheet
 import ai.ivira.app.features.hamahang.ui.new_audio.HamahangNewAudioResult.Companion.NEW_FILE_AUDIO_RESULT
 import ai.ivira.app.features.hamahang.ui.new_audio.components.HamahangAudioBox
 import ai.ivira.app.features.hamahang.ui.new_audio.components.HamahangAudioBoxMode
 import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangNewAudioBottomSheetType
+import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangNewAudioBottomSheetType.AudioAccessPermissionDenied
 import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangNewAudioBottomSheetType.DeleteFileConfirmation
 import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangNewAudioBottomSheetType.FileAccessPermissionDenied
+import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangNewAudioBottomSheetType.MicrophoneIsBeingUsedAlready
 import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangNewAudioBottomSheetType.UploadFile
 import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangUploadFileBottomSheet
 import ai.ivira.app.utils.ui.OnLifecycleEvent
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.hasPermission
+import ai.ivira.app.utils.ui.hasRecordAudioPermission
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isSdkVersion33orHigher
 import ai.ivira.app.utils.ui.navigateToAppSettings
@@ -26,6 +31,7 @@ import ai.ivira.app.utils.ui.openAudioSelector
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.showMessage
+import ai.ivira.app.utils.ui.showText
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
 import ai.ivira.app.utils.ui.theme.Color_Surface_Container_High
@@ -39,7 +45,9 @@ import android.Manifest
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
 import android.media.MediaPlayer
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -80,6 +88,7 @@ import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -143,6 +152,57 @@ private fun HamahangNewAudioScreen(
     val selectedSpeaker by viewModel.selectedSpeaker.collectAsStateWithLifecycle()
     val playerState by viewModel::playerState
 
+    val recordedTimeInSec by viewModel.voiceRecorderState.timer.collectAsStateWithLifecycle()
+    val maxDurationTimeInMS = remember { viewModel.voiceRecorderState.maxFileDurationInMillis }
+
+    val actionStartRecording = remember {
+        {
+            viewModel.startRecording {
+                selectedSheet = MicrophoneIsBeingUsedAlready
+                sheetState.show()
+            }
+        }
+    }
+
+    val actionStopRecording = remember {
+        {
+            viewModel.stopRecording {
+                context.showText(R.string.msg_general_recorder_stop_error)
+            }
+        }
+    }
+
+    val recordAudioPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            actionStartRecording()
+        } else {
+            viewModel.putDeniedPermissionToSharedPref(
+                permission = Manifest.permission.RECORD_AUDIO,
+                deniedPermanently = isPermissionDeniedPermanently(
+                    activity = context as Activity,
+                    permission = Manifest.permission.RECORD_AUDIO
+                )
+            )
+
+            showMessage(
+                snackbarHostState,
+                coroutineScope,
+                context.getString(R.string.lbl_need_to_access_to_record_audio_permission)
+            )
+        }
+    }
+
+    DisposableEffect(Unit) {
+        (context as ComponentActivity).window.addFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
+        onDispose {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+
     val launchOpenFile = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
@@ -186,7 +246,11 @@ private fun HamahangNewAudioScreen(
     }
 
     OnLifecycleEvent(
-        onPause = {
+        onPause = onPause@{
+            if (mode is HamahangAudioBoxMode.Recording) {
+                actionStopRecording()
+                return@onPause
+            }
             if (playerState.isPlaying) {
                 playerState.stopPlaying()
             }
@@ -221,11 +285,12 @@ private fun HamahangNewAudioScreen(
         isOkToGenerate = isOkToGenerate,
         onBackClick = { navigateUp(null) },
         onUploadFileClick = {
-            when (mode) {
-                HamahangAudioBoxMode.Idle -> selectedSheet = UploadFile
-                is HamahangAudioBoxMode.Preview -> selectedSheet = DeleteFileConfirmation(fromUpload = true)
+            selectedSheet = when (mode) {
+                HamahangAudioBoxMode.Idle -> UploadFile
+                is HamahangAudioBoxMode.Preview -> DeleteFileConfirmation(fromUpload = true)
                 HamahangAudioBoxMode.Recording -> {
-                    // TODO: Add related action
+                    actionStopRecording()
+                    DeleteFileConfirmation(fromUpload = true)
                 }
             }
             sheetState.show()
@@ -252,15 +317,42 @@ private fun HamahangNewAudioScreen(
         changeSpeaker = { viewModel.changeSpeaker(it) },
         sheetState = sheetState,
         selectedSheet = selectedSheet,
-        startRecording = viewModel::startRecording,
-        stopRecording = viewModel::stopRecording,
+        onStartRecordClick = {
+            if (context.packageManager.hasSystemFeature(PackageManager.FEATURE_MICROPHONE)) {
+                // PermissionCheck Duplicate 2
+                if (context.hasRecordAudioPermission()) {
+                    actionStartRecording()
+                } else {
+                    // needs improvement, just need to save if permission is alreadyRequested
+                    // and everytime check shouldShow
+                    if (viewModel.hasDeniedPermissionPermanently(Manifest.permission.RECORD_AUDIO)) {
+                        selectedSheet = AudioAccessPermissionDenied
+                        sheetState.show()
+                    } else {
+                        recordAudioPermLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                    }
+                }
+            } else {
+                showMessage(
+                    snackbarHostState,
+                    coroutineScope,
+                    context.getString(
+                        R.string.msg_no_microphone_found_on_phone
+                    )
+                )
+            }
+        },
+        onStopRecordClick = actionStopRecording,
+        recordedTimeInSec = recordedTimeInSec,
+        maxDurationTimeInMS = maxDurationTimeInMS,
         onDeleteClick = {
             selectedSheet = DeleteFileConfirmation(fromUpload = false)
             sheetState.show()
         },
         deleteFileAction = {
             when (mode) {
-                HamahangAudioBoxMode.Idle -> sheetState.hide()
+                HamahangAudioBoxMode.Idle,
+                HamahangAudioBoxMode.Recording -> sheetState.hide()
                 is HamahangAudioBoxMode.Preview -> {
                     (selectedSheet as? DeleteFileConfirmation)?.let { previewMode ->
                         viewModel.deleteFile()
@@ -271,9 +363,6 @@ private fun HamahangNewAudioScreen(
                             sheetState.hide()
                         }
                     }
-                }
-                HamahangAudioBoxMode.Recording -> {
-                    // TODO: Add related action
                 }
             }
         },
@@ -313,6 +402,8 @@ private fun HamahangNewAudioUI(
     speakers: List<HamahangSpeakerView>,
     selectedSheet: HamahangNewAudioBottomSheetType,
     playerState: VoicePlayerState,
+    recordedTimeInSec: Int,
+    maxDurationTimeInMS: Long,
     context: Context,
     scaffoldState: ScaffoldState,
     scrollState: ScrollState,
@@ -324,8 +415,8 @@ private fun HamahangNewAudioUI(
     onGenerateClick: () -> Unit,
     onUploadFileClick: () -> Unit,
     openFiles: () -> Unit,
-    startRecording: () -> Unit,
-    stopRecording: () -> Unit
+    onStartRecordClick: () -> Unit,
+    onStopRecordClick: () -> Unit
 ) {
     Scaffold(
         scaffoldState = scaffoldState,
@@ -355,10 +446,12 @@ private fun HamahangNewAudioUI(
                 InputAudioSection(
                     mode = mode,
                     playerState = playerState,
+                    recordedTimeInSec = recordedTimeInSec,
+                    maxDurationTimeInMS = maxDurationTimeInMS,
                     onDeleteClick = onDeleteClick,
                     onUploadFileClick = onUploadFileClick,
-                    startRecording = startRecording,
-                    stopRecording = stopRecording,
+                    onStartRecordClick = onStartRecordClick,
+                    onStopRecordClick = onStopRecordClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
@@ -409,6 +502,20 @@ private fun HamahangNewAudioUI(
                             fileName = ""
                         )
                     }
+                    AudioAccessPermissionDenied -> {
+                        AccessDeniedToOpenMicrophoneBottomSheet(
+                            cancelAction = { sheetState.hide() },
+                            submitAction = {
+                                navigateToAppSettings(activity = context as Activity)
+                                sheetState.hide()
+                            }
+                        )
+                    }
+                    MicrophoneIsBeingUsedAlready -> {
+                        MicrophoneNotAvailableBottomSheet(
+                            onDismissClick = { sheetState.hide() }
+                        )
+                    }
                 }
             }
         }
@@ -419,8 +526,10 @@ private fun HamahangNewAudioUI(
 private fun InputAudioSection(
     mode: HamahangAudioBoxMode,
     playerState: VoicePlayerState,
-    startRecording: () -> Unit,
-    stopRecording: () -> Unit,
+    recordedTimeInSec: Int,
+    maxDurationTimeInMS: Long,
+    onStartRecordClick: () -> Unit,
+    onStopRecordClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onUploadFileClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -457,11 +566,13 @@ private fun InputAudioSection(
 
         HamahangAudioBox(
             mode = mode,
-            stopRecording = stopRecording,
-            startRecording = startRecording,
+            onStopRecordClick = onStopRecordClick,
+            onStartRecordClick = onStartRecordClick,
             playerState = playerState,
             onDeleteClick = onDeleteClick,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            recordedTimeInSec = recordedTimeInSec,
+            maxDurationTimeInMS = maxDurationTimeInMS
         )
     }
 }
@@ -712,25 +823,27 @@ private fun PreviewHamahangNewAudioUI() {
             context.applicationContext as Application
         )
         HamahangNewAudioUI(
+            isOkToGenerate = false,
             mode = HamahangAudioBoxMode.Idle,
             selectedSpeaker = null,
-            isOkToGenerate = false,
+            speakers = HamahangSpeakerView.values().asList(),
+            selectedSheet = UploadFile,
+            playerState = fakePlayerState,
+            context = LocalContext.current,
             scaffoldState = rememberScaffoldState(),
             scrollState = rememberScrollState(),
+            sheetState = rememberViraBottomSheetState(),
             changeSpeaker = {},
+            onDeleteClick = {},
+            deleteFileAction = {},
             onBackClick = {},
             onGenerateClick = {},
             onUploadFileClick = {},
-            sheetState = rememberViraBottomSheetState(),
-            selectedSheet = UploadFile,
-            startRecording = {},
-            stopRecording = {},
             openFiles = {},
-            speakers = HamahangSpeakerView.values().asList(),
-            playerState = fakePlayerState,
-            onDeleteClick = {},
-            deleteFileAction = {},
-            context = LocalContext.current
+            onStartRecordClick = {},
+            onStopRecordClick = {},
+            recordedTimeInSec = 1,
+            maxDurationTimeInMS = 5000
         )
     }
 }

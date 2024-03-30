@@ -1,33 +1,30 @@
-package ai.ivira.app.features.ava_negar.ui.record
+package ai.ivira.app.features.hamahang.ui.new_audio
 
-import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewModel.Companion.MAX_FILE_DURATION_MS
-import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewModel.Companion.RECORDING_OFFSET_MS
-import ai.ivira.app.utils.common.file.AVANEGAR_FOLDER_PATH
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
-import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
-import javax.inject.Inject
 
-// RecorderUtil: Duplicate 1
-class Recorder @Inject constructor(
-    @ApplicationContext private val context: Context
+// RecorderUtil: Duplicate 2
+class HamahangRecorder constructor(
+    private val context: Context,
+    private val maxFileDurationInMillis: Long
 ) {
     companion object {
         private const val SAMPLE_RATE = 44100
         const val TAG = "RecorderTAG"
+        const val RECORDING_OFFSET_MS = 1000
     }
 
     private val onMaxDurationReachedListeners = CopyOnWriteArrayList<OnMaxDurationReached>()
 
     private fun getFile(filename: String): File {
-        val parent = File(File(context.filesDir, AVANEGAR_FOLDER_PATH), "recordings")
+        val parent = File(File(context.filesDir, "hamahang"), "recordings")
 
         if (!parent.exists()) {
             parent.mkdirs()
@@ -57,7 +54,7 @@ class Recorder @Inject constructor(
             setAudioSource(MediaRecorder.AudioSource.CAMCORDER)
             setAudioSamplingRate(SAMPLE_RATE)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setMaxDuration((MAX_FILE_DURATION_MS - RECORDING_OFFSET_MS).toInt())
+            setMaxDuration((maxFileDurationInMillis - RECORDING_OFFSET_MS).toInt())
             setOnInfoListener { _, what, _ ->
                 if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
                     stop()
@@ -80,28 +77,6 @@ class Recorder @Inject constructor(
         }.isSuccess
     }
 
-    fun pause(): Boolean {
-        return kotlin.runCatching {
-            val recorder = mediaRecorder ?: return false
-            if (isPauseResumeSupported()) {
-                recorder.pause()
-            }
-        }.onFailure {
-            Timber.tag(TAG).d(it)
-        }.isSuccess
-    }
-
-    fun resume(): Boolean {
-        return kotlin.runCatching {
-            val recorder = mediaRecorder ?: return false
-            if (isPauseResumeSupported()) {
-                recorder.resume()
-            }
-        }.onFailure {
-            Timber.tag(TAG).d(it)
-        }.isSuccess
-    }
-
     fun stop(): Boolean {
         return kotlin.runCatching {
             val recorder = mediaRecorder ?: return false
@@ -112,15 +87,6 @@ class Recorder @Inject constructor(
         }.onFailure {
             Timber.tag(TAG).d(it)
         }.isSuccess
-    }
-
-    fun removeCurrentRecording(): Boolean {
-        val file = _currentFile.get() ?: return false
-        return file.delete()
-    }
-
-    fun isPauseResumeSupported(): Boolean {
-        return VERSION.SDK_INT >= VERSION_CODES.N
     }
 
     fun addOnMaxDurationReachedListener(listener: OnMaxDurationReached) {
