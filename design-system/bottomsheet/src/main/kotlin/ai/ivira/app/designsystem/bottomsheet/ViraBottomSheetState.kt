@@ -11,6 +11,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 
 @Composable
@@ -48,6 +50,8 @@ class ViraBottomSheetState internal constructor(
     internal val bottomSheetState: ViraInternalBottomSheetState,
     private val coroutineScope: CoroutineScope
 ) {
+    private var hideJob: Job? = null
+
     val isVisible: Boolean get() = bottomSheetState.isVisible
     val currentValue: ViraBottomSheetValue get() = bottomSheetState.currentValue
     val targetValue: ViraBottomSheetValue get() = bottomSheetState.targetValue
@@ -58,7 +62,10 @@ class ViraBottomSheetState internal constructor(
         private set
 
     fun show() {
-        showBottomSheet = true
+        coroutineScope.launch {
+            hideJob?.cancelAndJoin()
+            showBottomSheet = true
+        }
     }
 
     fun halfExpand() {
@@ -72,12 +79,15 @@ class ViraBottomSheetState internal constructor(
     }
 
     fun hide() {
-        coroutineScope.launch { bottomSheetState.hide() }
-            .invokeOnCompletion {
+        coroutineScope.launch { bottomSheetState.hide() }.let { job ->
+            job.invokeOnCompletion {
                 if (!bottomSheetState.isVisible) {
                     showBottomSheet = false
                 }
+                hideJob = null
             }
+            hideJob = job
+        }
     }
 
     internal fun hide(showAnimation: Boolean) {
