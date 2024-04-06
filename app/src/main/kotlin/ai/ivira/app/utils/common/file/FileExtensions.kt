@@ -45,6 +45,14 @@ fun File.toMultiPart(id: String, listener: UploadProgressCallback): MultipartBod
     )
 }
 
+fun File.toMultiPart(): MultipartBody.Part {
+    return MultipartBody.Part.createFormData(
+        "file",
+        this.name,
+        this.asRequestBody()
+    )
+}
+
 private fun readFileFromRawFolder(
     context: Context,
     fileName: String,

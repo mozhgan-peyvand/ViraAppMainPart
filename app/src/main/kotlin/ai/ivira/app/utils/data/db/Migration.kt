@@ -127,6 +127,7 @@ object Migration {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `HamahangUploadingFileEntity` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `inputFilePath` TEXT NOT NULL, `speaker` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))")
                 db.execSQL("CREATE TABLE IF NOT EXISTS `HamahangTrackingFileEntity` (`token` TEXT NOT NULL, `title` TEXT NOT NULL, `inputFilePath` TEXT NOT NULL, `speaker` TEXT NOT NULL, `processEstimation` INTEGER, `insertSystemTime` INTEGER NOT NULL, `insertBootTime` INTEGER NOT NULL, `lastFailureSystemTime` INTEGER, `lastFailureBootTime` INTEGER, PRIMARY KEY(`token`))")
                 db.execSQL("CREATE TABLE IF NOT EXISTS `HamahangProcessedFileEntity` (`id` INTEGER NOT NULL, `title` TEXT NOT NULL, `fileUrl` TEXT NOT NULL, `filePath` TEXT NOT NULL, `inputFilePath` TEXT NOT NULL, `speaker` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `isSeen` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `HamahangCheckingFileEntity` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `inputFilePath` TEXT NOT NULL, `speaker` TEXT NOT NULL, `isProper` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))")
             }
         }
     }

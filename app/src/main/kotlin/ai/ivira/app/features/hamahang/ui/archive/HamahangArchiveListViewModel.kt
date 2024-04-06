@@ -8,10 +8,12 @@ import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Failu
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleDownload
 import ai.ivira.app.features.hamahang.data.HamahangRepository
 import ai.ivira.app.features.hamahang.data.entity.HamahangArchiveFilesEntity
-import ai.ivira.app.features.hamahang.data.entity.HamahangUploadingFileEntity
+import ai.ivira.app.features.hamahang.data.entity.HamahangCheckingFileEntity
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangArchiveView
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangCheckingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangUploadingFileView
+import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangCheckingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangTrackingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangUploadingFileView
@@ -74,6 +76,7 @@ class HamahangArchiveListViewModel @Inject constructor(
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewState
 
+    private var checkingQueue = listOf<HamahangCheckingFileView>()
     private var uploadingList = listOf<HamahangUploadingFileView>()
     private val downloadQueue = MutableStateFlow(listOf<HamahangProcessedFileView>())
 
@@ -91,6 +94,7 @@ class HamahangArchiveListViewModel @Inject constructor(
     private var indexOfItemThatShouldBeUploaded = 0
 
     private var job: Job? = null
+    private var checkAudioJob: Job? = null
     private var downloadJob: Job? = null
 
     val networkStatus = networkStatusTracker.networkStatus.stateIn(initial = NetworkStatus.Unavailable)
@@ -132,16 +136,30 @@ class HamahangArchiveListViewModel @Inject constructor(
         downloadQueueList: List<HamahangProcessedFileView> ->
 
         val uploadingList = hamahangArchiveFilesEntity.uploading
+        val checkingList = hamahangArchiveFilesEntity.checking
+        val filteredCheckingList = hamahangArchiveFilesEntity.checking.filter { it.isProper }
 
         when (networkStatus) {
             is NetworkStatus.Unavailable -> resetEverything()
 
             is NetworkStatus.Available -> {
-                if (
-                    uploadState != UploadingFileStatus.Uploading &&
-                    uploadState != UploadingFileStatus.FailureUpload &&
-                    uploadingList.isNotEmpty()
-                ) {
+                val isRequestAllowed = uploadState != UploadingFileStatus.Uploading &&
+                    uploadState != UploadingFileStatus.FailureUpload
+
+                if (isRequestAllowed && filteredCheckingList.isNotEmpty()) {
+                    _uiViewState.emit(UiLoading)
+                    _uploadStatus.value = UploadingFileStatus.Uploading
+
+                    with(filteredCheckingList.first()) {
+                        checkAudioContent(
+                            id = id,
+                            speaker = speaker,
+                            filePath = inputFilePath
+                        )
+                    }
+                }
+
+                if (isRequestAllowed && uploadingList.isNotEmpty()) {
                     _uiViewState.emit(UiLoading)
                     _uploadStatus.value = UploadingFileStatus.Uploading
 
@@ -188,6 +206,14 @@ class HamahangArchiveListViewModel @Inject constructor(
         }
 
         buildList {
+
+            addAll(
+                checkingList.map { it.toHamahangCheckingFileView() }
+                    .also { checkingList ->
+                        this@HamahangArchiveListViewModel.checkingQueue = checkingList
+                    }
+            )
+
             addAll(
                 uploadingList.map {
                     it.toHamahangUploadingFileView(
@@ -199,9 +225,6 @@ class HamahangArchiveListViewModel @Inject constructor(
                     val uploadItem = uploadList.filter { uploadingItem ->
                         !_failureListId.value.contains(uploadingItem.id)
                     }
-
-                    isThereTrackingOrUploading.value =
-                        trackingList.isNotEmpty() || uploadingList.isNotEmpty() || _failureListId.value.isNotEmpty()
 
                     this@HamahangArchiveListViewModel.uploadingList = uploadItem
                 }
@@ -227,6 +250,9 @@ class HamahangArchiveListViewModel @Inject constructor(
                     }
                 }
             )
+        }.also {
+            isThereTrackingOrUploading.value =
+                trackingList.isNotEmpty() || uploadingList.isNotEmpty() || checkingList.isNotEmpty() || _failureListId.value.isNotEmpty()
         }
 
         // endregion
@@ -304,6 +330,8 @@ class HamahangArchiveListViewModel @Inject constructor(
     private suspend fun resetEverything() {
         job?.cancel()
         job = null
+        checkAudioJob?.cancel()
+        checkAudioJob = null
         downloadJob?.cancel()
         downloadJob = null
         _uploadStatus.emit(UploadingFileStatus.Idle)
@@ -318,6 +346,24 @@ class HamahangArchiveListViewModel @Inject constructor(
             }
         }
         downloadQueue.value = listOf()
+    }
+
+    private fun checkAudioContent(
+        id: String,
+        speaker: String,
+        filePath: String
+    ) {
+        checkAudioJob?.cancel()
+        checkAudioJob = viewModelScope.launch(IO) {
+            val file = File(filePath)
+            val result = repository.checkAudioValidity(
+                id = id,
+                file = file,
+                speaker = speaker
+            )
+
+            handleResultState(id = id, result = result)
+        }
     }
 
     private fun voiceConversion(
@@ -403,6 +449,7 @@ class HamahangArchiveListViewModel @Inject constructor(
         onSuccess: ((AppResult.Success<T>) -> Unit)? = null
     ) {
         job = null
+        checkAudioJob = null
         when (result) {
             is AppResult.Success -> {
                 _uiViewState.emit(UiSuccess)
@@ -446,14 +493,15 @@ class HamahangArchiveListViewModel @Inject constructor(
         }
     }
 
-    fun addFileToUploading(inputPath: String, speaker: HamahangSpeakerView, title: String) {
+    fun addFileToChecking(inputPath: String, speaker: HamahangSpeakerView, title: String) {
         viewModelScope.launch(IO) {
-            repository.insertUploadingFile(
-                value = HamahangUploadingFileEntity(
+            repository.insertCheckingFile(
+                HamahangCheckingFileEntity(
                     id = "${System.currentTimeMillis()}_$speaker",
                     title = title,
                     inputFilePath = inputPath,
                     speaker = speaker.name,
+                    isProper = true,
                     createdAt = PersianDate().time
                 )
             )
@@ -479,6 +527,11 @@ class HamahangArchiveListViewModel @Inject constructor(
             }
         }
     }
+
+    fun deleteCheckingFile(id: String, filePath: String) =
+        viewModelScope.launch(IO) {
+            repository.deleteCheckingFile(id = id, filePath = filePath)
+        }
 
     fun deleteProcessedFile(id: Int, filePath: String) =
         viewModelScope.launch(IO) {

@@ -13,6 +13,7 @@ import ai.ivira.app.features.config.data.model.ConfigTileEntity
 import ai.ivira.app.features.config.data.model.ConfigVersionEntity
 import ai.ivira.app.features.config.data.model.ConfigVersionReleaseNoteEntity
 import ai.ivira.app.features.hamahang.data.HamahangDao
+import ai.ivira.app.features.hamahang.data.entity.HamahangCheckingFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangProcessedFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangTrackingFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangUploadingFileEntity
@@ -52,7 +53,8 @@ import androidx.room.TypeConverters
         // region: Hamahang
         HamahangUploadingFileEntity::class,
         HamahangTrackingFileEntity::class,
-        HamahangProcessedFileEntity::class
+        HamahangProcessedFileEntity::class,
+            HamahangCheckingFileEntity::class
         // endregion: Hamahang
     ],
     version = 7,

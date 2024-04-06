@@ -1,6 +1,7 @@
 package ai.ivira.app.features.hamahang.data
 
 import ai.ivira.app.features.hamahang.data.entity.HamahangArchiveFilesEntity
+import ai.ivira.app.features.hamahang.data.entity.HamahangCheckingFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangProcessedFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangTrackingFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangUploadingFileEntity
@@ -44,6 +45,10 @@ class HamahangLocalDataSource @Inject constructor(
         dao.insertTrackingFile(value)
     }
 
+    suspend fun insertCheckingFile(value: HamahangCheckingFileEntity) {
+        dao.insertCheckingFile(value)
+    }
+
     suspend fun insertTrackingFromUploading(
         uploadingId: String,
         tracking: HamahangTrackingFileEntity
@@ -81,6 +86,32 @@ class HamahangLocalDataSource @Inject constructor(
         }
     }
 
+    suspend fun insertUploadingFromChecking(id: String, speaker: String) {
+        db.withTransaction {
+            val checking = dao.getCheckingFile(id)
+            if (checking != null) {
+                dao.deleteCheckingFile(id)
+                dao.insertUploadingFile(
+                    HamahangUploadingFileEntity(
+                        id = "${System.currentTimeMillis()}_$speaker",
+                        title = checking.title,
+                        inputFilePath = checking.inputFilePath,
+                        speaker = checking.speaker,
+                        createdAt = PersianDate().time
+                    )
+                )
+            }
+        }
+    }
+
+    suspend fun updateIsProper(id: String, isProper: Boolean) {
+        dao.updateIsProper(id, isProper)
+    }
+
+    suspend fun deleteCheckingFile(id: String) {
+        dao.deleteCheckingFile(id)
+    }
+
     suspend fun deleteProcessedFile(id: Int) {
         dao.deleteProcessedFile(id)
     }
@@ -107,11 +138,13 @@ class HamahangLocalDataSource @Inject constructor(
 
     fun getAllFiles(): Flow<HamahangArchiveFilesEntity> {
         return combine(
+            dao.getCheckingFiles(),
             dao.getProcessedFiles(),
             dao.getTrackingFiles(),
             dao.getUploadingFiles()
-        ) { processedFiles, trackingFiles, uploadingFiles ->
+        ) { checkingFiles, processedFiles, trackingFiles, uploadingFiles ->
             HamahangArchiveFilesEntity(
+                checking = checkingFiles,
                 processed = processedFiles,
                 tracking = trackingFiles,
                 uploading = uploadingFiles

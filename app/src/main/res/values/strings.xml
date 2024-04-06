@@ -93,6 +93,7 @@
     <string name="msg_file_duration_exceeds_max">فایل صوتی نمی‌تواند بیش از %1$d دقیقه باشد</string>
     <string name="msg_request_failed_try_again_later">متاسفانه درخواست شما با خطا مواجه شد، لطفا مدتی منتظر بمانید و سپس دوباره امتحان کنید</string>
     <string name="msg_your_text_contains_inappropriate_words">امکان تولید تصویر از محتوای مدنظر شما وجود ندارد، لطفا آن را اصلاح نموده و مجددا امتحان کنید.</string>
+    <string name="msg_audio_contains_inappropriate_contents">صدای ورودی دارای محتوای نامناسب تشخیص داده شد، لطفا فایل دیگری ایجاد کنید.</string>
     <!--endregion -->
 
     <string name="msg_convert_error">خطایی رخ داده است</string>

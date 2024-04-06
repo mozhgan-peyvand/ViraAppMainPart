@@ -12,11 +12,13 @@ import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDel
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
 import ai.ivira.app.features.hamahang.ui.HamahangScreenRoutes
+import ai.ivira.app.features.hamahang.ui.archive.element.HamahangArchiveCheckingFileElement
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangArchiveProcessedFileElement
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangArchiveTrackingFileElement
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangArchiveUploadingFileElement
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangArchiveView
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangCheckingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType.Delete
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType.DeleteConfirmation
@@ -131,7 +133,7 @@ fun HamahangArchiveListScreenRoute(
     navController.currentBackStackEntry?.savedStateHandle
         ?.remove<HamahangNewAudioResult>(HamahangNewAudioResult.NEW_FILE_AUDIO_RESULT)
         ?.let {
-            viewModel.addFileToUploading(it.inputPath, it.speaker, it.title)
+            viewModel.addFileToChecking(it.inputPath, it.speaker, it.title)
         }
 
     HamahangArchiveListScreen(
@@ -266,6 +268,11 @@ private fun HamahangArchiveListScreen(
             setBottomSheetType(Delete)
             sheetState.show()
         },
+        onCheckingItemMenuClick = { checkingItem ->
+            selectedItem = checkingItem
+            setBottomSheetType(Delete)
+            sheetState.show()
+        },
         renameAction = { rename ->
             setBottomSheetType(rename)
             sheetState.show()
@@ -276,6 +283,14 @@ private fun HamahangArchiveListScreen(
         },
         onConfirmationDeleteAction = {
             when (selectedItem) {
+                is HamahangCheckingFileView -> {
+                    val checkingItem = selectedItem as HamahangCheckingFileView
+                    viewModel.deleteCheckingFile(
+                        id = checkingItem.id,
+                        filePath = checkingItem.inputFilePath
+                    )
+                }
+
                 is HamahangProcessedFileView -> {
                     val processItem = selectedItem as HamahangProcessedFileView
                     viewModel.deleteProcessedFile(
@@ -380,6 +395,7 @@ private fun HamahangArchiveListUI(
     onProcessItemMenuClick: (HamahangProcessedFileView) -> Unit,
     onTrackingItemMenuClick: (HamahangTrackingFileView) -> Unit,
     onUploadingItemMenuClick: (HamahangUploadingFileView) -> Unit,
+    onCheckingItemMenuClick: (HamahangCheckingFileView) -> Unit,
     onTryAgainAction: (HamahangUploadingFileView) -> Unit,
     renameAction: (HamahangFileType) -> Unit,
     onDeleteAction: (HamahangFileType) -> Unit,
@@ -461,6 +477,18 @@ private fun HamahangArchiveListUI(
                     ) {
                         items(archiveList) {
                             when (it) {
+                                is HamahangCheckingFileView -> {
+                                    HamahangArchiveCheckingFileElement(
+                                        value = it,
+                                        isNetworkAvailable = isNetworkAvailable,
+                                        isErrorState = false,
+                                        onTryAgainClick = {},
+                                        onMenuClick = { checkingItem ->
+                                            onCheckingItemMenuClick(checkingItem)
+                                        }
+                                    )
+                                }
+
                                 is HamahangProcessedFileView -> HamahangArchiveProcessedFileElement(
                                     archiveViewProcessed = it,
                                     isDownloadFailure = downloadFailureList.contains(it.id),
@@ -804,6 +832,7 @@ private fun HamahangArchiveListUIPreview() {
             onProcessItemMenuClick = {},
             onTrackingItemMenuClick = { },
             onUploadingItemMenuClick = { },
+            onCheckingItemMenuClick = {},
             renameAction = {},
             onDeleteAction = {},
             navigateUp = {},

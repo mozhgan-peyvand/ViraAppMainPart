@@ -1,6 +1,7 @@
 package ai.ivira.app.features.hamahang.data
 
 import ai.ivira.app.features.hamahang.data.entity.HamahangArchiveFilesEntity
+import ai.ivira.app.features.hamahang.data.entity.HamahangCheckingFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangProcessedFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangTrackingFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangUploadingFileEntity
@@ -90,6 +91,36 @@ class HamahangRepository @Inject constructor(
         }
     }
 
+    suspend fun checkAudioValidity(
+        id: String,
+        file: File,
+        speaker: String
+    ): AppResult<Boolean> {
+        if (!networkHandler.hasNetworkConnection()) {
+            return AppResult.Error(AppException.NetworkConnectionException())
+        }
+
+        val result = remoteDataSource.checkAudioValidity(
+            multiPartFile = file.toMultiPart(),
+            language = "fa".asPlainTextRequestBody
+        ).toAppResult()
+
+        return when (result) {
+            is AppResult.Success -> {
+                // when result of Loghman api (this request) is 'true',
+                // it means that the text contains inappropriate worlds.
+                if (result.data) {
+                    localDataSource.updateIsProper(id, false)
+                } else {
+                    localDataSource.insertUploadingFromChecking(id, speaker)
+                }
+
+                AppResult.Success(result.data)
+            }
+            is AppResult.Error -> AppResult.Error(result.error)
+        }
+    }
+
     suspend fun downloadFile(
         id: Int,
         url: String,
@@ -130,6 +161,17 @@ class HamahangRepository @Inject constructor(
 
     suspend fun insertTrackingFile(value: HamahangTrackingFileEntity) {
         localDataSource.insertTrackingFile(value)
+    }
+
+    suspend fun insertCheckingFile(value: HamahangCheckingFileEntity) {
+        localDataSource.insertCheckingFile(value)
+    }
+
+    suspend fun deleteCheckingFile(id: String, filePath: String) {
+        localDataSource.deleteCheckingFile(id)
+        runCatching {
+            File(filePath).delete()
+        }
     }
 
     suspend fun deleteProcessedFile(id: Int, filePath: String) {

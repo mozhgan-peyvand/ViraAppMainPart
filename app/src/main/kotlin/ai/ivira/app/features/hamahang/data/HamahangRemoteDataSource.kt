@@ -1,8 +1,11 @@
 package ai.ivira.app.features.hamahang.data
 
+import ai.ivira.app.features.ava_negar.data.AvanegarRemoteDataSource
+import ai.ivira.app.features.avasho.data.AvashoRemoteDataSource
 import ai.ivira.app.features.hamahang.data.entity.HamahangVoiceConversionNetwork
 import ai.ivira.app.utils.common.file.DownloadFileRequest
 import ai.ivira.app.utils.data.api_result.ApiResult
+import ai.ivira.app.utils.data.makeRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
@@ -10,7 +13,9 @@ import javax.inject.Inject
 
 class HamahangRemoteDataSource @Inject constructor(
     private val service: HamahangService,
-    private val downloadFileRequest: DownloadFileRequest
+    private val downloadFileRequest: DownloadFileRequest,
+    private val avanegarRemoteDataSource: AvanegarRemoteDataSource,
+    private val avashoRemoteDataSource: AvashoRemoteDataSource
 ) {
     private val token = "2f632ed518a52e2b972a4a81f01f6f58fcd38f9ae324769ec2a5f1e9642ac7accac10f894eb2b7fd807a86934b8b4443f42c30f5decf54745d3d4e0716dacc5a"
 
@@ -61,4 +66,22 @@ class HamahangRemoteDataSource @Inject constructor(
             is ApiResult.Error -> ApiResult.Error(result.error)
         }
     }
+
+    suspend fun checkAudioValidity(
+        multiPartFile: MultipartBody.Part,
+        language: RequestBody
+    ) = makeRequest(
+        action = {
+            avanegarRemoteDataSource.audioToTextBelowSixtySecond(
+                multiPartFile = multiPartFile,
+                language = language
+            )
+        },
+        onSuccess = {
+            makeRequest(
+                action = { avashoRemoteDataSource.checkSpeech(data) },
+                onSuccess = { ApiResult.Success(data) }
+            )
+        }
+    )
 }

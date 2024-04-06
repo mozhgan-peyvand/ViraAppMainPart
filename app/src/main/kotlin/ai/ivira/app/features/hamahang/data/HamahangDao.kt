@@ -1,5 +1,6 @@
 package ai.ivira.app.features.hamahang.data
 
+import ai.ivira.app.features.hamahang.data.entity.HamahangCheckingFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangProcessedFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangTrackingFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangUploadingFileEntity
@@ -11,6 +12,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HamahangDao {
+    @Query("SELECT * FROM HamahangCheckingFileEntity ORDER BY createdAt DESC")
+    fun getCheckingFiles(): Flow<List<HamahangCheckingFileEntity>>
+
     @Query("SELECT * FROM HamahangTrackingFileEntity ORDER BY insertSystemTime DESC")
     fun getTrackingFiles(): Flow<List<HamahangTrackingFileEntity>>
 
@@ -26,6 +30,9 @@ interface HamahangDao {
     @Query("SELECT * FROM HamahangTrackingFileEntity WHERE token=:token")
     suspend fun getTrackingFile(token: String): HamahangTrackingFileEntity?
 
+    @Query("SELECT * FROM HamahangCheckingFileEntity WHERE id=:id")
+    suspend fun getCheckingFile(id: String): HamahangCheckingFileEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProcessedFile(value: HamahangProcessedFileEntity)
 
@@ -34,6 +41,9 @@ interface HamahangDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTrackingFile(value: HamahangTrackingFileEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCheckingFile(value: HamahangCheckingFileEntity)
 
     @Query("DELETE FROM HamahangProcessedFileEntity WHERE id =:id")
     suspend fun deleteProcessedFile(id: Int)
@@ -44,11 +54,17 @@ interface HamahangDao {
     @Query("DELETE FROM HamahangTrackingFileEntity WHERE token =:token")
     suspend fun deleteTrackingFile(token: String)
 
+    @Query("DELETE FROM HamahangCheckingFileEntity WHERE id =:id")
+    suspend fun deleteCheckingFile(id: String)
+
     @Query("UPDATE HamahangProcessedFileEntity SET isSeen=:isSeen WHERE id=:id")
     suspend fun markFileAsSeen(id: Int, isSeen: Boolean)
 
     @Query("UPDATE HamahangProcessedFileEntity SET title=:title WHERE id=:id")
     suspend fun updateTitle(title: String, id: Int)
+
+    @Query("UPDATE HamahangCheckingFileEntity SET isProper=:isProper WHERE id=:id")
+    suspend fun updateIsProper(id: String, isProper: Boolean)
 
     @Query(
         """
