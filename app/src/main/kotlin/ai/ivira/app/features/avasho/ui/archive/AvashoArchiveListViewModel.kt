@@ -43,7 +43,6 @@ import ai.ivira.app.utils.ui.stateIn
 import android.app.Application
 import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
@@ -104,9 +103,6 @@ class AvashoArchiveListViewModel @Inject constructor(
     val isUploadingAllowed = _isUploadingAllowed.asStateFlow()
 
     private var indexOfItemThatShouldBeUploaded = 0
-
-    private var _hasPermissionDeniedPermanently = mutableStateOf(false)
-    val hasPermissionDeniedPermanently: State<Boolean> = _hasPermissionDeniedPermanently
 
     private var playingAvashoItemId = mutableStateOf<Int>(-1)
 
@@ -497,9 +493,7 @@ class AvashoArchiveListViewModel @Inject constructor(
     }
 
     fun hasDeniedPermissionPermanently(permission: String): Boolean {
-        val hasDenied = sharedPref.getBoolean(permissionDeniedPrefKey(permission), false)
-        _hasPermissionDeniedPermanently.value = hasDenied
-        return hasDenied
+        return sharedPref.getBoolean(permissionDeniedPrefKey(permission), false)
     }
 
     fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) {

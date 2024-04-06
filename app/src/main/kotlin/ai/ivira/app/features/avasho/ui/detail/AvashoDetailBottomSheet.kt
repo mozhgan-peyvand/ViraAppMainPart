@@ -1,15 +1,27 @@
 package ai.ivira.app.features.avasho.ui.detail
 
 import ai.ivira.app.R
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheet
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
+import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
+import ai.ivira.app.features.ava_negar.ui.SnackBar
+import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
+import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.avasho.ui.AvashoAnalytics
 import ai.ivira.app.features.avasho.ui.archive.model.AvashoProcessedFileView
+import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.formatDuration
+import ai.ivira.app.utils.ui.hasPermission
+import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
+import ai.ivira.app.utils.ui.isSdkVersionBetween23And29
+import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.shareMp3
+import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_Card_Stroke
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
@@ -24,6 +36,10 @@ import ai.ivira.app.utils.ui.widgets.TextAutoSize
 import ai.ivira.app.utils.ui.widgets.TextAutoSizeRange
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import android.Manifest
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,19 +62,26 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
@@ -74,6 +97,7 @@ import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.flow.collectLatest
 import java.io.File
 
 @Composable
@@ -82,92 +106,238 @@ fun AvashoDetailBottomSheet(
     collapseToolbarAction: () -> Unit,
     halfToolbarAction: () -> Unit,
     changePlayingItemAction: (Boolean) -> Unit,
-    onSaveFileClick: () -> Unit,
     avashoProcessedItem: AvashoProcessedFileView,
+    isBottomSheetVisible: Boolean,
     isBottomSheetExpanded: Boolean,
     avashoDetailsViewModel: AvashoDetailsBottomSheetViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val playerState by avashoDetailsViewModel::playerState
-    val verticalScroll = if (isBottomSheetExpanded) Modifier.verticalScroll(rememberScrollState()) else Modifier
+    val verticalScroll = if (isBottomSheetVisible) Modifier.verticalScroll(rememberScrollState()) else Modifier
     val eventHandler = LocalEventHandler.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
+    val sheetState = rememberViraBottomSheetState()
+    val coroutineScope = rememberCoroutineScope()
+    val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+    var selectedSheet by rememberSaveable { mutableStateOf(AvashoDetailsBottomSheetType.FileAccessPermissionDenied) }
+
+    val writeStoragePermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            avashoDetailsViewModel.saveToDownloadFolder(
+                filePath = avashoProcessedItem.filePath,
+                fileName = avashoProcessedItem.title
+            ).also { isSuccess ->
+
+                // fixme is it needed?
+                sheetState.hide()
+
+                if (isSuccess) {
+                    showMessage(
+                        snackbarHostState,
+                        coroutineScope,
+                        context.getString(R.string.msg_file_saved_successfully)
+                    )
+                }
+            }
+        } else {
+            // fixme is it needed?
+            sheetState.hide()
+
+            avashoDetailsViewModel.putDeniedPermissionToSharedPref(
+                permission = permission,
+                deniedPermanently = isPermissionDeniedPermanently(
+                    activity = context as Activity,
+                    permission = permission
+                )
+            )
+            showMessage(
+                snackbarHostState,
+                coroutineScope,
+                context.getString(R.string.lbl_need_to_access_file_permission)
+            )
+        }
+    }
 
     LaunchedEffect(playerState.isPlaying) {
         changePlayingItemAction(playerState.isPlaying)
     }
 
-    LaunchedEffect(isBottomSheetExpanded) {
+    LaunchedEffect(isBottomSheetVisible) {
         val emitSuccess = playerState.tryInitWith(
             file = File(avashoProcessedItem.filePath),
             forcePrepare = true,
             autoStart = true
         )
         if (emitSuccess) {
-            if (!isBottomSheetExpanded) {
+            if (!isBottomSheetVisible) {
                 playerState.stopMediaPlayer()
                 playerState.reset()
             }
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            CollapseStateToolbar(
-                progress = animationProgress,
-                collapseToolbarAction = { collapseToolbarAction() },
-                halfToolbarAction = { halfToolbarAction() },
-                fileName = avashoProcessedItem.title
-            )
-
-            CollapseStatePlayer(
-                animationProgress = animationProgress,
-                playerState = playerState,
-                onProgressChanged = {
-                    playerState.seekTo(it)
-                },
-                onPlayingChanged = {
-                    if (!playerState.isPlaying) {
-                        playerState.startPlaying()
-                    } else {
-                        playerState.stopPlaying()
-                    }
-                },
-                onShareClick = {
-                    eventHandler.specialEvent(AvashoAnalytics.shareItem)
-                    shareMp3(
-                        context = context,
-                        file = File(avashoProcessedItem.filePath)
-                    )
-                },
-                onSaveClicked = {
-                    onSaveFileClick()
-                }
-            )
-
-            Divider(
-                color = Color_Card_Stroke,
-                modifier = Modifier.height(1.dp)
-            )
-            SelectionContainer {
-                Text(
-                    text = avashoProcessedItem.text,
-                    style = MaterialTheme.typography.body2,
-                    color = Color_Text_2,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                        .then(verticalScroll)
+    LaunchedEffect(Unit) {
+        avashoDetailsViewModel.uiViewState.collectLatest {
+            if (it is UiError && it.isSnack) {
+                showMessage(
+                    snackbarHostState,
+                    coroutineScope,
+                    it.message
                 )
             }
         }
+    }
 
-        if (animationProgress < 1.0f && animationProgress > 0f) {
-            Surface(
-                color = Color.Transparent,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) { },
-                content = {}
+    DisposableEffect(Unit) {
+        onDispose {
+            playerState.stopMediaPlayer()
+            playerState.reset()
+            changePlayingItemAction(false)
+        }
+    }
+
+    Scaffold(
+        backgroundColor = MaterialTheme.colors.background,
+        scaffoldState = scaffoldState,
+        snackbarHost = snackBarHost@{ snackBarState ->
+            if (!isBottomSheetExpanded) {
+                SnackBarWithPaddingBottom(
+                    snackbarHostState = snackBarState,
+                    shouldShowOverItems = true,
+                    paddingValue = 1200f
+                )
+                return@snackBarHost
+            }
+
+            SnackBar(
+                snackbarHostState = snackBarState,
+                paddingBottom = 32.dp
             )
+        }
+    ) { paddingValue ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValue)
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                CollapseStateToolbar(
+                    progress = animationProgress,
+                    collapseToolbarAction = { collapseToolbarAction() },
+                    halfToolbarAction = { halfToolbarAction() },
+                    fileName = avashoProcessedItem.title
+                )
+
+                CollapseStatePlayer(
+                    animationProgress = animationProgress,
+                    playerState = playerState,
+                    onProgressChanged = {
+                        playerState.seekTo(it)
+                    },
+                    onPlayingChanged = {
+                        if (!playerState.isPlaying) {
+                            playerState.startPlaying()
+                        } else {
+                            playerState.stopPlaying()
+                        }
+                    },
+                    onShareClick = {
+                        eventHandler.specialEvent(AvashoAnalytics.shareItem)
+                        shareMp3(
+                            context = context,
+                            file = File(avashoProcessedItem.filePath)
+                        )
+                    },
+                    onSaveClicked = onClick@{
+                        eventHandler.specialEvent(AvashoAnalytics.downloadItem)
+                        if (!isSdkVersionBetween23And29()) {
+                            avashoDetailsViewModel.saveToDownloadFolder(
+                                filePath = avashoProcessedItem.filePath,
+                                fileName = avashoProcessedItem.title
+                            ).also { isSuccess ->
+                                if (isSuccess) {
+                                    showMessage(
+                                        snackbarHostState,
+                                        coroutineScope,
+                                        context.getString(R.string.msg_file_saved_successfully)
+                                    )
+                                }
+                            }
+                            return@onClick
+                        }
+
+                        if (context.hasPermission(permission)) {
+                            avashoDetailsViewModel.saveToDownloadFolder(
+                                filePath = avashoProcessedItem.filePath,
+                                fileName = avashoProcessedItem.title
+                            ).also { isSuccess ->
+
+                                if (isSuccess) {
+                                    showMessage(
+                                        snackbarHostState,
+                                        coroutineScope,
+                                        context.getString(R.string.msg_file_saved_successfully)
+                                    )
+                                }
+                            }
+                        } else if (avashoDetailsViewModel.hasDeniedPermissionPermanently(permission)) {
+                            selectedSheet = AvashoDetailsBottomSheetType.FileAccessPermissionDenied
+                            sheetState.show()
+                        } else {
+                            // Asking for permission
+                            writeStoragePermission.launch(permission)
+                        }
+                    }
+                )
+
+                Divider(
+                    color = Color_Card_Stroke,
+                    modifier = Modifier.height(1.dp)
+                )
+                SelectionContainer {
+                    Text(
+                        text = avashoProcessedItem.text,
+                        style = MaterialTheme.typography.body2,
+                        color = Color_Text_2,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .then(verticalScroll)
+                    )
+                }
+            }
+
+            if (animationProgress < 1.0f && animationProgress > 0f) {
+                Surface(
+                    color = Color.Transparent,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) { },
+                    content = {}
+                )
+            }
+        }
+    }
+
+    if (sheetState.showBottomSheet) {
+        ViraBottomSheet(sheetState = sheetState) {
+            ViraBottomSheetContent(selectedSheet) {
+                when (selectedSheet) {
+                    AvashoDetailsBottomSheetType.FileAccessPermissionDenied -> {
+                        AccessDeniedToOpenFileBottomSheet(
+                            cancelAction = {
+                                sheetState.hide()
+                            },
+                            submitAction = {
+                                navigateToAppSettings(activity = context as Activity)
+                                sheetState.hide()
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -544,7 +714,7 @@ private fun AvashoDetailBottomSheetPreview() {
                 0,
                 isSeen = false
             ),
-            onSaveFileClick = {},
+            isBottomSheetVisible = false,
             isBottomSheetExpanded = false
         )
     }
