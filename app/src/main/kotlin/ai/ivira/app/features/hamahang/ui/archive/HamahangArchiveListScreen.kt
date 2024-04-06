@@ -5,7 +5,9 @@ import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheet
 import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
 import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetState
 import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
+import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.ava_negar.ui.archive.DeleteBottomSheet
+import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
@@ -16,6 +18,11 @@ import ai.ivira.app.features.hamahang.ui.archive.element.HamahangArchiveUploadin
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangArchiveView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType.Delete
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType.DeleteConfirmation
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType.FileAccessPermissionDenied
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType.Process
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType.Rename
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangTrackingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangUploadingFileView
@@ -26,10 +33,16 @@ import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiStatus
+import ai.ivira.app.utils.ui.hasPermission
+import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isScrollingUp
+import ai.ivira.app.utils.ui.isSdkVersionBetween23And29
+import ai.ivira.app.utils.ui.navigateToAppSettings
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.shareMp3
+import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.BLue_a200_Opacity_40
 import ai.ivira.app.utils.ui.theme.Color_BG
 import ai.ivira.app.utils.ui.theme.Color_Card
@@ -40,6 +53,10 @@ import ai.ivira.app.utils.ui.widgets.ViraBannerInfo
 import ai.ivira.app.utils.ui.widgets.ViraBannerWithAnimation
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
+import android.Manifest
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.InfiniteTransition
@@ -77,9 +94,11 @@ import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -92,12 +111,14 @@ import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import java.io.File
 
 private const val TRACKING_FILE_ANIMATION_DURATION_COLUMN = 1300
 
@@ -137,7 +158,7 @@ private fun HamahangArchiveListScreen(
     val sheetState = rememberViraBottomSheetState()
     val hamahangListState by rememberLazyListState().isScrollingUp()
     val (fileSheetState, setBottomSheetType) = rememberSaveable {
-        mutableStateOf<HamahangFileType>(HamahangFileType.Process)
+        mutableStateOf<HamahangFileType>(Process)
     }
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
@@ -146,7 +167,52 @@ private fun HamahangArchiveListScreen(
     val uiViewState by viewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
     val networkStatus by viewModel.networkStatus.collectAsStateWithLifecycle()
     val downloadState by viewModel.downloadStatus.collectAsStateWithLifecycle()
-    var selectedHamahangItem by viewModel.selectedHamahangItem
+    var selectedItem by viewModel.selectedHamahangItem
+    val isThereTrackingOrUploading by viewModel.isThereTrackingOrUploading.collectAsStateWithLifecycle()
+    val downloadFailureList by viewModel.downloadFailureList.collectAsStateWithLifecycle()
+
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+    val writeStoragePermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        val item = selectedItem
+        if (isGranted) {
+            // make sure it's Processed and it's not null
+            if (item is HamahangProcessedFileView) {
+                viewModel.saveToDownloadFolder(
+                    filePath = item.filePath,
+                    fileName = item.title
+                ).also { isSuccess ->
+
+                    if (isSuccess) {
+                        showMessage(
+                            snackbarHostState,
+                            coroutineScope,
+                            context.getString(R.string.msg_file_saved_successfully)
+                        )
+                    }
+                }
+            }
+        } else {
+            viewModel.putDeniedPermissionToSharedPref(
+                permission = permission,
+                deniedPermanently = isPermissionDeniedPermanently(
+                    activity = context as Activity,
+                    permission = permission
+                )
+            )
+            showMessage(
+                snackbarHostState,
+                coroutineScope,
+                context.getString(R.string.lbl_need_to_access_file_permission)
+            )
+        }
+    }
+    LaunchedEffect(sheetState.isVisible) {
+        snackbarHostState.currentSnackbarData?.dismiss()
+    }
 
     HamahangArchiveListUI(
         sheetState = sheetState,
@@ -154,70 +220,194 @@ private fun HamahangArchiveListScreen(
         networkStatus = networkStatus,
         downloadState = downloadState,
         uiViewState = uiViewState,
-        hamahangSheetContentState = fileSheetState,
+        sheetContentState = fileSheetState,
         navigateToNewAudio = navigateToNewAudio,
         navigateUp = navigateUp,
         isVisible = hamahangListState,
         scaffoldState = scaffoldState,
         infiniteTransition = infiniteTransition,
-        selectedProcessItem = { processItem ->
-            if (!processItem.isSeen) {
-                viewModel.markFileAsSeen(processItem.id)
+        downloadFailureList = downloadFailureList,
+        isThereTrackingOrUploading = isThereTrackingOrUploading,
+        hasPermissionDenied = viewModel.hasPermissionDeniedPermanently.value,
+        selectedItem = selectedItem,
+        snackBarAction = {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            navigateToAppSettings(activity = context as Activity)
+        },
+        isInDownloadQueue = { id ->
+            viewModel.isInDownloadQueue(id)
+        },
+        onSelectedProcessItemClick = { processItem ->
+            if (File(processItem.filePath).exists()) {
+                if (!processItem.isSeen) {
+                    viewModel.markFileAsSeen(processItem.id)
+                }
+                navigateToDetailScreen(processItem.id)
+            } else {
+                if (viewModel.isInDownloadQueue(processItem.id)) {
+                    viewModel.cancelDownload(processItem.id)
+                } else {
+                    viewModel.addFileToDownloadQueue(processItem)
+                }
             }
-            navigateToDetailScreen(processItem.id)
         },
         onProcessItemMenuClick = { processItem ->
-            selectedHamahangItem = processItem
-            setBottomSheetType(HamahangFileType.Process)
+            selectedItem = processItem
+            setBottomSheetType(Process)
             sheetState.show()
         },
-        onTrackingItemMenuClick = { trackingItem ->
-            selectedHamahangItem = trackingItem
-            setBottomSheetType(HamahangFileType.Delete)
+        onTrackingItemMenuClick = { item ->
+            selectedItem = item
+            setBottomSheetType(Delete)
             sheetState.show()
         },
-        onUploadingItemMenuClick = { uploadingItem ->
-            selectedHamahangItem = uploadingItem
-            setBottomSheetType(HamahangFileType.Delete)
+        onUploadingItemMenuClick = { item ->
+            selectedItem = item
+            setBottomSheetType(Delete)
             sheetState.show()
         },
         renameAction = { rename ->
             setBottomSheetType(rename)
             sheetState.show()
         },
-        deleteAction = { delete ->
+        onDeleteAction = { delete ->
             setBottomSheetType(delete)
             sheetState.show()
         },
-        selectedItem = selectedHamahangItem
+        onConfirmationDeleteAction = {
+            when (selectedItem) {
+                is HamahangProcessedFileView -> {
+                    val processItem = selectedItem as HamahangProcessedFileView
+                    viewModel.deleteProcessedFile(
+                        id = processItem.id,
+                        filePath = processItem.filePath
+                    )
+                }
+
+                is HamahangUploadingFileView -> {
+                    viewModel.removeUploadingFile(selectedItem as HamahangUploadingFileView)
+                }
+
+                is HamahangTrackingFileView -> {
+                    viewModel.deleteTrackingFile((selectedItem as HamahangTrackingFileView).token)
+                }
+            }
+            sheetState.hide()
+        },
+        onSaveAudioFileClick = onClick@{ title, filePath ->
+            if (!isSdkVersionBetween23And29()) {
+                viewModel.saveToDownloadFolder(
+                    filePath = filePath,
+                    fileName = title
+                ).also { isSuccess ->
+                    sheetState.hide()
+
+                    if (isSuccess) {
+                        showMessage(
+                            snackbarHostState,
+                            coroutineScope,
+                            context.getString(R.string.msg_file_saved_successfully)
+                        )
+                    }
+                }
+                return@onClick
+            }
+
+            if (context.hasPermission(permission)) {
+                viewModel.saveToDownloadFolder(
+                    filePath = filePath,
+                    fileName = title
+                ).also { isSuccess ->
+
+                    sheetState.hide()
+
+                    if (isSuccess) {
+                        showMessage(
+                            snackbarHostState,
+                            coroutineScope,
+                            context.getString(R.string.msg_file_saved_successfully)
+                        )
+                    }
+                }
+            } else if (viewModel.hasDeniedPermissionPermanently(permission)) {
+                setBottomSheetType(FileAccessPermissionDenied)
+                sheetState.show()
+            } else {
+                // Asking for permission
+                writeStoragePermission.launch(permission)
+            }
+        },
+        downloadAudioFile = { processItem ->
+            viewModel.addFileToDownloadQueue(processItem)
+        },
+        onRenameAction = { id, title ->
+            viewModel.updateTitle(title = title, id = id)
+            sheetState.hide()
+        },
+        onShareClick = { filePath ->
+            sheetState.hide()
+            shareMp3(
+                context = context,
+                file = File(filePath)
+            )
+        },
+        onTryAgainAction = { uploadItem -> viewModel.startUploading(uploadItem) }
     )
 }
 
 @Composable
 private fun HamahangArchiveListUI(
-    sheetState: ViraBottomSheetState,
-    hamahangSheetContentState: HamahangFileType,
+    isVisible: Boolean,
+    isThereTrackingOrUploading: Boolean,
+    hasPermissionDenied: Boolean,
+    uiViewState: UiStatus,
     archiveList: List<HamahangArchiveView>,
+    downloadFailureList: List<Int>,
+    sheetState: ViraBottomSheetState,
+    sheetContentState: HamahangFileType,
     networkStatus: NetworkStatus,
     downloadState: DownloadingFileStatus,
-    uiViewState: UiStatus,
-    isVisible: Boolean,
     scaffoldState: ScaffoldState,
     infiniteTransition: InfiniteTransition,
     selectedItem: HamahangArchiveView?,
+    onConfirmationDeleteAction: () -> Unit,
     navigateToNewAudio: () -> Unit,
-    selectedProcessItem: (HamahangProcessedFileView) -> Unit,
+    navigateUp: () -> Unit,
+    snackBarAction: () -> Unit,
+    isInDownloadQueue: (Int) -> Boolean,
+    onShareClick: (String) -> Unit,
+    onSelectedProcessItemClick: (HamahangProcessedFileView) -> Unit,
     onProcessItemMenuClick: (HamahangProcessedFileView) -> Unit,
     onTrackingItemMenuClick: (HamahangTrackingFileView) -> Unit,
     onUploadingItemMenuClick: (HamahangUploadingFileView) -> Unit,
+    onTryAgainAction: (HamahangUploadingFileView) -> Unit,
     renameAction: (HamahangFileType) -> Unit,
-    deleteAction: (HamahangFileType) -> Unit,
-    navigateUp: () -> Unit
+    onDeleteAction: (HamahangFileType) -> Unit,
+    onSaveAudioFileClick: (title: String, filePath: String) -> Unit,
+    onRenameAction: (id: Int, title: String) -> Unit,
+    downloadAudioFile: (HamahangProcessedFileView) -> Unit
 ) {
+    val context = LocalContext.current
+
     Scaffold(
         backgroundColor = MaterialTheme.colors.background,
         modifier = Modifier.background(Color_BG),
         scaffoldState = scaffoldState,
+        snackbarHost = snackBarHost@{ snackBarState ->
+            if (hasPermissionDenied) {
+                SnackBar(
+                    snackbarHostState = snackBarState,
+                    paddingBottom = 32.dp,
+                    labelAction = snackBarState.currentSnackbarData?.actionLabel,
+                    onActionClick = snackBarAction
+                )
+                return@snackBarHost
+            }
+            SnackBar(
+                snackbarHostState = snackBarState,
+                paddingBottom = 32.dp
+            )
+        },
         topBar = {
             HamahangArchiveAppBar(onBackClick = navigateUp)
         }
@@ -245,8 +435,14 @@ private fun HamahangArchiveListUI(
                     }
 
                     ViraBannerWithAnimation(
-                        isVisible = !isNetworkAvailable || hasVpnConnection || isBannerError || isFailureDownload,
-                        bannerInfo = if (hasVpnConnection) {
+                        isVisible = (!isNetworkAvailable || hasVpnConnection || isBannerError || isFailureDownload) &&
+                            isThereTrackingOrUploading,
+                        bannerInfo = if (uiViewState is UiError) {
+                            ViraBannerInfo.Error(
+                                message = (uiViewState as UiError).message,
+                                iconRes = R.drawable.ic_failure_network
+                            )
+                        } else if (hasVpnConnection) {
                             ViraBannerInfo.Warning(
                                 message = stringResource(id = R.string.msg_vpn_is_connected_error),
                                 iconRes = R.drawable.ic_warning_vpn
@@ -267,11 +463,11 @@ private fun HamahangArchiveListUI(
                             when (it) {
                                 is HamahangProcessedFileView -> HamahangArchiveProcessedFileElement(
                                     archiveViewProcessed = it,
-                                    isDownloadFailure = false,
-                                    isInDownloadQueue = false,
+                                    isDownloadFailure = downloadFailureList.contains(it.id),
+                                    isInDownloadQueue = isInDownloadQueue(it.id),
                                     isNetworkAvailable = isNetworkAvailable,
                                     onItemClick = { item ->
-                                        selectedProcessItem(item)
+                                        onSelectedProcessItemClick(item)
                                     },
                                     onMenuClick = { hamahangSelectedItem ->
                                         onProcessItemMenuClick(hamahangSelectedItem)
@@ -285,7 +481,9 @@ private fun HamahangArchiveListUI(
                                         estimateTime = { it.computeFileEstimateProcess() },
                                         iconItemState = HamahangItemImageStatus.Converting,
                                         onMenuClick = { trackingItem ->
-                                            onTrackingItemMenuClick(trackingItem)
+                                            onTrackingItemMenuClick(
+                                                trackingItem
+                                            )
                                         }
                                     )
                                 }
@@ -294,10 +492,14 @@ private fun HamahangArchiveListUI(
                                     HamahangArchiveUploadingFileElement(
                                         hamahangUploadingFileView = it,
                                         isNetworkAvailable = isNetworkAvailable,
-                                        isErrorState = false,
-                                        onTryAgainClick = { },
+                                        isErrorState = uiViewState.let { uiStatus ->
+                                            (uiStatus is UiError) && !uiStatus.isSnack
+                                        },
+                                        onTryAgainClick = { onTryAgainAction(it) },
                                         onMenuClick = { uploadingItem ->
-                                            onUploadingItemMenuClick(uploadingItem)
+                                            onUploadingItemMenuClick(
+                                                uploadingItem
+                                            )
                                         }
                                     )
                                 }
@@ -320,51 +522,65 @@ private fun HamahangArchiveListUI(
             sheetState = sheetState,
             shape = RoundedCornerShape(topEnd = 24.dp, topStart = 24.dp)
         ) {
-            ViraBottomSheetContent(hamahangSheetContentState) {
+            ViraBottomSheetContent(sheetContentState) {
                 val hamahangItem = selectedItem ?: return@ViraBottomSheetContent
 
-                when (hamahangSheetContentState) {
-                    HamahangFileType.Process -> {
+                when (sheetContentState) {
+                    Process -> {
                         if (hamahangItem is HamahangProcessedFileView) {
                             HamahangProcessedWithDownloadBottomSheet(
                                 title = hamahangItem.title,
-                                saveAudioFile = {},
-                                shareItemAction = {},
+                                saveAudioFile = {
+                                    onSaveAudioFileClick(hamahangItem.title, hamahangItem.filePath)
+                                },
+                                shareItemAction = { onShareClick(hamahangItem.filePath) },
                                 renameItemAction = {
-                                    renameAction(HamahangFileType.Rename)
+                                    renameAction(Rename)
                                 },
                                 deleteItemAction = {
-                                    deleteAction(HamahangFileType.DeleteConfirmation)
+                                    onDeleteAction(DeleteConfirmation)
                                 },
-                                downloadAudioFile = { sheetState.hide() },
-                                isFileDownloading = false,
-                                isFileDownloaded = false
-
+                                downloadAudioFile = {
+                                    downloadAudioFile(hamahangItem)
+                                },
+                                isFileDownloading = isInDownloadQueue(hamahangItem.id),
+                                isFileDownloaded = File(hamahangItem.filePath).exists()
                             )
                         }
                     }
-                    HamahangFileType.Rename -> {
+                    Rename -> {
                         if (selectedItem is HamahangProcessedFileView) {
                             RenameFileBottomSheet(
                                 fileName = selectedItem.title,
                                 shouldShowKeyBoard = true,
                                 reNameAction = { name ->
-                                    sheetState.hide()
+                                    onRenameAction(selectedItem.id, name)
                                 }
                             )
                         }
                     }
-                    HamahangFileType.DeleteConfirmation -> {
+                    DeleteConfirmation -> {
                         FileItemConfirmationDeleteBottomSheet(
-                            deleteAction = { sheetState.hide() },
+                            deleteAction = onConfirmationDeleteAction,
                             cancelAction = { sheetState.hide() },
                             fileName = hamahangItem.title
                         )
                     }
-                    HamahangFileType.Delete -> {
+                    Delete -> {
                         DeleteBottomSheet(
                             fileName = hamahangItem.title,
-                            onDelete = { deleteAction(HamahangFileType.DeleteConfirmation) }
+                            onDelete = { onDeleteAction(DeleteConfirmation) }
+                        )
+                    }
+                    FileAccessPermissionDenied -> {
+                        AccessDeniedToOpenFileBottomSheet(
+                            cancelAction = {
+                                sheetState.hide()
+                            },
+                            submitAction = {
+                                navigateToAppSettings(activity = context as Activity)
+                                sheetState.hide()
+                            }
                         )
                     }
                 }
@@ -561,7 +777,7 @@ private fun HamahangArchiveListUIPreview() {
     ViraPreview {
         HamahangArchiveListUI(
             sheetState = rememberViraBottomSheetState(),
-            hamahangSheetContentState = HamahangFileType.Rename,
+            sheetContentState = Rename,
             archiveList = emptyList(),
             networkStatus = NetworkStatus.Unavailable,
             downloadState = DownloadingFileStatus.IdleDownload,
@@ -584,13 +800,24 @@ private fun HamahangArchiveListUIPreview() {
                 downloadedBytes = 0
             ),
             navigateToNewAudio = {},
-            selectedProcessItem = {},
+            onSelectedProcessItemClick = {},
             onProcessItemMenuClick = {},
-            onTrackingItemMenuClick = {},
-            onUploadingItemMenuClick = {},
+            onTrackingItemMenuClick = { },
+            onUploadingItemMenuClick = { },
             renameAction = {},
-            deleteAction = {},
-            navigateUp = {}
+            onDeleteAction = {},
+            navigateUp = {},
+            onConfirmationDeleteAction = {},
+            onSaveAudioFileClick = { a, b -> },
+            downloadAudioFile = {},
+            isInDownloadQueue = { false },
+            onRenameAction = { a, b -> },
+            isThereTrackingOrUploading = false,
+            onTryAgainAction = {},
+            onShareClick = {},
+            snackBarAction = {},
+            hasPermissionDenied = false,
+            downloadFailureList = emptyList()
         )
     }
 }

@@ -1,6 +1,10 @@
 package ai.ivira.app.features.hamahang.ui.archive.element
 
 import ai.ivira.app.R
+import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Cancel
+import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Download
+import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Play
+import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Retry
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.new_audio.HamahangSpeakerView
 import ai.ivira.app.utils.common.orZero
@@ -73,12 +77,14 @@ fun HamahangArchiveProcessedFileElement(
             modifier = Modifier.fillMaxWidth()
         ) {
             HamahangIconItemState(
-                hamahangitemStatus = if (isInDownloadQueue) {
-                    HamahangItemImageStatus.Cancel
+                hamahangitemStatus = if (isDownloaded) {
+                    Play
+                } else if (isInDownloadQueue) {
+                    Cancel
                 } else if (isDownloadFailure) {
-                    HamahangItemImageStatus.Retry
+                    Retry
                 } else {
-                    HamahangItemImageStatus.Download
+                    Download
                 },
                 isInDownloadQueue = isInDownloadQueue,
                 progress = archiveViewProcessed.downloadingPercent

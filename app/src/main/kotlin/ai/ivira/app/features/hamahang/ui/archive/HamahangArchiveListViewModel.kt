@@ -1,5 +1,6 @@
 package ai.ivira.app.features.hamahang.ui.archive
 
+import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Downloading
@@ -15,11 +16,13 @@ import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangProcessedFileVi
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangTrackingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangUploadingFileView
 import ai.ivira.app.features.hamahang.ui.new_audio.HamahangSpeakerView
+import ai.ivira.app.utils.common.file.FileOperationHelper
 import ai.ivira.app.utils.common.file.UploadProgressCallback
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult
+import ai.ivira.app.utils.ui.StorageUtils
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiIdle
@@ -28,8 +31,12 @@ import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.combine
 import ai.ivira.app.utils.ui.stateIn
+import android.app.Application
+import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -53,7 +60,11 @@ private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
 @HiltViewModel
 class HamahangArchiveListViewModel @Inject constructor(
     private val repository: HamahangRepository,
+    private val storageUtils: StorageUtils,
+    private val fileOperationHelper: FileOperationHelper,
+    private val application: Application,
     private val uiException: UiException,
+    private val sharedPref: SharedPreferences,
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
     private var retriever: MediaMetadataRetriever? = null
@@ -90,9 +101,15 @@ class HamahangArchiveListViewModel @Inject constructor(
     var isThereTrackingOrUploading = MutableStateFlow(false)
         private set
 
+    private var _hasPermissionDeniedPermanently = mutableStateOf(false)
+    val hasPermissionDeniedPermanently: State<Boolean> = _hasPermissionDeniedPermanently
+
     val isDownloadQueueEmpty = combine(downloadQueue, downloadFailureList) { queue, failure ->
         queue.isEmpty() && failure.isEmpty()
     }.stateIn(initial = true)
+
+    private var _failureListId = MutableStateFlow(listOf<String>())
+    val failureList = _failureListId.asStateFlow()
 
     var selectedHamahangItem = mutableStateOf<HamahangArchiveView?>(null)
 
@@ -163,7 +180,7 @@ class HamahangArchiveListViewModel @Inject constructor(
         val trackingList = hamahangArchiveFilesEntity.tracking
 
         _isUploadingAllowed.update {
-            trackingList.isEmpty() && uploadingList.isEmpty()
+            trackingList.isEmpty() && uploadingList.isEmpty() && _failureListId.value.isEmpty()
         }
 
         if (trackingList.isEmpty() && uploadingList.isEmpty()) {
@@ -178,11 +195,15 @@ class HamahangArchiveListViewModel @Inject constructor(
                         uploadingPercent = uploadingFile?.uploadingPercent.orZero(),
                         uploadedBytes = uploadingFile?.uploadedBytes ?: -1
                     )
-                }.also {
-                    isThereTrackingOrUploading.value =
-                        trackingList.isNotEmpty() || uploadingList.isNotEmpty()
+                }.also { uploadList ->
+                    val uploadItem = uploadList.filter { uploadingItem ->
+                        !_failureListId.value.contains(uploadingItem.id)
+                    }
 
-                    this@HamahangArchiveListViewModel.uploadingList = it
+                    isThereTrackingOrUploading.value =
+                        trackingList.isNotEmpty() || uploadingList.isNotEmpty() || _failureListId.value.isNotEmpty()
+
+                    this@HamahangArchiveListViewModel.uploadingList = uploadItem
                 }
             )
             addAll(trackingList.map { it.toHamahangTrackingFileView() })
@@ -246,6 +267,9 @@ class HamahangArchiveListViewModel @Inject constructor(
 
     fun startUploading(uploadingFile: HamahangUploadingFileView) {
         // to make sure that it does not return -1
+        _failureListId.update { uploadingList ->
+            uploadingList.filter { failureItemId -> failureItemId != uploadingFile.id }
+        }
         with(uploadingList) {
             indexOfItemThatShouldBeUploaded = if (
                 contains(uploadingFile)
@@ -312,7 +336,7 @@ class HamahangArchiveListViewModel @Inject constructor(
                 speaker = speaker
             )
 
-            handleResultState(result)
+            handleResultState(result = result, id = id)
         }
     }
 
@@ -374,6 +398,7 @@ class HamahangArchiveListViewModel @Inject constructor(
 
     // handleResultState Duplicate 4
     private suspend fun <T> handleResultState(
+        id: String,
         result: AppResult<T>,
         onSuccess: ((AppResult.Success<T>) -> Unit)? = null
     ) {
@@ -390,6 +415,14 @@ class HamahangArchiveListViewModel @Inject constructor(
             }
 
             is AppResult.Error -> {
+                _failureListId.update { failureList ->
+                    if (failureList.contains(id)) {
+                        failureList
+                    } else {
+                        failureList + id
+                    }
+                }
+
                 _uploadStatus.value = UploadingFileStatus.FailureUpload
                 _uiViewState.emit(UiError(uiException.getErrorMessage(result.error)))
             }
@@ -426,4 +459,67 @@ class HamahangArchiveListViewModel @Inject constructor(
             )
         }
     }
+
+    fun deleteTrackingFile(token: String) =
+        viewModelScope.launch(IO) {
+            repository.deleteTrackingFile(token)
+        }
+
+    fun removeUploadingFile(item: HamahangUploadingFileView?) = viewModelScope.launch {
+        item?.let {
+            _failureListId.update { list ->
+                list.filter { uploadingFailure -> uploadingFailure != item.id }
+            }
+
+            viewModelScope.launch {
+                job?.cancel()
+                // emit failure to start uploading from the first of list
+                _uploadStatus.value = UploadingFileStatus.FailureUpload
+                repository.deleteUploadingFile(it.id)
+            }
+        }
+    }
+
+    fun deleteProcessedFile(id: Int, filePath: String) =
+        viewModelScope.launch(IO) {
+            repository.deleteProcessedFile(id = id, filePath = filePath)
+        }
+
+    fun saveToDownloadFolder(filePath: String, fileName: String): Boolean {
+        if (storageUtils.getAvailableSpace() <= File(filePath).length()) {
+            viewModelScope.launch {
+                _uiViewState.emit(
+                    UiError(application.getString(R.string.msg_not_enough_space), true)
+                )
+            }
+            return false
+        }
+
+        return fileOperationHelper.copyFileToDownloadFolder(
+            filePath = filePath,
+            fileName = fileName
+        )
+    }
+
+    fun hasDeniedPermissionPermanently(permission: String): Boolean {
+        val hasDenied = sharedPref.getBoolean(permissionDeniedPrefKey(permission), false)
+        _hasPermissionDeniedPermanently.value = hasDenied
+        return hasDenied
+    }
+
+    fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) =
+        viewModelScope.launch {
+            sharedPref.edit {
+                this.putBoolean(permissionDeniedPrefKey(permission), deniedPermanently)
+            }
+        }
+
+    private fun permissionDeniedPrefKey(permission: String): String {
+        return "deniedPermission_$permission"
+    }
+
+    fun updateTitle(title: String, id: Int) =
+        viewModelScope.launch(IO) {
+            repository.updateTitle(title, id)
+        }
 }

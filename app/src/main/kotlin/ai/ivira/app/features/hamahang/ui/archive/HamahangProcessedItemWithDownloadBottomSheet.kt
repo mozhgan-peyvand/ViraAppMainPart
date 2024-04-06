@@ -57,13 +57,13 @@ fun HamahangProcessedWithDownloadBottomSheet(
             )
         )
         if (!isFileDownloading && !isFileDownloaded) {
-            AvashoArchiveProcessedItemBodyBottomSheet(
+            HamahangArchiveProcessedItemBodyBottomSheet(
                 text = R.string.lbl_download_audio_file,
                 icon = R.drawable.ic_download_audio,
                 onItemClick = { downloadAudioFile() }
             )
         } else if (isFileDownloaded) {
-            AvashoArchiveProcessedItemBodyBottomSheet(
+            HamahangArchiveProcessedItemBodyBottomSheet(
                 text = R.string.lbl_save_audio_file,
                 icon = R.drawable.ic_download_audio,
                 onItemClick = { saveAudioFile() }
@@ -74,7 +74,7 @@ fun HamahangProcessedWithDownloadBottomSheet(
                     .height(1.dp),
                 color = Color_OutLine
             )
-            AvashoArchiveProcessedItemBodyBottomSheet(
+            HamahangArchiveProcessedItemBodyBottomSheet(
                 text = R.string.lbl_share_file,
                 icon = R.drawable.ic_share_new,
                 onItemClick = {
@@ -88,7 +88,7 @@ fun HamahangProcessedWithDownloadBottomSheet(
                 .height(1.dp),
             color = Color_OutLine
         )
-        AvashoArchiveProcessedItemBodyBottomSheet(
+        HamahangArchiveProcessedItemBodyBottomSheet(
             text = R.string.lbl_change_file_name,
             icon = R.drawable.ic_rename,
             onItemClick = { renameItemAction() }
@@ -99,7 +99,7 @@ fun HamahangProcessedWithDownloadBottomSheet(
                 .height(1.dp),
             color = Color_OutLine
         )
-        AvashoArchiveProcessedItemBodyBottomSheet(
+        HamahangArchiveProcessedItemBodyBottomSheet(
             text = R.string.lbl_delete_file,
             icon = R.drawable.ic_removefile,
             onItemClick = {
@@ -112,7 +112,7 @@ fun HamahangProcessedWithDownloadBottomSheet(
 }
 
 @Composable
-private fun AvashoArchiveProcessedItemBodyBottomSheet(
+private fun HamahangArchiveProcessedItemBodyBottomSheet(
     text: Int,
     icon: Int,
     onItemClick: () -> Unit,

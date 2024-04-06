@@ -4,6 +4,7 @@ import ai.ivira.app.R
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Cancel
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Converting
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Download
+import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Play
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Retry
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Upload
 import ai.ivira.app.utils.ui.theme.Color_Primary
@@ -43,6 +44,7 @@ fun HamahangIconItemState(
     progress: Float = -1f
 ) {
     val icon = when (hamahangitemStatus) {
+        Play -> R.drawable.ic_play_audio
         Cancel -> R.drawable.ic_cancel
         Download -> R.drawable.ic_download_audio
         Upload -> R.drawable.ic_upload_audio

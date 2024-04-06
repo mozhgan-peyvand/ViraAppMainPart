@@ -4,5 +4,6 @@ enum class HamahangFileType {
     Process,
     Rename,
     DeleteConfirmation,
-    Delete
+    Delete,
+    FileAccessPermissionDenied
 }
