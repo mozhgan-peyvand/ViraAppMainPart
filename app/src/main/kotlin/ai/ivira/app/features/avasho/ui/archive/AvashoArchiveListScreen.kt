@@ -373,19 +373,6 @@ private fun AvashoArchiveListScreen(
                 return@snackBarHost
             }
 
-            if (viewModel.hasPermissionDeniedPermanently.value) {
-                SnackBar(
-                    snackbarHostState = snackBarState,
-                    paddingBottom = 32.dp,
-                    labelAction = snackBarState.currentSnackbarData?.actionLabel,
-                    onActionClick = {
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        navigateToAppSettings(activity = context as Activity)
-                    }
-                )
-                return@snackBarHost
-            }
-
             SnackBar(
                 snackbarHostState = snackBarState,
                 paddingBottom = 32.dp
@@ -571,51 +558,8 @@ private fun AvashoArchiveListScreen(
                                     )
                                 },
                                 avashoProcessedItem = avashoItem,
-                                isBottomSheetExpanded = sheetState.isVisible,
-                                onSaveFileClick = onClick@{
-                                    eventHandler.specialEvent(AvashoAnalytics.downloadItem)
-                                    if (!isSdkVersionBetween23And29()) {
-                                        viewModel.saveToDownloadFolder(
-                                            filePath = avashoItem.filePath,
-                                            fileName = avashoItem.title
-                                        ).also { isSuccess ->
-                                            if (isSuccess) {
-                                                showMessage(
-                                                    snackbarHostState,
-                                                    coroutineScope,
-                                                    context.getString(R.string.msg_file_saved_successfully)
-                                                )
-                                            }
-                                        }
-                                        return@onClick
-                                    }
-
-                                    if (context.hasPermission(permission)) {
-                                        viewModel.saveToDownloadFolder(
-                                            filePath = avashoItem.filePath,
-                                            fileName = avashoItem.title
-                                        ).also { isSuccess ->
-
-                                            if (isSuccess) {
-                                                showMessage(
-                                                    snackbarHostState,
-                                                    coroutineScope,
-                                                    context.getString(R.string.msg_file_saved_successfully)
-                                                )
-                                            }
-                                        }
-                                    } else if (viewModel.hasDeniedPermissionPermanently(permission)) {
-                                        showMessage(
-                                            snackbarHostState = snackbarHostState,
-                                            coroutineScope = coroutineScope,
-                                            message = context.getString(R.string.lbl_need_to_access_file_permission),
-                                            actionLabel = context.getString(R.string.lbl_setting)
-                                        )
-                                    } else {
-                                        // Asking for permission
-                                        writeStoragePermission.launch(permission)
-                                    }
-                                }
+                                isBottomSheetVisible = sheetState.isVisible,
+                                isBottomSheetExpanded = sheetState.currentValue == Expanded
                             )
                         }
                     }
