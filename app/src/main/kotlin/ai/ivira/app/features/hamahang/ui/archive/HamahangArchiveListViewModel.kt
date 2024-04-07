@@ -500,7 +500,7 @@ class HamahangArchiveListViewModel @Inject constructor(
                     id = "${System.currentTimeMillis()}_$speaker",
                     title = title,
                     inputFilePath = inputPath,
-                    speaker = speaker.name,
+                    speaker = speaker.serverName,
                     isProper = true,
                     createdAt = PersianDate().time
                 )

@@ -15,14 +15,14 @@ import retrofit2.http.Path
 
 interface HamahangService {
     @Multipart
-    @POST("http://192.168.33.21:3002/service/voiceConversion/file")
+    @POST("sahab/gateway/service/voiceConversion/file")
     suspend fun voiceConversion(
         @Header("ApiKey") token: String,
         @Part file: MultipartBody.Part,
         @Part("speaker") speaker: RequestBody
     ): ApiResult<ViraNetwork<HamahangVoiceConversionNetwork>>
 
-    @GET("http://192.168.33.21:3002/service/voiceConversion/trackingFile/{token}")
+    @GET("sahab/gateway/service/voiceConversion/trackingFile/{token}")
     suspend fun trackVoiceConversion(
         @Header("ApiKey") token: String,
         @Path("token") fileToken: String

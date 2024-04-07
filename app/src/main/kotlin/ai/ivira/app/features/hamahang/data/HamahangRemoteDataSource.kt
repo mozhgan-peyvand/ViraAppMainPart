@@ -17,7 +17,8 @@ class HamahangRemoteDataSource @Inject constructor(
     private val avanegarRemoteDataSource: AvanegarRemoteDataSource,
     private val avashoRemoteDataSource: AvashoRemoteDataSource
 ) {
-    private val token = "2f632ed518a52e2b972a4a81f01f6f58fcd38f9ae324769ec2a5f1e9642ac7accac10f894eb2b7fd807a86934b8b4443f42c30f5decf54745d3d4e0716dacc5a"
+    // FIXME: must be replaced with logged in token! (after gateway request come in)
+    private val token = "86c854f5c0ea118c0b85ba9db3c756396425e9fb23cc31e1000fcfba30616dec1f684e9f2828a57856ab71c20021041acf13012880326e24296e1662b32eb775"
 
     suspend fun voiceConversion(
         multiPartFile: MultipartBody.Part,
@@ -56,7 +57,7 @@ class HamahangRemoteDataSource @Inject constructor(
     ): ApiResult<Unit> {
         return when (
             val result = downloadFileRequest.downloadFile(
-                url = "http://192.168.33.21:3002$url",
+                url = "${bu()}sahab/gateway$url",
                 file = file,
                 token = token,
                 progress = progress
@@ -84,4 +85,6 @@ class HamahangRemoteDataSource @Inject constructor(
             )
         }
     )
+
+    private external fun bu(): String
 }

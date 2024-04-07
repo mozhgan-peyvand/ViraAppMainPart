@@ -5,14 +5,39 @@ import androidx.annotation.DrawableRes
 
 enum class HamahangSpeakerView(
     val viewName: String,
+    val serverName: String, // TODO: needs to be in data layer
     @DrawableRes val iconRes: Int
 ) {
-    Khiabani(viewName = "خیابانی", iconRes = R.drawable.img_speaker_khiabani),
-    FerdowsiPour(viewName = "فردوسی پور", iconRes = R.drawable.img_speaker_ferdowsi_pour),
-    Modiri(viewName = "مدیری", iconRes = R.drawable.img_speaker_modiri),
-    Hatami(viewName = "حاتمی", iconRes = R.drawable.img_speaker_hatami),
-    Chavoshi(viewName = "چاوشی", iconRes = R.drawable.img_speaker_chavoshi),
-    Golzar(viewName = "گلزار", iconRes = R.drawable.img_speaker_golzar);
+    Khiabani(
+        viewName = "خیابانی",
+        serverName = "Khiabani",
+        iconRes = R.drawable.img_speaker_khiabani
+    ),
+    FerdowsiPour(
+        viewName = "فردوسی پور",
+        serverName = "Adel",
+        iconRes = R.drawable.img_speaker_ferdowsi_pour
+    ),
+    Modiri(
+        viewName = "مدیری",
+        serverName = "Modiri",
+        iconRes = R.drawable.img_speaker_modiri
+    ),
+    Hatami(
+        viewName = "حاتمی",
+        serverName = "Golzar",
+        iconRes = R.drawable.img_speaker_hatami
+    ),
+    Chavoshi(
+        viewName = "چاوشی",
+        serverName = "Chavoshi",
+        iconRes = R.drawable.img_speaker_chavoshi
+    ),
+    Golzar(
+        viewName = "گلزار",
+        serverName = "Leyla.Hatami",
+        iconRes = R.drawable.img_speaker_golzar
+    );
 
     companion object {
         fun findByName(name: String): HamahangSpeakerView {
