@@ -26,11 +26,11 @@ import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType.FileAcce
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType.Process
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangFileType.Rename
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangSpeakerView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangTrackingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangUploadingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.convertDate
 import ai.ivira.app.features.hamahang.ui.new_audio.HamahangNewAudioResult
-import ai.ivira.app.features.hamahang.ui.new_audio.HamahangSpeakerView
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle

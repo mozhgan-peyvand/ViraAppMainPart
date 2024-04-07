@@ -1,4 +1,4 @@
-package ai.ivira.app.features.hamahang.ui.new_audio
+package ai.ivira.app.features.hamahang.ui.archive.model
 
 import ai.ivira.app.R
 import androidx.annotation.DrawableRes

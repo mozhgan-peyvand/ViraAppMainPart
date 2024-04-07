@@ -6,7 +6,7 @@ import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Play
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangItemImageStatus.Retry
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
-import ai.ivira.app.features.hamahang.ui.new_audio.HamahangSpeakerView
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangSpeakerView
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.ui.convertByteToMB
 import ai.ivira.app.utils.ui.millisecondsToTime

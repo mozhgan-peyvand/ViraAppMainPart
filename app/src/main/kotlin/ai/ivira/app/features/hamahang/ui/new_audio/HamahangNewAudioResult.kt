@@ -1,5 +1,6 @@
 package ai.ivira.app.features.hamahang.ui.new_audio
 
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangSpeakerView
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 

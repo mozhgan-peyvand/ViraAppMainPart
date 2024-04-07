@@ -1,7 +1,6 @@
 package ai.ivira.app.features.hamahang.ui.archive.model
 
 import ai.ivira.app.features.hamahang.data.entity.HamahangProcessedFileEntity
-import ai.ivira.app.features.hamahang.ui.new_audio.HamahangSpeakerView
 import ai.ivira.app.utils.common.file.getFileDuration
 import android.media.MediaMetadataRetriever
 import saman.zamani.persiandate.PersianDate

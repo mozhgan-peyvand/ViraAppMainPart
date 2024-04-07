@@ -3,6 +3,7 @@ package ai.ivira.app.features.hamahang.ui.new_audio
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangSpeakerView
 import ai.ivira.app.features.hamahang.ui.new_audio.components.HamahangAudioBoxMode
 import ai.ivira.app.utils.common.file.FileCache
 import ai.ivira.app.utils.common.orZero

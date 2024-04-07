@@ -12,12 +12,12 @@ import ai.ivira.app.features.hamahang.data.entity.HamahangCheckingFileEntity
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangArchiveView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangCheckingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangSpeakerView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangUploadingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangCheckingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangTrackingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangUploadingFileView
-import ai.ivira.app.features.hamahang.ui.new_audio.HamahangSpeakerView
 import ai.ivira.app.utils.common.file.FileOperationHelper
 import ai.ivira.app.utils.common.file.UploadProgressCallback
 import ai.ivira.app.utils.common.orZero
