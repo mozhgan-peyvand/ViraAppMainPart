@@ -25,7 +25,7 @@ enum class HamahangSpeakerView(
     ),
     Hatami(
         viewName = "حاتمی",
-        serverName = "Golzar",
+        serverName = "Leyla.Hatami",
         iconRes = R.drawable.img_speaker_hatami
     ),
     Chavoshi(
@@ -35,13 +35,13 @@ enum class HamahangSpeakerView(
     ),
     Golzar(
         viewName = "گلزار",
-        serverName = "Leyla.Hatami",
+        serverName = "Golzar",
         iconRes = R.drawable.img_speaker_golzar
     );
 
     companion object {
-        fun findByName(name: String): HamahangSpeakerView {
-            return HamahangSpeakerView.entries.first { it.name == name }
+        fun findByServerName(serverName: String): HamahangSpeakerView {
+            return HamahangSpeakerView.entries.first { it.serverName == serverName }
         }
     }
 }

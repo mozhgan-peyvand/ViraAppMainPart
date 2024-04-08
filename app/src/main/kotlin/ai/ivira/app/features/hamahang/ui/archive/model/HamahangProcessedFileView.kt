@@ -34,7 +34,7 @@ fun HamahangProcessedFileEntity.toHamahangProcessedFileView(
     fileUrl = fileUrl,
     filePath = filePath,
     inputFilePath = inputFilePath,
-    speaker = HamahangSpeakerView.findByName(speaker),
+    speaker = HamahangSpeakerView.findByServerName(speaker),
     createdAt = convertDate(createdAt),
     isSeen = isSeen,
     downloadedBytes = downloadedBytes,

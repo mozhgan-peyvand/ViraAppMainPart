@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class HamahangProcessedFileEntity(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     val id: Int,
     val title: String,
     val fileUrl: String,
