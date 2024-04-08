@@ -57,6 +57,7 @@ import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.Manifest
 import android.app.Activity
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -128,7 +129,10 @@ private const val TRACKING_FILE_ANIMATION_DURATION_COLUMN = 1300
 fun HamahangArchiveListScreenRoute(
     navController: NavController
 ) {
-    val viewModel = hiltViewModel<HamahangArchiveListViewModel>()
+    val context = LocalContext.current
+    val viewModel = hiltViewModel<HamahangArchiveListViewModel>(
+        viewModelStoreOwner = context as ComponentActivity
+    )
 
     navController.currentBackStackEntry?.savedStateHandle
         ?.remove<HamahangNewAudioResult>(HamahangNewAudioResult.NEW_FILE_AUDIO_RESULT)
