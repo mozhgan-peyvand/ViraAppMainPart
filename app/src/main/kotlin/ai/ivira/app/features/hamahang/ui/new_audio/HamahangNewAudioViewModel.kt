@@ -248,7 +248,7 @@ class HamahangNewAudioViewModel @Inject constructor(
     }
 
     companion object {
-        private const val KEY_DEFAULT_VOICE_NAME_COUNTER = "defaultNameCounter"
+        private const val KEY_DEFAULT_VOICE_NAME_COUNTER = "hamahangDefaultCounter"
 
         // note: 1m is shown in ui, if changed, change that as well
         private const val MAX_FILE_DURATION_MS = 1 * DateUtils.MINUTE_IN_MILLIS
