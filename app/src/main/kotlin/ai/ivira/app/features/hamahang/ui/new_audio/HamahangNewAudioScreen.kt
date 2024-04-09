@@ -802,7 +802,7 @@ private fun ConfirmButton(
         modifier = modifier
     ) {
         Text(
-            text = stringResource(id = R.string.lbl_generate_audio),
+            text = stringResource(id = R.string.lbl_convert_audio),
             style = MaterialTheme.typography.button,
             color = Color_Text_1,
             modifier = Modifier.onGloballyPositioned {

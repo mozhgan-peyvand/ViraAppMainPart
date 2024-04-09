@@ -335,10 +335,11 @@
     <string name="lbl_upload">بارگذاری</string>
     <string name="msg_input_audio_desc">دیالوگ یا متن صحبت از این صدا استخراج میشود. برای ضبط صدا دکمه میکروفون را بزنید، و یا فایل صدا را بارگذاری کنید.</string>
     <string name="msg_select_speaker_desc">گوینده موردنظر را از میان صداها انتخاب کنید. فایل نهایی با این صدا پخش میشود.</string>
-    <string name="lbl_generate_audio">تولید صدا</string>
+    <string name="lbl_convert_audio">تبدیل صدا</string>
     <string name="lbl_hamahang_choose_file">بارگذاری فایل جدید</string>
+    <string name="msg_hamahang_file_duration_exceeds_max">فایل صوتی باید کمتر از 1 دقیقه باشد.</string>
     <string name="msg_hamahang_choose_file_desc">شما تنها می توانید یک فایل برای پردازش ارسال کنید.\n
-فرمت های مجاز :mp3 \nحداکثر زمان فایل: 1 دقیقه</string>
+فرمت های مجاز :mp3 \nحداکثر زمان فایل: کمتر از 1 دقیقه</string>
     <string name="lbl_dose_not_exist_any_file_yet">فایل صوتی درآرشیو وجود ندارد.</string>
     <string name="lbl_make_your_first_audio_file">اولین فایل صوتی را ایجاد کنید.</string>
 

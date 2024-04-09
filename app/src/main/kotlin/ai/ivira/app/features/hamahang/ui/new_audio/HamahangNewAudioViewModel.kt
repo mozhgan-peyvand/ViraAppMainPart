@@ -146,10 +146,10 @@ class HamahangNewAudioViewModel @Inject constructor(
         }
 
         // Duplicate 1: check file durations
-        if (duration > MAX_FILE_DURATION_MS) {
+        if (duration >= MAX_FILE_DURATION_MS) {
             _uiViewState.emit(
                 UiError(
-                    uiException.getErrorMessageMaxLengthExceeded((MAX_FILE_DURATION_MS / DateUtils.MINUTE_IN_MILLIS).toInt()),
+                    uiException.getHamahangErrorMessageMaxLengthExceeded(),
                     isSnack = true
                 )
             )
@@ -207,10 +207,10 @@ class HamahangNewAudioViewModel @Inject constructor(
             }
 
             // Duplicate 2: check file durations
-            if (fileDuration > MAX_FILE_DURATION_MS) {
+            if (fileDuration >= MAX_FILE_DURATION_MS) {
                 _uiViewState.emit(
                     UiError(
-                        uiException.getErrorMessageMaxLengthExceeded((MAX_FILE_DURATION_MS / DateUtils.MINUTE_IN_MILLIS).toInt()),
+                        uiException.getHamahangErrorMessageMaxLengthExceeded(),
                         isSnack = true
                     )
                 )
