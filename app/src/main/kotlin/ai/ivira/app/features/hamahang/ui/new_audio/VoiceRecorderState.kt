@@ -20,7 +20,7 @@ class VoiceRecorderState(
     context: Context,
     val maxFileDurationInMillis: Long,
     private val coroutineScope: CoroutineScope,
-    private val onMaxDurationReached: () -> Unit
+    private val onMaxDurationReached: (File) -> Unit
 ) : HamahangRecorder.OnMaxDurationReached {
     private val _timer = MutableStateFlow(0L)
     val timer: StateFlow<Int> = _timer.map { (it / 1000).toInt() }
@@ -74,7 +74,8 @@ class VoiceRecorderState(
     }
 
     override fun maxFileReached() {
-        onMaxDurationReached()
+        pauseTimer()
+        onMaxDurationReached(getRecordedFile())
     }
 
     companion object {

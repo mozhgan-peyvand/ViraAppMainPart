@@ -66,8 +66,8 @@ class HamahangNewAudioViewModel @Inject constructor(
         context = application,
         maxFileDurationInMillis = MAX_FILE_DURATION_MS,
         coroutineScope = viewModelScope
-    ) {
-        stopRecording {}
+    ) { recordedFile ->
+        _mode.value = HamahangAudioBoxMode.Preview(recordedFile)
     }
 
     init {
