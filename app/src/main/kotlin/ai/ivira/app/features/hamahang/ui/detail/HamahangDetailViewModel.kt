@@ -3,8 +3,8 @@ package ai.ivira.app.features.hamahang.ui.detail
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.hamahang.data.HamahangRepository
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangProcessedFileView
-import ai.ivira.app.utils.common.file.FileOperationHelper
-import ai.ivira.app.utils.ui.StorageUtils
+import ai.ivira.app.utils.common.file.SaveToDownloadsHelper
+import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.shareMultipleImage
 import ai.ivira.app.utils.ui.stateIn
@@ -32,8 +32,7 @@ import javax.inject.Inject
 class HamahangDetailViewModel @Inject constructor(
     private val application: Application,
     private val sharedPref: SharedPreferences,
-    private val storageUtils: StorageUtils,
-    private val fileOperationHelper: FileOperationHelper,
+    private val saveToDownloadsHelper: SaveToDownloadsHelper,
     private val repository: HamahangRepository,
     savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application) {
@@ -92,7 +91,18 @@ class HamahangDetailViewModel @Inject constructor(
     }
 
     fun saveItemToDownloadFolder(): Boolean {
-        TODO("will be fixed in issue #381")
+        val filePath = filePath ?: return false
+
+        return saveToDownloadsHelper.saveToDownloadFolder(
+            filePath = filePath,
+            fileName = File(filePath).nameWithoutExtension
+        ).onFailure {
+            viewModelScope.launch {
+                _uiViewState.emit(
+                    UiError(it.getErrorMessage(application), true)
+                )
+            }
+        }.isSuccess
     }
 
     override fun onCleared() {

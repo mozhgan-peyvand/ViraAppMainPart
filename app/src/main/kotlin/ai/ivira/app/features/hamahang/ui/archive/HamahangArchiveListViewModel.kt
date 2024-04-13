@@ -17,13 +17,12 @@ import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangCheckingFileVie
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangTrackingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangUploadingFileView
-import ai.ivira.app.utils.common.file.FileOperationHelper
+import ai.ivira.app.utils.common.file.SaveToDownloadsHelper
 import ai.ivira.app.utils.common.file.UploadProgressCallback
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult
-import ai.ivira.app.utils.ui.StorageUtils
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiIdle
@@ -61,8 +60,7 @@ private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
 @HiltViewModel
 class HamahangArchiveListViewModel @Inject constructor(
     private val repository: HamahangRepository,
-    private val storageUtils: StorageUtils,
-    private val fileOperationHelper: FileOperationHelper,
+    private val saveToDownloadsHelper: SaveToDownloadsHelper,
     private val application: Application,
     private val uiException: UiException,
     private val sharedPref: SharedPreferences,
@@ -538,7 +536,16 @@ class HamahangArchiveListViewModel @Inject constructor(
         }
 
     fun saveToDownloadFolder(filePath: String, fileName: String): Boolean {
-        TODO("will be fixed in issue #381")
+        return saveToDownloadsHelper.saveToDownloadFolder(
+            filePath = filePath,
+            fileName = fileName
+        ).onFailure {
+            viewModelScope.launch {
+                _uiViewState.emit(
+                    UiError(it.getErrorMessage(application), true)
+                )
+            }
+        }.isSuccess
     }
 
     fun hasDeniedPermissionPermanently(permission: String): Boolean {
