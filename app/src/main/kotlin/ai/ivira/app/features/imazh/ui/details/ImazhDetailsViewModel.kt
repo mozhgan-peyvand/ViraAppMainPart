@@ -1,11 +1,9 @@
 package ai.ivira.app.features.imazh.ui.details
 
-import ai.ivira.app.R
 import ai.ivira.app.features.imazh.data.ImazhRepository
 import ai.ivira.app.features.imazh.ui.ImazhAnalytics
 import ai.ivira.app.features.imazh.ui.archive.model.toImazhProcessedFileView
-import ai.ivira.app.utils.common.file.FileOperationHelper
-import ai.ivira.app.utils.ui.StorageUtils
+import ai.ivira.app.utils.common.file.SaveToDownloadsHelper
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.analytics.EventHandler
@@ -35,8 +33,7 @@ class ImazhDetailsViewModel @Inject constructor(
     private val application: Application,
     private val imazhRepository: ImazhRepository,
     private val sharedPref: SharedPreferences,
-    private val storageUtils: StorageUtils,
-    private val fileOperationHelper: FileOperationHelper,
+    private val saveToDownloadsHelper: SaveToDownloadsHelper,
     private val eventHandler: EventHandler,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -97,20 +94,17 @@ class ImazhDetailsViewModel @Inject constructor(
 
     fun saveItemToDownloadFolder(): Boolean {
         eventHandler.specialEvent(ImazhAnalytics.downloadPicture)
-        filePath?.let { filePath ->
-            if (storageUtils.getAvailableSpace() <= File(filePath).length()) {
-                viewModelScope.launch {
-                    _uiViewState.emit(
-                        UiError(application.getString(R.string.msg_not_enough_space), true)
-                    )
-                }
-                return false
-            }
 
-            return fileOperationHelper.copyFileToDownloadFolder(
-                filePath = filePath,
-                fileName = File(filePath).nameWithoutExtension
-            )
-        } ?: return false
+        val filePath = filePath ?: return false
+        return saveToDownloadsHelper.saveToDownloadFolder(
+            filePath = filePath,
+            fileName = File(filePath).nameWithoutExtension
+        ).onFailure {
+            viewModelScope.launch {
+                _uiViewState.emit(
+                    UiError(it.getErrorMessage(application), true)
+                )
+            }
+        }.isSuccess
     }
 }
