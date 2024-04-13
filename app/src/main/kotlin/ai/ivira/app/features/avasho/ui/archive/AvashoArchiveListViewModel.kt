@@ -1,6 +1,5 @@
 package ai.ivira.app.features.avasho.ui.archive
 
-import ai.ivira.app.R
 import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetValue
 import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus
 import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus.FailureUpload
@@ -21,7 +20,7 @@ import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleD
 import ai.ivira.app.features.avasho.ui.archive.model.toAvashoProcessedFileView
 import ai.ivira.app.features.avasho.ui.archive.model.toAvashoTrackingFileView
 import ai.ivira.app.features.avasho.ui.archive.model.toAvashoUploadingFileView
-import ai.ivira.app.utils.common.file.FileOperationHelper
+import ai.ivira.app.utils.common.file.SaveToDownloadsHelper
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatus.Available
@@ -30,7 +29,6 @@ import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.data.api_result.AppResult.Error
 import ai.ivira.app.utils.data.api_result.AppResult.Success
-import ai.ivira.app.utils.ui.StorageUtils
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiIdle
@@ -70,11 +68,10 @@ private const val TEXT_LENGTH_LIMIT = 1000
 class AvashoArchiveListViewModel @Inject constructor(
     private val avashoRepository: AvashoRepository,
     private val uiException: UiException,
-    private val storageUtils: StorageUtils,
-    private val fileOperationHelper: FileOperationHelper,
     private val application: Application,
     private val eventHandler: EventHandler,
     private val sharedPref: SharedPreferences,
+    private val saveToDownloadsHelper: SaveToDownloadsHelper,
     networkStatusTracker: NetworkStatusTracker
 ) : ViewModel() {
     private var retriever: MediaMetadataRetriever? = null
@@ -473,19 +470,16 @@ class AvashoArchiveListViewModel @Inject constructor(
     }
 
     fun saveToDownloadFolder(filePath: String, fileName: String): Boolean {
-        if (storageUtils.getAvailableSpace() <= File(filePath).length()) {
-            viewModelScope.launch {
-                _uiViewState.emit(
-                    UiError(application.getString(R.string.msg_not_enough_space), true)
-                )
-            }
-            return false
-        }
-
-        return fileOperationHelper.copyFileToDownloadFolder(
+        return saveToDownloadsHelper.saveToDownloadFolder(
             filePath = filePath,
             fileName = fileName
-        )
+        ).onFailure {
+            viewModelScope.launch {
+                _uiViewState.emit(
+                    UiError(it.getErrorMessage(application), true)
+                )
+            }
+        }.isSuccess
     }
 
     fun changePlayingItem(id: Int) {

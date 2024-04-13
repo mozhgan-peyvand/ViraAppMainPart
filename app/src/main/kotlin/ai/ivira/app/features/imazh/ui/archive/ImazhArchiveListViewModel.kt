@@ -1,6 +1,5 @@
 package ai.ivira.app.features.imazh.ui.archive
 
-import ai.ivira.app.R
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Downloading
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.IdleDownload
@@ -11,12 +10,11 @@ import ai.ivira.app.features.imazh.ui.archive.model.ImazhArchiveView
 import ai.ivira.app.features.imazh.ui.archive.model.ImazhProcessedFileView
 import ai.ivira.app.features.imazh.ui.archive.model.toImazhProcessedFileView
 import ai.ivira.app.features.imazh.ui.archive.model.toImazhTrackingFileView
-import ai.ivira.app.utils.common.file.FileOperationHelper
+import ai.ivira.app.utils.common.file.SaveToDownloadsHelper
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.data.NetworkStatusTracker
 import ai.ivira.app.utils.data.api_result.AppResult
-import ai.ivira.app.utils.ui.StorageUtils
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiStatus
@@ -52,9 +50,8 @@ private const val IS_GRID_IMAZH_ARCHIVE_LIST_KEY = "isGridPrefKey_ImazhArchiveLi
 class ImazhArchiveListViewModel @Inject constructor(
     private val sharedPref: SharedPreferences,
     private val repository: ImazhRepository,
-    private val storageUtils: StorageUtils,
     private val application: Application,
-    private val fileOperationHelper: FileOperationHelper,
+    private val saveToDownloadsHelper: SaveToDownloadsHelper,
     private val uiException: UiException,
     private val eventHandler: EventHandler,
     networkStatusTracker: NetworkStatusTracker
@@ -373,19 +370,17 @@ class ImazhArchiveListViewModel @Inject constructor(
 
     fun saveToDownloadFolder(filePath: String, fileName: String): Boolean {
         eventHandler.specialEvent(ImazhAnalytics.downloadPicture)
-        if (storageUtils.getAvailableSpace() <= File(filePath).length()) {
-            viewModelScope.launch {
-                _uiViewState.emit(
-                    UiError(application.getString(R.string.msg_not_enough_space), true)
-                )
-            }
-            return false
-        }
 
-        return fileOperationHelper.copyFileToDownloadFolder(
+        return saveToDownloadsHelper.saveToDownloadFolder(
             filePath = filePath,
             fileName = fileName
-        )
+        ).onFailure {
+            viewModelScope.launch {
+                _uiViewState.emit(
+                    UiError(it.getErrorMessage(application), true)
+                )
+            }
+        }.isSuccess
     }
 
     fun regenerateImage(onCompletionCallback: () -> Unit) {
