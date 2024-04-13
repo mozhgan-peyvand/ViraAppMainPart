@@ -1,6 +1,5 @@
 package ai.ivira.app.features.hamahang.ui.archive
 
-import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.archive.model.UploadingFileStatus
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus.Downloading
@@ -539,19 +538,7 @@ class HamahangArchiveListViewModel @Inject constructor(
         }
 
     fun saveToDownloadFolder(filePath: String, fileName: String): Boolean {
-        if (storageUtils.getAvailableSpace() <= File(filePath).length()) {
-            viewModelScope.launch {
-                _uiViewState.emit(
-                    UiError(application.getString(R.string.msg_not_enough_space), true)
-                )
-            }
-            return false
-        }
-
-        return fileOperationHelper.copyFileToDownloadFolder(
-            filePath = filePath,
-            fileName = fileName
-        )
+        TODO("will be fixed in issue #381")
     }
 
     fun hasDeniedPermissionPermanently(permission: String): Boolean {

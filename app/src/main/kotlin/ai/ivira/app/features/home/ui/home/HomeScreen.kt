@@ -541,8 +541,7 @@ private fun HomeScreen(
                     UpdateApp,
                     NotificationPermission,
                     UnavailableTile,
-                    Changelog,
-                    Hamahang -> sheetState.hide()
+                    Changelog -> sheetState.hide()
                     ForceUpdate -> (context as Activity).finish()
                     LogoutConfirmation -> {
                         sheetState.hide()
@@ -654,14 +653,6 @@ private fun HomeScreen(
                         ChangelogBottomSheet(
                             item = updatedChangelogList,
                             onUnderstoodClick = { sheetState.hide() }
-                        )
-                    }
-                    Hamahang -> {
-                        HomeItemBottomSheet(
-                            iconRes = HomeItemScreen.hamahang.icon,
-                            title = stringResource(HomeItemScreen.hamahang.title),
-                            textBody = stringResource(R.string.lbl_hamahang_item_bottomsheet_explain),
-                            action = { sheetState.hide() }
                         )
                     }
                     LogoutConfirmation -> {

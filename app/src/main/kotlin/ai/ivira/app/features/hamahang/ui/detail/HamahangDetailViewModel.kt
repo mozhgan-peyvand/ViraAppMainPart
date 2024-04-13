@@ -1,12 +1,10 @@
 package ai.ivira.app.features.hamahang.ui.detail
 
-import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.hamahang.data.HamahangRepository
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangProcessedFileView
 import ai.ivira.app.utils.common.file.FileOperationHelper
 import ai.ivira.app.utils.ui.StorageUtils
-import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.shareMultipleImage
 import ai.ivira.app.utils.ui.stateIn
@@ -94,21 +92,7 @@ class HamahangDetailViewModel @Inject constructor(
     }
 
     fun saveItemToDownloadFolder(): Boolean {
-        filePath?.let { filePath ->
-            if (storageUtils.getAvailableSpace() <= File(filePath).length()) {
-                viewModelScope.launch {
-                    _uiViewState.emit(
-                        UiError(application.getString(R.string.msg_not_enough_space), true)
-                    )
-                }
-                return false
-            }
-
-            return fileOperationHelper.copyFileToDownloadFolder(
-                filePath = filePath,
-                fileName = File(filePath).nameWithoutExtension
-            )
-        } ?: return false
+        TODO("will be fixed in issue #381")
     }
 
     override fun onCleared() {
