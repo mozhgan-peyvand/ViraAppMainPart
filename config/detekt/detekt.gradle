@@ -1,9 +1,9 @@
-apply plugin: 'io.gitlab.arturbosch.detekt'
+apply plugin: libs.plugins.detekt.get().pluginId
 
 tasks.detekt.jvmTarget = "17"
 
 dependencies {
-    detektPlugins "io.gitlab.arturbosch.detekt:detekt-formatting:1.23.1"
+    detektPlugins libs.detektFormatting
 }
 
 detekt {

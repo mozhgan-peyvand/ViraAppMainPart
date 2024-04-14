@@ -1,13 +1,14 @@
 package ai.ivira.app.utils.ui.widgets
 
+import ai.ivira.app.designsystem.pager.HorizontalPager
+import ai.ivira.app.designsystem.pager.HorizontalPagerIndicator
+import ai.ivira.app.designsystem.pager.rememberPagerState
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -21,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.pager.HorizontalPagerIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
@@ -43,20 +43,18 @@ fun HorizontalInfinitePager(
             val infinitePageCount = Int.MAX_VALUE
             val middlePage = infinitePageCount / 2
             val pagerState = rememberPagerState(
-                initialPage = middlePage - (middlePage % realItemSize),
-                initialPageOffsetFraction = 0f
-            ) {
-                infinitePageCount
-            }
+                initialPage = remember(realItemSize) { middlePage - (middlePage % realItemSize) }
+            )
             val isDraggedState = pagerState.interactionSource.collectIsDraggedAsState()
             val isPressState = pagerState.interactionSource.collectIsPressedAsState()
 
             HorizontalPager(
                 state = pagerState,
-                pageSpacing = 8.dp,
-                modifier = Modifier.fillMaxSize()
+                itemSpacing = 8.dp,
+                count = Int.MAX_VALUE,
+                modifier = Modifier.fillMaxSize(),
+                key = { item -> item % realItemSize }
             ) { item ->
-
                 val page by remember {
                     mutableIntStateOf(item % realItemSize)
                 }
