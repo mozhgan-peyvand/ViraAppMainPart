@@ -283,3 +283,27 @@ Java_ai_ivira_app_features_config_data_ConfigDataHelper_cap(JNIEnv *env, jobject
 
     return env->NewStringUTF(dec.c_str());
 }
+
+// region login
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_login_data_LoginRemoteDataSource_lbu(JNIEnv *env, jobject thiz) {
+    std::string u = "https://userManager-v1-dev.partdp.ir/service/userManager@1/";
+    return env->NewStringUTF(u.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_login_data_LoginRemoteDataSource_lgs(JNIEnv *env, jobject thiz) {
+    std::string u = "vira";
+    return env->NewStringUTF(u.c_str());
+}
+
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_login_data_LoginRemoteDataSource_ls(JNIEnv *env, jobject thiz) {
+    std::string u = "vira";
+    return env->NewStringUTF(u.c_str());
+}
+// endregion login
