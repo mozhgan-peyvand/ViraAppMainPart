@@ -97,7 +97,7 @@ fun HamahangArchiveCheckingFileElement(
                         overflow = TextOverflow.Ellipsis,
                         color = Color_Text_2,
                         style = MaterialTheme.typography.caption,
-                        text = stringResource(id = R.string.lbl_converting_audio)
+                        text = stringResource(id = R.string.lbl_processing_input_audio)
                     )
 
                     Spacer(modifier = Modifier.size(8.dp))

@@ -34,6 +34,7 @@
     <string name="lbl_uploading_file">در حال آپلود فایل…</string>
     <string name="lbl_uploading">در حال آپلود فایل</string>
     <string name="lbl_converting_audio">در حال تبدیل صدا</string>
+    <string name="lbl_processing_input_audio">در حال پردازش صدای ورودی</string>
     <string name="lbl_waiting_for_upload">در انتظار آپلود فایل</string>
 
     <string name="lbl_make_your_first_file">اولین فایل خود را ایجاد کنید.</string>
