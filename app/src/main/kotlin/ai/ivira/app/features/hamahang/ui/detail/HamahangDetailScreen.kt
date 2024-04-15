@@ -10,6 +10,7 @@ import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDel
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangSpeakerView
+import ai.ivira.app.features.hamahang.ui.detail.components.ThreeMovingCircleAnimation
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.ui.OnLifecycleEvent
 import ai.ivira.app.utils.ui.convertByteToMB
@@ -38,6 +39,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -75,6 +77,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -230,51 +233,65 @@ private fun HamahangDetailUI(
             )
         }
     ) { paddingValue ->
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValue)
         ) {
-            val file = remember(fileInfo) {
-                File(fileInfo.filePath)
+            ThreeMovingCircleAnimation(
+                isPlaying = playerState.isPlaying,
+                modifier = Modifier
+                    .padding(paddingValue)
+                    .fillMaxSize()
+                    .zIndex(-1f)
+            )
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValue)
+                    .zIndex(1f)
+            ) {
+                val file = remember(fileInfo) {
+                    File(fileInfo.filePath)
+                }
+
+                ViraImage(
+                    drawable = fileInfo.speaker.iconRes,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(40.dp)
+                        .fillMaxWidth()
+                        .weight(0.5f)
+                        .aspectRatio(1f)
+                        .clip(CircleShape)
+                )
+
+                AudioInfoSection(
+                    fileName = fileInfo.title,
+                    fileSize = file.length().toDouble(),
+                    createdAt = fileInfo.createdAt,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.25f)
+                )
+
+                PlayerSection(
+                    playerState = playerState,
+                    onPlayingChanged = {
+                        if (!playerState.isPlaying) {
+                            playerState.startPlaying()
+                        } else {
+                            playerState.stopPlaying()
+                        }
+                    },
+                    onProgressChanged = { progress ->
+                        playerState.seekTo(progress)
+                    },
+                    modifier = Modifier.weight(0.25f)
+                )
             }
-
-            ViraImage(
-                drawable = fileInfo.speaker.iconRes,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(40.dp)
-                    .fillMaxWidth()
-                    .weight(0.5f)
-                    .aspectRatio(1f)
-                    .clip(CircleShape)
-            )
-
-            AudioInfoSection(
-                fileName = fileInfo.title,
-                fileSize = file.length().toDouble(),
-                createdAt = fileInfo.createdAt,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(0.25f)
-            )
-
-            PlayerSection(
-                playerState = playerState,
-                onPlayingChanged = {
-                    if (!playerState.isPlaying) {
-                        playerState.startPlaying()
-                    } else {
-                        playerState.stopPlaying()
-                    }
-                },
-                onProgressChanged = { progress ->
-                    playerState.seekTo(progress)
-                },
-                modifier = Modifier.weight(0.25f)
-            )
         }
     }
 
