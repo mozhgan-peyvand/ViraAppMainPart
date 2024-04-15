@@ -1,10 +1,8 @@
 package ai.ivira.app
 
-import ai.ivira.app.features.ava_negar.data.AvanegarTracker
-import ai.ivira.app.features.avasho.data.AvashoTracker
-import ai.ivira.app.features.imazh.data.ImazhTracker
 import ai.ivira.app.utils.common.notification.FirebaseTopic.Vira
 import ai.ivira.app.utils.common.notification.ViraFirebaseMessagingService.Companion.TAG
+import ai.ivira.app.utils.initializers.TrackersInitializer
 import ai.ivira.app.utils.ui.initializers.SentryInitializer
 import android.app.Application
 import android.content.SharedPreferences
@@ -19,23 +17,17 @@ import com.google.firebase.messaging.messaging
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Provider
 
 const val IsSubScribeToVersion = "subScribeViraUpdateVersion"
 
 @HiltAndroidApp
 class ViraApp : Application(), ImageLoaderFactory {
-    // this injection is here so that the tracking starts (it starts in init of this class)
-    @Inject
-    lateinit var avanegarTracker: AvanegarTracker
-
-    @Inject
-    lateinit var avashoTracker: AvashoTracker
-
-    @Inject
-    lateinit var imazhTracker: ImazhTracker
-
     @Inject
     lateinit var sentryInitializer: SentryInitializer
+
+    @Inject
+    lateinit var trackersInitializer: Provider<TrackersInitializer>
 
     @Inject
     lateinit var sharePerf: SharedPreferences
@@ -50,6 +42,8 @@ class ViraApp : Application(), ImageLoaderFactory {
 
         getFirebaseToken()
         ensureViraTopicSubscribed()
+
+        trackersInitializer.get().init()
     }
 
     override fun newImageLoader(): ImageLoader {
