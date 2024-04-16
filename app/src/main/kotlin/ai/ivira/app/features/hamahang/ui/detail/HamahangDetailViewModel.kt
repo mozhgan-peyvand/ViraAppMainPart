@@ -6,13 +6,12 @@ import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangProcessedFileVi
 import ai.ivira.app.utils.common.file.SaveToDownloadsHelper
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiStatus
-import ai.ivira.app.utils.ui.shareMultipleImage
+import ai.ivira.app.utils.ui.shareMp3
 import ai.ivira.app.utils.ui.stateIn
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.media.MediaPlayer
-import androidx.core.content.FileProvider
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -62,15 +61,10 @@ class HamahangDetailViewModel @Inject constructor(
     }
 
     fun shareItem(context: Context) {
-        filePath?.let { filePath ->
-            if (File(filePath).exists()) {
-                val uri = FileProvider.getUriForFile(
-                    context,
-                    context.applicationContext.packageName + ".provider",
-                    File(filePath)
-                )
-                shareMultipleImage(context, arrayListOf(uri))
-            }
+        val file = filePath?.let { File(it) } ?: return
+
+        if (file.exists()) {
+            shareMp3(context, file)
         }
     }
 
