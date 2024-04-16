@@ -91,14 +91,14 @@ fun AvashoArchiveProcessedFileElement(
                     } else {
                         Play
                     }
-                } else if (isInDownloadQueue) {
-                    Cancel
                 } else if (isDownloadFailure) {
                     Retry
+                } else if (isInDownloadQueue) {
+                    Cancel
                 } else {
                     Download
                 },
-                isInDownloadQueue = isInDownloadQueue,
+                isInDownloadQueue = !isDownloadFailure && isInDownloadQueue,
                 progress = archiveViewProcessed.downloadingPercent
             )
 
@@ -118,7 +118,7 @@ fun AvashoArchiveProcessedFileElement(
                     modifier = Modifier.background(selectedItemBackgroundColor)
                 )
 
-                if (!isNetworkAvailable && isDownloadFailure) {
+                if (!isNetworkAvailable || isDownloadFailure) {
                     Spacer(modifier = Modifier.size(8.dp))
 
                     Text(

@@ -54,6 +54,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import saman.zamani.persiandate.PersianDate
@@ -116,13 +117,26 @@ class AvashoArchiveListViewModel @Inject constructor(
     var isThereTrackingOrUploading = MutableStateFlow(false)
         private set
 
+    private val filteredDownloadQueue = combine(
+        _downloadFailureList,
+        downloadQueue
+    ) { downloadFailure: List<Int>, downloadQueue: List<AvashoProcessedFileView> ->
+
+        buildList {
+            for (i in downloadQueue) {
+                if (File(i.filePath).exists() || downloadFailure.contains(i.id)) continue
+                add(i)
+            }
+        }
+    }
+
     val allArchiveFiles = combine(
         networkStatusTracker.networkStatus,
         _uploadStatus,
         _downloadStatus,
         avashoRepository.getAllArchiveFiles(),
         downloadFileView,
-        downloadQueue
+        filteredDownloadQueue
     ) { networkStatus: NetworkStatus,
         uploadState: UploadingFileStatus,
         downloadState: DownloadingFileStatus,
@@ -328,10 +342,22 @@ class AvashoArchiveListViewModel @Inject constructor(
 
     fun addFileToDownloadQueue(item: AvashoProcessedFileView) {
         downloadQueue.update { currentQueue ->
-            if (currentQueue.contains(item)) {
+            if (currentQueue.any { it.id ==item.id }) {
                 currentQueue
             } else {
                 currentQueue.plus(item)
+            }
+        }
+
+        if (_downloadStatus.value == FailureDownload) {
+            _downloadStatus.value = IdleDownload
+        }
+    }
+
+    fun retryDownload(id: Int) {
+        _downloadFailureList.update { list ->
+            list.filter { failureId ->
+                failureId != id
             }
         }
 
@@ -366,8 +392,13 @@ class AvashoArchiveListViewModel @Inject constructor(
 
             if (result is Error) {
                 _downloadFailureList.update { failureList ->
-                    failureList + avashoProcessedFileView.id
+                    if (failureList.contains(avashoProcessedFileView.id)) {
+                        failureList
+                    } else {
+                        failureList.plus(avashoProcessedFileView.id)
+                    }
                 }
+
                 if (downloadQueue.value.isEmpty()) {
                     _downloadStatus.update { FailureDownload }
                 }
@@ -375,7 +406,7 @@ class AvashoArchiveListViewModel @Inject constructor(
                 _downloadStatus.emit(IdleDownload)
 
                 _downloadFailureList.update { list ->
-                    list.filter { it == avashoProcessedFileView.id }
+                    list.filter { it != avashoProcessedFileView.id }
                 }
             }
 
