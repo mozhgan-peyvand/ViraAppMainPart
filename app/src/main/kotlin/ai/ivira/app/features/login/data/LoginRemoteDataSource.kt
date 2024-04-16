@@ -1,13 +1,50 @@
 package ai.ivira.app.features.login.data
 
+import ai.ivira.app.utils.data.api_result.ApiError
+import ai.ivira.app.utils.data.api_result.ApiResult
+import com.squareup.moshi.Moshi
 import javax.inject.Inject
 
-class LoginRemoteDataSource @Inject constructor() {
+class LoginRemoteDataSource @Inject constructor(
+    private val loginService: LoginService,
+    private val moshi: Moshi
+) {
     init {
         System.loadLibrary("vira")
     }
 
-    suspend fun sendOtp() {}
+    suspend fun sendOtp(sendOtpRequestNetwork: SendOtpRequestNetwork): ApiResult<Unit> {
+        return when (
+            val result = loginService.sendOtp(
+                url = lbu() + "sendOtp",
+                gatewaySystem = lgs(),
+                system = ls(),
+                sendOtpBody = sendOtpRequestNetwork
+            )
+        ) {
+            is ApiResult.Error -> {
+                when (result.error) {
+                    is ApiError.HttpError -> {
+                        val processedApiError = replaceErrorBodyWithServerCode(result.error)
+                        ApiResult.Error(processedApiError)
+                    }
+                    ApiError.EmptyBodyError,
+                    is ApiError.IOError,
+                    is ApiError.JsonParseException,
+                    is ApiError.UnknownApiError -> ApiResult.Error(result.error)
+                }
+            }
+            is ApiResult.Success -> ApiResult.Success(Unit)
+        }
+    }
+
+    private fun replaceErrorBodyWithServerCode(error: ApiError.HttpError): ApiError.HttpError {
+        val adapter = moshi.adapter(ErrorResponse::class.java)
+        return ApiError.HttpError(
+            error.code,
+            adapter.fromJson(error.body)?.meta?.code.orEmpty()
+        )
+    }
 
     suspend fun verifyOtp() {}
 

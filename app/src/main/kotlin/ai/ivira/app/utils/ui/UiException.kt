@@ -6,6 +6,7 @@ import ai.ivira.app.utils.data.api_result.AppException.IOException
 import ai.ivira.app.utils.data.api_result.AppException.NetworkConnectionException
 import ai.ivira.app.utils.data.api_result.AppException.RemoteDataSourceException
 import ai.ivira.app.utils.ui.ApiErrorCodes.InvalidInputData
+import ai.ivira.app.utils.ui.ApiErrorCodes.OtpAlreadyExists
 import ai.ivira.app.utils.ui.ApiErrorCodes.UrlNotFound
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -26,6 +27,7 @@ class UiException @Inject constructor(
                 when (appException.body) {
                     InvalidInputData.value -> context.getString(R.string.msg_invalid_input_data)
                     UrlNotFound.value -> context.getString(R.string.msg_url_not_found)
+                    OtpAlreadyExists.value -> context.getString(R.string.msg_otp_rate_limit)
                     else -> defaultMessage
                 }
             }
@@ -46,4 +48,7 @@ class UiException @Inject constructor(
         context.getString(R.string.msg_your_text_contains_inappropriate_words)
 
     fun getErrorMessageInvalidItemId(): String = context.getString(R.string.msg_there_is_a_problem)
+
+    fun getErrorInvalidPhoneNumber(): String =
+        context.getString(R.string.msg_error_phone_number_validation)
 }

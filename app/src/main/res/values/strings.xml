@@ -286,4 +286,11 @@
     <string name="msg_regenerate_image">با انتخاب این گزینه، تصویر جدیدی طبق توصیف شما تولید خواهد شد.</string>
     <string name="lbl_cancel_2">لغو</string>
     <string name="lbl_nsfw_generated_image">تصویر به دلیل داشتن محتوای نامناسب تار شده است.</string>
+
+    <string name="lbl_login_signup_title">ورود /ثبت نام</string>
+    <string name="msg_terms_and_conditions">با ورود به اپلیکیشن ویرا شرایط و قوانین را می پذیرم</string>
+    <string name="msg_phone_number_hint">مثلا: ۰۹۱۲۳۴۵۶۷۸۹</string>
+    <string name="msg_error_phone_number_validation">شماره تلفن همراه با ۰۹ شروع می شود</string>
+    <string name="lbl_phone_number">شماره موبایل</string>
+    <string name="msg_otp_rate_limit">لطفا 1 دقیقه دیگر تلاش کنید</string>
 </resources>
