@@ -81,13 +81,11 @@ class ImazhArchiveListViewModel @Inject constructor(
         networkStatusTracker.networkStatus,
         downloadStatus,
         downloadQueue,
-        _downloadFailureList,
         currentDownloadingFile
     ) { archiveFiles: ImazhArchiveFilesEntity,
         networkStatus: NetworkStatus,
         downloadState: DownloadingFileStatus,
         queue: List<ImazhProcessedFileView>,
-        failureList: List<Int>,
         downloadingFile: ImazhProcessedFileView? ->
 
         if (networkStatus is NetworkStatus.Unavailable) {
@@ -97,12 +95,12 @@ class ImazhArchiveListViewModel @Inject constructor(
             downloadStatus.update { IdleDownload }
         } else {
             if (downloadState == IdleDownload) {
-                if (queue.isNotEmpty()) {
-                    val item = queue.firstOrNull { it.id !in failureList || !File(it.filePath).exists() }
+                val filteredQueue = queue.filter { it.id !in _downloadFailureList.value }
+                if (filteredQueue.isNotEmpty()) {
+                    val item = filteredQueue.firstOrNull()
                     if (item != null) {
                         downloadStatus.update { Downloading }
                         downloadFile(item)
-                        _downloadFailureList.update { it.filter { id -> id != item.id } }
                     }
                 }
             }
@@ -250,7 +248,7 @@ class ImazhArchiveListViewModel @Inject constructor(
             downloadStatus.update { IdleDownload }
             if (result is AppResult.Success) {
                 _downloadFailureList.update { list ->
-                    list.filter { it == imazhProcessedFileView.id }
+                    list.filter { it != imazhProcessedFileView.id }
                 }
             } else {
                 _downloadFailureList.update { failureList ->

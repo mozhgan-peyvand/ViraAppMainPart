@@ -454,10 +454,12 @@ private fun AvashoArchiveListScreen(
                                             return@callback
                                         }
 
-                                        if (viewModel.isInDownloadQueue(item.id)) {
-                                            viewModel.cancelDownload(item.id)
-                                        } else {
+                                        if (downloadFailureList.contains(it.id)) {
+                                            viewModel.retryDownload(it.id)
+                                        } else if (!viewModel.isInDownloadQueue(it.id)) {
                                             viewModel.addFileToDownloadQueue(item)
+                                        } else {
+                                            viewModel.cancelDownload(item.id)
                                         }
                                     },
                                     onMenuClick = { avashoSelectedItem ->
