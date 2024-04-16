@@ -77,7 +77,7 @@ fun HamahangArchiveTrackingFileElement(
             Text(
                 color = Color_Text_2,
                 style = MaterialTheme.typography.caption,
-                text = stringResource(id = R.string.lbl_converting_to_audio)
+                text = stringResource(id = R.string.lbl_converting_audio)
             )
 
             if (getNewEstimateTime.intValue > 0) {
