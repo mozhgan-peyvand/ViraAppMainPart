@@ -16,4 +16,12 @@ interface LoginService {
         @Header("system") system: String,
         @Body sendOtpBody: SendOtpRequestNetwork
     ): ApiResult<ViraNetwork<EmptyResponse>>
+
+    @POST
+    suspend fun verifyOtp(
+        @Url url: String,
+        @Header("gateway-system") gatewaySystem: String,
+        @Header("system") system: String,
+        @Body otpParams: VerifyOtpNetworkRequest
+    ): ApiResult<ViraNetwork<VerifyOtpNetworkResponse>>
 }

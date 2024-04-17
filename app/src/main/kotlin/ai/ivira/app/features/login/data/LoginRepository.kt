@@ -23,5 +23,21 @@ class LoginRepository @Inject constructor(
         }
     }
 
-    suspend fun verifyOtp() {}
+    suspend fun verifyOtp(
+        mobile: String,
+        otpCode: String
+    ): AppResult<Unit> {
+        if (!networkHandler.hasNetworkConnection()) {
+            return AppResult.Error(AppException.NetworkConnectionException())
+        }
+        return when (val result = remoteDataSource.verifyOtp(
+            VerifyOtpNetworkRequest(mobile = mobile, otp = otpCode)
+        )) {
+            is ApiResult.Error -> AppResult.Error(result.error.toAppException())
+            is ApiResult.Success -> {
+                localDataSource.saveToken(token = result.data.token, mobile = mobile)
+                AppResult.Success(Unit)
+            }
+        }
+    }
 }

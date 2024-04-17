@@ -38,6 +38,29 @@ class LoginRemoteDataSource @Inject constructor(
         }
     }
 
+    suspend fun verifyOtp(otpParams: VerifyOtpNetworkRequest): ApiResult<VerifyOtpNetworkResponse> {
+        return when (val result = loginService.verifyOtp(
+            url = lbu() + "verifyOtp",
+            gatewaySystem = lgs(),
+            system = ls(),
+            otpParams = otpParams
+        )) {
+            is ApiResult.Error -> {
+                when (result.error) {
+                    is ApiError.HttpError -> {
+                        val processedApiError = replaceErrorBodyWithServerCode(result.error)
+                        ApiResult.Error(processedApiError)
+                    }
+                    ApiError.EmptyBodyError,
+                    is ApiError.IOError,
+                    is ApiError.JsonParseException,
+                    is ApiError.UnknownApiError -> ApiResult.Error(result.error)
+                }
+            }
+            is ApiResult.Success -> ApiResult.Success(result.data.data)
+        }
+    }
+
     private fun replaceErrorBodyWithServerCode(error: ApiError.HttpError): ApiError.HttpError {
         val adapter = moshi.adapter(ErrorResponse::class.java)
         return ApiError.HttpError(
@@ -45,8 +68,6 @@ class LoginRemoteDataSource @Inject constructor(
             adapter.fromJson(error.body)?.meta?.code.orEmpty()
         )
     }
-
-    suspend fun verifyOtp() {}
 
     private external fun lbu(): String
     private external fun lgs(): String

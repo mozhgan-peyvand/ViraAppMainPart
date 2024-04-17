@@ -4,8 +4,8 @@ import ai.ivira.app.features.ava_negar.avanegarNavGraph
 import ai.ivira.app.features.avasho.ui.avashoNavGraph
 import ai.ivira.app.features.home.ui.homeNavGraph
 import ai.ivira.app.features.imazh.ui.imazhNavGraph
+import ai.ivira.app.features.login.ui.LoginScreenRoutes
 import ai.ivira.app.features.login.ui.loginNavGraph
-import ai.ivira.app.features.splash.SplashScreenRoutes
 import ai.ivira.app.features.splash.splashNavGraph
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -24,7 +24,7 @@ const val ANIMATION_NAVIGATION_DURATION_FADE = 600
 fun AppNavigation(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = SplashScreenRoutes.SplashScreen.route
+        startDestination = LoginScreenRoutes.LoginMobileScreen.route
     ) {
         splashNavGraph(navController)
         homeNavGraph(navController)

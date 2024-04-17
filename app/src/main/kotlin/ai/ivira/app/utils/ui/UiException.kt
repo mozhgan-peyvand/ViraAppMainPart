@@ -6,6 +6,7 @@ import ai.ivira.app.utils.data.api_result.AppException.IOException
 import ai.ivira.app.utils.data.api_result.AppException.NetworkConnectionException
 import ai.ivira.app.utils.data.api_result.AppException.RemoteDataSourceException
 import ai.ivira.app.utils.ui.ApiErrorCodes.InvalidInputData
+import ai.ivira.app.utils.ui.ApiErrorCodes.InvalidOtp
 import ai.ivira.app.utils.ui.ApiErrorCodes.OtpAlreadyExists
 import ai.ivira.app.utils.ui.ApiErrorCodes.UrlNotFound
 import android.content.Context
@@ -28,6 +29,7 @@ class UiException @Inject constructor(
                     InvalidInputData.value -> context.getString(R.string.msg_invalid_input_data)
                     UrlNotFound.value -> context.getString(R.string.msg_url_not_found)
                     OtpAlreadyExists.value -> context.getString(R.string.msg_otp_rate_limit)
+                    InvalidOtp.value -> context.getString(R.string.msg_otp_not_valid)
                     else -> defaultMessage
                 }
             }

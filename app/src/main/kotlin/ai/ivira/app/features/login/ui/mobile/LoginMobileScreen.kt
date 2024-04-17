@@ -2,6 +2,7 @@ package ai.ivira.app.features.login.ui.mobile
 
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.widgets.ClickableTextWithDashUnderline
+import ai.ivira.app.features.login.ui.LoginScreenRoutes
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
@@ -84,7 +85,9 @@ fun LoginMobileRoute(
     navController: NavController
 ) {
     LoginMobileScreen(
-        navigateToOtpScreen = {}
+        navigateToOtpScreen = {
+            navController.navigate(LoginScreenRoutes.LoginOtpScreen.createRoute(it))
+        }
     )
 }
 
