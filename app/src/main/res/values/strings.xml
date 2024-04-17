@@ -345,5 +345,6 @@
 فرمت های مجاز :mp3 \nحداکثر زمان فایل: کمتر از 1 دقیقه</string>
     <string name="lbl_dose_not_exist_any_file_yet">فایل صوتی درآرشیو وجود ندارد.</string>
     <string name="lbl_make_your_first_audio_file">اولین فایل صوتی را ایجاد کنید.</string>
+    <string name="lbl_hamahang_on_boarding_describe">صدای خود را به کمک هوش مصنوعی، به صدای افراد مشهور تبدیل کنید.</string>
 
 </resources>

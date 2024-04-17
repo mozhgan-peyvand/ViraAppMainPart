@@ -8,4 +8,6 @@ sealed class HamahangScreenRoutes(val route: String) {
             return "hamahangDetail_screen?id=$id"
         }
     }
+
+    data object HamahangOnboardingScreen : HamahangScreenRoutes("hamahangOnboading_screen")
 }

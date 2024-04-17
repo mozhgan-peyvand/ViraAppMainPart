@@ -225,7 +225,7 @@ private fun HomeScreen(
                     }
                 }
                 HomeItemType.Hamahang -> {
-                    navController.navigate(HamahangScreenRoutes.HamahangArchiveListScreen.route)
+                    homeViewModel.navigateToHamahang()
                 }
                 HomeItemType.ChatGpt -> {
                     coroutineScope.launch {
@@ -340,6 +340,20 @@ private fun HomeScreen(
                 navController.navigate(ImazhScreenRoutes.ImazhArchiveListScreen.route)
             }
             homeViewModel.shouldNavigateToImazh.value = false
+        }
+    }
+
+    LaunchedEffect(
+        homeViewModel.hamahangOnboardingHasBeenShown.value,
+        homeViewModel.shouldNavigateToHamahang.value
+    ) {
+        if (homeViewModel.shouldNavigateToHamahang.value) {
+            if (!homeViewModel.hamahangOnboardingHasBeenShown.value) {
+                navController.navigate(HamahangScreenRoutes.HamahangOnboardingScreen.route)
+            } else {
+                navController.navigate(HamahangScreenRoutes.HamahangArchiveListScreen.route)
+            }
+            homeViewModel.shouldNavigateToHamahang.value = false
         }
     }
 

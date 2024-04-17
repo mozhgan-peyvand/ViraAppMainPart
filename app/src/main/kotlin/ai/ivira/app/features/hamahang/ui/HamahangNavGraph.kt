@@ -3,6 +3,7 @@ package ai.ivira.app.features.hamahang.ui
 import ai.ivira.app.features.hamahang.ui.archive.HamahangArchiveListScreenRoute
 import ai.ivira.app.features.hamahang.ui.detail.HamahangDetailScreenRoute
 import ai.ivira.app.features.hamahang.ui.new_audio.HamahangNewAudioScreenRoute
+import ai.ivira.app.features.hamahang.ui.onboarding.HamahangOnboardingRoute
 import ai.ivira.app.utils.ui.navigation.navigateWithSlideAnimation
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -25,5 +26,9 @@ fun NavGraphBuilder.hamahangNavGraph(navController: NavHostController) {
         )
     ) {
         HamahangDetailScreenRoute(navController)
+    }
+
+    navigateWithSlideAnimation(route = HamahangScreenRoutes.HamahangOnboardingScreen.route) {
+        HamahangOnboardingRoute(navController = navController)
     }
 }

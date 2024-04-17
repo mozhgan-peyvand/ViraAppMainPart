@@ -6,6 +6,7 @@ import ai.ivira.app.features.ava_negar.data.PreferencesKey.onBoardingKey
 import ai.ivira.app.features.avasho.ui.onboarding.AVASHO_ONBOARDING_COMPLETED
 import ai.ivira.app.features.config.data.ConfigRepository
 import ai.ivira.app.features.config.ui.TileItem
+import ai.ivira.app.features.hamahang.ui.onboarding.HAMAHANG_ONBOARDING_COMPLETED
 import ai.ivira.app.features.home.data.CURRENT_CHANGELOG_VERSION_KEY
 import ai.ivira.app.features.home.data.VersionRepository
 import ai.ivira.app.features.home.ui.home.version.model.ChangelogView
@@ -107,6 +108,7 @@ class HomeViewModel @Inject constructor(
     var shouldNavigate = mutableStateOf(false)
     var shouldNavigateToAvasho = mutableStateOf(false)
     var shouldNavigateToImazh = mutableStateOf(false)
+    var shouldNavigateToHamahang = mutableStateOf(false)
     var shouldShowNotificationBottomSheet = false
         private set
 
@@ -138,6 +140,9 @@ class HomeViewModel @Inject constructor(
         private set
 
     var imazhOnboardingHasBeenShown = mutableStateOf(false)
+        private set
+
+    var hamahangOnboardingHasBeenShown = mutableStateOf(false)
         private set
 
     val unavailableTileToShowBottomSheet: MutableState<TileItem?> = mutableStateOf(null)
@@ -178,6 +183,11 @@ class HomeViewModel @Inject constructor(
             false
         )
 
+        hamahangOnboardingHasBeenShown.value = sharedPref.getBoolean(
+            HAMAHANG_ONBOARDING_COMPLETED,
+            false
+        )
+
         prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == AVASHO_ONBOARDING_COMPLETED) {
                 avashoOnboardingHasBeenShown.value = sharedPref.getBoolean(
@@ -188,6 +198,13 @@ class HomeViewModel @Inject constructor(
             if (key == IMAZH_ONBOARDING_COMPLETED) {
                 imazhOnboardingHasBeenShown.value = sharedPref.getBoolean(
                     IMAZH_ONBOARDING_COMPLETED,
+                    false
+                )
+            }
+
+            if (key == HAMAHANG_ONBOARDING_COMPLETED) {
+                hamahangOnboardingHasBeenShown.value = sharedPref.getBoolean(
+                    HAMAHANG_ONBOARDING_COMPLETED,
                     false
                 )
             }
@@ -216,6 +233,10 @@ class HomeViewModel @Inject constructor(
 
     fun navigateToImazh() {
         shouldNavigateToImazh.value = true
+    }
+
+    fun navigateToHamahang() {
+        shouldNavigateToHamahang.value = true
     }
 
     fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) {
