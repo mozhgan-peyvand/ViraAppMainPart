@@ -6,6 +6,6 @@ enum class HomeItemBottomSheetType(val value: String) {
     ForceUpdate("forceUpdate"),
     Changelog("changelog"),
     UnavailableTile("unavailableFeature"),
-    Hamahang("hamahang"),
-    LogoutConfirmation("logoutConfirmation")
+    LogoutConfirmation("logoutConfirmation"),
+    ChatGpt("chatGpt")
 }

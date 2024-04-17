@@ -8,6 +8,8 @@
     <string name="lbl_imazh_desc">تولید تصویر از متن</string>
     <string name="lbl_change_voice_to_text">تبدیل صوت به متن</string>
     <string name="lbl_hamahang">همآهنگ</string>
+    <string name="lbl_chatgpt">چت GPT</string>
+    <string name="lbl_chatgpt_desc">ربات چت</string>
     <string name="coming_soon">به زودی</string>
     <string name="lbl_assistant_smart_voice"> دستیار صوتی هوشمند</string>
     <string name="lbl_about_us">درباره ما</string>
@@ -196,7 +198,7 @@
     <string name="msg_general_recorder_pause_error">مشکلی در توقف ضبط رخ داد.</string>
     <string name="msg_general_recorder_start_error">مشکلی در شروع ضبط رخ داد.</string>
     <string name="msg_general_recorder_stop_error">مشکلی در پایان ضبط رخ داد.</string>
-    <string name="avasho_item_bottomsheet_explain">سرویس آواشو با قابلیت تبدیل متن به گفتار با لحن طبیعی انسان، در نسخه های بعد فعال خواهد شد.</string>
+    <string name="chatgpt_item_bottomsheet_explain">قابلیت گفتگو با ربات هوش مصنوعی چت جی پی تی در نسخه ی بعد فعال خواهد شد.</string>
     <string name="lbl_introduce_text">ابزارهای جذاب هوش مصنوعی همچون سرویس تبدیل گفتار به متن در اپلیکیشن ویرا</string>
     <string name="lbl_download">دانلود:</string>
     <string name="lbl_show_minute">دقیقه</string>

@@ -71,6 +71,8 @@ val Color_Info_700 = Color(0xFFAB591E)
 val Color_Info_Opacity_15 = Color(0xFF7E2A26).copy(alpha = 0.15f)
 val Pink_100 = Color(0xFFF3D1E4)
 val Deep_Purple_500 = Color(0xFF353238)
+val Red_20 = Color(0xFFE3BB9F)
+val teal_100 = Color(0xFFA2D3C6)
 
 val Color_Outline = Color(0xFF292E33)
 
