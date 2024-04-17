@@ -20,6 +20,7 @@ import android.widget.Toast
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -32,9 +33,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text2.BasicTextField2
+import androidx.compose.foundation.text2.input.InputTransformation
+import androidx.compose.foundation.text2.input.TextFieldBuffer
+import androidx.compose.foundation.text2.input.TextFieldCharSequence
+import androidx.compose.foundation.text2.input.TextFieldLineLimits
+import androidx.compose.foundation.text2.input.TextFieldState
+import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -59,13 +65,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -94,9 +98,10 @@ private fun LoginMobileScreen(
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
-    val uiState by viewModel.uiViewState.collectAsStateWithLifecycle()
-    val phoneNumber by viewModel.phoneNumber.collectAsStateWithLifecycle()
-    val requestAllowed by viewModel.requestAllowed.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
+    val isRequestAllowed by viewModel.isRequestAllowed.collectAsStateWithLifecycle(uiState !is UiLoading)
+
+    val phoneNumber = viewModel.phoneNumber
 
     LaunchedEffect(uiState) {
         when (uiState) {
@@ -104,10 +109,9 @@ private fun LoginMobileScreen(
                 val message = (uiState as? UiError)?.message
                     ?: context.getString(R.string.msg_there_is_a_problem)
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                viewModel.clearUiState()
             }
             UiSuccess -> {
-                navigateToOtpScreen(phoneNumber)
+                navigateToOtpScreen(phoneNumber.text.toString())
             }
             UiIdle,
             UiLoading -> {
@@ -118,23 +122,21 @@ private fun LoginMobileScreen(
 
     LoginMobileScreenUI(
         phoneNumber = phoneNumber,
-        confirmEnabled = requestAllowed,
+        isRequestAllowed = isRequestAllowed,
         isLoading = uiState is UiLoading,
         scrollState = scrollState,
         focusRequester = focusRequester,
-        onPhoneNumberChange = viewModel::changePhoneNumber,
         onConfirmClick = viewModel::sendOTP
     )
 }
 
 @Composable
 private fun LoginMobileScreenUI(
-    phoneNumber: String,
-    confirmEnabled: Boolean,
+    phoneNumber: TextFieldState,
+    isRequestAllowed: Boolean,
     isLoading: Boolean,
     scrollState: ScrollState,
     focusRequester: FocusRequester,
-    onPhoneNumberChange: (String) -> Unit,
     onConfirmClick: () -> Unit
 ) {
     Scaffold(
@@ -171,7 +173,6 @@ private fun LoginMobileScreenUI(
 
             PhoneNumberTextField(
                 phoneNumber = phoneNumber,
-                onPhoneNumberChange = onPhoneNumberChange,
                 focusRequester = focusRequester,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -193,7 +194,7 @@ private fun LoginMobileScreenUI(
             Spacer(modifier = Modifier.height(20.dp))
 
             ConfirmButton(
-                enabled = confirmEnabled,
+                enabled = isRequestAllowed,
                 isLoading = isLoading,
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onConfirmClick
@@ -204,8 +205,7 @@ private fun LoginMobileScreenUI(
 
 @Composable
 private fun PhoneNumberTextField(
-    phoneNumber: String,
-    onPhoneNumberChange: (String) -> Unit,
+    phoneNumber: TextFieldState,
     focusRequester: FocusRequester,
     modifier: Modifier = Modifier
 ) {
@@ -237,79 +237,44 @@ private fun PhoneNumberTextField(
                 style = MaterialTheme.typography.caption
             )
 
-            BasicTextField(
-                value = phoneNumber,
-                singleLine = true,
-                onValueChange = onPhoneNumberChange,
-                cursorBrush = SolidColor(MaterialTheme.colors.primary),
+            BasicTextField2(
+                state = phoneNumber,
+                inputTransformation = PhoneNumberTransformation,
                 textStyle = MaterialTheme.typography.body1.copy(
                     color = Color_Text_2,
                     fontFamily = FontFamily(
                         Font(ThemeR.font.bahij_helvetica_neue_vira_edition_roman)
                     )
                 ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester)
+                lineLimits = TextFieldLineLimits.SingleLine,
+                cursorBrush = SolidColor(Color_Text_2),
+                decorator = {
+                    Box(modifier = Modifier.fillMaxWidth()) { it() }
+                },
+                modifier = modifier.focusRequester(focusRequester)
             )
         }
     }
 }
 
-@Composable
-private fun TermsAndConditionsText(
-    style: TextStyle,
-    onTagClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val tag = "TermsAndConditions"
-    val fullText = stringResource(id = R.string.msg_terms_and_conditions)
-
-    val annotatedText = buildAnnotatedString {
-        withStyle(style = style.toSpanStyle().copy(color = MaterialTheme.colors.onPrimary)) {
-            val part1 = fullText.substring(startIndex = 0, endIndex = 25)
-            append(part1)
+private object PhoneNumberTransformation : InputTransformation {
+    override val keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+    override fun transformInput(
+        originalValue: TextFieldCharSequence,
+        valueWithChanges: TextFieldBuffer
+    ) {
+        if (!valueWithChanges.asCharSequence().isDigitsOnly() || valueWithChanges.length > 11) {
+            valueWithChanges.revertAllChanges()
         }
-
-        pushStringAnnotation(
-            tag = tag,
-            annotation = tag
-        )
-        withStyle(style = style.toSpanStyle().copy(color = MaterialTheme.colors.primary)) {
-            val part2 = fullText.substring(startIndex = 25, endIndex = 39)
-            append(part2)
-        }
-
-        withStyle(style = style.toSpanStyle().copy(color = MaterialTheme.colors.onPrimary)) {
-            val part3 = fullText.substring(startIndex = 39)
-            append(part3)
-        }
-
-        pop()
     }
-
-    ClickableText(
-        text = annotatedText,
-        onClick = { offset ->
-            annotatedText.getStringAnnotations(
-                tag = tag,
-                start = offset,
-                end = offset
-            ).firstOrNull()?.let { _ ->
-                onTagClick()
-            }
-        },
-        modifier = modifier
-    )
 }
 
 // Duplicate 2
 @Composable
 private fun ConfirmButton(
-    onClick: () -> Unit,
     enabled: Boolean,
     isLoading: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
@@ -369,12 +334,11 @@ private fun LoadingLottie(
 private fun LoginMobileScreenPreview() {
     ViraPreview {
         LoginMobileScreenUI(
-            phoneNumber = "(189) 969-1810",
-            confirmEnabled = false,
+            phoneNumber = rememberTextFieldState(),
+            isRequestAllowed = false,
             isLoading = false,
             scrollState = rememberScrollState(),
             focusRequester = FocusRequester(),
-            onPhoneNumberChange = {},
             onConfirmClick = {}
         )
     }
