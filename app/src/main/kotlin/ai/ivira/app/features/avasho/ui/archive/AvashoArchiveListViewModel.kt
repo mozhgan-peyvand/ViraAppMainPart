@@ -54,7 +54,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import saman.zamani.persiandate.PersianDate
@@ -342,7 +341,7 @@ class AvashoArchiveListViewModel @Inject constructor(
 
     fun addFileToDownloadQueue(item: AvashoProcessedFileView) {
         downloadQueue.update { currentQueue ->
-            if (currentQueue.any { it.id ==item.id }) {
+            if (currentQueue.any { it.id == item.id }) {
                 currentQueue
             } else {
                 currentQueue.plus(item)

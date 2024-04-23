@@ -2,7 +2,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 pluginManagement {
     repositories {
         maven {
-            url = uri("https://nexus.samentic.com/repository/samentic-android/")
+            url = uri("https://inexus.samentic.com/repository/samentic-android/")
             credentials {
                 username = "vira"
                 password = "w-!Mze&LY8MVEMG"
@@ -14,7 +14,7 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         maven {
-            url = uri("https://nexus.samentic.com/repository/samentic-android/")
+            url = uri("https://inexus.samentic.com/repository/samentic-android/")
             credentials {
                 username = "vira"
                 password = "w-!Mze&LY8MVEMG"
