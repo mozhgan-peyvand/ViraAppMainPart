@@ -2,6 +2,7 @@ package ai.ivira.app.features.login.ui.mobile
 
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.widgets.ClickableTextWithDashUnderline
+import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.features.login.ui.LoginScreenRoutes
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
@@ -87,6 +88,9 @@ fun LoginMobileRoute(
     LoginMobileScreen(
         navigateToOtpScreen = {
             navController.navigate(LoginScreenRoutes.LoginOtpScreen.createRoute(it))
+        },
+        navigateToTermsOfServiceScreen = {
+            navController.navigate(HomeScreenRoutes.TermsOfServiceScreen.route)
         }
     )
 }
@@ -94,6 +98,7 @@ fun LoginMobileRoute(
 @Composable
 private fun LoginMobileScreen(
     navigateToOtpScreen: (phoneNumber: String) -> Unit,
+    navigateToTermsOfServiceScreen: () -> Unit,
     viewModel: LoginMobileViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
@@ -129,7 +134,8 @@ private fun LoginMobileScreen(
         isLoading = uiState is UiLoading,
         scrollState = scrollState,
         focusRequester = focusRequester,
-        onConfirmClick = viewModel::sendOTP
+        onConfirmClick = viewModel::sendOTP,
+        onTermsOfServiceClick = navigateToTermsOfServiceScreen
     )
 }
 
@@ -140,7 +146,8 @@ private fun LoginMobileScreenUI(
     isLoading: Boolean,
     scrollState: ScrollState,
     focusRequester: FocusRequester,
-    onConfirmClick: () -> Unit
+    onConfirmClick: () -> Unit,
+    onTermsOfServiceClick: () -> Unit
 ) {
     Scaffold(
         modifier = Modifier
@@ -188,7 +195,7 @@ private fun LoginMobileScreenUI(
                 endIndex = 39,
                 textStyle = MaterialTheme.typography.body2,
                 substringTextStyle = MaterialTheme.typography.body2.copy(color = Color_Primary),
-                onClick = {}, // TODO: Add navigateCallback to TermsAndConditionsScreen here
+                onClick = onTermsOfServiceClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentWidth()
@@ -342,7 +349,8 @@ private fun LoginMobileScreenPreview() {
             isLoading = false,
             scrollState = rememberScrollState(),
             focusRequester = FocusRequester(),
-            onConfirmClick = {}
+            onConfirmClick = {},
+            onTermsOfServiceClick = {}
         )
     }
 }
