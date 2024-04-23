@@ -11,8 +11,16 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 
 fun NavGraphBuilder.loginNavGraph(navController: NavHostController) {
-    navigateWithSlideAnimation(route = LoginMobileScreen.route) {
-        LoginMobileRoute(navController)
+    navigateWithSlideAnimation(
+        route = LoginMobileScreen.route,
+        arguments = listOf(
+            navArgument("fromSplash") {
+                type = NavType.BoolType
+            }
+        )
+    ) { backStackEntry ->
+        val fromSplash = backStackEntry.arguments?.getBoolean("fromSplash") ?: false
+        LoginMobileRoute(navController, fromSplash)
     }
 
     navigateWithSlideAnimation(

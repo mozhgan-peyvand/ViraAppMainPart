@@ -1,9 +1,15 @@
 package ai.ivira.app.features.login.ui.mobile
 
 import ai.ivira.app.R
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheet
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetDefaults
+import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetState
+import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.ui.record.widgets.ClickableTextWithDashUnderline
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.features.login.ui.LoginScreenRoutes
+import ai.ivira.app.features.login.ui.mobile.LoginMobileBottomSheetType.LoginRequired
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
@@ -53,6 +59,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -83,7 +90,8 @@ import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Composable
 fun LoginMobileRoute(
-    navController: NavController
+    navController: NavController,
+    fromSplash: Boolean
 ) {
     LoginMobileScreen(
         navigateToOtpScreen = {
@@ -91,12 +99,14 @@ fun LoginMobileRoute(
         },
         navigateToTermsOfServiceScreen = {
             navController.navigate(HomeScreenRoutes.TermsOfServiceScreen.route)
-        }
+        },
+        fromSplash = fromSplash
     )
 }
 
 @Composable
 private fun LoginMobileScreen(
+    fromSplash: Boolean,
     navigateToOtpScreen: (phoneNumber: String) -> Unit,
     navigateToTermsOfServiceScreen: () -> Unit,
     viewModel: LoginMobileViewModel = hiltViewModel()
@@ -110,6 +120,19 @@ private fun LoginMobileScreen(
     val isRequestAllowed by viewModel.isRequestAllowed.collectAsStateWithLifecycle(uiState !is UiLoading)
 
     val phoneNumber = viewModel.phoneNumber
+
+    var selectedSheet by rememberSaveable { mutableStateOf(LoginRequired) }
+    val sheetState = rememberViraBottomSheetState()
+    val loginRequiredIsShown by viewModel.loginRequiredIsShown
+
+    LaunchedEffect(loginRequiredIsShown, fromSplash) {
+        if (!fromSplash) {
+            viewModel.setLoginRequiredShowed()
+        } else if (!loginRequiredIsShown) {
+            selectedSheet = LoginRequired
+            sheetState.show()
+        }
+    }
 
     LaunchedEffect(uiState) {
         when (uiState) {
@@ -135,7 +158,10 @@ private fun LoginMobileScreen(
         scrollState = scrollState,
         focusRequester = focusRequester,
         onConfirmClick = viewModel::sendOTP,
-        onTermsOfServiceClick = navigateToTermsOfServiceScreen
+        onTermsOfServiceClick = navigateToTermsOfServiceScreen,
+        sheetState = sheetState,
+        selectedSheet = selectedSheet,
+        onLoginRequiredConfirmed = viewModel::setLoginRequiredShowed
     )
 }
 
@@ -147,7 +173,10 @@ private fun LoginMobileScreenUI(
     scrollState: ScrollState,
     focusRequester: FocusRequester,
     onConfirmClick: () -> Unit,
-    onTermsOfServiceClick: () -> Unit
+    onTermsOfServiceClick: () -> Unit,
+    selectedSheet: LoginMobileBottomSheetType,
+    sheetState: ViraBottomSheetState,
+    onLoginRequiredConfirmed: () -> Unit
 ) {
     Scaffold(
         modifier = Modifier
@@ -209,6 +238,27 @@ private fun LoginMobileScreenUI(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onConfirmClick
             )
+        }
+    }
+    if (sheetState.showBottomSheet) {
+        ViraBottomSheet(
+            sheetState = sheetState,
+            isDismissibleOnDrag = false,
+            isDismissibleOnTouchOutside = false,
+            properties = ViraBottomSheetDefaults.properties(shouldDismissOnBackPress = false)
+        ) {
+            ViraBottomSheetContent(targetState = selectedSheet) {
+                when (selectedSheet) {
+                    LoginRequired -> {
+                        LoginRequiredBottomSheet(
+                            onConfirmClick = {
+                                onLoginRequiredConfirmed()
+                                sheetState.hide()
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -350,7 +400,10 @@ private fun LoginMobileScreenPreview() {
             scrollState = rememberScrollState(),
             focusRequester = FocusRequester(),
             onConfirmClick = {},
-            onTermsOfServiceClick = {}
+            onTermsOfServiceClick = {},
+            selectedSheet = LoginRequired,
+            sheetState = rememberViraBottomSheetState(),
+            onLoginRequiredConfirmed = {}
         )
     }
 }

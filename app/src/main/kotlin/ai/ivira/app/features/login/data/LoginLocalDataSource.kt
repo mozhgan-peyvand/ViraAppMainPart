@@ -16,4 +16,14 @@ class LoginLocalDataSource @Inject constructor(@EncryptedSharedPref private val 
     fun getToken(): String? {
         return sharePrf.getString("loginToken", null)
     }
+
+    fun saveLoginRequiredIsShown(isShown: Boolean) {
+        sharePrf.edit {
+            putBoolean("loginRequiredIsShown", isShown)
+        }
+    }
+
+    fun getLoginRequiredIsShown(): Boolean {
+        return sharePrf.getBoolean("loginRequiredIsShown", false)
+    }
 }

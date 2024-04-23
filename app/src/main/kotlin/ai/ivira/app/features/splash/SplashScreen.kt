@@ -71,7 +71,7 @@ private fun SplashScreen(
                 } else {
                     navController.popBackStack()
                     navController.navigate(
-                        route = LoginScreenRoutes.LoginMobileScreen.route
+                        route = LoginScreenRoutes.LoginMobileScreen.createRoute(fromSplash = true)
                     )
                 }
             } else {

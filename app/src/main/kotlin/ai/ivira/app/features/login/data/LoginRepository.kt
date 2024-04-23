@@ -42,4 +42,9 @@ class LoginRepository @Inject constructor(
     }
 
     fun getToken() = localDataSource.getToken()
+
+    fun saveLoginRequiredIsShown(isShown: Boolean) =
+        localDataSource.saveLoginRequiredIsShown(isShown)
+
+    fun getLoginRequiredIsShown() = localDataSource.getLoginRequiredIsShown()
 }

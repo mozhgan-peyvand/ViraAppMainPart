@@ -71,7 +71,9 @@ private fun HomeOnboardingScreen(
             eventHandler.onboardingEvent(HomeAnalytics.onboardingEnd)
             viewModel.onBoardingShown()
             navController.popBackStack()
-            navController.navigate(LoginScreenRoutes.LoginMobileScreen.route)
+            navController.navigate(
+                route = LoginScreenRoutes.LoginMobileScreen.createRoute(fromSplash = false)
+            )
         }
     }
 

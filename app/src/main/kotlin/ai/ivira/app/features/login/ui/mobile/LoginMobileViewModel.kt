@@ -8,6 +8,8 @@ import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
 import androidx.compose.foundation.text2.input.TextFieldState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,6 +31,20 @@ class LoginMobileViewModel @Inject constructor(
     val isRequestAllowed = _uiViewState.mapLatest { it != UiLoading } // TODO: Add any other situation to be handled here (such as rateLimit)
 
     val phoneNumber = TextFieldState(initialText = "")
+
+    private val _loginRequiredIsShown = mutableStateOf(false)
+    val loginRequiredIsShown: State<Boolean> = _loginRequiredIsShown
+
+    init {
+        viewModelScope.launch {
+            _loginRequiredIsShown.value = repository.getLoginRequiredIsShown()
+        }
+    }
+
+    fun setLoginRequiredShowed() {
+        repository.saveLoginRequiredIsShown(true)
+        _loginRequiredIsShown.value = true
+    }
 
     fun sendOTP() {
         viewModelScope.launch(IO) {
