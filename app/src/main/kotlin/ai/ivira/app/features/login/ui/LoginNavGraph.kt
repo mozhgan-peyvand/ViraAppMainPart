@@ -1,6 +1,5 @@
 package ai.ivira.app.features.login.ui
 
-import ai.ivira.app.features.home.ui.terms.TermsOfServicesScreenRoute
 import ai.ivira.app.features.login.ui.LoginScreenRoutes.LoginMobileScreen
 import ai.ivira.app.features.login.ui.LoginScreenRoutes.LoginOtpScreen
 import ai.ivira.app.features.login.ui.mobile.LoginMobileRoute
