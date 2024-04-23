@@ -11,6 +11,7 @@ import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileB
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
+import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.features.hamahang.ui.HamahangScreenRoutes
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangArchiveCheckingFileElement
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangArchiveProcessedFileElement
@@ -142,6 +143,7 @@ fun HamahangArchiveListScreenRoute(
 
     HamahangArchiveListScreen(
         viewModel = viewModel,
+        configViewModel = hiltViewModel(viewModelStoreOwner = context),
         navigateToDetailScreen = { id ->
             navController.navigate(HamahangScreenRoutes.HamahangDetailScreen.createRoute(id))
         },
@@ -157,6 +159,7 @@ fun HamahangArchiveListScreenRoute(
 @Composable
 private fun HamahangArchiveListScreen(
     viewModel: HamahangArchiveListViewModel,
+    configViewModel: ConfigViewModel,
     navigateToDetailScreen: (id: Int) -> Unit,
     navigateToNewAudio: () -> Unit,
     navigateUp: () -> Unit
@@ -218,6 +221,15 @@ private fun HamahangArchiveListScreen(
     }
     LaunchedEffect(sheetState.isVisible) {
         snackbarHostState.currentSnackbarData?.dismiss()
+    }
+
+    LaunchedEffect(Unit) {
+        configViewModel.hamahangTileConfig.collect { hamahangTileConfig ->
+            if (hamahangTileConfig?.available == false) {
+                configViewModel.showHamahangUnavailableFeature()
+                navigateUp()
+            }
+        }
     }
 
     HamahangArchiveListUI(
@@ -459,7 +471,7 @@ private fun HamahangArchiveListUI(
                             isThereTrackingOrUploading,
                         bannerInfo = if (uiViewState is UiError) {
                             ViraBannerInfo.Error(
-                                message = (uiViewState as UiError).message,
+                                message = uiViewState.message,
                                 iconRes = R.drawable.ic_failure_network
                             )
                         } else if (hasVpnConnection) {

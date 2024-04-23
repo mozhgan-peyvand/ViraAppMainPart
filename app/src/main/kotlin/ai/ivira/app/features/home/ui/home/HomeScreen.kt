@@ -185,6 +185,7 @@ private fun HomeScreen(
     val avanegarTile by configViewModel.avanegarTileConfig.collectAsStateWithLifecycle(initialValue = null)
     val avashoTile by configViewModel.avashoTileConfig.collectAsStateWithLifecycle(initialValue = null)
     val imazhTile by configViewModel.imazhTileConfig.collectAsStateWithLifecycle(initialValue = null)
+    val hamahangTile by configViewModel.hamahangTileConfig.collectAsStateWithLifecycle(initialValue = null)
 
     val shouldShowForceUpdateBottomSheet by homeViewModel.shouldShowForceUpdateBottomSheet.collectAsStateWithLifecycle()
     val shouldShowChangeLogBottomSheet by homeViewModel.shouldShowChangeLogBottomSheet.collectAsStateWithLifecycle()
@@ -225,7 +226,15 @@ private fun HomeScreen(
                     }
                 }
                 HomeItemType.Hamahang -> {
-                    homeViewModel.navigateToHamahang()
+                    if (hamahangTile?.available == false) {
+                        homeViewModel.unavailableTileToShowBottomSheet.value = hamahangTile
+                        sheetSelected = UnavailableTile
+                        sheetState.show()
+                    } else {
+                        // TODO: Uncomment below after adding event
+                        // eventHandler.specialEvent(HomeAnalytics.openHamahang)
+                        homeViewModel.navigateToHamahang()
+                    }
                 }
                 HomeItemType.ChatGpt -> {
                     coroutineScope.launch {
@@ -288,6 +297,19 @@ private fun HomeScreen(
                 sheetState.show()
             }
             configViewModel.resetImazhUnavailableFeature()
+        }
+    }
+
+    LaunchedEffect(
+        configViewModel.shouldShowHamahangUnavailableBottomSheet.value
+    ) {
+        if (configViewModel.shouldShowHamahangUnavailableBottomSheet.value) {
+            coroutineScope.launch {
+                homeViewModel.unavailableTileToShowBottomSheet.value = hamahangTile
+                sheetSelected = UnavailableTile
+                sheetState.show()
+            }
+            configViewModel.resetHamahangUnavailableFeature()
         }
     }
 

@@ -18,18 +18,25 @@ fun ConfigTileEntity.toTileItem() = when (stringToKey(name)) {
         available = status,
         unavailableStateMessage = message
     )
+    Keys.Hamahang -> TileItem.Hamahang(
+        key = name,
+        available = status,
+        unavailableStateMessage = message
+    )
     null -> null
 }
 
 private enum class Keys(val key: String) {
     Avanegar("avanegar"),
     Avasho("avasho"),
-    Imazh("imazh")
+    Imazh("imazh"),
+    Hamahang("hamahang")
 }
 
 private fun stringToKey(str: String) = when (str) {
     Keys.Avanegar.key -> Keys.Avanegar
     Keys.Avasho.key -> Keys.Avasho
     Keys.Imazh.key -> Keys.Imazh
+    Keys.Hamahang.key -> Keys.Hamahang
     else -> null
 }
