@@ -2,6 +2,7 @@ package ai.ivira.app.features.login.ui.otp
 
 import ai.ivira.app.R
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
+import ai.ivira.app.features.login.ui.LoginScreenRoutes
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
@@ -19,6 +20,7 @@ import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -79,7 +81,14 @@ fun LoginOtpRoute(
     mobile: String
 ) {
     LoginOtpScreen(
-        navigateToHomeScreen = { navController.navigate(HomeScreenRoutes.Home.route) },
+        navigateToHomeScreen = {
+            navController.navigate(
+                route = HomeScreenRoutes.Home.createRoute()
+            ) {
+                popUpTo(route = LoginScreenRoutes.LoginMobileScreen.route) { inclusive = true }
+            }
+        },
+        navigateToMobileScreen = { navController.navigateUp() },
         mobile = mobile,
         viewModel = hiltViewModel()
     )
@@ -88,6 +97,7 @@ fun LoginOtpRoute(
 @Composable
 private fun LoginOtpScreen(
     navigateToHomeScreen: () -> Unit,
+    navigateToMobileScreen: () -> Unit,
     mobile: String,
     viewModel: LoginOtpViewModel
 ) {
@@ -97,6 +107,8 @@ private fun LoginOtpScreen(
     val context = LocalContext.current
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
+
+    BackHandler {} // Disabling back click
 
     LaunchedEffect(key1 = uiState) {
         when (uiState) {
@@ -126,7 +138,7 @@ private fun LoginOtpScreen(
             viewModel.changeOtp(newText)
         },
         verifyOtpButtonClick = viewModel::sendOtpRequest,
-        changMobileAction = {}
+        changMobileAction = navigateToMobileScreen
     )
 }
 

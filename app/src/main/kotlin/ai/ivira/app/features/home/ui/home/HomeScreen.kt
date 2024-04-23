@@ -261,7 +261,7 @@ private fun HomeScreen(
         }
     }
 
-    BackHandler(!sheetState.showBottomSheet || scaffoldState.drawerState.isOpen) {
+    BackHandler(scaffoldState.drawerState.isOpen) {
         coroutineScope.launch {
             scaffoldState.drawerState.close()
         }

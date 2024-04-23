@@ -40,4 +40,6 @@ class LoginRepository @Inject constructor(
             }
         }
     }
+
+    fun getToken() = localDataSource.getToken()
 }

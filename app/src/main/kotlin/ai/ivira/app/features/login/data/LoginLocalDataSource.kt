@@ -12,4 +12,8 @@ class LoginLocalDataSource @Inject constructor(@EncryptedSharedPref private val 
             putString("mobile", mobile)
         }
     }
+
+    fun getToken(): String? {
+        return sharePrf.getString("loginToken", null)
+    }
 }
