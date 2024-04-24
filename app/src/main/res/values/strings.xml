@@ -249,6 +249,8 @@
     <string name="lbl_add">افزودن</string>
     <string name="lbl_image_style">سبک تصویر</string>
     <string name="lbl_select">انتخاب</string>
+    <string name="lbl_negative_prompt">کلمات سلبی</string>
+    <string name="lbl_imazh_negative_prompt_placeholder">مواردی که نمی‌خواهید در تصویر ببینید را بنویسید…</string>
     <string name="lbl_generate_image">تولید تصویر</string>
     <string name="msg_describe_your_image">تصویر مدنظر خود را توصیف کنید…</string>
     <string name="lbl_details">جزئیات</string>
@@ -274,6 +276,7 @@
     <string name="msg_firs_run_image_description">دراین بخش، تصویر مورد نظرتان را توصیف کنید و \nبرای تولید تصویر بهتر، جزئیات بیشتری بنویسید.</string>
     <string name="msg_firs_run_random_prompt">می‌توانید از این گزینه برای تولید نمونه \nتوصیف تصویر استفاده کنید.</string>
     <string name="msg_firs_run_keywords">می‌توانید برای اضافه کردن جزئیات بیشتر به \nتوصیف تصویر، از کلمات کلیدی استفاده کنید. </string>
+    <string name="msg_firs_run_negative_prompt">در این بخش، ویژگی‌هایی که نمی‌خواهید در \nتصویر تولیدی وجود داشته باشد را بنویسید. \nبه عنوان مثال، با نوشتن کلمه "آبی"، رنگ آبی \nکمتری در تصویر تولیدی وجود خواهد داشت.</string>
 
     <string name="lbl_imazh_select_all">انتخاب همه</string>
     <string name="lbl_selected_files">(های) انتخاب شده</string>

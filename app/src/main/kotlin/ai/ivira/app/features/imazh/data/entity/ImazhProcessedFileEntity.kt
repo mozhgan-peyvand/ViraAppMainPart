@@ -13,6 +13,8 @@ data class ImazhProcessedFileEntity(
     val englishKeywords: List<String>,
     val prompt: String,
     val englishPrompt: String,
+    val negativePrompt: String,
+    val englishNegativePrompt: String,
     val style: String,
     val createdAt: Long,
     val nsfw: Boolean

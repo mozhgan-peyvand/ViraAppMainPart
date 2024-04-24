@@ -81,6 +81,8 @@ class ImazhLocalDataSource @Inject constructor(
                         englishKeywords = tracking.englishKeywords,
                         prompt = tracking.prompt,
                         englishPrompt = tracking.englishPrompt,
+                        negativePrompt = tracking.negativePrompt,
+                        englishNegativePrompt = tracking.englishNegativePrompt,
                         style = tracking.style,
                         createdAt = PersianDate().time,
                         nsfw = result.nsfw

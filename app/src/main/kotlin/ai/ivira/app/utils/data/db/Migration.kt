@@ -107,4 +107,16 @@ object Migration {
             }
         }
     }
+
+    fun migration6_7(): Migration {
+        return object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE ImazhTrackingFileEntity ADD COLUMN `negativePrompt` Text DEFAULT '' NOT NULL")
+                db.execSQL("ALTER TABLE ImazhTrackingFileEntity ADD COLUMN `englishNegativePrompt` Text DEFAULT '' NOT NULL")
+
+                db.execSQL("ALTER TABLE ImazhProcessedFileEntity ADD COLUMN `negativePrompt` Text DEFAULT '' NOT NULL")
+                db.execSQL("ALTER TABLE ImazhProcessedFileEntity ADD COLUMN `englishNegativePrompt` Text DEFAULT '' NOT NULL")
+            }
+        }
+    }
 }
