@@ -12,6 +12,8 @@ class LoginRepository @Inject constructor(
     private val remoteDataSource: LoginRemoteDataSource,
     private val networkHandler: NetworkHandler
 ) {
+    fun tokenFlow() = localDataSource.tokenFlow()
+
     suspend fun sendOtp(phoneNumber: String): AppResult<Unit> {
         if (!networkHandler.hasNetworkConnection()) {
             return AppResult.Error(AppException.NetworkConnectionException())
@@ -41,7 +43,24 @@ class LoginRepository @Inject constructor(
         }
     }
 
+    suspend fun logout(): AppResult<Unit> {
+        val token = localDataSource.getToken().orEmpty()
+
+        if (!networkHandler.hasNetworkConnection()) {
+            return AppResult.Error(AppException.NetworkConnectionException())
+        }
+
+        return when (val result = remoteDataSource.logout(token)) {
+            is ApiResult.Error -> AppResult.Error(result.error.toAppException())
+            is ApiResult.Success -> AppResult.Success(result.data).also {
+                localDataSource.resetToken()
+            }
+        }
+    }
+
     fun getToken() = localDataSource.getToken()
+
+    fun getMobile() = localDataSource.getMobile()
 
     fun saveLoginRequiredIsShown(isShown: Boolean) =
         localDataSource.saveLoginRequiredIsShown(isShown)

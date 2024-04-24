@@ -61,6 +61,19 @@ class LoginRemoteDataSource @Inject constructor(
         }
     }
 
+    suspend fun logout(gatewayToken: String): ApiResult<Unit> {
+        return when (
+            val result = loginService.logout(
+                url = lbu() + "logout",
+                gatewayToken = gatewayToken,
+                system = ls()
+            )
+        ) {
+            is ApiResult.Error -> ApiResult.Error(result.error)
+            is ApiResult.Success -> ApiResult.Success(Unit)
+        }
+    }
+
     private fun replaceErrorBodyWithServerCode(error: ApiError.HttpError): ApiError.HttpError {
         val adapter = moshi.adapter(ErrorResponse::class.java)
         return ApiError.HttpError(

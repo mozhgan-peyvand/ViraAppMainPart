@@ -14,20 +14,26 @@ import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoArchiveScreen
 import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoOnboardingScreen
 import ai.ivira.app.features.config.ui.ConfigViewModel
 import ai.ivira.app.features.home.ui.HomeAnalytics
+import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.features.home.ui.HomeScreenRoutes.AboutUs
+import ai.ivira.app.features.home.ui.HomeScreenRoutes.TermsOfServiceScreen
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Changelog
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ForceUpdate
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Hamahang
+import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.LogoutConfirmation
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NotificationPermission
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UnavailableTile
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UpdateApp
+import ai.ivira.app.features.home.ui.home.sheets.LogoutBottomSheetViewModel
+import ai.ivira.app.features.home.ui.home.sheets.LogoutConfirmationBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.ChangelogBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.ForceUpdateScreen
 import ai.ivira.app.features.home.ui.home.version.sheets.UpToDateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateLoadingBottomSheet
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes
+import ai.ivira.app.features.login.ui.LoginScreenRoutes
 import ai.ivira.app.utils.common.CommonConstants.LANDING_URL
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.UiError
@@ -142,7 +148,8 @@ fun HomeScreenRoute(navController: NavHostController) {
     HomeScreen(
         navController = navController,
         homeViewModel = hiltViewModel(),
-        configViewModel = hiltViewModel(viewModelStoreOwner = activity)
+        configViewModel = hiltViewModel(viewModelStoreOwner = activity),
+        logoutViewModel = hiltViewModel()
     )
 }
 
@@ -150,7 +157,8 @@ fun HomeScreenRoute(navController: NavHostController) {
 private fun HomeScreen(
     navController: NavHostController,
     homeViewModel: HomeViewModel,
-    configViewModel: ConfigViewModel
+    configViewModel: ConfigViewModel,
+    logoutViewModel: LogoutBottomSheetViewModel
 ) {
     val eventHandler = LocalEventHandler.current
     val coroutineScope = rememberCoroutineScope()
@@ -178,6 +186,7 @@ private fun HomeScreen(
     val shouldShowForceUpdateBottomSheet by homeViewModel.shouldShowForceUpdateBottomSheet.collectAsStateWithLifecycle()
     val shouldShowChangeLogBottomSheet by homeViewModel.shouldShowChangeLogBottomSheet.collectAsStateWithLifecycle()
     val updatedChangelogList by homeViewModel.updatedChangelogList.collectAsStateWithLifecycle()
+    val userToken by logoutViewModel.isUserLogin.collectAsStateWithLifecycle()
 
     val onItemClick: (selectedItemType: HomeItemType) -> Unit = remember {
         { itemType ->
@@ -217,6 +226,21 @@ private fun HomeScreen(
                         sheetSelected = Hamahang
                         sheetState.show()
                     }
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(userToken) {
+        val value = userToken
+        if (value is LogoutBottomSheetViewModel.TokenStatus.Value && value.token.isNullOrBlank()) {
+            navController.navigate(
+                route = LoginScreenRoutes.LoginMobileScreen.createRoute(
+                    fromSplash = false
+                )
+            ) {
+                popUpTo(route = HomeScreenRoutes.Home.route) {
+                    inclusive = true
                 }
             }
         }
@@ -361,6 +385,7 @@ private fun HomeScreen(
         },
         drawerContent = {
             DrawerHeader(
+                userMobile = homeViewModel.userMobile.value,
                 aboutUsOnClick = {
                     // first close drawer because if we click on about us and after that quickly click somewhere else,
                     // it's still open when we get back to main screen
@@ -413,6 +438,20 @@ private fun HomeScreen(
                     sheetState.show()
 
                     homeViewModel.getUpdateList()
+                },
+                onTermsOfServiceClick = {
+                    coroutineScope.launch {
+                        scaffoldState.drawerState.close()
+                    }
+                    navController.navigate(TermsOfServiceScreen.route)
+                },
+                onLogoutClick = {
+                    coroutineScope.launch {
+                        scaffoldState.drawerState.close()
+                    }
+
+                    sheetSelected = LogoutConfirmation
+                    sheetState.show()
                 }
             )
         },
@@ -495,6 +534,8 @@ private fun HomeScreen(
 
         ViraBottomSheet(
             sheetState = sheetState,
+            isDismissibleOnTouchOutside = selectedSheetUpdated != LogoutConfirmation,
+            isDismissibleOnDrag = selectedSheetUpdated != LogoutConfirmation,
             properties = ViraBottomSheetDefaults.properties(shouldDismissOnBackPress = false),
             onBackPressed = {
                 when (selectedSheetUpdated) {
@@ -504,6 +545,10 @@ private fun HomeScreen(
                     Changelog,
                     Hamahang -> sheetState.hide()
                     ForceUpdate -> (context as Activity).finish()
+                    LogoutConfirmation -> {
+                        sheetState.hide()
+                        logoutViewModel.resetLogoutRequest()
+                    }
                 }
             }
         ) {
@@ -618,6 +663,19 @@ private fun HomeScreen(
                             title = stringResource(HomeItemScreen.hamahang.title),
                             textBody = stringResource(R.string.lbl_hamahang_item_bottomsheet_explain),
                             action = { sheetState.hide() }
+                        )
+                    }
+                    LogoutConfirmation -> {
+                        LogoutConfirmationBottomSheet(
+                            viewModel = logoutViewModel,
+                            cancelAction = { sheetState.hide() },
+                            onErrorCallback = {
+                                sheetState.hide()
+                                showMessage(snackbarHostState, coroutineScope, it.message)
+                            },
+                            onSuccessCallback = {
+                                sheetState.hide()
+                            }
                         )
                     }
                 }
