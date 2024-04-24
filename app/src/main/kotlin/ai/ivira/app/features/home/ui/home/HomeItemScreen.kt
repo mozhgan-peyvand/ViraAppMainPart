@@ -75,7 +75,7 @@ data class HomeItemScreen(
 
         val bannerItemList: List<HomeItemScreen>
             get() {
-                return listOf(imazh, hamahang, avaNegar, avaSho)
+                return listOf(hamahang, imazh, avaNegar, avaSho)
             }
     }
 }

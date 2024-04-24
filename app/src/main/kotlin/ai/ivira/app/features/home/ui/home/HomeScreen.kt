@@ -75,6 +75,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.animateColorAsState
@@ -791,7 +792,10 @@ private fun HomeItem(
             Spacer(modifier = Modifier.size(4.dp))
 
             if (item.isComingSoon) {
-                MarqueeText(modifier = Modifier.fillMaxWidth(0.45f))
+                MarqueeText(
+                    text = item.description,
+                    modifier = Modifier.fillMaxWidth(0.45f)
+                )
             } else {
                 Text(
                     text = stringResource(id = item.description),
@@ -812,7 +816,10 @@ private fun HomeItem(
 }
 
 @Composable
-private fun MarqueeText(modifier: Modifier = Modifier) {
+private fun MarqueeText(
+    @StringRes text: Int,
+    modifier: Modifier = Modifier
+) {
     var index by rememberSaveable { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
@@ -851,7 +858,7 @@ private fun MarqueeText(modifier: Modifier = Modifier) {
                 )
             }
         ) { itemIndex ->
-            val itemRes = if (itemIndex == 0) R.string.coming_soon else R.string.lbl_sound_imitation
+            val itemRes = if (itemIndex == 0) R.string.coming_soon else text
             TextAutoSize(
                 text = stringResource(id = itemRes),
                 textScale = TextAutoSizeRange(
