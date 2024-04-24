@@ -287,7 +287,7 @@
     <string name="lbl_cancel_2">لغو</string>
     <string name="lbl_nsfw_generated_image">تصویر به دلیل داشتن محتوای نامناسب تار شده است.</string>
     <string name="lbl_otp_status">کد فعالسازی برای شما ارسال شده است</string>
-    <string name="lbl_otp_send_again"> ارسال پیامک دوباره</string>
+    <string name="lbl_otp_send_again"> ارسال مجدد پیامک </string>
     <string name="lbl_reminding_time">زمان باقی مانده:</string>
     <string name="lbl_modification">ویرایش</string>
     <string name="lbl_login_signup_title">ورود /ثبت نام</string>

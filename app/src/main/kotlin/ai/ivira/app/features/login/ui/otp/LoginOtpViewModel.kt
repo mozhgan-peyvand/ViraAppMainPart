@@ -18,7 +18,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -31,10 +34,15 @@ class LoginOtpViewModel @Inject constructor(
     private val application: Application,
     savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application) {
-    val mobile = savedStateHandle.getStateFlow("mobile", "")
+    val mobile = savedStateHandle.get<String>("mobile").orEmpty()
 
     private val _uiViewState = MutableStateFlow<UiStatus>(UiIdle)
     val uiViewState = _uiViewState.asStateFlow()
+
+    private val _resendOtpViewState = MutableSharedFlow<UiStatus>()
+    val resendOtpViewState = _resendOtpViewState.asSharedFlow()
+
+    private var resendOtoJob: Job? = null
 
     var otpTextValue by mutableStateOf("")
         private set
@@ -44,7 +52,23 @@ class LoginOtpViewModel @Inject constructor(
             .take(5)
     }
 
-    fun sendOtpRequest() {
+    fun resendOtp() {
+        if (resendOtoJob != null) return
+        resendOtoJob = viewModelScope.launch {
+            _resendOtpViewState.emit(UiLoading)
+            when (val result = repository.sendOtp(mobile)) {
+                is AppResult.Error -> {
+                    _resendOtpViewState.emit(UiError(message = uiException.getErrorMessage(result.error)))
+                }
+                is AppResult.Success -> {
+                    _resendOtpViewState.emit(UiSuccess)
+                }
+            }
+            resendOtoJob = null
+        }
+    }
+
+    fun verifyOtpRequest() {
         val validationError = otpValidation(otpTextValue)
         if (validationError != null) {
             _uiViewState.update { UiError(message = validationError) }
@@ -53,7 +77,7 @@ class LoginOtpViewModel @Inject constructor(
 
         _uiViewState.update { UiLoading }
         viewModelScope.launch(IO) {
-            when (val result = repository.verifyOtp(mobile.value, otpTextValue)) {
+            when (val result = repository.verifyOtp(mobile, otpTextValue)) {
                 is AppResult.Success -> {
                     _uiViewState.update { UiSuccess }
                 }

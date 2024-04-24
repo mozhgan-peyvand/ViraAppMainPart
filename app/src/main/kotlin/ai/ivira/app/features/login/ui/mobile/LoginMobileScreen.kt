@@ -10,10 +10,13 @@ import ai.ivira.app.features.ava_negar.ui.record.widgets.ClickableTextWithDashUn
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.features.login.ui.LoginScreenRoutes
 import ai.ivira.app.features.login.ui.mobile.LoginMobileBottomSheetType.LoginRequired
+import ai.ivira.app.features.login.ui.otp.LoginTimerState
+import ai.ivira.app.features.login.ui.otp.OtpTimerSharedViewModel
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
@@ -56,6 +59,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -77,6 +81,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -93,6 +98,9 @@ fun LoginMobileRoute(
     navController: NavController,
     fromSplash: Boolean
 ) {
+    val parentEntry = remember(navController.currentBackStackEntry) {
+        navController.getBackStackEntry(LoginScreenRoutes.LoginMobileScreen.route)
+    }
     LoginMobileScreen(
         navigateToOtpScreen = {
             navController.navigate(LoginScreenRoutes.LoginOtpScreen.createRoute(it))
@@ -100,34 +108,45 @@ fun LoginMobileRoute(
         navigateToTermsOfServiceScreen = {
             navController.navigate(HomeScreenRoutes.TermsOfServiceScreen.route)
         },
-        fromSplash = fromSplash
+        fromSplash = fromSplash,
+        mobileViewModel = hiltViewModel(),
+        otpTimerViewModel = hiltViewModel(parentEntry)
     )
 }
 
 @Composable
 private fun LoginMobileScreen(
     fromSplash: Boolean,
+    mobileViewModel: LoginMobileViewModel,
+    otpTimerViewModel: OtpTimerSharedViewModel,
     navigateToOtpScreen: (phoneNumber: String) -> Unit,
-    navigateToTermsOfServiceScreen: () -> Unit,
-    viewModel: LoginMobileViewModel = hiltViewModel()
+    navigateToTermsOfServiceScreen: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
-    val uiState by viewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
-    val isRequestAllowed by viewModel.isRequestAllowed.collectAsStateWithLifecycle(uiState !is UiLoading)
+    val uiState by mobileViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
+    val isRequestAllowed by mobileViewModel.isRequestAllowed.collectAsStateWithLifecycle(uiState !is UiLoading)
 
-    val phoneNumber = viewModel.phoneNumber
+    val phoneNumber = mobileViewModel.phoneNumber
 
     var selectedSheet by rememberSaveable { mutableStateOf(LoginRequired) }
     val sheetState = rememberViraBottomSheetState()
-    val loginRequiredIsShown by viewModel.loginRequiredIsShown
+    val loginRequiredIsShown by mobileViewModel.loginRequiredIsShown
+    val timerState by otpTimerViewModel.timerState.collectAsStateWithLifecycle()
+
+    DisposableEffect(Unit) {
+        otpTimerViewModel.checkTimerFromSharePref()
+        onDispose {
+            otpTimerViewModel.saveTimerToSharePref()
+        }
+    }
 
     LaunchedEffect(loginRequiredIsShown, fromSplash) {
         if (!fromSplash) {
-            viewModel.setLoginRequiredShowed()
+            mobileViewModel.setLoginRequiredShowed()
         } else if (!loginRequiredIsShown) {
             selectedSheet = LoginRequired
             sheetState.show()
@@ -137,12 +156,14 @@ private fun LoginMobileScreen(
     LaunchedEffect(uiState) {
         when (uiState) {
             is UiError -> {
+                // TODO: show snackBar
                 val message = (uiState as? UiError)?.message
                     ?: context.getString(R.string.msg_there_is_a_problem)
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             }
             UiSuccess -> {
                 navigateToOtpScreen(phoneNumber.text.toString())
+                otpTimerViewModel.startTimer()
             }
             UiIdle,
             UiLoading -> {
@@ -153,15 +174,16 @@ private fun LoginMobileScreen(
 
     LoginMobileScreenUI(
         phoneNumber = phoneNumber,
-        isRequestAllowed = isRequestAllowed,
+        isRequestAllowed = (isRequestAllowed) && (timerState !is LoginTimerState.Start),
         isLoading = uiState is UiLoading,
+        timerState = timerState,
         scrollState = scrollState,
         focusRequester = focusRequester,
-        onConfirmClick = viewModel::sendOTP,
+        onConfirmClick = mobileViewModel::sendOTP,
         onTermsOfServiceClick = navigateToTermsOfServiceScreen,
         sheetState = sheetState,
         selectedSheet = selectedSheet,
-        onLoginRequiredConfirmed = viewModel::setLoginRequiredShowed
+        onLoginRequiredConfirmed = mobileViewModel::setLoginRequiredShowed
     )
 }
 
@@ -170,6 +192,7 @@ private fun LoginMobileScreenUI(
     phoneNumber: TextFieldState,
     isRequestAllowed: Boolean,
     isLoading: Boolean,
+    timerState: LoginTimerState,
     scrollState: ScrollState,
     focusRequester: FocusRequester,
     onConfirmClick: () -> Unit,
@@ -217,6 +240,19 @@ private fun LoginMobileScreenUI(
             )
 
             Spacer(modifier = Modifier.weight(1f))
+
+            when (timerState) {
+                is LoginTimerState.Start -> {
+                    TimerContent(
+                        time = buildString {
+                            append(stringResource(id = R.string.lbl_reminding_time))
+                            append("       ")
+                            append(formatDuration(timerState.currentTime))
+                        }
+                    )
+                }
+                else -> {}
+            }
 
             ClickableTextWithDashUnderline(
                 textRes = R.string.msg_terms_and_conditions,
@@ -317,6 +353,24 @@ private fun PhoneNumberTextField(
     }
 }
 
+// Duplicate 2
+@Composable
+private fun TimerContent(time: String) {
+    Text(
+        text = time,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        style = MaterialTheme.typography.body2.copy(
+            fontFamily = FontFamily(
+                Font(ThemeR.font.bahij_helvetica_neue_vira_edition_roman)
+            )
+        ),
+        color = Color_Text_3,
+        textAlign = TextAlign.Center
+    )
+}
+
 private object PhoneNumberTransformation : InputTransformation {
     override val keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
     override fun transformInput(
@@ -397,6 +451,7 @@ private fun LoginMobileScreenPreview() {
             phoneNumber = rememberTextFieldState(),
             isRequestAllowed = false,
             isLoading = false,
+            timerState = LoginTimerState.End,
             scrollState = rememberScrollState(),
             focusRequester = FocusRequester(),
             onConfirmClick = {},
