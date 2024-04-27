@@ -58,6 +58,7 @@ object LocalModule {
             .addMigrations(Migration.migration3_4())
             .addMigrations(Migration.migration4_5())
             .addMigrations(Migration.migration5_6())
+            .addMigrations(Migration.migration6_7())
             .fallbackToDestructiveMigration()
             .build()
     }

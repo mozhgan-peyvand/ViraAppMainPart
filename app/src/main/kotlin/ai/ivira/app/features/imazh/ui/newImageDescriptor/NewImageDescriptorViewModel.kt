@@ -70,6 +70,9 @@ class NewImageDescriptorViewModel @Inject constructor(
 
     val availableStyles = imazhRepository.getImageStyles().flowOn(IO)
 
+    private val _negativePrompt = mutableStateOf("")
+    val negativePrompt: State<String> = _negativePrompt
+
     private val _historyList: MutableState<List<ImazhHistoryView>> = mutableStateOf(listOf())
     val historyList: State<List<ImazhHistoryView>> = _historyList
 
@@ -112,6 +115,7 @@ class NewImageDescriptorViewModel @Inject constructor(
         changePrompt(target.prompt)
         _selectedKeywords.value = keywords
         _selectedStyle.value = target.style
+        setNegativePrompt(target.negativePrompt)
     }
 
     fun doNotShowFirstRunAgain() {
@@ -158,6 +162,16 @@ class NewImageDescriptorViewModel @Inject constructor(
         }
     }
 
+    fun setNegativePrompt(newNegativeWords: String) {
+        if (newNegativeWords.length <= NEGATIVE_PROMPT_CHARACTER_LIMIT) {
+            _negativePrompt.value = newNegativeWords
+        }
+    }
+
+    fun resetNegativePrompt() {
+        _negativePrompt.value = ""
+    }
+
     fun updateKeywordList(set: List<ImazhKeywordView>) {
         eventHandler.specialEvent(ImazhAnalytics.addKeywords)
         _selectedKeywords.value = set
@@ -168,6 +182,7 @@ class NewImageDescriptorViewModel @Inject constructor(
             _uiViewState.update { UiLoading }
             when (val result = imazhRepository.validatePromptAndConvertToImage(
                 prompt.value,
+                negativePrompt.value,
                 selectedKeywords.value.map { it.toImazhKeywordEntity() },
                 selectedStyle.value
             )) {
@@ -200,7 +215,7 @@ class NewImageDescriptorViewModel @Inject constructor(
         backWhileEditing: () -> Unit,
         backWhileGenerating: () -> Unit
     ) {
-        val isScreenEmpty = _prompt.value.isEmpty() &&
+        val isScreenEmpty = _prompt.value.isEmpty() && _negativePrompt.value.isEmpty() &&
             _selectedStyle.value == ImazhImageStyle.None && _selectedKeywords.value.isEmpty()
 
         if (_uiViewState.value == UiLoading) {
@@ -220,5 +235,6 @@ class NewImageDescriptorViewModel @Inject constructor(
 
     companion object {
         const val PROMPT_CHARACTER_LIMIT = 500
+        const val NEGATIVE_PROMPT_CHARACTER_LIMIT = 300
     }
 }

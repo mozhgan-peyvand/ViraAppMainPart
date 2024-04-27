@@ -54,11 +54,13 @@ class ImazhRepository @Inject constructor(
     fun getRecentHistory(): Flow<List<ImazhHistoryEntity>> = localDataSource.getRecentHistory()
     suspend fun validatePromptAndConvertToImage(
         prompt: String,
+        negativePrompt: String,
         keywords: List<ImazhKeywordEntity>,
         style: ImazhImageStyle
     ): AppResult<Boolean> {
         return when (val validateResult = validateAndTranslatePrompt(
             prompt = prompt,
+            negativePrompt = negativePrompt,
             style = retrieveStyleKey(style)
         )) {
             is AppResult.Error -> {
@@ -70,6 +72,8 @@ class ImazhRepository @Inject constructor(
                         convertTextToImage(
                             prompt = prompt,
                             englishPrompt = englishPrompt,
+                            negativePrompt = negativePrompt,
+                            englishNegativePrompt = englishNegativePrompt,
                             englishKeywords = keywords.map { it.englishKeyword },
                             keywordsNames = keywords.map { it.keywordName },
                             style = englishStyle
@@ -97,6 +101,8 @@ class ImazhRepository @Inject constructor(
             val result = convertTextToImage(
                 prompt = item.prompt,
                 englishPrompt = item.englishPrompt,
+                negativePrompt = item.negativePrompt,
+                englishNegativePrompt = item.englishNegativePrompt,
                 keywordsNames = item.keywords,
                 englishKeywords = item.englishKeywords,
                 style = item.style
@@ -110,6 +116,8 @@ class ImazhRepository @Inject constructor(
     private suspend fun convertTextToImage(
         prompt: String,
         englishPrompt: String,
+        negativePrompt: String,
+        englishNegativePrompt: String,
         englishKeywords: List<String>,
         keywordsNames: List<String>,
         style: String
@@ -120,6 +128,7 @@ class ImazhRepository @Inject constructor(
         val result = remoteDataSource.sendTextToImage(
             TextToImageRequestNetwork(
                 prompt = englishPrompt.attachListItemToString(englishKeywords),
+                negativePrompt = englishNegativePrompt,
                 style = style
             )
         ).toAppResult()
@@ -134,6 +143,8 @@ class ImazhRepository @Inject constructor(
                         englishKeywords = englishKeywords,
                         prompt = prompt,
                         englishPrompt = englishPrompt,
+                        negativePrompt = negativePrompt,
+                        englishNegativePrompt = englishNegativePrompt,
                         style = style,
                         insertAt = TrackTime(
                             systemTime = PersianDate().time,
@@ -176,6 +187,7 @@ class ImazhRepository @Inject constructor(
 
     private suspend fun validateAndTranslatePrompt(
         prompt: String,
+        negativePrompt: String,
         style: String
     ): AppResult<NFSWResultNetwork> {
         if (!networkHandler.hasNetworkConnection()) {
@@ -185,6 +197,7 @@ class ImazhRepository @Inject constructor(
         return when (val validateResult = remoteDataSource.validateAndTranslatePrompt(
             promptData = ValidateRequestNetwork(
                 data = prompt,
+                negativePrompt = negativePrompt,
                 style = style,
                 onlineTranslation = true
             )

@@ -402,6 +402,16 @@ private fun ImazhNewImageDescriptorScreen(
                     },
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
+
+                NegativePrompt(
+                    negativePrompt = viewModel.negativePrompt.value,
+                    onNegativePromptChange = viewModel::setNegativePrompt,
+                    resetNegativePrompt = viewModel::resetNegativePrompt,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 16.dp),
+                    tooltipHelper = tooltipHelper
+                )
             }
 
             if (!isKeyboardVisible) {
@@ -916,6 +926,101 @@ private fun Style(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun NegativePrompt(
+    negativePrompt: String,
+    onNegativePromptChange: (String) -> Unit,
+    resetNegativePrompt: () -> Unit,
+    tooltipHelper: TooltipHelper,
+    modifier: Modifier = Modifier
+) {
+    var expandState by rememberSaveable { mutableStateOf(ExpandState.Collapsed) }
+    val coroutineScope = rememberCoroutineScope()
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Header(
+            title = R.string.lbl_negative_prompt,
+            hasExpandButton = true,
+            expandState = expandState,
+            expandable = true,
+            onExpandClick = { expandState = it.toggleState() },
+            hasInfo = true,
+            setupInfoTooltip = {
+                coroutineScope.launch {
+                    tooltipHelper.setupSingleTooltipRunner(ImazhTooltip.NegativePrompt, null)
+                }
+            },
+            onTooltipDismiss = { coroutineScope.launch { tooltipHelper.next() } },
+            showInfoTooltip = tooltipHelper.getTooltipStateByKey(ImazhTooltip.NegativePrompt)?.value
+                ?: false,
+            infoTooltipMessage = R.string.msg_firs_run_negative_prompt
+        )
+
+        AnimatableContent(
+            isVisible = expandState == ExpandState.Expanded,
+            content = {
+                NegativePromptInputText(
+                    text = negativePrompt,
+                    onTextChange = onNegativePromptChange,
+                    resetText = resetNegativePrompt,
+                    charLimit = NewImageDescriptorViewModel.NEGATIVE_PROMPT_CHARACTER_LIMIT
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun NegativePromptInputText(
+    text: String,
+    onTextChange: (String) -> Unit,
+    resetText: () -> Unit,
+    modifier: Modifier = Modifier,
+    charLimit: Int? = null
+) {
+    val focusRequester = remember { FocusRequester() }
+
+    Column(
+        modifier = modifier
+            .border(
+                width = 1.dp,
+                color = Color_Border,
+                shape = RoundedCornerShape(4.dp)
+            )
+    ) {
+        InputTextSection(
+            text = text,
+            placeHolder = stringResource(id = R.string.lbl_imazh_negative_prompt_placeholder),
+            focusRequester = focusRequester,
+            onTextChange = onTextChange
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ClearTextIcon(
+                enabled = text.isNotBlank(),
+                clear = resetText
+            )
+
+            charLimit?.let {
+                Text(
+                    text = buildString {
+                        append(text.length)
+                        append("/")
+                        append(it.toString())
+                    },
+                    style = MaterialTheme.typography.caption
+                )
+            }
+        }
     }
 }
 
