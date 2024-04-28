@@ -54,7 +54,7 @@ class ViraGoogleSmsRetriever @Inject constructor(
                     continuation.resumeWith(Result.success(true))
                 }
                 .addOnFailureListener {
-                    continuation.resumeWith(Result.failure(it))
+                    continuation.resumeWith(Result.success(false))
                 }
         }
     }
