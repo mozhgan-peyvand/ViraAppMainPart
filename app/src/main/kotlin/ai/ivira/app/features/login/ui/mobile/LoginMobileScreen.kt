@@ -98,9 +98,8 @@ fun LoginMobileRoute(
     navController: NavController,
     fromSplash: Boolean
 ) {
-    val parentEntry = remember(navController.currentBackStackEntry) {
-        navController.getBackStackEntry(LoginScreenRoutes.LoginMobileScreen.route)
-    }
+    // we need the current to not be empty
+    val parentEntry = navController.currentBackStackEntry!!
     LoginMobileScreen(
         navigateToOtpScreen = {
             navController.navigate(LoginScreenRoutes.LoginOtpScreen.createRoute(it))

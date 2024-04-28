@@ -24,6 +24,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -80,22 +81,29 @@ fun LoginOtpRoute(
     navController: NavController,
     mobile: String
 ) {
+    // upon navigating to home, recomposition which is caused by jetpack navigation's
+    // animation causes getBackStackEntry to throw exception (cause mobile is removed from stack)
+    // so we check if that screen is actually in stack
     val parentEntry = remember(navController.currentBackStackEntry) {
-        navController.getBackStackEntry(LoginScreenRoutes.LoginMobileScreen.route)
+        runCatching {
+            navController.getBackStackEntry(LoginScreenRoutes.LoginMobileScreen.route)
+        }.getOrNull()
     }
-    LoginOtpScreen(
-        navigateToHomeScreen = {
-            navController.navigate(
-                route = HomeScreenRoutes.Home.createRoute()
-            ) {
-                popUpTo(route = LoginScreenRoutes.LoginMobileScreen.route) { inclusive = true }
-            }
-        },
-        navigateToMobileScreen = { navController.navigateUp() },
-        mobile = mobile,
-        otpViewModel = hiltViewModel(),
-        otpTimerViewModel = hiltViewModel(parentEntry)
-    )
+    if (parentEntry != null) {
+        LoginOtpScreen(
+            navigateToHomeScreen = {
+                navController.navigate(route = HomeScreenRoutes.Home.createRoute()) {
+                    popUpTo(route = LoginScreenRoutes.LoginMobileScreen.route) { inclusive = true }
+                }
+            },
+            navigateToMobileScreen = { navController.navigateUp() },
+            mobile = mobile,
+            otpViewModel = hiltViewModel(),
+            otpTimerViewModel = hiltViewModel(parentEntry)
+        )
+    } else {
+        Box(modifier = Modifier.fillMaxSize())
+    }
 }
 
 @Composable
@@ -421,7 +429,7 @@ private fun OtpCodeSection(
     isError: Boolean,
     onOtpChange: (String) -> Unit,
     focusRequester: FocusRequester,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier,
