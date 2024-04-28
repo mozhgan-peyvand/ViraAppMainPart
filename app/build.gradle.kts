@@ -310,5 +310,9 @@ dependencies {
     // Balloon
     implementation(libs.ballonCompose)
 
+    // google play service
+    implementation(libs.googlePlayServiceAuth)
+    implementation(libs.googlePlayServiceAuthApiPhone)
+
     implementation(libs.coilCompose)
 }

@@ -7,6 +7,7 @@ import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.sms_retriever.ViraGoogleSmsRetriever
 import androidx.compose.foundation.text2.input.TextFieldState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginMobileViewModel @Inject constructor(
     private val repository: LoginRepository,
-    private val uiException: UiException
+    private val uiException: UiException,
+    private val viraGoogleSmsRetriever: ViraGoogleSmsRetriever
 ) : ViewModel() {
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState = _uiViewState.asSharedFlow()
@@ -57,7 +59,11 @@ class LoginMobileViewModel @Inject constructor(
                 )
                 return@launch
             }
+
             _uiViewState.emit(UiLoading)
+
+            viraGoogleSmsRetriever.startService()
+
             viewModelScope.launch(IO) {
                 when (
                     val result = repository.sendOtp(phoneNumber = phoneNumber.text.toString())
@@ -75,5 +81,10 @@ class LoginMobileViewModel @Inject constructor(
         phoneNumber.text.apply {
             return !(isBlank() || length != 11 || !startsWith("09"))
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        viraGoogleSmsRetriever.stopService()
     }
 }

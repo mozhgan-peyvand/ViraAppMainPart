@@ -9,6 +9,7 @@ import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.sms_retriever.ViraGoogleSmsRetriever
 import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +33,7 @@ class LoginOtpViewModel @Inject constructor(
     private val repository: LoginRepository,
     private val uiException: UiException,
     private val application: Application,
+    private val viraGoogleSmsRetriever: ViraGoogleSmsRetriever,
     savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application) {
     val mobile = savedStateHandle.get<String>("mobile").orEmpty()
@@ -47,6 +49,21 @@ class LoginOtpViewModel @Inject constructor(
     var otpTextValue by mutableStateOf("")
         private set
 
+    init {
+        viewModelScope.launch {
+            viraGoogleSmsRetriever.smsResult.collect { smsResult ->
+                when (smsResult) {
+                    is ViraGoogleSmsRetriever.SmsResult.Message -> {
+                        otpTextValue = smsResult.code
+                    }
+                    is ViraGoogleSmsRetriever.SmsResult.ConsentIntent -> {
+                        // TODO Implement it
+                    }
+                }
+            }
+        }
+    }
+
     fun changeOtp(value: String) {
         otpTextValue = value.filter { it.isDigit() }
             .take(5)
@@ -56,6 +73,9 @@ class LoginOtpViewModel @Inject constructor(
         if (resendOtoJob != null) return
         resendOtoJob = viewModelScope.launch {
             _resendOtpViewState.emit(UiLoading)
+
+            viraGoogleSmsRetriever.startService()
+
             when (val result = repository.sendOtp(mobile)) {
                 is AppResult.Error -> {
                     _resendOtpViewState.emit(UiError(message = uiException.getErrorMessage(result.error)))
@@ -76,6 +96,7 @@ class LoginOtpViewModel @Inject constructor(
         }
 
         _uiViewState.update { UiLoading }
+
         viewModelScope.launch(IO) {
             when (val result = repository.verifyOtp(mobile, otpTextValue)) {
                 is AppResult.Success -> {
@@ -102,5 +123,10 @@ class LoginOtpViewModel @Inject constructor(
 
     fun clearUiState() {
         _uiViewState.value = UiIdle
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        viraGoogleSmsRetriever.stopService()
     }
 }

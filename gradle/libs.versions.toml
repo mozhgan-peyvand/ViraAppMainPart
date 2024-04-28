@@ -22,6 +22,8 @@ firebaseCrashlyticsPlugin = "2.9.6"
 firebaseMessaging = "23.3.1"
 gifDrawable = "1.2.28"
 googleServices = "4.4.1"
+googlePlayServiceAuth = "21.1.0"
+googlePlayServiceAuthApiPhone = "18.0.2"
 hilt = "2.51.1"
 hiltNavigationCompose = "1.2.0"
 iTextPdf = "5.5.13.3"
@@ -94,6 +96,8 @@ savedState = { module = "androidx.savedstate:savedstate", version.ref = "savedSt
 sentryAndroid = { module = "io.sentry:sentry-android", version.ref = "sentry" }
 snapper = { module = "dev.chrisbanes.snapper:snapper", version.ref = "snapper" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+googlePlayServiceAuth = { module = "com.google.android.gms:play-services-auth", version.ref = "googlePlayServiceAuth" }
+googlePlayServiceAuthApiPhone = { module = "com.google.android.gms:play-services-auth-api-phone", version.ref = "googlePlayServiceAuthApiPhone" }
 
 [plugins]
 
