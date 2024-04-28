@@ -66,7 +66,7 @@ class LoginOtpViewModel @Inject constructor(
 
     fun changeOtp(value: String) {
         otpTextValue = value.filter { it.isDigit() }
-            .take(5)
+            .take(OTP_SIZE)
     }
 
     fun resendOtp() {
@@ -128,5 +128,9 @@ class LoginOtpViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         viraGoogleSmsRetriever.stopService()
+    }
+
+    companion object {
+        const val OTP_SIZE = 5
     }
 }

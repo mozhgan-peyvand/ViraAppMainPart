@@ -12,19 +12,17 @@ import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
-import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
 import ai.ivira.app.utils.ui.theme.Color_Text_1
-import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
+import ai.ivira.app.utils.ui.widgets.OtpCodeTextField
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -38,8 +36,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -60,8 +56,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -70,7 +64,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -273,10 +266,12 @@ private fun LoginOtpScreenUI(
                 }
             }
             Spacer(modifier = Modifier.height(42.dp))
-            OtpTextField(
+            OtpCodeSection(
                 otp = otpCodeTextValue,
                 onOtpChange = { otpCodeOnTextChange(it) },
-                focusRequester = focusRequester
+                focusRequester = focusRequester,
+                isError = false, // TODO: Add isError logic
+                modifier = Modifier.fillMaxWidth()
             )
 
             when (timerState) {
@@ -421,40 +416,32 @@ private fun ConfirmButton(
 }
 
 @Composable
-private fun OtpTextField(
+private fun OtpCodeSection(
     otp: String,
+    isError: Boolean,
     onOtpChange: (String) -> Unit,
     focusRequester: FocusRequester,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Color_Card, RoundedCornerShape(12.dp))
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalAlignment = Alignment.Start,
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = stringResource(id = R.string.lbl_otp_enter_code),
-            color = Color_Text_3,
-            style = MaterialTheme.typography.caption
+            color = Color_Text_1,
+            style = MaterialTheme.typography.body1
         )
-        BasicTextField(
-            value = otp,
-            singleLine = true,
-            onValueChange = onOtpChange,
-            cursorBrush = SolidColor(MaterialTheme.colors.primary),
-            textStyle = MaterialTheme.typography.body1.copy(
-                color = Color_Text_2,
-                fontFamily = FontFamily(
-                    Font(ThemeR.font.bahij_helvetica_neue_vira_edition_roman)
-                )
-            ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(focusRequester)
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OtpCodeTextField(
+            otp = otp,
+            isError = isError,
+            onOtpChange = onOtpChange,
+            focusRequester = focusRequester,
+            otpSize = LoginOtpViewModel.OTP_SIZE
         )
     }
 }
