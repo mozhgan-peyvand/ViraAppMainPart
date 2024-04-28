@@ -1,8 +1,11 @@
 package ai.ivira.app.utils.ui.widgets
 
+import ai.ivira.app.utils.common.orFalse
 import ai.ivira.app.utils.ui.theme.Color_On_Surface_Variant
+import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Cyan_200
+import android.view.ViewTreeObserver
 import androidx.annotation.IntRange
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -17,13 +20,18 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,6 +40,8 @@ import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Composable
@@ -60,6 +70,14 @@ fun OtpCodeTextField(
                         min((maxWidth - sumOfItemSpaces) / otpSize.toFloat(), 40.dp)
                     }
 
+                    // Fixme: Get isFocused using interactionSource
+                    var isFocused by remember { mutableStateOf(false) }
+                    KeyboardVisibility(
+                        onVisibilityChanged = { isKeyboardVisible ->
+                            isFocused = isKeyboardVisible
+                        }
+                    )
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(itemSpaceUnit.dp)
@@ -69,10 +87,14 @@ fun OtpCodeTextField(
                                 index >= otp.length -> ""
                                 else -> otp[index].toString()
                             }
-                            val textColor = if (isError) {
+                            val borderColor = if (isError) {
                                 Color_Red
+                            } else if (!isFocused) {
+                                Color_On_Surface_Variant
                             } else if (char.isNotBlank()) {
                                 Cyan_200
+                            } else if (otp.length >= index) {
+                                Color_Primary
                             } else {
                                 Color_On_Surface_Variant
                             }
@@ -91,7 +113,7 @@ fun OtpCodeTextField(
                                     .size(boxWidth)
                                     .border(
                                         width = 1.dp,
-                                        color = textColor,
+                                        color = borderColor,
                                         shape = RoundedCornerShape((maxOf(16 - otpSize, 0)).dp)
                                     )
                             )
@@ -105,4 +127,24 @@ fun OtpCodeTextField(
             .fillMaxWidth()
             .focusRequester(focusRequester)
     )
+}
+
+@Composable
+private fun KeyboardVisibility(onVisibilityChanged: (isVisible: Boolean) -> Unit) {
+    val view = LocalView.current
+    DisposableEffect(Unit) {
+        val listener = ViewTreeObserver.OnPreDrawListener {
+            val insets = ViewCompat.getRootWindowInsets(view)
+
+            onVisibilityChanged(insets?.isVisible(WindowInsetsCompat.Type.ime()).orFalse())
+
+            true
+        }
+
+        view.viewTreeObserver.addOnPreDrawListener(listener)
+
+        onDispose {
+            view.viewTreeObserver.removeOnPreDrawListener(listener)
+        }
+    }
 }

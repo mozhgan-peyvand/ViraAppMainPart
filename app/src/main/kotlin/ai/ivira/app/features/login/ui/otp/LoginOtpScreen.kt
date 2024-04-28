@@ -13,27 +13,34 @@ import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Primary
-import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
+import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Text_1
-import ai.ivira.app.utils.ui.theme.Color_Text_3
+import ai.ivira.app.utils.ui.theme.Color_White
+import ai.ivira.app.utils.ui.theme.Cyan_200
+import ai.ivira.app.utils.ui.widgets.HorizontalLoadingCircles
 import ai.ivira.app.utils.ui.widgets.OtpCodeTextField
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,6 +63,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -65,15 +73,12 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.rememberLottieComposition
 import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Composable
@@ -89,6 +94,7 @@ fun LoginOtpRoute(
             navController.getBackStackEntry(LoginScreenRoutes.LoginMobileScreen.route)
         }.getOrNull()
     }
+
     if (parentEntry != null) {
         LoginOtpScreen(
             navigateToHomeScreen = {
@@ -121,6 +127,7 @@ private fun LoginOtpScreen(
     val resendOtpViewState by otpViewModel.resendOtpViewState.collectAsStateWithLifecycle(
         initialValue = UiIdle
     )
+    val otpIsInvalid by otpViewModel.otpIsInvalid
     val timerState by otpTimerViewModel.timerState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val focusRequester = remember { FocusRequester() }
@@ -177,6 +184,7 @@ private fun LoginOtpScreen(
         otpCodeTextValue = otpViewModel.otpTextValue,
         mobile = mobile,
         isLoading = uiState is UiLoading,
+        otpIsInvalid = otpIsInvalid,
         resendOtpViewState = resendOtpViewState,
         timerState = timerState,
         scrollState = scrollState,
@@ -196,6 +204,7 @@ private fun LoginOtpScreenUI(
     mobile: String,
     focusRequester: FocusRequester,
     isLoading: Boolean,
+    otpIsInvalid: Boolean,
     resendOtpViewState: UiStatus,
     timerState: LoginTimerState,
     scrollState: ScrollState,
@@ -203,222 +212,211 @@ private fun LoginOtpScreenUI(
     verifyOtpButtonClick: () -> Unit,
     changMobileAction: () -> Unit,
     sendOtpAgainAction: () -> Unit,
-    scaffoldState: ScaffoldState,
-    modifier: Modifier = Modifier
+    scaffoldState: ScaffoldState
 ) {
     Scaffold(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp),
+        modifier = Modifier.fillMaxSize(),
         scaffoldState = scaffoldState
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(scrollState),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 20.dp)
         ) {
-            ViraImage(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth()
-                    .padding(top = 44.dp),
-                drawable = R.drawable.ic_app_logo_name_linear,
-                contentDescription = null
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(id = R.string.lbl_otp_status),
-                style = MaterialTheme.typography.body1, color = Color_Text_1,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Row(
-                modifier = modifier,
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .weight(1f)
+                    .verticalScroll(scrollState)
             ) {
-                Text(
-                    text = mobile,
-                    style = MaterialTheme.typography.subtitle1,
-                    color = Color_Text_1,
-                    modifier = Modifier.padding(end = 15.dp)
+                Spacer(modifier = Modifier.height(44.dp))
+
+                ViraImage(
+                    drawable = R.drawable.ic_app_logo_name_linear,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth()
                 )
-                Button(
-                    onClick = {
-                        safeClick {
-                            changMobileAction()
-                        }
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = Color_Primary_Opacity_15,
-                        contentColor = Color_Primary_200
-                    )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Text(
+                    text = stringResource(id = R.string.lbl_otp_status),
+                    style = MaterialTheme.typography.body1,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        modifier = modifier,
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        ViraIcon(
-                            drawable = R.drawable.ic_edit,
-                            contentDescription = null,
-                            modifier = Modifier.padding(end = 15.dp)
+                    Text(
+                        text = mobile,
+                        style = MaterialTheme.typography.subtitle1.copy(
+                            fontFamily = FontFamily(Font(ThemeR.font.bahij_helvetica_neue_vira_edition_roman)),
+                            fontWeight = FontWeight(600)
                         )
-                        Text(
-                            text = stringResource(id = R.string.lbl_modification),
-                            style = MaterialTheme.typography.subtitle1
-                        )
-                    }
+                    )
+
+                    Spacer(modifier = Modifier.width(15.dp))
+
+                    SectionActionButton(
+                        stringRes = R.string.lbl_modification,
+                        iconRes = R.drawable.ic_edit,
+                        action = changMobileAction
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OtpCodeSection(
+                    otp = otpCodeTextValue,
+                    onOtpChange = { otpCodeOnTextChange(it) },
+                    focusRequester = focusRequester,
+                    isError = otpIsInvalid,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (timerState == LoginTimerState.End) {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TryAgainForOtpButton(
+                        isLoading = resendOtpViewState is UiLoading,
+                        tryAgainAction = sendOtpAgainAction,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth()
+                    )
                 }
             }
-            Spacer(modifier = Modifier.height(42.dp))
-            OtpCodeSection(
-                otp = otpCodeTextValue,
-                onOtpChange = { otpCodeOnTextChange(it) },
-                focusRequester = focusRequester,
-                isError = false, // TODO: Add isError logic
-                modifier = Modifier.fillMaxWidth()
-            )
 
-            when (timerState) {
-                is LoginTimerState.Start -> {
-                    Spacer(modifier = Modifier.weight(1f))
-                    TimerContent(
-                        time = buildString {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                if (timerState is LoginTimerState.Start) {
+                    Text(
+                        text = buildString {
                             append(stringResource(id = R.string.lbl_reminding_time))
                             append("       ")
                             append(formatDuration(timerState.currentTime))
-                        }
+                        },
+                        style = MaterialTheme.typography.body2.copy(
+                            fontFamily = FontFamily(
+                                Font(ThemeR.font.bahij_helvetica_neue_vira_edition_roman)
+                            )
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth()
                     )
+
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-                LoginTimerState.End -> {
-                    TryAgainForOtpButton(
-                        isLoading = resendOtpViewState is UiLoading,
-                        sendOtpAgainAction = sendOtpAgainAction
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-                LoginTimerState.NotStart -> {}
+
+                ConfirmButton(
+                    isLoading = isLoading,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = verifyOtpButtonClick
+                )
             }
-            ConfirmButton(
-                isLoading = isLoading,
-                modifier = Modifier
-                    .fillMaxWidth(),
-                onClick = verifyOtpButtonClick
-            )
         }
     }
 }
 
-// Duplicate 1
+// Duplicate 2
 @Composable
-private fun TimerContent(time: String, modifier: Modifier = Modifier) {
-    Text(
-        text = time,
-        style = MaterialTheme.typography.body2.copy(
-            fontFamily = FontFamily(
-                Font(ThemeR.font.bahij_helvetica_neue_vira_edition_roman)
-            )
-        ),
-        color = Color_Text_3,
-        textAlign = TextAlign.Center,
+private fun SectionActionButton(
+    @StringRes stringRes: Int,
+    @DrawableRes iconRes: Int,
+    action: () -> Unit,
+    modifier: Modifier = Modifier,
+    verticalPadding: Dp = 8.dp,
+    horizontalPadding: Dp = 0.dp
+) {
+    Row(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(bottom = 26.dp)
-    )
+            .sizeIn(minWidth = 80.dp, minHeight = 32.dp)
+            .clip(shape = RoundedCornerShape(8.dp))
+            .background(color = Color_Primary_Opacity_15)
+            .clickable {
+                safeClick(event = action)
+            }
+            .padding(vertical = verticalPadding, horizontal = horizontalPadding)
+            .padding(start = 8.dp, end = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        ViraIcon(
+            drawable = iconRes,
+            tint = Cyan_200,
+            contentDescription = null
+        )
+
+        Text(
+            text = stringResource(id = stringRes),
+            style = MaterialTheme.typography.overline.copy(color = Cyan_200)
+        )
+    }
 }
 
 @Composable
 private fun TryAgainForOtpButton(
     isLoading: Boolean,
-    sendOtpAgainAction: () -> Unit
-) {
-    val density = LocalDensity.current
-    var lottieHeight by rememberSaveable { mutableIntStateOf(0) }
-
-    Button(
-        modifier = Modifier
-            .padding(top = 15.dp, start = 22.dp, end = 22.dp)
-            .defaultMinSize(minHeight = 36.dp),
-        contentPadding = PaddingValues(vertical = 14.dp),
-        onClick = { if (!isLoading) safeClick { sendOtpAgainAction() } },
-        shape = RoundedCornerShape(8.dp),
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = Color_Primary_Opacity_15,
-            contentColor = Color_Primary_200
-        )
-    ) {
-        if (isLoading) {
-            LoadingLottie(
-                modifier = Modifier.height(with(density) { lottieHeight.toDp() })
-            )
-        } else {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 9.dp)
-                    .onGloballyPositioned {
-                        lottieHeight = it.size.height
-                    },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                ViraIcon(
-                    drawable = R.drawable.ic_retry,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 10.dp)
-                )
-                Text(
-                    text = stringResource(id = R.string.lbl_otp_send_again),
-                    style = MaterialTheme.typography.overline,
-                    color = Color_Primary_200
-                )
-            }
-        }
-    }
-}
-
-// Duplicate 3
-@Composable
-private fun ConfirmButton(
-    onClick: () -> Unit,
-    isLoading: Boolean,
+    tryAgainAction: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
-    var lottieHeight by rememberSaveable { mutableIntStateOf(0) }
+    var loadingHeight by rememberSaveable { mutableIntStateOf(0) }
+    var loadingWidth by rememberSaveable { mutableIntStateOf(0) }
 
-    Button(
-        contentPadding = PaddingValues(vertical = 14.dp),
-        onClick = {
-            safeClick(event = onClick)
-        },
-        colors = ButtonDefaults.buttonColors(
-            disabledBackgroundColor = if (!isLoading) {
-                MaterialTheme.colors.onSurface
-                    .copy(alpha = 0.12f)
-                    .compositeOver(MaterialTheme.colors.surface)
-            } else {
-                Color_Primary
-            }
-        ),
-        modifier = modifier.padding(bottom = 20.dp)
-    ) {
-        if (isLoading) {
-            LoadingLottie(
-                modifier = Modifier.height(with(density) { lottieHeight.toDp() })
-            )
-        } else {
-            Text(
-                text = stringResource(id = R.string.lbl_accept),
-                style = MaterialTheme.typography.button,
-                color = Color_Text_1,
-                modifier = Modifier.onGloballyPositioned {
-                    lottieHeight = it.size.height
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .sizeIn(minWidth = 80.dp, minHeight = 40.dp)
+            .clip(shape = RoundedCornerShape(8.dp))
+            .background(color = Color_Primary_Opacity_15)
+            .clickable(
+                enabled = !isLoading,
+                onClick = {
+                    safeClick(event = tryAgainAction)
                 }
             )
+            .padding(vertical = 10.dp, horizontal = 70.dp)
+    ) {
+        if (isLoading) {
+            HorizontalLoadingCircles(
+                radius = 8,
+                count = 3,
+                padding = 15,
+                color = Cyan_200,
+                modifier = Modifier
+                    .height(with(density) { loadingHeight.toDp() })
+                    .width(with(density) { loadingWidth.toDp() })
+            )
+        } else {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.onGloballyPositioned {
+                    loadingHeight = it.size.height
+                    loadingWidth = it.size.width
+                }
+            ) {
+                ViraIcon(
+                    drawable = R.drawable.ic_retry,
+                    tint = Cyan_200,
+                    contentDescription = null
+                )
+
+                Text(
+                    text = stringResource(id = R.string.lbl_otp_send_again),
+                    style = MaterialTheme.typography.overline.copy(color = Cyan_200)
+                )
+            }
         }
     }
 }
@@ -451,22 +449,63 @@ private fun OtpCodeSection(
             focusRequester = focusRequester,
             otpSize = LoginOtpViewModel.OTP_SIZE
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (isError) {
+            Text(
+                text = stringResource(id = R.string.msg_otp_code_error),
+                color = Color_Red,
+                style = MaterialTheme.typography.body1
+            )
+        }
     }
 }
 
-// Duplicate 2
 @Composable
-private fun LoadingLottie(
+private fun ConfirmButton(
+    onClick: () -> Unit,
+    isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val composition by rememberLottieComposition(
-        spec = LottieCompositionSpec.RawRes(resId = R.raw.lottie_loading_2)
-    )
-    LottieAnimation(
-        composition = composition,
-        iterations = LottieConstants.IterateForever,
-        modifier = modifier
-    )
+    val density = LocalDensity.current
+    var loading by rememberSaveable { mutableIntStateOf(0) }
+
+    Button(
+        contentPadding = PaddingValues(vertical = 14.dp),
+        onClick = {
+            safeClick(event = onClick)
+        },
+        colors = ButtonDefaults.buttonColors(
+            disabledBackgroundColor = if (!isLoading) {
+                MaterialTheme.colors.onSurface
+                    .copy(alpha = 0.12f)
+                    .compositeOver(MaterialTheme.colors.surface)
+            } else {
+                Color_Primary
+            }
+        ),
+        modifier = modifier.padding(bottom = 20.dp)
+    ) {
+        if (isLoading) {
+            HorizontalLoadingCircles(
+                radius = 8,
+                count = 3,
+                padding = 15,
+                color = Color_White,
+                modifier = Modifier.height(with(density) { loading.toDp() })
+            )
+        } else {
+            Text(
+                text = stringResource(id = R.string.lbl_accept),
+                style = MaterialTheme.typography.button,
+                color = Color_Text_1,
+                modifier = Modifier.onGloballyPositioned {
+                    loading = it.size.height
+                }
+            )
+        }
+    }
 }
 
 @ViraDarkPreview
@@ -485,7 +524,8 @@ private fun LoginOtpScreenPreview() {
             otpCodeOnTextChange = {},
             verifyOtpButtonClick = {},
             changMobileAction = {},
-            scaffoldState = rememberScaffoldState()
+            scaffoldState = rememberScaffoldState(),
+            otpIsInvalid = false
         )
     }
 }

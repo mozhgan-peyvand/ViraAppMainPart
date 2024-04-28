@@ -1194,6 +1194,7 @@ private enum class ExpandState {
     }
 }
 
+// Duplicate 1
 @Composable
 private fun SectionActionButton(
     @StringRes stringRes: Int,

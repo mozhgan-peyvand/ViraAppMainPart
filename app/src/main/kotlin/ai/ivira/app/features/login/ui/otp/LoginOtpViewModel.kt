@@ -2,7 +2,9 @@ package ai.ivira.app.features.login.ui.otp
 
 import ai.ivira.app.R
 import ai.ivira.app.features.login.data.LoginRepository
+import ai.ivira.app.utils.data.api_result.AppException
 import ai.ivira.app.utils.data.api_result.AppResult
+import ai.ivira.app.utils.ui.ApiErrorCodes
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
 import ai.ivira.app.utils.ui.UiIdle
@@ -11,6 +13,7 @@ import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.sms_retriever.ViraGoogleSmsRetriever
 import android.app.Application
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -46,6 +49,9 @@ class LoginOtpViewModel @Inject constructor(
 
     private var resendOtoJob: Job? = null
 
+    private val _otpIsInvalid = mutableStateOf(false)
+    val otpIsInvalid: State<Boolean> = _otpIsInvalid
+
     var otpTextValue by mutableStateOf("")
         private set
 
@@ -65,8 +71,11 @@ class LoginOtpViewModel @Inject constructor(
     }
 
     fun changeOtp(value: String) {
-        otpTextValue = value.filter { it.isDigit() }
-            .take(OTP_SIZE)
+        val newValue = value.filter { it.isDigit() }.take(OTP_SIZE)
+        if (newValue != otpTextValue) {
+            _otpIsInvalid.value = false
+        }
+        otpTextValue = newValue
     }
 
     fun resendOtp() {
@@ -88,6 +97,14 @@ class LoginOtpViewModel @Inject constructor(
         }
     }
 
+    private fun checkInvalidOtpError(exception: AppException) {
+        if (exception is AppException.RemoteDataSourceException &&
+            exception.body == ApiErrorCodes.InvalidOtp.value
+        ) {
+            _otpIsInvalid.value = true
+        }
+    }
+
     fun verifyOtpRequest() {
         val validationError = otpValidation(otpTextValue)
         if (validationError != null) {
@@ -103,8 +120,12 @@ class LoginOtpViewModel @Inject constructor(
                     _uiViewState.update { UiSuccess }
                 }
                 is AppResult.Error -> {
+                    checkInvalidOtpError(result.error)
                     _uiViewState.update {
-                        UiError(message = uiException.getErrorMessage(result.error))
+                        UiError(
+                            message = uiException.getErrorMessage(result.error),
+                            isSnack = !_otpIsInvalid.value
+                        )
                     }
                 }
             }

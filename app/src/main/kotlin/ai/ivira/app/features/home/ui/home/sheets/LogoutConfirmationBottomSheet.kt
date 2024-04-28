@@ -10,15 +10,7 @@ import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
 import ai.ivira.app.utils.ui.theme.Color_Red_Opacity_15
-import androidx.compose.animation.core.InfiniteRepeatableSpec
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.StartOffset
-import androidx.compose.animation.core.StartOffsetType
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.BoxWithConstraints
+import ai.ivira.app.utils.ui.widgets.HorizontalLoadingCircles
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -30,23 +22,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -187,70 +171,6 @@ private fun PartiallyBoldText(
         },
         modifier = modifier
     )
-}
-
-@Suppress("SameParameterValue")
-@Composable
-private fun HorizontalLoadingCircles(
-    radius: Int,
-    count: Int,
-    padding: Int,
-    modifier: Modifier = Modifier,
-    color: Color = contentColorFor(backgroundColor = LocalContentColor.current)
-) {
-    val transition = rememberInfiniteTransition(label = "transition")
-    val offsetList = remember { mutableListOf<State<Float>>() }
-    val baseDelay = 200
-
-    if (offsetList.isEmpty()) {
-        for (i in 0 until count) {
-            offsetList.add(
-                transition.animateFloat(
-                    initialValue = 0f,
-                    targetValue = radius.toFloat(),
-                    animationSpec = InfiniteRepeatableSpec(
-                        animation = tween(count * baseDelay),
-                        repeatMode = RepeatMode.Reverse,
-                        initialStartOffset = StartOffset(
-                            offsetMillis = i * baseDelay,
-                            offsetType = StartOffsetType.FastForward
-                        )
-                    ),
-                    label = "offset"
-                )
-            )
-        }
-    }
-
-    BoxWithConstraints(modifier) {
-        val density = LocalDensity.current
-        val length = remember { radius / 2 + (count - 1) * (padding + radius) }
-        val startOffset = remember { mutableFloatStateOf(0f) }
-
-        LaunchedEffect(length) {
-            with(density) {
-                startOffset.floatValue = (maxWidth.toPx() - length) / 2
-            }
-        }
-
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center),
-            onDraw = {
-                for (i in 0 until count) {
-                    drawCircle(
-                        color = color,
-                        radius = offsetList[i].value,
-                        center = Offset(
-                            x = startOffset.floatValue + (2 * radius * i) + (padding * i),
-                            y = 0f
-                        )
-                    )
-                }
-            }
-        )
-    }
 }
 
 @Preview
