@@ -10,31 +10,35 @@ data class TermsOfServiceView(
     companion object {
         val descriptionList = listOf(
             TermsOfServiceView(
-                header = R.string.lbl_terms_of_services,
-                description = listOf(R.string.lbl_terms_of_service_details)
+                header = R.string.lbl_terms_rules,
+                description = listOf(R.string.lbl_terms_rules_part1)
             ),
             TermsOfServiceView(
-                header = R.string.lbl_terminology,
+                header = R.string.lbl_terms_terminology,
                 description = listOf(
-                    R.string.lbl_terminology_vira,
-                    R.string.lbl_terminology_user,
-                    R.string.lbl_terminology_commercial_side,
-                    R.string.lbl_terminology_user_account,
-                    R.string.lbl_terminology_confidential_information
+                    R.string.lbl_terms_terminology_vira,
+                    R.string.lbl_terms_terminology_user,
+                    R.string.lbl_terms_terminology_user_account,
+                    R.string.lbl_terms_terminology_confidential_information
                 )
             ),
             TermsOfServiceView(
-                header = R.string.lbl_terms_and_conditions_of_using_vira,
+                header = R.string.lbl_terms_conditions,
+                description = listOf(R.string.lbl_terms_conditions_part1)
+            ),
+            TermsOfServiceView(
+                header = R.string.lbl_terms_respecting_privacy,
                 description = listOf(
-                    R.string.lbl_using_provided_services_means_acceptance_of_rules,
-                    R.string.lbl_rules_and_procedures_are_based_on_iran_rules
+                    R.string.lbl_terms_respecting_privacy_part1,
+                    R.string.lbl_terms_respecting_privacy_part2
                 )
             ),
             TermsOfServiceView(
-                header = R.string.lbl_respect_privacy,
+                header = R.string.lbl_terms_user_responsibility,
                 description = listOf(
-                    R.string.lbl_accessing_microphone,
-                    R.string.lbl_respect_uses_privacy
+                    R.string.lbl_terms_user_responsibility_part1,
+                    R.string.lbl_terms_user_responsibility_part2,
+                    R.string.lbl_terms_user_responsibility_part3
                 )
             )
         )

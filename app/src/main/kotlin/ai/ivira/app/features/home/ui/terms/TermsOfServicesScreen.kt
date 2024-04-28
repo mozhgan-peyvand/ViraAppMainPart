@@ -243,7 +243,7 @@ private fun TopAppBar(
         Spacer(modifier = Modifier.size(8.dp))
 
         Text(
-            text = stringResource(id = R.string.lbl_terms_of_services),
+            text = stringResource(id = R.string.lbl_terms_rules),
             color = Color_White,
             style = MaterialTheme.typography.subtitle2
         )
