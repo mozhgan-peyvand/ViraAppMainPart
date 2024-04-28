@@ -43,6 +43,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Shape
@@ -158,6 +159,7 @@ fun ViraOutlinedTextField(
 
         if (helperIcon != null || helperText != null || characterCount is CharacterCount.Count) {
             Row(
+                verticalAlignment = Alignment.Top,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(4.dp)

@@ -7,27 +7,41 @@ import ai.ivira.app.utils.ui.theme.Color_On_Surface_Variant
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Text_3
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Immutable
 object ViraOutlinedTextFieldDefaults {
     val TextFieldTextStyle: TextStyle
         @Composable
         @ReadOnlyComposable
-        get() = MaterialTheme.typography.button.copy(color = Color_On_Surface)
+        get() = MaterialTheme.typography.button.copy(
+            color = Color_On_Surface,
+            fontFamily = FontFamily(
+                Font(ThemeR.font.bahij_helvetica_neue_vira_edition_roman)
+            )
+        )
 
     val TextFieldShape: Shape
         @Composable
@@ -74,6 +88,58 @@ object ViraOutlinedTextFieldDefaults {
         shape = shape,
         focusedBorderThickness = focusedBorderThickness,
         unfocusedBorderThickness = unfocusedBorderThickness
+    )
+
+    @Composable
+    fun DefaultLeadingIcon(
+        @DrawableRes drawable: Int,
+        modifier: Modifier = Modifier
+    ) = Icon(
+        painter = painterResource(drawable),
+        contentDescription = null,
+        modifier = modifier
+    )
+
+    @Composable
+    fun DefaultPlaceholder(
+        @StringRes text: Int,
+        modifier: Modifier = Modifier
+    ) = Text(
+        text = stringResource(id = text),
+        color = Color_Text_3,
+        style = MaterialTheme.typography.button,
+        modifier = modifier
+    )
+
+    @Composable
+    fun DefaultLabel(
+        @StringRes text: Int,
+        modifier: Modifier = Modifier
+    ) = Text(
+        text = stringResource(id = text),
+        color = Color_Text_3,
+        style = MaterialTheme.typography.caption,
+        modifier = modifier
+    )
+
+    @Composable
+    fun DefaultHelperIcon(
+        @DrawableRes drawable: Int,
+        modifier: Modifier = Modifier
+    ) = Icon(
+        painter = painterResource(drawable),
+        contentDescription = null,
+        modifier = modifier
+    )
+
+    @Composable
+    fun DefaultHelperText(
+        @StringRes text: Int,
+        modifier: Modifier = Modifier
+    ) = Text(
+        text = stringResource(id = text),
+        style = MaterialTheme.typography.caption,
+        modifier = modifier
     )
 }
 

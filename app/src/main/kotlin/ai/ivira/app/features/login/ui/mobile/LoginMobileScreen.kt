@@ -6,6 +6,12 @@ import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetContent
 import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetDefaults
 import ai.ivira.app.designsystem.bottomsheet.ViraBottomSheetState
 import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
+import ai.ivira.app.designsystem.components.textfield.ViraOutlinedTextField
+import ai.ivira.app.designsystem.components.textfield.ViraOutlinedTextFieldDefaults.DefaultHelperIcon
+import ai.ivira.app.designsystem.components.textfield.ViraOutlinedTextFieldDefaults.DefaultHelperText
+import ai.ivira.app.designsystem.components.textfield.ViraOutlinedTextFieldDefaults.DefaultLabel
+import ai.ivira.app.designsystem.components.textfield.ViraOutlinedTextFieldDefaults.DefaultLeadingIcon
+import ai.ivira.app.designsystem.components.textfield.ViraOutlinedTextFieldDefaults.DefaultPlaceholder
 import ai.ivira.app.features.ava_negar.ui.record.widgets.ClickableTextWithDashUnderline
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.features.login.ui.LoginScreenRoutes
@@ -20,32 +26,23 @@ import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
-import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
-import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.widget.Toast
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text2.BasicTextField2
 import androidx.compose.foundation.text2.input.InputTransformation
 import androidx.compose.foundation.text2.input.TextFieldBuffer
 import androidx.compose.foundation.text2.input.TextFieldCharSequence
@@ -67,10 +64,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -122,7 +116,6 @@ private fun LoginMobileScreen(
     navigateToTermsOfServiceScreen: () -> Unit
 ) {
     val scrollState = rememberScrollState()
-    val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
@@ -164,20 +157,20 @@ private fun LoginMobileScreen(
                 navigateToOtpScreen(phoneNumber.text.toString())
                 otpTimerViewModel.startTimer()
             }
-            UiIdle,
             UiLoading -> {
                 focusManager.clearFocus()
             }
+            UiIdle -> {}
         }
     }
 
     LoginMobileScreenUI(
-        phoneNumber = phoneNumber,
+        phoneNumberTextState = phoneNumber,
         isRequestAllowed = (isRequestAllowed) && (timerState !is LoginTimerState.Start),
         isLoading = uiState is UiLoading,
         timerState = timerState,
         scrollState = scrollState,
-        focusRequester = focusRequester,
+        isError = uiState is UiError,
         onConfirmClick = mobileViewModel::sendOTP,
         onTermsOfServiceClick = navigateToTermsOfServiceScreen,
         sheetState = sheetState,
@@ -188,15 +181,15 @@ private fun LoginMobileScreen(
 
 @Composable
 private fun LoginMobileScreenUI(
-    phoneNumber: TextFieldState,
+    phoneNumberTextState: TextFieldState,
     isRequestAllowed: Boolean,
     isLoading: Boolean,
     timerState: LoginTimerState,
     scrollState: ScrollState,
-    focusRequester: FocusRequester,
+    isError: Boolean,
+    selectedSheet: LoginMobileBottomSheetType,
     onConfirmClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
-    selectedSheet: LoginMobileBottomSheetType,
     sheetState: ViraBottomSheetState,
     onLoginRequiredConfirmed: () -> Unit
 ) {
@@ -205,6 +198,19 @@ private fun LoginMobileScreenUI(
             .fillMaxSize()
             .padding(horizontal = 20.dp)
     ) { paddingValues ->
+
+        val helperIcon: @Composable () -> Unit = remember {
+            {
+                DefaultHelperIcon(drawable = R.drawable.ic_error_circle)
+            }
+        }
+
+        val helperText: @Composable () -> Unit = remember(isError) {
+            {
+                DefaultHelperText(R.string.msg_error_phone_number_validation)
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -232,9 +238,17 @@ private fun LoginMobileScreenUI(
 
             Spacer(modifier = Modifier.height(50.dp))
 
-            PhoneNumberTextField(
-                phoneNumber = phoneNumber,
-                focusRequester = focusRequester,
+            ViraOutlinedTextField(
+                state = phoneNumberTextState,
+                inputTransformation = PhoneNumberTransformation,
+                lineLimits = TextFieldLineLimits.SingleLine,
+                cursorBrush = SolidColor(Color_Text_2),
+                isError = isError,
+                label = { DefaultLabel(R.string.lbl_phone_number) },
+                placeholder = { DefaultPlaceholder(R.string.lbl_phone_number_placeholder) },
+                leadingIcon = { DefaultLeadingIcon(R.drawable.ic_mobile) },
+                helperIcon = if (isError) helperIcon else null,
+                helperText = if (isError) helperText else null,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -294,60 +308,6 @@ private fun LoginMobileScreenUI(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun PhoneNumberTextField(
-    phoneNumber: TextFieldState,
-    focusRequester: FocusRequester,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color_Card, RoundedCornerShape(12.dp))
-            .padding(horizontal = 12.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        ViraIcon(
-            drawable = R.drawable.ic_mobile,
-            contentDescription = null,
-            tint = Color_Text_3,
-            modifier = Modifier.padding(top = 6.dp)
-        )
-
-        Spacer(modifier = Modifier.size(12.dp))
-
-        Column(
-            modifier = modifier
-                .weight(1f)
-                .padding(vertical = 6.dp)
-        ) {
-            Text(
-                text = stringResource(id = R.string.lbl_phone_number),
-                color = Color_Text_3,
-                style = MaterialTheme.typography.caption
-            )
-
-            BasicTextField2(
-                state = phoneNumber,
-                inputTransformation = PhoneNumberTransformation,
-                textStyle = MaterialTheme.typography.body1.copy(
-                    color = Color_Text_2,
-                    fontFamily = FontFamily(
-                        Font(ThemeR.font.bahij_helvetica_neue_vira_edition_roman)
-                    )
-                ),
-                lineLimits = TextFieldLineLimits.SingleLine,
-                cursorBrush = SolidColor(Color_Text_2),
-                decorator = {
-                    Box(modifier = Modifier.fillMaxWidth()) { it() }
-                },
-                modifier = modifier.focusRequester(focusRequester)
-            )
         }
     }
 }
@@ -447,12 +407,12 @@ private fun LoadingLottie(
 private fun LoginMobileScreenPreview() {
     ViraPreview {
         LoginMobileScreenUI(
-            phoneNumber = rememberTextFieldState(),
+            phoneNumberTextState = rememberTextFieldState(),
             isRequestAllowed = false,
             isLoading = false,
             timerState = LoginTimerState.End,
             scrollState = rememberScrollState(),
-            focusRequester = FocusRequester(),
+            isError = false,
             onConfirmClick = {},
             onTermsOfServiceClick = {},
             selectedSheet = LoginRequired,

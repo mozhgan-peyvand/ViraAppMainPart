@@ -299,6 +299,7 @@
     <string name="msg_phone_number_hint">مثلا: ۰۹۱۲۳۴۵۶۷۸۹</string>
     <string name="msg_error_phone_number_validation">شماره تلفن همراه با ۰۹ شروع می شود</string>
     <string name="lbl_phone_number">شماره موبایل</string>
+    <string name="lbl_phone_number_placeholder">مثلا ۰۹۱۲۳۴۵۶۷۸۹</string>
     <string name="msg_otp_rate_limit">لطفا 1 دقیقه دیگر تلاش کنید</string>
     <string name="msg_otp_not_valid">رمز یک‌بار مصرف معتبر نیست!</string>
     <string name="msg_otp_not_enter">کد تایید اجباری است</string>

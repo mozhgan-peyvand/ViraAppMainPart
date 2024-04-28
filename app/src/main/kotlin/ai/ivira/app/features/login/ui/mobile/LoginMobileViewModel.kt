@@ -4,11 +4,13 @@ import ai.ivira.app.features.login.data.LoginRepository
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
+import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.sms_retriever.ViraGoogleSmsRetriever
 import androidx.compose.foundation.text2.input.TextFieldState
+import androidx.compose.foundation.text2.input.forEachTextValue
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -37,7 +39,18 @@ class LoginMobileViewModel @Inject constructor(
     private val _loginRequiredIsShown = mutableStateOf(false)
     val loginRequiredIsShown: State<Boolean> = _loginRequiredIsShown
 
+    private var hasInvalidPhoneError = false
+
     init {
+        viewModelScope.launch {
+            phoneNumber.forEachTextValue {
+                if (hasInvalidPhoneError) {
+                    hasInvalidPhoneError = false
+                    _uiViewState.emit(UiIdle)
+                }
+            }
+        }
+
         viewModelScope.launch {
             _loginRequiredIsShown.value = repository.getLoginRequiredIsShown()
         }
@@ -51,6 +64,7 @@ class LoginMobileViewModel @Inject constructor(
     fun sendOTP() {
         viewModelScope.launch(IO) {
             if (!phoneNumberIsValid()) {
+                hasInvalidPhoneError = true
                 _uiViewState.emit(
                     UiError(
                         message = uiException.getErrorInvalidPhoneNumber(),
