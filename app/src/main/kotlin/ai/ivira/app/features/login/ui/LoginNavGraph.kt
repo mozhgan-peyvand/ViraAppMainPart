@@ -22,6 +22,7 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController) {
         val fromSplash = backStackEntry.arguments?.getBoolean("fromSplash") ?: false
         LoginMobileRoute(
             navController = navController,
+            backStackEntry = backStackEntry,
             fromSplash = fromSplash
         )
     }
@@ -36,6 +37,10 @@ fun NavGraphBuilder.loginNavGraph(navController: NavHostController) {
         )
     ) { backStackEntry ->
         val mobile = backStackEntry.arguments?.getString("mobile") ?: error("could not fine mobile")
-        LoginOtpRoute(navController = navController, mobile = mobile)
+        LoginOtpRoute(
+            navController = navController,
+            backStackEntry = backStackEntry,
+            mobile = mobile
+        )
     }
 }

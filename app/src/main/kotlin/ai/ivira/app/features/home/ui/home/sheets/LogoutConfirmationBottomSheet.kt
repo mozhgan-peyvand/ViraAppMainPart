@@ -11,9 +11,8 @@ import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
 import ai.ivira.app.utils.ui.theme.Color_Red_Opacity_15
 import ai.ivira.app.utils.ui.widgets.HorizontalLoadingCircles
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,13 +27,13 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -44,7 +43,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
@@ -60,8 +58,20 @@ fun LogoutConfirmationBottomSheet(
     val density = LocalDensity.current
     var loadingHeight by rememberSaveable { mutableIntStateOf(0) }
 
-    val disableClick by remember(uiState) {
-        derivedStateOf { uiState == UiSuccess }
+    val disableClickModifier = remember(uiState) {
+        if (uiState == UiSuccess) {
+            Modifier.pointerInput(Unit) {
+                awaitEachGesture {
+                    awaitPointerEvent(pass = PointerEventPass.Initial)
+                        .changes
+                        .forEach {
+                            it.consume()
+                        }
+                }
+            }
+        } else {
+            Modifier
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -75,101 +85,87 @@ fun LogoutConfirmationBottomSheet(
         }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
+            .padding(20.dp)
+            .then(disableClickModifier)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-        ) {
-            Text(
-                text = stringResource(id = R.string.lbl_logout),
-                style = MaterialTheme.typography.h6,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+        Text(
+            text = stringResource(id = R.string.lbl_logout),
+            style = MaterialTheme.typography.h6,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
-            PartiallyBoldText(
-                text = stringResource(id = R.string.msg_logout),
-                startIndex = 15,
-                endIndex = 29,
-                style = MaterialTheme.typography.body2,
-                highlightStyle = MaterialTheme.typography.subtitle2,
-                modifier = Modifier.padding(bottom = 28.dp)
-            )
+        PartiallyBoldText(
+            text = stringResource(id = R.string.msg_logout),
+            startIndex = 15,
+            endIndex = 29,
+            style = MaterialTheme.typography.body2,
+            highlightStyle = MaterialTheme.typography.subtitle2,
+            modifier = Modifier.padding(bottom = 28.dp)
+        )
 
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Button(
-                    contentPadding = PaddingValues(14.dp),
-                    elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
-                    modifier = Modifier.weight(1f),
-                    onClick = {
-                        safeClick {
-                            viewModel.logout()
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = Color_Primary_Opacity_15,
-                        contentColor = Color_Primary_300
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    if (uiState is UiLoading) {
-                        HorizontalLoadingCircles(
-                            radius = 10,
-                            count = 3,
-                            padding = 15,
-                            color = Color_Primary_300,
-                            modifier = Modifier.height(with(density) { loadingHeight.toDp() })
-                        )
-                    } else {
-                        Text(
-                            text = stringResource(id = R.string.lbl_exit),
-                            style = MaterialTheme.typography.button
-                        )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Button(
+                contentPadding = PaddingValues(14.dp),
+                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    safeClick {
+                        viewModel.logout()
                     }
-                }
-
-                Spacer(modifier = Modifier.size(8.dp))
-
-                Button(
-                    contentPadding = PaddingValues(14.dp),
-                    elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    onClick = {
-                        safeClick {
-                            viewModel.resetLogoutRequest()
-                            cancelAction()
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = Color_Red_Opacity_15,
-                        contentColor = MaterialTheme.colors.onError
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
+                },
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color_Primary_Opacity_15,
+                    contentColor = Color_Primary_300
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                if (uiState is UiLoading) {
+                    HorizontalLoadingCircles(
+                        radius = 10,
+                        count = 3,
+                        padding = 15,
+                        color = Color_Primary_300,
+                        modifier = Modifier.height(with(density) { loadingHeight.toDp() })
+                    )
+                } else {
                     Text(
-                        text = stringResource(id = R.string.lbl_cancel),
-                        style = MaterialTheme.typography.button,
-                        modifier = Modifier.onGloballyPositioned {
-                            loadingHeight = it.size.height
-                        }
+                        text = stringResource(id = R.string.lbl_exit),
+                        style = MaterialTheme.typography.button
                     )
                 }
             }
-        }
 
-        if (disableClick) {
-            Box(
+            Spacer(modifier = Modifier.size(8.dp))
+
+            Button(
+                contentPadding = PaddingValues(14.dp),
+                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
                 modifier = Modifier
-                    .matchParentSize()
-                    .zIndex(1F)
-                    .pointerInput(Unit) {}
-            )
+                    .fillMaxWidth()
+                    .weight(1f),
+                onClick = {
+                    safeClick {
+                        viewModel.resetLogoutRequest()
+                        cancelAction()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color_Red_Opacity_15,
+                    contentColor = MaterialTheme.colors.onError
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.lbl_cancel),
+                    style = MaterialTheme.typography.button,
+                    modifier = Modifier.onGloballyPositioned {
+                        loadingHeight = it.size.height
+                    }
+                )
+            }
         }
     }
 }

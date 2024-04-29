@@ -79,38 +79,31 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Composable
 fun LoginOtpRoute(
     navController: NavController,
+    backStackEntry: NavBackStackEntry,
     mobile: String
 ) {
-    // upon navigating to home, recomposition which is caused by jetpack navigation's
-    // animation causes getBackStackEntry to throw exception (cause mobile is removed from stack)
-    // so we check if that screen is actually in stack
-    val parentEntry = remember(navController.currentBackStackEntry) {
-        runCatching {
-            navController.getBackStackEntry(LoginScreenRoutes.LoginMobileScreen.route)
-        }.getOrNull()
+    val parentEntry = remember(backStackEntry) {
+        navController.getBackStackEntry(LoginScreenRoutes.LoginMobileScreen.route)
     }
 
-    if (parentEntry != null) {
-        LoginOtpScreen(
-            navigateToHomeScreen = {
-                navController.navigate(route = HomeScreenRoutes.Home.createRoute()) {
-                    popUpTo(route = LoginScreenRoutes.LoginMobileScreen.route) { inclusive = true }
-                }
-            },
-            navigateToMobileScreen = { navController.navigateUp() },
-            mobile = mobile,
-            otpViewModel = hiltViewModel(),
-            otpTimerViewModel = hiltViewModel(parentEntry)
-        )
-    } else {
-        Box(modifier = Modifier.fillMaxSize())
-    }
+    LoginOtpScreen(
+        navigateToHomeScreen = {
+            navController.navigate(route = HomeScreenRoutes.Home.createRoute()) {
+                popUpTo(route = LoginScreenRoutes.LoginMobileScreen.route) { inclusive = true }
+            }
+        },
+        navigateToMobileScreen = { navController.navigateUp() },
+        mobile = mobile,
+        otpViewModel = hiltViewModel(),
+        otpTimerViewModel = hiltViewModel(parentEntry)
+    )
 }
 
 @Composable

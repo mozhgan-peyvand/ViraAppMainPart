@@ -86,16 +86,19 @@ import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Composable
 fun LoginMobileRoute(
     navController: NavController,
+    backStackEntry: NavBackStackEntry,
     fromSplash: Boolean
 ) {
-    // we need the current to not be empty
-    val parentEntry = navController.currentBackStackEntry!!
+    val parentEntry = remember(backStackEntry) {
+        navController.getBackStackEntry(LoginScreenRoutes.LoginMobileScreen.route)
+    }
     LoginMobileScreen(
         navigateToOtpScreen = {
             navController.navigate(LoginScreenRoutes.LoginOtpScreen.createRoute(it))
