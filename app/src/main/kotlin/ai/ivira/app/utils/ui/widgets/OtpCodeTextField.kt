@@ -32,9 +32,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
@@ -54,8 +56,10 @@ fun OtpCodeTextField(
     @IntRange(from = 4, to = 8) otpSize: Int
 ) {
     BasicTextField(
-        value = otp,
-        onValueChange = onOtpChange,
+        value = TextFieldValue(otp, selection = TextRange(otp.length, otp.length)),
+        onValueChange = {
+            onOtpChange(it.text)
+        },
         cursorBrush = SolidColor(MaterialTheme.colors.primary),
         decorationBox = {
             CompositionLocalProvider(LocalLayoutDirection provides Ltr) {
