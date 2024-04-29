@@ -5,6 +5,7 @@ import ai.ivira.app.features.hamahang.data.entity.HamahangCheckingFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangProcessedFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangTrackingFileEntity
 import ai.ivira.app.features.hamahang.data.entity.HamahangUploadingFileEntity
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics
 import ai.ivira.app.utils.common.file.FileOperationHelper
 import ai.ivira.app.utils.common.file.UploadProgressCallback
 import ai.ivira.app.utils.common.file.toMultiPart
@@ -14,6 +15,7 @@ import ai.ivira.app.utils.data.api_result.AppException
 import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.data.api_result.toAppResult
 import ai.ivira.app.utils.data.asPlainTextRequestBody
+import ai.ivira.app.utils.ui.analytics.EventHandler
 import android.os.SystemClock
 import kotlinx.coroutines.flow.Flow
 import saman.zamani.persiandate.PersianDate
@@ -26,7 +28,8 @@ class HamahangRepository @Inject constructor(
     private val remoteDataSource: HamahangRemoteDataSource,
     private val localDataSource: HamahangLocalDataSource,
     private val fileOperationHelper: FileOperationHelper,
-    private val networkHandler: NetworkHandler
+    private val networkHandler: NetworkHandler,
+    private val eventHandler: EventHandler
 ) {
     suspend fun voiceConversion(
         id: String,
@@ -76,6 +79,7 @@ class HamahangRepository @Inject constructor(
 
         return when (result) {
             is AppResult.Success -> {
+                eventHandler.specialEvent(HamahangAnalytics.voiceConverted)
                 localDataSource.insertProcessedFromTracking(fileToken, result.data)
                 AppResult.Success(result.data)
             }

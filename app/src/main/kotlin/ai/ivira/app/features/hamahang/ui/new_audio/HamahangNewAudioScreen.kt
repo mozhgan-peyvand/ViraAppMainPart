@@ -10,6 +10,7 @@ import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenMicro
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
 import ai.ivira.app.features.ava_negar.ui.record.sheets.MicrophoneNotAvailableBottomSheet
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics.screenViewNewAudio
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangSpeakerView
 import ai.ivira.app.features.hamahang.ui.new_audio.HamahangNewAudioResult.Companion.NEW_FILE_AUDIO_RESULT
 import ai.ivira.app.features.hamahang.ui.new_audio.components.HamahangAudioBox
@@ -23,6 +24,7 @@ import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangNewAudioBottom
 import ai.ivira.app.features.hamahang.ui.new_audio.sheets.HamahangUploadFileBottomSheet
 import ai.ivira.app.utils.ui.OnLifecycleEvent
 import ai.ivira.app.utils.ui.UiError
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.hasPermission
 import ai.ivira.app.utils.ui.hasRecordAudioPermission
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
@@ -118,6 +120,12 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun HamahangNewAudioScreenRoute(navController: NavController) {
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(screenViewNewAudio)
+    }
+
     HamahangNewAudioScreen(
         viewModel = hiltViewModel(),
         navigateUp = { result ->

@@ -8,6 +8,9 @@ import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics.downloadVoice
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics.screenViewDetails
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics.shareVoice
 import ai.ivira.app.features.hamahang.ui.HamahangScreenRoutes
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangSpeakerView
@@ -15,6 +18,7 @@ import ai.ivira.app.features.hamahang.ui.detail.components.ThreeMovingCircleAnim
 import ai.ivira.app.features.hamahang.ui.detail.sheets.HamahangRegenerateConfirmationBottomSheet
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.ui.OnLifecycleEvent
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.convertByteToMB
 import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.hasPermission
@@ -109,6 +113,12 @@ import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Composable
 fun HamahangDetailScreenRoute(navController: NavController) {
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(screenViewDetails)
+    }
+
     HamahangDetailScreen(
         viewModel = hiltViewModel(),
         navigateUp = {
@@ -129,6 +139,7 @@ private fun HamahangDetailScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val eventHandler = LocalEventHandler.current
     val snackBarState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackBarState)
     val sheetState = rememberViraBottomSheetState()
@@ -204,9 +215,11 @@ private fun HamahangDetailScreen(
             navigateUp()
         },
         onShareClick = {
+            eventHandler.specialEvent(shareVoice)
             viewModel.shareItem(context)
         },
         onSaveClick = {
+            eventHandler.specialEvent(downloadVoice)
             if (!isSdkVersionBetween23And29() ||
                 context.hasPermission(writeStoragePermission)
             ) {

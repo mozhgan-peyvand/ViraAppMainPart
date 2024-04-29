@@ -37,6 +37,8 @@ object HomeAnalytics {
         get() = SpecialEvent("avasho_open")
     val openImazh: SpecialEvent
         get() = SpecialEvent("imazh_open")
+    val openHamahang: SpecialEvent
+        get() = SpecialEvent("hamahang_open")
     val introduceToFriends: SpecialEvent
         get() = SpecialEvent(INTRODUCE_TO_FRIENDS)
     val checkUpdate: SpecialEvent

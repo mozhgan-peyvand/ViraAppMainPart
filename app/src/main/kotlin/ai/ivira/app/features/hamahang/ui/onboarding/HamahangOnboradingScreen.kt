@@ -1,7 +1,10 @@
 package ai.ivira.app.features.hamahang.ui.onboarding
 
 import ai.ivira.app.R
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics.screenViewOnboarding
 import ai.ivira.app.features.hamahang.ui.HamahangScreenRoutes
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
@@ -29,9 +32,16 @@ import androidx.navigation.NavController
 
 @Composable
 fun HamahangOnboardingRoute(navController: NavController) {
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(screenViewOnboarding)
+    }
+
     HamahangOnboardingScreen(
         viewModel = hiltViewModel(),
         navigateToArchive = {
+            eventHandler.onboardingEvent(HamahangAnalytics.onboardingEnd)
             navController.navigate(HamahangScreenRoutes.HamahangArchiveListScreen.route) {
                 popUpTo(HamahangScreenRoutes.HamahangOnboardingScreen.route) {
                     inclusive = true

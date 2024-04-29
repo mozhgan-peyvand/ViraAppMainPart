@@ -12,6 +12,9 @@ import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDel
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.RenameFileBottomSheet
 import ai.ivira.app.features.avasho.ui.archive.model.DownloadingFileStatus
 import ai.ivira.app.features.config.ui.ConfigViewModel
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics.downloadVoice
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics.screenViewArchiveList
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics.shareVoice
 import ai.ivira.app.features.hamahang.ui.HamahangScreenRoutes
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangArchiveCheckingFileElement
 import ai.ivira.app.features.hamahang.ui.archive.element.HamahangArchiveProcessedFileElement
@@ -36,6 +39,7 @@ import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiStatus
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.hasPermission
 import ai.ivira.app.utils.ui.isPermissionDeniedPermanently
 import ai.ivira.app.utils.ui.isScrollingUp
@@ -132,6 +136,7 @@ fun HamahangArchiveListScreenRoute(
     navController: NavController
 ) {
     val context = LocalContext.current
+    val eventHandler = LocalEventHandler.current
     val viewModel = hiltViewModel<HamahangArchiveListViewModel>(
         viewModelStoreOwner = context as ComponentActivity
     )
@@ -141,6 +146,10 @@ fun HamahangArchiveListScreenRoute(
         ?.let {
             viewModel.addFileToChecking(it.inputPath, it.speaker, it.title)
         }
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(screenViewArchiveList)
+    }
 
     HamahangArchiveListScreen(
         viewModel = viewModel,
@@ -165,6 +174,7 @@ private fun HamahangArchiveListScreen(
     navigateToNewAudio: () -> Unit,
     navigateUp: () -> Unit
 ) {
+    val eventHandler = LocalEventHandler.current
     val sheetState = rememberViraBottomSheetState()
     val hamahangListState by rememberLazyListState().isScrollingUp()
     val (fileSheetState, setBottomSheetType) = rememberSaveable {
@@ -328,6 +338,7 @@ private fun HamahangArchiveListScreen(
             sheetState.hide()
         },
         onSaveAudioFileClick = onClick@{ title, filePath ->
+            eventHandler.specialEvent(downloadVoice)
             if (!isSdkVersionBetween23And29()) {
                 viewModel.saveToDownloadFolder(
                     filePath = filePath,
@@ -378,6 +389,7 @@ private fun HamahangArchiveListScreen(
             sheetState.hide()
         },
         onShareClick = { filePath ->
+            eventHandler.specialEvent(shareVoice)
             sheetState.hide()
             shareMp3(
                 context = context,

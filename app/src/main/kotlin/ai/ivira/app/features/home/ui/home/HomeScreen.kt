@@ -13,6 +13,7 @@ import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoArchiveScreen
 import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoOnboardingScreen
 import ai.ivira.app.features.config.ui.ConfigViewModel
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics
 import ai.ivira.app.features.hamahang.ui.HamahangScreenRoutes
 import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
@@ -231,8 +232,7 @@ private fun HomeScreen(
                         sheetSelected = UnavailableTile
                         sheetState.show()
                     } else {
-                        // TODO: Uncomment below after adding event
-                        // eventHandler.specialEvent(HomeAnalytics.openHamahang)
+                        eventHandler.specialEvent(HomeAnalytics.openHamahang)
                         homeViewModel.navigateToHamahang()
                     }
                 }
@@ -365,6 +365,7 @@ private fun HomeScreen(
     ) {
         if (homeViewModel.shouldNavigateToHamahang.value) {
             if (!homeViewModel.hamahangOnboardingHasBeenShown.value) {
+                eventHandler.onboardingEvent(HamahangAnalytics.onboardingStart)
                 navController.navigate(HamahangScreenRoutes.HamahangOnboardingScreen.route)
             } else {
                 navController.navigate(HamahangScreenRoutes.HamahangArchiveListScreen.route)
