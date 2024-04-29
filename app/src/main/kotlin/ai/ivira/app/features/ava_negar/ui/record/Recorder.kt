@@ -2,6 +2,7 @@ package ai.ivira.app.features.ava_negar.ui.record
 
 import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewModel.Companion.MAX_FILE_DURATION_MS
 import ai.ivira.app.features.ava_negar.ui.record.VoiceRecordingViewModel.Companion.RECORDING_OFFSET_MS
+import ai.ivira.app.utils.common.file.AVANEGAR_FOLDER_PATH
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build.VERSION
@@ -25,7 +26,7 @@ class Recorder @Inject constructor(
     private val onMaxDurationReachedListeners = CopyOnWriteArrayList<OnMaxDurationReached>()
 
     private fun getFile(filename: String): File {
-        val parent = File(File(context.filesDir, "avanegar"), "recordings")
+        val parent = File(File(context.filesDir, AVANEGAR_FOLDER_PATH), "recordings")
 
         if (!parent.exists()) {
             parent.mkdirs()

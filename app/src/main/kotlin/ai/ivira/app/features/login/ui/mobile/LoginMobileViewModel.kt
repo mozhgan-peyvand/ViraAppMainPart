@@ -50,6 +50,9 @@ class LoginMobileViewModel @Inject constructor(
     private var _hasInvalidPhoneError = mutableStateOf(false)
     val hasInvalidPhoneError: State<Boolean> = _hasInvalidPhoneError
 
+    private val _userPhoneNumberChanged = MutableSharedFlow<Boolean>()
+    val userPhoneNumberChanged = _userPhoneNumberChanged.asSharedFlow()
+
     init {
         viewModelScope.launch {
             phoneNumber.forEachTextValue {
@@ -68,6 +71,34 @@ class LoginMobileViewModel @Inject constructor(
     fun setLoginRequiredShowed() {
         repository.saveLoginRequiredIsShown(true)
         _loginRequiredIsShown.value = true
+    }
+
+    fun checkUserChangeAndSendOtp() {
+        viewModelScope.launch(IO) {
+            if (!phoneNumberIsValid()) {
+                _hasInvalidPhoneError.value = true
+                _uiViewState.emit(
+                    UiError(
+                        message = uiException.getErrorInvalidPhoneNumber(),
+                        isSnack = false
+                    )
+                )
+                return@launch
+            }
+
+            if (!phoneNumberHasChanged()) {
+                sendOTP()
+                return@launch
+            }
+        }
+    }
+
+    private suspend fun phoneNumberHasChanged(): Boolean {
+        return repository.getMobile().let { previousPhoneNumber ->
+            previousPhoneNumber != null && phoneNumber.text.toString() != previousPhoneNumber
+        }.also {
+            _userPhoneNumberChanged.emit(it)
+        }
     }
 
     fun sendOTP() {

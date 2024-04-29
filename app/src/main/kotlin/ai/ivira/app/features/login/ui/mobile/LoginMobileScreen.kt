@@ -16,6 +16,7 @@ import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.record.widgets.ClickableTextWithDashUnderline
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.features.login.ui.LoginScreenRoutes
+import ai.ivira.app.features.login.ui.mobile.LoginMobileBottomSheetType.ChangeUserConfirmation
 import ai.ivira.app.features.login.ui.mobile.LoginMobileBottomSheetType.LoginRequired
 import ai.ivira.app.features.login.ui.otp.LoginTimerState
 import ai.ivira.app.features.login.ui.otp.OtpTimerSharedViewModel
@@ -93,6 +94,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import ai.ivira.app.designsystem.theme.R as ThemeR
 
@@ -114,7 +116,8 @@ fun LoginMobileRoute(
         },
         fromSplash = fromSplash,
         mobileViewModel = hiltViewModel(),
-        otpTimerViewModel = hiltViewModel(parentEntry)
+        otpTimerViewModel = hiltViewModel(parentEntry),
+        changeUserViewModel = hiltViewModel()
     )
 }
 
@@ -123,6 +126,7 @@ private fun LoginMobileScreen(
     fromSplash: Boolean,
     mobileViewModel: LoginMobileViewModel,
     otpTimerViewModel: OtpTimerSharedViewModel,
+    changeUserViewModel: ChangeUserConfirmationViewModel,
     navigateToOtpScreen: (phoneNumber: String) -> Unit,
     navigateToTermsOfServiceScreen: () -> Unit
 ) {
@@ -142,7 +146,7 @@ private fun LoginMobileScreen(
     val loginRequiredIsShown by mobileViewModel.loginRequiredIsShown
     val timerState by otpTimerViewModel.timerState.collectAsStateWithLifecycle()
 
-    // region showKwyboard for the first time screen opening
+    // region showKeyboard for the first time screen opening
     var isKeyboardShown by rememberSaveable {
         mutableStateOf(false)
     }
@@ -156,6 +160,15 @@ private fun LoginMobileScreen(
         }
     }
     // endregion showKwyboard for the first time screen opening
+
+    LaunchedEffect(Unit) {
+        mobileViewModel.userPhoneNumberChanged.collect { changed ->
+            if (changed) {
+                selectedSheet = ChangeUserConfirmation
+                sheetState.show()
+            }
+        }
+    }
 
     DisposableEffect(Unit) {
         otpTimerViewModel.checkTimerFromSharePref()
@@ -205,13 +218,16 @@ private fun LoginMobileScreen(
         timerState = timerState,
         scrollState = scrollState,
         isValidationError = mobileViewModel.hasInvalidPhoneError.value,
-        onConfirmClick = mobileViewModel::sendOTP,
+        onConfirmClick = mobileViewModel::checkUserChangeAndSendOtp,
         onTermsOfServiceClick = navigateToTermsOfServiceScreen,
         scaffoldState = scaffoldState,
         snackBarState = snackBarState,
         sheetState = sheetState,
         selectedSheet = selectedSheet,
-        onLoginRequiredConfirmed = mobileViewModel::setLoginRequiredShowed
+        onLoginRequiredConfirmed = mobileViewModel::setLoginRequiredShowed,
+        coroutineScope = coroutineScope,
+        changeUserViewModel = changeUserViewModel,
+        sendOtpCallback = mobileViewModel::sendOTP
     )
 }
 
@@ -230,7 +246,10 @@ private fun LoginMobileScreenUI(
     onConfirmClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
     sheetState: ViraBottomSheetState,
-    onLoginRequiredConfirmed: () -> Unit
+    onLoginRequiredConfirmed: () -> Unit,
+    sendOtpCallback: () -> Unit,
+    coroutineScope: CoroutineScope,
+    changeUserViewModel: ChangeUserConfirmationViewModel // Fixme: Should remove this from ScreenUI params
 ) {
     Scaffold(
         scaffoldState = scaffoldState,
@@ -358,7 +377,18 @@ private fun LoginMobileScreenUI(
             sheetState = sheetState,
             isDismissibleOnDrag = false,
             isDismissibleOnTouchOutside = false,
-            properties = ViraBottomSheetDefaults.properties(shouldDismissOnBackPress = false)
+            properties = ViraBottomSheetDefaults.properties(shouldDismissOnBackPress = false),
+            onBackPressed = {
+                when (selectedSheet) {
+                    LoginRequired -> {
+                        sheetState.hide()
+                    }
+                    ChangeUserConfirmation -> {
+                        sheetState.hide()
+                        changeUserViewModel.resetCleanPreviousUserDataRequest()
+                    }
+                }
+            }
         ) {
             ViraBottomSheetContent(targetState = selectedSheet) {
                 when (selectedSheet) {
@@ -367,6 +397,20 @@ private fun LoginMobileScreenUI(
                             onConfirmClick = {
                                 onLoginRequiredConfirmed()
                                 sheetState.hide()
+                            }
+                        )
+                    }
+                    ChangeUserConfirmation -> {
+                        ChangeUserConfirmationBottomSheet(
+                            viewModel = changeUserViewModel,
+                            cancelAction = { sheetState.hide() },
+                            onSuccessCallback = {
+                                sheetState.hide()
+                                sendOtpCallback()
+                            },
+                            onErrorCallback = {
+                                sheetState.hide()
+                                showMessage(snackBarState, coroutineScope, it.message)
                             }
                         )
                     }
@@ -467,13 +511,16 @@ private fun LoginMobileScreenPreview() {
             scrollState = rememberScrollState(),
             isValidationError = false,
             scaffoldState = rememberScaffoldState(),
-            snackBarState = SnackbarHostState(),
+            snackBarState = remember { SnackbarHostState() },
             onConfirmClick = {},
             onTermsOfServiceClick = {},
             selectedSheet = LoginRequired,
             sheetState = rememberViraBottomSheetState(),
             onLoginRequiredConfirmed = {},
-            focusRequester = remember { FocusRequester() }
+            focusRequester = remember { FocusRequester() },
+            coroutineScope = rememberCoroutineScope(),
+            changeUserViewModel = hiltViewModel(),
+            sendOtpCallback = {}
         )
     }
 }

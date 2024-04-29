@@ -66,4 +66,9 @@ class LoginRepository @Inject constructor(
         localDataSource.saveLoginRequiredIsShown(isShown)
 
     fun getLoginRequiredIsShown() = localDataSource.getLoginRequiredIsShown()
+
+    suspend fun cleanPreviousUserData(): AppResult<Unit> {
+        localDataSource.cleanAllUserData()
+        return AppResult.Success(Unit)
+    }
 }

@@ -308,6 +308,8 @@
     <string name="msg_otp_code_error">لطفا مجددا وارد نمایید</string>
     <string name="lbl_create_new_account">ایجاد حساب کاربری</string>
     <string name="msg_create_new_account">به منظور استفاده از سرویس‌های جدید برنامه، لازم است تا در ابتدا حساب کاربری تشکیل دهید.</string>
+    <string name="lbl_change_account">تغییر حساب کاربری</string>
+    <string name="msg_change_account">با تغییر شماره‌ی حساب کاربری‌تان، فایل‌های موجود روی دستگاه شما پاک خواهد شد.</string>
 
     <string name="lbl_terms_rules">قوانین و مقررات</string>
     <string name="lbl_terms_rules_part1">کاربر گرامی از اینکه اپلیکیشن ویرا را برگزیده‌اید، سپاسگزاریم. پیش از استفاده از این برنامه، خواهشمندیم شرایط و ضوابط قانونی مرتبط با استفاده از اپلیکیشن را با دقت مطالعه نموده و در صورت پذیرش، تأیید نمایید.</string>
