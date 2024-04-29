@@ -29,9 +29,11 @@ import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_Primary
+import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
+import ai.ivira.app.utils.ui.widgets.HorizontalLoadingCircles
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
@@ -85,10 +87,6 @@ import androidx.core.text.isDigitsOnly
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.rememberLottieComposition
 import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Composable
@@ -371,7 +369,7 @@ private fun ConfirmButton(
     modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
-    var lottieHeight by rememberSaveable { mutableIntStateOf(0) }
+    var loading by rememberSaveable { mutableIntStateOf(0) }
 
     Button(
         contentPadding = PaddingValues(vertical = 14.dp),
@@ -391,8 +389,12 @@ private fun ConfirmButton(
         modifier = modifier.padding(bottom = 20.dp)
     ) {
         if (isLoading) {
-            LoadingLottie(
-                modifier = Modifier.height(with(density) { lottieHeight.toDp() })
+            HorizontalLoadingCircles(
+                radius = 10,
+                count = 3,
+                padding = 15,
+                color = Color_Primary_300,
+                modifier = Modifier.height(with(density) { loading.toDp() })
             )
         } else {
             Text(
@@ -400,26 +402,11 @@ private fun ConfirmButton(
                 style = MaterialTheme.typography.button,
                 color = Color_Text_1,
                 modifier = Modifier.onGloballyPositioned {
-                    lottieHeight = it.size.height
+                    loading = it.size.height
                 }
             )
         }
     }
-}
-
-// Duplicate 2
-@Composable
-private fun LoadingLottie(
-    modifier: Modifier = Modifier
-) {
-    val composition by rememberLottieComposition(
-        spec = LottieCompositionSpec.RawRes(resId = R.raw.lottie_loading_2)
-    )
-    LottieAnimation(
-        composition = composition,
-        iterations = LottieConstants.IterateForever,
-        modifier = modifier
-    )
 }
 
 @ViraDarkPreview
