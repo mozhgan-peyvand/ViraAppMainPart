@@ -8,9 +8,11 @@ import ai.ivira.app.designsystem.bottomsheet.rememberViraBottomSheetState
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.AccessDeniedToOpenFileBottomSheet
 import ai.ivira.app.features.ava_negar.ui.archive.sheets.FileItemConfirmationDeleteBottomSheet
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
+import ai.ivira.app.features.hamahang.ui.HamahangScreenRoutes
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangSpeakerView
 import ai.ivira.app.features.hamahang.ui.detail.components.ThreeMovingCircleAnimation
+import ai.ivira.app.features.hamahang.ui.detail.sheets.HamahangRegenerateConfirmationBottomSheet
 import ai.ivira.app.utils.common.orZero
 import ai.ivira.app.utils.ui.OnLifecycleEvent
 import ai.ivira.app.utils.ui.convertByteToMB
@@ -23,7 +25,9 @@ import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.showMessage
+import ai.ivira.app.utils.ui.theme.Color_OutLine
 import ai.ivira.app.utils.ui.theme.Color_Primary
+import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Surface_Container_High
 import ai.ivira.app.utils.ui.theme.Color_Text_1
@@ -34,13 +38,17 @@ import ai.ivira.app.utils.ui.widgets.ViraImage
 import android.Manifest
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.media.MediaPlayer
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -49,6 +57,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -71,18 +84,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.io.File
+import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Composable
 fun HamahangDetailScreenRoute(navController: NavController) {
@@ -90,6 +113,10 @@ fun HamahangDetailScreenRoute(navController: NavController) {
         viewModel = hiltViewModel(),
         navigateUp = {
             navController.navigateUp()
+        },
+        navigateToNewAudio = { filePath ->
+            navController.popBackStack()
+            navController.navigate(HamahangScreenRoutes.HamahangNewAudioScreen.createRoute(filePath))
         }
     )
 }
@@ -97,7 +124,8 @@ fun HamahangDetailScreenRoute(navController: NavController) {
 @Composable
 private fun HamahangDetailScreen(
     viewModel: HamahangDetailViewModel,
-    navigateUp: () -> Unit
+    navigateUp: () -> Unit,
+    navigateToNewAudio: (String) -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -163,6 +191,8 @@ private fun HamahangDetailScreen(
         sheetState = sheetState,
         playerState = playerState,
         selectedSheet = selectedSheet,
+        context = context,
+        scope = coroutineScope,
         onBackClick = { navigateUp() },
         onDeleteClick = {
             selectedSheet = HamahangDetailBottomSheetType.DeleteConfirmation
@@ -202,6 +232,16 @@ private fun HamahangDetailScreen(
         navigateToSettings = {
             navigateToAppSettings(activity = context as Activity)
             sheetState.hide()
+        },
+        regenerateOnClick = {
+            if (playerState.isPlaying) {
+                playerState.stopPlaying()
+            }
+            selectedSheet = HamahangDetailBottomSheetType.HamahangRegenerationConfirmation
+            sheetState.show()
+        },
+        regenerateConfirmClick = { filePath ->
+            navigateToNewAudio(filePath)
         }
     )
 }
@@ -218,7 +258,11 @@ private fun HamahangDetailUI(
     onDeleteConfirmationClick: () -> Unit,
     onShareClick: () -> Unit,
     onSaveClick: () -> Unit,
-    navigateToSettings: () -> Unit
+    navigateToSettings: () -> Unit,
+    regenerateOnClick: () -> Unit,
+    context: Context,
+    scope: CoroutineScope,
+    regenerateConfirmClick: (String) -> Unit
 ) {
     Scaffold(
         scaffoldState = scaffoldState,
@@ -274,7 +318,18 @@ private fun HamahangDetailUI(
                     createdAt = fileInfo.createdAt,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(0.25f)
+                        .weight(0.25f),
+                    regenerateOnClick = {
+                        if (!File(fileInfo.inputFilePath).exists()) {
+                            showMessage(
+                                scaffoldState.snackbarHostState,
+                                scope,
+                                context.getString(R.string.lbl_not_possible_to_regenerate_voice)
+                            )
+                        } else {
+                            regenerateOnClick()
+                        }
+                    }
                 )
 
                 PlayerSection(
@@ -317,6 +372,16 @@ private fun HamahangDetailUI(
                             },
                             submitAction = {
                                 navigateToSettings()
+                            }
+                        )
+                    }
+                    HamahangDetailBottomSheetType.HamahangRegenerationConfirmation -> {
+                        HamahangRegenerateConfirmationBottomSheet(
+                            cancelAction = {
+                                sheetState.hide()
+                            },
+                            regenerateAction = {
+                                regenerateConfirmClick(fileInfo.inputFilePath)
                             }
                         )
                     }
@@ -406,6 +471,7 @@ private fun AudioInfoSection(
     fileName: String,
     fileSize: Double,
     createdAt: String,
+    regenerateOnClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -421,10 +487,34 @@ private fun AudioInfoSection(
 
         Row(
             horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 20.dp)
+                .padding(top = 20.dp, start = 20.dp, end = 20.dp)
         ) {
+            Button(
+                contentPadding = PaddingValues(8.dp),
+                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    safeClick {
+                        regenerateOnClick()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = MaterialTheme.colors.background,
+                    contentColor = Color_Primary_300
+                ),
+                shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, color = Color_OutLine)
+            ) {
+                TextWithIcon(
+                    text = stringResource(id = R.string.lbl_change_speaker),
+                    icon = R.drawable.ic_people,
+                    textStyle = MaterialTheme.typography.button,
+                    iconTint = Color_Primary_200
+                )
+            }
+
             Text(
                 text = buildString {
                     append(
@@ -434,16 +524,20 @@ private fun AudioInfoSection(
                     )
                     append(stringResource(id = R.string.lbl_mb))
                 },
-                style = MaterialTheme.typography.caption,
-                color = Color_Text_3
+                style = MaterialTheme.typography.caption.copy(
+                    fontFamily = FontFamily(Font(ThemeR.font.bahij_helvetica_neue_roman))
+                ),
+                color = Color_Text_3,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
             )
+            TextWithIcon(
+                text = stringResource(id = R.string.lbl_createAt_with_icon1, createdAt),
+                icon = R.drawable.ic_calendar,
+                iconTint = Color_Primary_200,
+                textStyle = MaterialTheme.typography.caption.copy(color = Color_Text_3),
+                textAlign = TextAlign.End
 
-            Spacer(modifier = Modifier.size(20.dp))
-
-            Text(
-                text = createdAt,
-                style = MaterialTheme.typography.caption,
-                color = Color_Text_3
             )
         }
     }
@@ -565,6 +659,57 @@ private fun PlayerSection(
     }
 }
 
+// TextWithIcon duplicate 2
+@Composable
+fun TextWithIcon(
+    text: String,
+    @DrawableRes icon: Int,
+    textStyle: TextStyle = MaterialTheme.typography.caption,
+    textAlign: TextAlign = TextAlign.Start,
+    iconTint: Color = MaterialTheme.colors.onBackground
+) {
+    val myId = "inlineContent"
+    val annotatedText = buildAnnotatedString {
+        val raw = text
+        val index = raw.indexOf("[icon]")
+
+        append(raw.substring(0, index))
+
+        appendInlineContent(myId, "[icon]")
+        if (index + 6 < raw.length) {
+            append(raw.substring(index + 6))
+        }
+    }
+
+    val inlineContent = mapOf(
+        myId to InlineTextContent(
+            Placeholder(
+                width = 16.sp,
+                height = 16.sp,
+                placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter
+            )
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                ViraIcon(
+                    drawable = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .fillMaxSize(0.8f)
+                )
+            }
+        }
+    )
+
+    Text(
+        text = annotatedText,
+        inlineContent = inlineContent,
+        style = textStyle,
+        textAlign = textAlign
+    )
+}
+
 @ViraDarkPreview
 @Composable
 private fun HamahangDetailUIPreview() {
@@ -590,6 +735,8 @@ private fun HamahangDetailUIPreview() {
             fileInfo = processed,
             scaffoldState = rememberScaffoldState(),
             sheetState = rememberViraBottomSheetState(),
+            scope = rememberCoroutineScope(),
+            context = LocalContext.current,
             playerState = VoicePlayerState(mediaPlayer, application),
             selectedSheet = HamahangDetailBottomSheetType.DeleteConfirmation,
             onBackClick = {},
@@ -597,7 +744,9 @@ private fun HamahangDetailUIPreview() {
             onDeleteConfirmationClick = {},
             onShareClick = {},
             onSaveClick = {},
-            navigateToSettings = {}
+            navigateToSettings = {},
+            regenerateConfirmClick = {},
+            regenerateOnClick = {}
         )
     }
 }

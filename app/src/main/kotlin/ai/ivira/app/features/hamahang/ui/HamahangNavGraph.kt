@@ -11,7 +11,14 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 
 fun NavGraphBuilder.hamahangNavGraph(navController: NavHostController) {
-    navigateWithSlideAnimation(route = HamahangScreenRoutes.HamahangNewAudioScreen.route) {
+    navigateWithSlideAnimation(
+        route = HamahangScreenRoutes.HamahangNewAudioScreen.route,
+        arguments = listOf(
+            navArgument(name = "filePath") {
+                type = NavType.StringType
+                nullable = true
+            })
+    ) {
         HamahangNewAudioScreenRoute(navController)
     }
 

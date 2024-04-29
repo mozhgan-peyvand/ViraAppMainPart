@@ -24,6 +24,7 @@ import androidx.annotation.WorkerThread
 import androidx.core.content.edit
 import androidx.core.net.toFile
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,7 @@ import javax.inject.Inject
 class HamahangNewAudioViewModel @Inject constructor(
     private val sharedPref: SharedPreferences,
     private val fileCache: FileCache,
+    savedStateHandle: SavedStateHandle,
     private val uiException: UiException,
     application: Application
 ) : AndroidViewModel(application) {
@@ -74,6 +76,9 @@ class HamahangNewAudioViewModel @Inject constructor(
         kotlin.runCatching {
             retriever = MediaMetadataRetriever()
         }
+        savedStateHandle.get<String?>("filePath")?.let {
+            setPreviewMode(it)
+        }
     }
 
     fun changeSpeaker(speaker: HamahangSpeakerView) {
@@ -99,6 +104,10 @@ class HamahangNewAudioViewModel @Inject constructor(
         } else {
             onFailureAction()
         }
+    }
+
+    private fun setPreviewMode(filePath: String) {
+        _mode.value = HamahangAudioBoxMode.Preview(File(filePath))
     }
 
     fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) {

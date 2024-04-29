@@ -346,5 +346,11 @@
     <string name="lbl_dose_not_exist_any_file_yet">فایل صوتی درآرشیو وجود ندارد.</string>
     <string name="lbl_make_your_first_audio_file">اولین فایل صوتی را ایجاد کنید.</string>
     <string name="lbl_hamahang_on_boarding_describe">صدای خود را به کمک هوش مصنوعی، به صدای افراد مشهور تبدیل کنید.</string>
+    <string name="lbl_change_speaker">[icon] تغییر گوینده</string>
+    <string name="lbl_convert_speaker_voice_again_title">تبدیل مجدد صدای ورودی</string>
+    <string name="lbl_convert_speaker_voice_again_detail">می‌خواهید صدای ورودی را به صدای گوینده‌ای  دیگر تبدیل کنید؟</string>
+    <string name="lbl_not_possible_to_regenerate_voice">امکان تولید مجدد این صدا وجود ندارد.</string>
+    <string name="lbl_createAt_with_icon">ایا از حذف فایل %s مطمئن هستید؟</string>
+    <string name="lbl_createAt_with_icon1">[icon] %s</string>
 
 </resources>
