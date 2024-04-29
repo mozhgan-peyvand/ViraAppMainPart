@@ -12,6 +12,7 @@ import ai.ivira.app.features.hamahang.ui.archive.model.HamahangArchiveView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangCheckingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangProcessedFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangSpeakerView
+import ai.ivira.app.features.hamahang.ui.archive.model.HamahangTrackingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangUploadingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangCheckingFileView
 import ai.ivira.app.features.hamahang.ui.archive.model.toHamahangProcessedFileView
@@ -97,9 +98,6 @@ class HamahangArchiveListViewModel @Inject constructor(
     val networkStatus = networkStatusTracker.networkStatus.stateIn(initial = NetworkStatus.Unavailable)
 
     var processArchiveFileList = mutableStateOf<List<HamahangProcessedFileView>>(emptyList())
-        private set
-
-    var isThereTrackingOrUploading = MutableStateFlow(false)
         private set
 
     private var _hasPermissionDeniedPermanently = mutableStateOf(false)
@@ -247,13 +245,18 @@ class HamahangArchiveListViewModel @Inject constructor(
                     }
                 }
             )
-        }.also {
-            isThereTrackingOrUploading.value =
-                trackingList.isNotEmpty() || uploadingList.isNotEmpty() || checkingList.isNotEmpty() || _failureListId.value.isNotEmpty()
         }
-
         // endregion
     }.distinctUntilChanged()
+
+    val isThereTrackingOrUploading = combine(allArchiveFiles, _failureListId) { files, failures ->
+        val nonProcessedFiles = files.any {
+            it is HamahangUploadingFileView ||
+                it is HamahangTrackingFileView ||
+                it is HamahangCheckingFileView
+        }
+        return@combine nonProcessedFiles || failures.isNotEmpty()
+    }.stateIn(initial = false)
 
     init {
 

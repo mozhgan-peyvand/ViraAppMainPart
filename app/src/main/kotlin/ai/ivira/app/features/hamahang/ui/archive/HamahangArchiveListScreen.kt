@@ -122,6 +122,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import kotlinx.coroutines.CoroutineScope
 import java.io.File
 
 private const val TRACKING_FILE_ANIMATION_DURATION_COLUMN = 1300
@@ -235,6 +236,7 @@ private fun HamahangArchiveListScreen(
     HamahangArchiveListUI(
         sheetState = sheetState,
         archiveList = archiveList,
+        coroutineScope = coroutineScope,
         networkStatus = networkStatus,
         downloadState = downloadState,
         uiViewState = uiViewState,
@@ -392,6 +394,7 @@ private fun HamahangArchiveListUI(
     isThereTrackingOrUploading: Boolean,
     hasPermissionDenied: Boolean,
     uiViewState: UiStatus,
+    coroutineScope: CoroutineScope,
     archiveList: List<HamahangArchiveView>,
     downloadFailureList: List<Int>,
     sheetState: ViraBottomSheetState,
@@ -555,7 +558,23 @@ private fun HamahangArchiveListUI(
 
             HamahangFab(
                 modifier = Modifier.align(Alignment.BottomStart),
-                onClick = navigateToNewAudio,
+                onClick = onClick@{
+                    if (isThereTrackingOrUploading) {
+                        showMessage(
+                            scaffoldState.snackbarHostState,
+                            coroutineScope,
+                            context.getString(
+                                if (uiViewState is UiError) {
+                                    R.string.msg_wait_for_connection_to_server
+                                } else {
+                                    R.string.msg_wait_process_finish_or_cancel_it
+                                }
+                            )
+                        )
+                        return@onClick
+                    }
+                    navigateToNewAudio()
+                },
                 isVisible = isVisible
             )
         }
@@ -862,7 +881,8 @@ private fun HamahangArchiveListUIPreview() {
             onShareClick = {},
             snackBarAction = {},
             hasPermissionDenied = false,
-            downloadFailureList = emptyList()
+            downloadFailureList = emptyList(),
+            coroutineScope = rememberCoroutineScope()
         )
     }
 }
