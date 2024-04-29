@@ -43,5 +43,9 @@ enum class HamahangSpeakerView(
         fun findByServerName(serverName: String): HamahangSpeakerView {
             return HamahangSpeakerView.entries.first { it.serverName == serverName }
         }
+
+        fun defaultSpeakers(): List<HamahangSpeakerView> {
+            return listOf(FerdowsiPour, Hatami, Modiri, Khiabani, Chavoshi, Golzar)
+        }
     }
 }
