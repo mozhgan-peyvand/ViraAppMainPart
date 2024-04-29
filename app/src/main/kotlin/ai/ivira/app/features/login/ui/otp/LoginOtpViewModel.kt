@@ -17,6 +17,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -27,6 +28,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -60,13 +64,26 @@ class LoginOtpViewModel @Inject constructor(
             viraGoogleSmsRetriever.smsResult.collect { smsResult ->
                 when (smsResult) {
                     is ViraGoogleSmsRetriever.SmsResult.Message -> {
-                        otpTextValue = smsResult.code
+                        if (uiViewState.value != UiLoading) {
+                            otpTextValue = smsResult.code
+                        }
                     }
                     is ViraGoogleSmsRetriever.SmsResult.ConsentIntent -> {
                         // TODO Implement it
                     }
                 }
             }
+        }
+
+        // this is used to automatically send the verifyOtpRequest on user filling the box
+        viewModelScope.launch {
+            snapshotFlow { otpTextValue }
+                .distinctUntilChanged()
+                .onEach {
+                    if (uiViewState.value == UiLoading) return@onEach
+                    if (it.length < OTP_SIZE) return@onEach
+                    verifyOtpRequest()
+                }.launchIn(this)
         }
     }
 
