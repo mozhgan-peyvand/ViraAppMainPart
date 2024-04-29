@@ -45,6 +45,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text2.input.InputTransformation
 import androidx.compose.foundation.text2.input.TextFieldBuffer
@@ -64,6 +65,7 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -72,6 +74,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -80,6 +84,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -88,6 +93,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 import ai.ivira.app.designsystem.theme.R as ThemeR
 
 @Composable
@@ -122,6 +128,7 @@ private fun LoginMobileScreen(
 ) {
     val scrollState = rememberScrollState()
     val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
     val snackBarState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackBarState)
     val coroutineScope = rememberCoroutineScope()
@@ -134,6 +141,21 @@ private fun LoginMobileScreen(
     val sheetState = rememberViraBottomSheetState()
     val loginRequiredIsShown by mobileViewModel.loginRequiredIsShown
     val timerState by otpTimerViewModel.timerState.collectAsStateWithLifecycle()
+
+    // region showKwyboard for the first time screen opening
+    var isKeyboardShown by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    SideEffect {
+        if (loginRequiredIsShown && !isKeyboardShown) {
+            isKeyboardShown = true
+            coroutineScope.launch {
+                focusRequester.requestFocus()
+            }
+        }
+    }
+    // endregion showKwyboard for the first time screen opening
 
     DisposableEffect(Unit) {
         otpTimerViewModel.checkTimerFromSharePref()
@@ -151,25 +173,27 @@ private fun LoginMobileScreen(
         }
     }
 
-    LaunchedEffect(uiState) {
-        when (val state = uiState) {
-            is UiError -> {
-                if (state.isSnack) {
-                    showMessage(
-                        snackBarState,
-                        coroutineScope,
-                        state.message
-                    )
+    LaunchedEffect(Unit) {
+        mobileViewModel.uiViewState.collect { state ->
+            when (state) {
+                is UiError -> {
+                    if (state.isSnack) {
+                        showMessage(
+                            snackBarState,
+                            coroutineScope,
+                            state.message
+                        )
+                    }
                 }
+                UiSuccess -> {
+                    navigateToOtpScreen(phoneNumber.text.toString())
+                    otpTimerViewModel.startTimer()
+                }
+                UiLoading -> {
+                    focusManager.clearFocus()
+                }
+                UiIdle -> {}
             }
-            UiSuccess -> {
-                navigateToOtpScreen(phoneNumber.text.toString())
-                otpTimerViewModel.startTimer()
-            }
-            UiLoading -> {
-                focusManager.clearFocus()
-            }
-            UiIdle -> {}
         }
     }
 
@@ -177,9 +201,10 @@ private fun LoginMobileScreen(
         phoneNumberTextState = phoneNumber,
         isRequestAllowed = (isRequestAllowed) && (timerState !is LoginTimerState.Start),
         isLoading = uiState is UiLoading,
+        focusRequester = focusRequester,
         timerState = timerState,
         scrollState = scrollState,
-        isError = uiState is UiError,
+        isValidationError = mobileViewModel.hasInvalidPhoneError.value,
         onConfirmClick = mobileViewModel::sendOTP,
         onTermsOfServiceClick = navigateToTermsOfServiceScreen,
         scaffoldState = scaffoldState,
@@ -196,8 +221,9 @@ private fun LoginMobileScreenUI(
     isRequestAllowed: Boolean,
     isLoading: Boolean,
     timerState: LoginTimerState,
+    focusRequester: FocusRequester,
     scrollState: ScrollState,
-    isError: Boolean,
+    isValidationError: Boolean,
     selectedSheet: LoginMobileBottomSheetType,
     scaffoldState: ScaffoldState,
     snackBarState: SnackbarHostState,
@@ -226,9 +252,15 @@ private fun LoginMobileScreenUI(
             }
         }
 
-        val helperText: @Composable () -> Unit = remember(isError) {
+        val helperText: @Composable () -> Unit = remember(isValidationError) {
             {
                 DefaultHelperText(R.string.msg_error_phone_number_validation)
+            }
+        }
+
+        val onConfirmClickAction: () -> Unit = remember {
+            {
+                if (!isLoading && isRequestAllowed) onConfirmClick()
             }
         }
 
@@ -264,13 +296,24 @@ private fun LoginMobileScreenUI(
                 inputTransformation = PhoneNumberTransformation,
                 lineLimits = TextFieldLineLimits.SingleLine,
                 cursorBrush = SolidColor(Color_Text_2),
-                isError = isError,
+                isError = isValidationError,
                 label = { DefaultLabel(R.string.lbl_phone_number) },
                 placeholder = { DefaultPlaceholder(R.string.lbl_phone_number_placeholder) },
                 leadingIcon = { DefaultLeadingIcon(R.drawable.ic_mobile) },
-                helperIcon = if (isError) helperIcon else null,
-                helperText = if (isError) helperText else null,
-                modifier = Modifier.fillMaxWidth()
+                helperIcon = if (isValidationError) helperIcon else null,
+                helperText = if (isValidationError) helperText else null,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        safeClick(onConfirmClickAction)
+                    }
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -306,7 +349,7 @@ private fun LoginMobileScreenUI(
                 enabled = isRequestAllowed,
                 isLoading = isLoading,
                 modifier = Modifier.fillMaxWidth(),
-                onClick = onConfirmClick
+                onClick = onConfirmClickAction
             )
         }
     }
@@ -388,7 +431,7 @@ private fun ConfirmButton(
                 Color_Primary
             }
         ),
-        enabled = enabled,
+        enabled = enabled && !isLoading,
         modifier = modifier.padding(bottom = 20.dp)
     ) {
         if (isLoading) {
@@ -422,14 +465,15 @@ private fun LoginMobileScreenPreview() {
             isLoading = false,
             timerState = LoginTimerState.End,
             scrollState = rememberScrollState(),
-            isError = false,
+            isValidationError = false,
             scaffoldState = rememberScaffoldState(),
             snackBarState = SnackbarHostState(),
             onConfirmClick = {},
             onTermsOfServiceClick = {},
             selectedSheet = LoginRequired,
             sheetState = rememberViraBottomSheetState(),
-            onLoginRequiredConfirmed = {}
+            onLoginRequiredConfirmed = {},
+            focusRequester = remember { FocusRequester() }
         )
     }
 }

@@ -8,9 +8,12 @@ import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.combine
 import ai.ivira.app.utils.ui.sms_retriever.ViraGoogleSmsRetriever
+import ai.ivira.app.utils.ui.stateIn
 import androidx.compose.foundation.text2.input.TextFieldState
 import androidx.compose.foundation.text2.input.forEachTextValue
+import androidx.compose.foundation.text2.input.textAsFlow
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -19,7 +22,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,20 +34,27 @@ class LoginMobileViewModel @Inject constructor(
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState = _uiViewState.asSharedFlow()
 
-    val isRequestAllowed = _uiViewState.mapLatest { it != UiLoading } // TODO: Add any other situation to be handled here (such as rateLimit)
-
     val phoneNumber = TextFieldState(initialText = "")
+
+    // TODO: Add any other situation to be handled here (such as rateLimit)
+    val isRequestAllowed = combine(
+        uiViewState.stateIn(UiIdle),
+        phoneNumber.textAsFlow()
+    ) { uiViewState, phoneNumber ->
+        uiViewState != UiLoading && phoneNumber.length >= 11
+    }
 
     private val _loginRequiredIsShown = mutableStateOf(false)
     val loginRequiredIsShown: State<Boolean> = _loginRequiredIsShown
 
-    private var hasInvalidPhoneError = false
+    private var _hasInvalidPhoneError = mutableStateOf(false)
+    val hasInvalidPhoneError: State<Boolean> = _hasInvalidPhoneError
 
     init {
         viewModelScope.launch {
             phoneNumber.forEachTextValue {
-                if (hasInvalidPhoneError) {
-                    hasInvalidPhoneError = false
+                if (_hasInvalidPhoneError.value) {
+                    _hasInvalidPhoneError.value = false
                     _uiViewState.emit(UiIdle)
                 }
             }
@@ -64,7 +73,7 @@ class LoginMobileViewModel @Inject constructor(
     fun sendOTP() {
         viewModelScope.launch(IO) {
             if (!phoneNumberIsValid()) {
-                hasInvalidPhoneError = true
+                _hasInvalidPhoneError.value = true
                 _uiViewState.emit(
                     UiError(
                         message = uiException.getErrorInvalidPhoneNumber(),
@@ -83,7 +92,7 @@ class LoginMobileViewModel @Inject constructor(
                     val result = repository.sendOtp(phoneNumber = phoneNumber.text.toString())
                 ) {
                     is AppResult.Error -> _uiViewState.emit(
-                        UiError(message = uiException.getErrorMessage(result.error))
+                        UiError(message = uiException.getErrorMessage(result.error), isSnack = true)
                     )
                     is AppResult.Success -> _uiViewState.emit(UiSuccess)
                 }
