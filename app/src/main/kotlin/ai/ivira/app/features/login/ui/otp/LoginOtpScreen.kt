@@ -1,6 +1,7 @@
 package ai.ivira.app.features.login.ui.otp
 
 import ai.ivira.app.R
+import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.features.login.ui.LoginScreenRoutes
 import ai.ivira.app.utils.ui.UiError
@@ -12,6 +13,7 @@ import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Primary_Opacity_15
 import ai.ivira.app.utils.ui.theme.Color_Red
@@ -22,7 +24,6 @@ import ai.ivira.app.utils.ui.widgets.HorizontalLoadingCircles
 import ai.ivira.app.utils.ui.widgets.OtpCodeTextField
 import ai.ivira.app.utils.ui.widgets.ViraIcon
 import ai.ivira.app.utils.ui.widgets.ViraImage
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -59,6 +60,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,7 +69,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -124,12 +125,12 @@ private fun LoginOtpScreen(
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
     val scrollState = rememberScrollState()
     val uiState by otpViewModel.uiViewState.collectAsStateWithLifecycle()
+    val coroutineScope = rememberCoroutineScope()
     val resendOtpViewState by otpViewModel.resendOtpViewState.collectAsStateWithLifecycle(
         initialValue = UiIdle
     )
     val otpIsInvalid by otpViewModel.otpIsInvalid
     val timerState by otpTimerViewModel.timerState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
@@ -152,25 +153,32 @@ private fun LoginOtpScreen(
                     focusManager.clearFocus()
                 }
                 is UiError -> {
-                    // TODO: show snackBar
-                    val message = (state as? UiError)?.message
-                        ?: context.getString(R.string.msg_there_is_a_problem)
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    if (state.isSnack) {
+                        showMessage(
+                            snackbarHostState,
+                            coroutineScope,
+                            state.message
+                        )
+                    }
                 }
             }
         }
     }
 
     LaunchedEffect(key1 = uiState) {
-        when (uiState) {
+        when (val state = uiState) {
             UiIdle,
             UiLoading -> {
                 focusManager.clearFocus()
             }
             is UiError -> {
-                val message = (uiState as? UiError)?.message
-                    ?: context.getString(R.string.msg_there_is_a_problem)
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                if (state.isSnack) {
+                    showMessage(
+                        snackbarHostState,
+                        coroutineScope,
+                        state.message
+                    )
+                }
                 otpViewModel.clearUiState()
             }
             UiSuccess -> {
@@ -181,6 +189,7 @@ private fun LoginOtpScreen(
 
     LoginOtpScreenUI(
         scaffoldState = scaffoldState,
+        snackbarState = snackbarHostState,
         otpCodeTextValue = otpViewModel.otpTextValue,
         mobile = mobile,
         isLoading = uiState is UiLoading,
@@ -212,11 +221,19 @@ private fun LoginOtpScreenUI(
     verifyOtpButtonClick: () -> Unit,
     changMobileAction: () -> Unit,
     sendOtpAgainAction: () -> Unit,
-    scaffoldState: ScaffoldState
+    scaffoldState: ScaffoldState,
+    snackbarState: SnackbarHostState
 ) {
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        scaffoldState = scaffoldState
+        scaffoldState = scaffoldState,
+        snackbarHost = {
+            SnackBarWithPaddingBottom(
+                snackbarHostState = snackbarState,
+                shouldShowOverItems = true,
+                paddingValue = 450f
+            )
+        },
+        modifier = Modifier.fillMaxSize()
     ) { padding ->
         Column(
             modifier = Modifier
@@ -525,7 +542,8 @@ private fun LoginOtpScreenPreview() {
             verifyOtpButtonClick = {},
             changMobileAction = {},
             scaffoldState = rememberScaffoldState(),
-            otpIsInvalid = false
+            otpIsInvalid = false,
+            snackbarState = SnackbarHostState()
         )
     }
 }

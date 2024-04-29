@@ -12,6 +12,7 @@ import ai.ivira.app.designsystem.components.textfield.ViraOutlinedTextFieldDefau
 import ai.ivira.app.designsystem.components.textfield.ViraOutlinedTextFieldDefaults.DefaultLabel
 import ai.ivira.app.designsystem.components.textfield.ViraOutlinedTextFieldDefaults.DefaultLeadingIcon
 import ai.ivira.app.designsystem.components.textfield.ViraOutlinedTextFieldDefaults.DefaultPlaceholder
+import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.record.widgets.ClickableTextWithDashUnderline
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.features.login.ui.LoginScreenRoutes
@@ -26,12 +27,12 @@ import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
+import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_Primary
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.widgets.ViraImage
-import android.widget.Toast
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -54,7 +55,10 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Text
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -62,13 +66,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -117,8 +121,9 @@ private fun LoginMobileScreen(
 ) {
     val scrollState = rememberScrollState()
     val focusManager = LocalFocusManager.current
-    val context = LocalContext.current
-
+    val snackBarState = remember { SnackbarHostState() }
+    val scaffoldState = rememberScaffoldState(snackbarHostState = snackBarState)
+    val coroutineScope = rememberCoroutineScope()
     val uiState by mobileViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
     val isRequestAllowed by mobileViewModel.isRequestAllowed.collectAsStateWithLifecycle(uiState !is UiLoading)
 
@@ -146,12 +151,15 @@ private fun LoginMobileScreen(
     }
 
     LaunchedEffect(uiState) {
-        when (uiState) {
+        when (val state = uiState) {
             is UiError -> {
-                // TODO: show snackBar
-                val message = (uiState as? UiError)?.message
-                    ?: context.getString(R.string.msg_there_is_a_problem)
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                if (state.isSnack) {
+                    showMessage(
+                        snackBarState,
+                        coroutineScope,
+                        state.message
+                    )
+                }
             }
             UiSuccess -> {
                 navigateToOtpScreen(phoneNumber.text.toString())
@@ -173,6 +181,8 @@ private fun LoginMobileScreen(
         isError = uiState is UiError,
         onConfirmClick = mobileViewModel::sendOTP,
         onTermsOfServiceClick = navigateToTermsOfServiceScreen,
+        scaffoldState = scaffoldState,
+        snackBarState = snackBarState,
         sheetState = sheetState,
         selectedSheet = selectedSheet,
         onLoginRequiredConfirmed = mobileViewModel::setLoginRequiredShowed
@@ -188,12 +198,22 @@ private fun LoginMobileScreenUI(
     scrollState: ScrollState,
     isError: Boolean,
     selectedSheet: LoginMobileBottomSheetType,
+    scaffoldState: ScaffoldState,
+    snackBarState: SnackbarHostState,
     onConfirmClick: () -> Unit,
     onTermsOfServiceClick: () -> Unit,
     sheetState: ViraBottomSheetState,
     onLoginRequiredConfirmed: () -> Unit
 ) {
     Scaffold(
+        scaffoldState = scaffoldState,
+        snackbarHost = {
+            SnackBarWithPaddingBottom(
+                snackbarHostState = snackBarState,
+                shouldShowOverItems = true,
+                paddingValue = 450f
+            )
+        },
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 20.dp)
@@ -413,6 +433,8 @@ private fun LoginMobileScreenPreview() {
             timerState = LoginTimerState.End,
             scrollState = rememberScrollState(),
             isError = false,
+            scaffoldState = rememberScaffoldState(),
+            snackBarState = SnackbarHostState(),
             onConfirmClick = {},
             onTermsOfServiceClick = {},
             selectedSheet = LoginRequired,
