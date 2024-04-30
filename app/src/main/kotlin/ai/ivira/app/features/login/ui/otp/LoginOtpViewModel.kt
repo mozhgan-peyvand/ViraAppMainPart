@@ -11,7 +11,9 @@ import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.combine
 import ai.ivira.app.utils.ui.sms_retriever.ViraGoogleSmsRetriever
+import ai.ivira.app.utils.ui.stateIn
 import android.app.Application
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -25,13 +27,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -45,13 +43,13 @@ class LoginOtpViewModel @Inject constructor(
 ) : AndroidViewModel(application) {
     val mobile = savedStateHandle.get<String>("mobile").orEmpty()
 
-    private val _uiViewState = MutableStateFlow<UiStatus>(UiIdle)
-    val uiViewState = _uiViewState.asStateFlow()
+    private val _uiViewState = MutableSharedFlow<UiStatus>()
+    val uiViewState = _uiViewState.asSharedFlow()
 
     private val _resendOtpViewState = MutableSharedFlow<UiStatus>()
     val resendOtpViewState = _resendOtpViewState.asSharedFlow()
 
-    private var resendOtoJob: Job? = null
+    private var resendOtpJob: Job? = null
 
     private val _otpIsInvalid = mutableStateOf(false)
     val otpIsInvalid: State<Boolean> = _otpIsInvalid
@@ -59,13 +57,20 @@ class LoginOtpViewModel @Inject constructor(
     var otpTextValue by mutableStateOf("")
         private set
 
+    var isRequestAllowed = combine(
+        snapshotFlow { otpTextValue },
+        uiViewState.stateIn(UiIdle)
+    ) { code, uiState ->
+        !(uiState == UiLoading || code.length < OTP_SIZE)
+    }.stateIn(false)
+
     init {
         viewModelScope.launch {
             viraGoogleSmsRetriever.smsResult.collect { smsResult ->
                 when (smsResult) {
                     is ViraGoogleSmsRetriever.SmsResult.Message -> {
-                        if (uiViewState.value != UiLoading) {
-                            otpTextValue = smsResult.code
+                        if (uiViewState.stateIn(UiIdle).value != UiLoading) {
+                            changeOtp(smsResult.code)
                         }
                     }
                     is ViraGoogleSmsRetriever.SmsResult.ConsentIntent -> {
@@ -77,13 +82,14 @@ class LoginOtpViewModel @Inject constructor(
 
         // this is used to automatically send the verifyOtpRequest on user filling the box
         viewModelScope.launch {
-            snapshotFlow { otpTextValue }
-                .distinctUntilChanged()
-                .onEach {
-                    if (uiViewState.value == UiLoading) return@onEach
-                    if (it.length < OTP_SIZE) return@onEach
-                    verifyOtpRequest()
-                }.launchIn(this)
+            combine(
+                snapshotFlow { otpTextValue }.distinctUntilChanged(),
+                uiViewState.stateIn(UiIdle)
+            ) { it, uiViewState ->
+                if (uiViewState == UiLoading) return@combine
+                if (it.length < OTP_SIZE) return@combine
+                verifyOtpRequest()
+            }.launchIn(this)
         }
     }
 
@@ -96,8 +102,8 @@ class LoginOtpViewModel @Inject constructor(
     }
 
     fun resendOtp() {
-        if (resendOtoJob != null) return
-        resendOtoJob = viewModelScope.launch {
+        if (resendOtpJob != null) return
+        resendOtpJob = viewModelScope.launch {
             _resendOtpViewState.emit(UiLoading)
 
             viraGoogleSmsRetriever.startService()
@@ -110,7 +116,7 @@ class LoginOtpViewModel @Inject constructor(
                     _resendOtpViewState.emit(UiSuccess)
                 }
             }
-            resendOtoJob = null
+            resendOtpJob = null
         }
     }
 
@@ -123,27 +129,27 @@ class LoginOtpViewModel @Inject constructor(
     }
 
     fun verifyOtpRequest() {
-        val validationError = otpValidation(otpTextValue)
-        if (validationError != null) {
-            _uiViewState.update { UiError(message = validationError) }
-            return
-        }
-
-        _uiViewState.update { UiLoading }
-
         viewModelScope.launch(IO) {
+            val validationError = otpValidation(otpTextValue)
+            if (validationError != null) {
+                _uiViewState.emit(UiError(message = validationError))
+                return@launch
+            }
+
+            _uiViewState.emit(UiLoading)
+
             when (val result = repository.verifyOtp(mobile, otpTextValue)) {
                 is AppResult.Success -> {
-                    _uiViewState.update { UiSuccess }
+                    _uiViewState.emit(UiSuccess)
                 }
                 is AppResult.Error -> {
                     checkInvalidOtpError(result.error)
-                    _uiViewState.update {
+                    _uiViewState.emit(
                         UiError(
                             message = uiException.getErrorMessage(result.error),
                             isSnack = !_otpIsInvalid.value
                         )
-                    }
+                    )
                 }
             }
         }
@@ -157,10 +163,6 @@ class LoginOtpViewModel @Inject constructor(
                 null
             }
         }
-    }
-
-    fun clearUiState() {
-        _uiViewState.value = UiIdle
     }
 
     override fun onCleared() {

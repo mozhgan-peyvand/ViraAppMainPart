@@ -117,7 +117,7 @@ private fun LoginOtpScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackbarHostState)
     val scrollState = rememberScrollState()
-    val uiState by otpViewModel.uiViewState.collectAsStateWithLifecycle()
+    val uiState by otpViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
     val coroutineScope = rememberCoroutineScope()
     val resendOtpViewState by otpViewModel.resendOtpViewState.collectAsStateWithLifecycle(
         initialValue = UiIdle
@@ -126,6 +126,8 @@ private fun LoginOtpScreen(
     val timerState by otpTimerViewModel.timerState.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
+
+    val isRequestAllowed by otpViewModel.isRequestAllowed.collectAsStateWithLifecycle()
 
     BackHandler {} // Disabling back click
 
@@ -172,7 +174,6 @@ private fun LoginOtpScreen(
                         state.message
                     )
                 }
-                otpViewModel.clearUiState()
             }
             UiSuccess -> {
                 navigateToHomeScreen()
@@ -186,6 +187,7 @@ private fun LoginOtpScreen(
         otpCodeTextValue = otpViewModel.otpTextValue,
         mobile = mobile,
         isLoading = uiState is UiLoading,
+        isRequestedAllowed = isRequestAllowed,
         otpIsInvalid = otpIsInvalid,
         resendOtpViewState = resendOtpViewState,
         timerState = timerState,
@@ -206,6 +208,7 @@ private fun LoginOtpScreenUI(
     mobile: String,
     focusRequester: FocusRequester,
     isLoading: Boolean,
+    isRequestedAllowed: Boolean,
     otpIsInvalid: Boolean,
     resendOtpViewState: UiStatus,
     timerState: LoginTimerState,
@@ -330,6 +333,7 @@ private fun LoginOtpScreenUI(
 
                 ConfirmButton(
                     isLoading = isLoading,
+                    enabled = isRequestedAllowed,
                     modifier = Modifier.fillMaxWidth(),
                     onClick = verifyOtpButtonClick
                 )
@@ -474,8 +478,9 @@ private fun OtpCodeSection(
 
 @Composable
 private fun ConfirmButton(
-    onClick: () -> Unit,
+    enabled: Boolean,
     isLoading: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
@@ -487,7 +492,7 @@ private fun ConfirmButton(
             safeClick(event = onClick)
         },
         colors = ButtonDefaults.buttonColors(
-            disabledBackgroundColor = if (!isLoading) {
+            disabledBackgroundColor = if (!enabled && !isLoading) {
                 MaterialTheme.colors.onSurface
                     .copy(alpha = 0.12f)
                     .compositeOver(MaterialTheme.colors.surface)
@@ -495,6 +500,7 @@ private fun ConfirmButton(
                 Color_Primary
             }
         ),
+        enabled = enabled && !isLoading,
         modifier = modifier.padding(bottom = 20.dp)
     ) {
         if (isLoading) {
@@ -536,7 +542,8 @@ private fun LoginOtpScreenPreview() {
             changMobileAction = {},
             scaffoldState = rememberScaffoldState(),
             otpIsInvalid = false,
-            snackbarState = SnackbarHostState()
+            snackbarState = SnackbarHostState(),
+            isRequestedAllowed = false
         )
     }
 }

@@ -305,7 +305,7 @@
     <string name="msg_otp_not_enter">کد تایید اجباری است</string>
     <string name="msg_otp_not_is_enter_wrong">کد تایید وارد شده اشتباه است</string>
     <string name="lbl_otp_enter_code">کد تایید</string>
-    <string name="msg_otp_code_error">لطفا مجددا وارد نمایید</string>
+    <string name="msg_otp_code_error">کد وارد شده اشتباه است.</string>
     <string name="lbl_create_new_account">ایجاد حساب کاربری</string>
     <string name="msg_create_new_account">به منظور استفاده از سرویس‌های جدید برنامه، لازم است تا در ابتدا حساب کاربری تشکیل دهید.</string>
     <string name="lbl_change_account">تغییر حساب کاربری</string>

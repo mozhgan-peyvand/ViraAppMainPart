@@ -30,10 +30,10 @@ import ai.ivira.app.utils.ui.preview.ViraPreview
 import ai.ivira.app.utils.ui.safeClick
 import ai.ivira.app.utils.ui.showMessage
 import ai.ivira.app.utils.ui.theme.Color_Primary
-import ai.ivira.app.utils.ui.theme.Color_Primary_300
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Color_Text_3
+import ai.ivira.app.utils.ui.theme.Color_White
 import ai.ivira.app.utils.ui.widgets.HorizontalLoadingCircles
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.foundation.ScrollState
@@ -485,10 +485,10 @@ private fun ConfirmButton(
     ) {
         if (isLoading) {
             HorizontalLoadingCircles(
-                radius = 10,
+                radius = 8,
                 count = 3,
                 padding = 15,
-                color = Color_Primary_300,
+                color = Color_White,
                 modifier = Modifier.height(with(density) { loading.toDp() })
             )
         } else {
