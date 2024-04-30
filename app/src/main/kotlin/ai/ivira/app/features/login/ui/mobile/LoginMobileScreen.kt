@@ -285,12 +285,6 @@ private fun LoginMobileScreenUI(
             }
         }
 
-        val onConfirmClickAction: () -> Unit = remember {
-            {
-                if (!isLoading && isRequestAllowed) onConfirmClick()
-            }
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -335,7 +329,9 @@ private fun LoginMobileScreenUI(
                 ),
                 keyboardActions = KeyboardActions(
                     onDone = {
-                        safeClick(onConfirmClickAction)
+                        safeClick {
+                            if (isRequestAllowed) onConfirmClick()
+                        }
                     }
                 ),
                 interactionSource = textFieldInteractionSource,
@@ -377,7 +373,7 @@ private fun LoginMobileScreenUI(
                 enabled = isRequestAllowed,
                 isLoading = isLoading,
                 modifier = Modifier.fillMaxWidth(),
-                onClick = onConfirmClickAction
+                onClick = onConfirmClick
             )
         }
     }
