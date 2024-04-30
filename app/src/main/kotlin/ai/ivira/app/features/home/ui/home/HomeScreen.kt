@@ -20,7 +20,6 @@ import ai.ivira.app.features.home.ui.HomeScreenRoutes.AboutUs
 import ai.ivira.app.features.home.ui.HomeScreenRoutes.TermsOfServiceScreen
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Changelog
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ChatGpt
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ForceUpdate
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Hamahang
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.LogoutConfirmation
@@ -60,8 +59,8 @@ import ai.ivira.app.utils.ui.theme.Color_Card
 import ai.ivira.app.utils.ui.theme.Color_Text_1
 import ai.ivira.app.utils.ui.theme.Color_Text_2
 import ai.ivira.app.utils.ui.theme.Deep_Purple_500
+import ai.ivira.app.utils.ui.theme.Pink_100
 import ai.ivira.app.utils.ui.theme.labelMedium
-import ai.ivira.app.utils.ui.theme.teal_100
 import ai.ivira.app.utils.ui.widgets.HorizontalInfinitePager
 import ai.ivira.app.utils.ui.widgets.TextAutoSize
 import ai.ivira.app.utils.ui.widgets.TextAutoSizeRange
@@ -235,12 +234,6 @@ private fun HomeScreen(
                         // TODO: Uncomment below after adding event
                         // eventHandler.specialEvent(HomeAnalytics.openHamahang)
                         homeViewModel.navigateToHamahang()
-                    }
-                }
-                HomeItemType.ChatGpt -> {
-                    coroutineScope.launch {
-                        sheetSelected = ChatGpt
-                        sheetState.show()
                     }
                 }
             }
@@ -522,23 +515,32 @@ private fun HomeScreen(
         ) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(
-                    top = 8.dp,
-                    bottom = 16.dp,
-                    start = 16.dp,
-                    end = 16.dp
-                ),
+                contentPadding = PaddingValues(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.weight(0.6f)
             ) {
+                items(
+                    items = list,
+                    key = { item ->
+                        item.title
+                    }
+                ) {
+                    HomeItem(
+                        item = it,
+                        onItemClick = { item ->
+                            onItemClick(item)
+                        }
+                    )
+                }
                 item(span = { GridItemSpan(2) }) {
                     Column(modifier = Modifier.fillMaxWidth()) {
+                        Spacer(modifier = Modifier.size(24.dp))
                         HorizontalInfinitePager(
                             realItemSize = bannerList.size,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .aspectRatio(2.92f),
+                                .aspectRatio(2.34f),
                             itemContent = { index ->
                                 val item = bannerList[index]
 
@@ -557,21 +559,7 @@ private fun HomeScreen(
                                 )
                             }
                         )
-                        Spacer(modifier = Modifier.size(8.dp))
                     }
-                }
-                items(
-                    items = list,
-                    key = { item ->
-                        item.title
-                    }
-                ) {
-                    HomeItem(
-                        item = it,
-                        onItemClick = { item ->
-                            onItemClick(item)
-                        }
-                    )
                 }
             }
         }
@@ -590,8 +578,7 @@ private fun HomeScreen(
                     UpdateApp,
                     NotificationPermission,
                     UnavailableTile,
-                    Changelog,
-                    ChatGpt -> sheetState.hide()
+                    Changelog -> sheetState.hide()
                     ForceUpdate -> (context as Activity).finish()
                     LogoutConfirmation -> {
                         sheetState.hide()
@@ -719,14 +706,6 @@ private fun HomeScreen(
                             }
                         )
                     }
-                    ChatGpt -> {
-                        HomeItemBottomSheet(
-                            iconRes = HomeItemScreen.chatGpt.icon,
-                            title = stringResource(HomeItemScreen.chatGpt.title),
-                            textBody = stringResource(R.string.chatgpt_item_bottomsheet_explain),
-                            action = { sheetState.hide() }
-                        )
-                    }
                 }
             }
         }
@@ -739,7 +718,7 @@ fun HomeAppBar(openDrawer: () -> Unit) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 24.dp, horizontal = 8.dp)
+            .padding(vertical = 36.dp, horizontal = 8.dp)
     ) {
         ViraImage(
             drawable = R.drawable.ic_app_logo_name_linear,
@@ -831,7 +810,7 @@ private fun MarqueeText(
     }
 
     val textColor by animateColorAsState(
-        targetValue = if (index == 0) Color_Text_2 else teal_100,
+        targetValue = if (index == 0) Color_Text_2 else Pink_100,
         animationSpec = tween(CHANGE_COLOR_DELAY),
         label = "color"
     )

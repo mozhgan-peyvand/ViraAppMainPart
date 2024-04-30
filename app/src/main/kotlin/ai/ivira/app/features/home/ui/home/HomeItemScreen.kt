@@ -4,8 +4,7 @@ import ai.ivira.app.R
 import ai.ivira.app.utils.ui.theme.Indigo_100
 import ai.ivira.app.utils.ui.theme.Indigo_300
 import ai.ivira.app.utils.ui.theme.Pink_100
-import ai.ivira.app.utils.ui.theme.Red_20
-import ai.ivira.app.utils.ui.theme.teal_100
+import ai.ivira.app.utils.ui.theme.Teal_200
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
@@ -41,7 +40,7 @@ data class HomeItemScreen(
         private val imazh = HomeItemScreen(
             icon = R.drawable.img_imazh,
             title = R.string.lbl_imazh,
-            textColor = Red_20,
+            textColor = Teal_200,
             description = R.string.lbl_imazh_desc,
             banner = R.drawable.img_banner_imazh,
             isComingSoon = false,
@@ -58,19 +57,9 @@ data class HomeItemScreen(
             homeItemType = HomeItemType.Hamahang
         )
 
-        val chatGpt = HomeItemScreen(
-            icon = R.drawable.img_chatgpt,
-            textColor = teal_100,
-            title = R.string.lbl_chatgpt,
-            description = R.string.lbl_chatgpt_desc,
-            banner = 0,
-            isComingSoon = true,
-            homeItemType = HomeItemType.ChatGpt
-        )
-
         val mainItemList: List<HomeItemScreen>
             get() {
-                return listOf(avaNegar, avaSho, imazh, hamahang, chatGpt)
+                return listOf(avaNegar, avaSho, imazh, hamahang)
             }
 
         val bannerItemList: List<HomeItemScreen>
@@ -84,6 +73,5 @@ enum class HomeItemType {
     Avanegar,
     Avasho,
     Imazh,
-    Hamahang,
-    ChatGpt
+    Hamahang
 }
