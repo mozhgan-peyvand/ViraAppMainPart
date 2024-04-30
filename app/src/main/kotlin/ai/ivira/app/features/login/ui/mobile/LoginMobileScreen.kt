@@ -37,6 +37,8 @@ import ai.ivira.app.utils.ui.theme.Color_Text_3
 import ai.ivira.app.utils.ui.widgets.HorizontalLoadingCircles
 import ai.ivira.app.utils.ui.widgets.ViraImage
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.interaction.FocusInteraction
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -95,6 +97,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ai.ivira.app.designsystem.theme.R as ThemeR
 
@@ -133,6 +136,7 @@ private fun LoginMobileScreen(
     val scrollState = rememberScrollState()
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
+    val textFieldInteractionSource = remember { MutableInteractionSource() }
     val snackBarState = remember { SnackbarHostState() }
     val scaffoldState = rememberScaffoldState(snackbarHostState = snackBarState)
     val coroutineScope = rememberCoroutineScope()
@@ -155,7 +159,9 @@ private fun LoginMobileScreen(
         if (loginRequiredIsShown && !isKeyboardShown) {
             isKeyboardShown = true
             coroutineScope.launch {
+                delay(400)
                 focusRequester.requestFocus()
+                textFieldInteractionSource.emit(FocusInteraction.Focus())
             }
         }
     }
@@ -217,6 +223,7 @@ private fun LoginMobileScreen(
         focusRequester = focusRequester,
         timerState = timerState,
         scrollState = scrollState,
+        textFieldInteractionSource = textFieldInteractionSource,
         isValidationError = mobileViewModel.hasInvalidPhoneError.value,
         onConfirmClick = mobileViewModel::checkUserChangeAndSendOtp,
         onTermsOfServiceClick = navigateToTermsOfServiceScreen,
@@ -239,6 +246,7 @@ private fun LoginMobileScreenUI(
     timerState: LoginTimerState,
     focusRequester: FocusRequester,
     scrollState: ScrollState,
+    textFieldInteractionSource: MutableInteractionSource,
     isValidationError: Boolean,
     selectedSheet: LoginMobileBottomSheetType,
     scaffoldState: ScaffoldState,
@@ -330,6 +338,7 @@ private fun LoginMobileScreenUI(
                         safeClick(onConfirmClickAction)
                     }
                 ),
+                interactionSource = textFieldInteractionSource,
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
@@ -520,7 +529,8 @@ private fun LoginMobileScreenPreview() {
             focusRequester = remember { FocusRequester() },
             coroutineScope = rememberCoroutineScope(),
             changeUserViewModel = hiltViewModel(),
-            sendOtpCallback = {}
+            sendOtpCallback = {},
+            textFieldInteractionSource = remember { MutableInteractionSource() }
         )
     }
 }
