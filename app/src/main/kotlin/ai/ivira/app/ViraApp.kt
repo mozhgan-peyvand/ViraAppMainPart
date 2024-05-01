@@ -1,5 +1,6 @@
 package ai.ivira.app
 
+import ai.ivira.app.features.config.data.ConfigManager
 import ai.ivira.app.utils.common.notification.FirebaseTopic.Vira
 import ai.ivira.app.utils.common.notification.ViraFirebaseMessagingService.Companion.TAG
 import ai.ivira.app.utils.initializers.TrackersInitializer
@@ -29,8 +30,13 @@ class ViraApp : Application(), ImageLoaderFactory {
     @Inject
     lateinit var trackersInitializer: Provider<TrackersInitializer>
 
+    // this is here, just to
+    @Inject
+    lateinit var configManager: ConfigManager
+
     @Inject
     lateinit var sharePerf: SharedPreferences
+
     override fun onCreate() {
         super.onCreate()
 

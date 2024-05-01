@@ -3,7 +3,6 @@ package ai.ivira.app.features.home.ui.home.version.model
 import ai.ivira.app.features.home.data.entity.VersionDto
 
 data class VersionView(
-    val name: String,
     val isForce: Boolean,
     val releaseNote: List<ReleaseNoteView>,
     val versionName: String,
@@ -11,7 +10,6 @@ data class VersionView(
 )
 
 fun VersionDto.toVersionView() = VersionView(
-    name = versionEntity.name,
     isForce = versionEntity.isForce,
     releaseNote = releaseNotes.map { releaseNoteView ->
         releaseNoteView.toReleaseNoteView()

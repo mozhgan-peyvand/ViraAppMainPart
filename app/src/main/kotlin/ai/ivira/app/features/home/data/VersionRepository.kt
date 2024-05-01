@@ -2,25 +2,14 @@ package ai.ivira.app.features.home.data
 
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.features.home.data.entity.ChangelogEntity
-import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
-import ai.ivira.app.features.home.data.entity.SettingNetwork
 import ai.ivira.app.features.home.data.entity.VersionDto
-import ai.ivira.app.features.home.data.entity.VersionEntity
 import ai.ivira.app.utils.data.JsonHelper
-import ai.ivira.app.utils.data.NetworkHandler
-import ai.ivira.app.utils.data.api_result.AppException
-import ai.ivira.app.utils.data.api_result.AppResult
-import ai.ivira.app.utils.data.api_result.AppResult.Success
-import ai.ivira.app.utils.data.api_result.toAppResult
 import android.content.SharedPreferences
 import android.text.format.DateUtils
 import androidx.core.content.edit
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,20 +22,10 @@ const val CURRENT_CHANGELOG_VERSION_KEY = "currentChangelogVersionKey"
 @Singleton
 class VersionRepository @Inject constructor(
     private val versionLocalDataSource: VersionLocalDataSource,
-    private val versionRemoteDataSource: VersionRemoteDataSource,
     private val sharedPref: SharedPreferences,
-    private val jsonHelper: JsonHelper,
-    private val networkHandler: NetworkHandler
+    private val jsonHelper: JsonHelper
 ) {
     private val changelogVersion: Int = sharedPref.getInt(CURRENT_CHANGELOG_VERSION_KEY, 0)
-
-    init {
-        CoroutineScope(IO).launch {
-            if (shouldShowBottomSheet()) {
-                getChangeLogFromRemote()
-            }
-        }
-    }
 
     // when update checked automatically each 48 hours
     private fun updateChecked() {
@@ -85,26 +64,6 @@ class VersionRepository @Inject constructor(
         return showUpdateBottomSheetAgain || hasEnoughTimePassedToShowUpdate
     }
 
-    suspend fun getChangeLogFromRemote(): AppResult<Unit> {
-        return if (networkHandler.hasNetworkConnection()) {
-            when (
-                val result = versionRemoteDataSource.getUpdateVersionList().toAppResult()
-            ) {
-                is Success -> {
-                    insertChangeLogToDatabase(result.data)
-                    updateChecked()
-                    Success(Unit)
-                }
-
-                is AppResult.Error -> {
-                    AppResult.Error(result.error)
-                }
-            }
-        } else {
-            AppResult.Error(AppException.NetworkConnectionException())
-        }
-    }
-
     fun getChangeLogFromLocal(): Flow<List<VersionDto>> {
         return versionLocalDataSource.getChangeLog().map { list ->
             val currentVersionIndex = list.indexOfFirst { versionDto ->
@@ -119,24 +78,6 @@ class VersionRepository @Inject constructor(
                 }.reversed()
             }
         }
-    }
-
-    private suspend fun insertChangeLogToDatabase(settingNetwork: List<SettingNetwork>) {
-        val versions = mutableListOf<VersionEntity>()
-        val releaseNotes = mutableListOf<ReleaseNoteEntity>()
-
-        settingNetwork.forEach { setting ->
-            versions.add(setting.toVersionEntity())
-            releaseNotes.addAll(
-                setting.value.releaseNote.map {
-                    it.toReleaseNoteEntity(setting.value.versionNumber)
-                }
-            )
-        }
-        versionLocalDataSource.insertChangeLog(
-            versions = versions,
-            releaseNotes = releaseNotes
-        )
     }
 
     fun getChangelog(): Flow<List<ChangelogEntity>> {

@@ -1,44 +1,21 @@
 package ai.ivira.app.features.config.ui
 
 import ai.ivira.app.features.config.data.ConfigRepository
-import ai.ivira.app.utils.data.api_result.AppResult
 import ai.ivira.app.utils.ui.stateIn
 import android.text.format.DateUtils
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ConfigViewModel @Inject constructor(
-    private val configRepository: ConfigRepository
+    configRepository: ConfigRepository
 ) : ViewModel() {
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            while (true) {
-                val lastUpdateTime = configRepository.getLastTileConfigTime()
-                val currentTime = System.currentTimeMillis()
-                if (lastUpdateTime < 0 || currentTime - lastUpdateTime > UPDATE_DELAY_MS) {
-                    if (configRepository.fetchTileConfigs() is AppResult.Success) {
-                        delay(UPDATE_DELAY_MS)
-                    } else {
-                        delay(RETRY_DELAY_MS)
-                    }
-                } else {
-                    delay(UPDATE_DELAY_MS - (currentTime - lastUpdateTime))
-                }
-            }
-        }
-    }
-
-    private val tiles: StateFlow<List<TileItem>> = configRepository.getTileConfigs()
+    private val tiles: StateFlow<List<TileItem>> = configRepository.getTiles()
         .map { it.mapNotNull { entity -> entity.toTileItem() } }
         .stateIn(initial = emptyList())
 

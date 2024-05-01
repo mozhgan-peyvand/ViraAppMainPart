@@ -1,6 +1,7 @@
 package ai.ivira.app.utils.common.di
 
 import ai.ivira.app.features.ava_negar.data.DataStoreRepository
+import ai.ivira.app.utils.common.di.qualifier.ConfigSharedPref
 import ai.ivira.app.utils.common.di.qualifier.EncryptedSharedPref
 import ai.ivira.app.utils.data.db.Migration
 import ai.ivira.app.utils.data.db.ViraDb
@@ -38,6 +39,23 @@ object LocalModule {
         return EncryptedSharedPreferences.create(
             context,
             "e-vira",
+            masterKey,
+            AES256_SIV,
+            PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
+    @Provides
+    @Singleton
+    @ConfigSharedPref
+    fun provideConfigSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        val masterKey = Builder(context)
+            .setKeyScheme(AES256_GCM)
+            .build()
+
+        return EncryptedSharedPreferences.create(
+            context,
+            "vira-config",
             masterKey,
             AES256_SIV,
             PrefValueEncryptionScheme.AES256_GCM

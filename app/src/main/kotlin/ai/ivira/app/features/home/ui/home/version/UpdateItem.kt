@@ -106,7 +106,6 @@ private fun UpdateItemPreview() {
         )
 
         val item = VersionView(
-            name = "Name",
             isForce = false,
             releaseNote = listOf(release, release, release, release),
             versionName = "Version Name",
