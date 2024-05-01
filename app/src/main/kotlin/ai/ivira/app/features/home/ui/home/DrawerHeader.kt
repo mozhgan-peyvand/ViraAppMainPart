@@ -105,7 +105,7 @@ private fun DrawerHeaderBody(
                         .padding(6.dp)
                 ) {
                     ViraIcon(
-                        drawable = R.drawable.ic_profile_edit,
+                        drawable = R.drawable.ic_profile,
                         contentDescription = null,
                         tint = MaterialTheme.colors.background,
                         modifier = Modifier.size(24.dp)

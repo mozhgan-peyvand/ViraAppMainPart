@@ -100,7 +100,7 @@ fun LogoutConfirmationBottomSheet(
         PartiallyBoldText(
             text = stringResource(id = R.string.msg_logout),
             startIndex = 15,
-            endIndex = 29,
+            endIndex = 30,
             style = MaterialTheme.typography.body2,
             highlightStyle = MaterialTheme.typography.subtitle2,
             modifier = Modifier.padding(bottom = 28.dp)

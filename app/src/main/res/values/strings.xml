@@ -294,7 +294,7 @@
     <string name="msg_terms_and_conditions">با ورود به اپلیکیشن ویرا شرایط و قوانین را می پذیرم</string>
     <string name="lbl_terms_of_service">شرایط و قوانین</string>
     <string name="lbl_logout">خروج از حساب کاربری</string>
-    <string name="msg_logout">آیا میخواهید از حساب کاربری‌تان خارج شوید؟</string>
+    <string name="msg_logout">آیا میخواهید از حساب کاربریتان خارج شوید؟</string>
     <string name="lbl_exit">خارج شدن</string>
     <string name="msg_phone_number_hint">مثلا: ۰۹۱۲۳۴۵۶۷۸۹</string>
     <string name="msg_error_phone_number_validation">شماره تلفن همراه با ۰۹ شروع می شود</string>
