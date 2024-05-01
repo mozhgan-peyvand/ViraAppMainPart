@@ -33,6 +33,7 @@ import ai.ivira.app.features.home.ui.home.version.sheets.UpToDateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateBottomSheet
 import ai.ivira.app.features.home.ui.home.version.sheets.UpdateLoadingBottomSheet
 import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes
+import ai.ivira.app.features.login.ui.LoginAnalytics.logout
 import ai.ivira.app.features.login.ui.LoginScreenRoutes
 import ai.ivira.app.utils.common.CommonConstants.LANDING_URL
 import ai.ivira.app.utils.data.NetworkStatus
@@ -674,6 +675,7 @@ private fun HomeScreen(
                                 showMessage(snackbarHostState, coroutineScope, it.message)
                             },
                             onSuccessCallback = {
+                                eventHandler.specialEvent(logout)
                                 sheetState.hide()
                             }
                         )

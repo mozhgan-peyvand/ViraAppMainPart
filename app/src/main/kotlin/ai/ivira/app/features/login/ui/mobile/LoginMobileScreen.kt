@@ -15,6 +15,7 @@ import ai.ivira.app.designsystem.components.textfield.ViraOutlinedTextFieldDefau
 import ai.ivira.app.features.ava_negar.ui.SnackBarWithPaddingBottom
 import ai.ivira.app.features.ava_negar.ui.record.widgets.ClickableTextWithDashUnderline
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
+import ai.ivira.app.features.login.ui.LoginAnalytics.screenViewLoginMobile
 import ai.ivira.app.features.login.ui.LoginScreenRoutes
 import ai.ivira.app.features.login.ui.mobile.LoginMobileBottomSheetType.ChangeUserConfirmation
 import ai.ivira.app.features.login.ui.mobile.LoginMobileBottomSheetType.LoginRequired
@@ -24,6 +25,7 @@ import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiSuccess
+import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.formatDuration
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
@@ -110,6 +112,13 @@ fun LoginMobileRoute(
     val parentEntry = remember(backStackEntry) {
         navController.getBackStackEntry(LoginScreenRoutes.LoginMobileScreen.route)
     }
+
+    val eventHandler = LocalEventHandler.current
+
+    LaunchedEffect(Unit) {
+        eventHandler.screenViewEvent(screenViewLoginMobile)
+    }
+
     LoginMobileScreen(
         navigateToOtpScreen = {
             navController.navigate(LoginScreenRoutes.LoginOtpScreen.createRoute(it))
