@@ -267,19 +267,26 @@ private fun HamahangArchiveListScreen(
         isInDownloadQueue = { id ->
             viewModel.isInDownloadQueue(id)
         },
-        onSelectedProcessItemClick = { processItem ->
+        onSelectedProcessItemClick = onClick@{ processItem ->
             if (File(processItem.filePath).exists()) {
                 if (!processItem.isSeen) {
                     viewModel.markFileAsSeen(processItem.id)
                 }
                 navigateToDetailScreen(processItem.id)
-            } else {
-                if (viewModel.isInDownloadQueue(processItem.id)) {
-                    viewModel.cancelDownload(processItem.id)
-                } else {
-                    viewModel.addFileToDownloadQueue(processItem)
-                }
+                return@onClick
             }
+
+            if (downloadFailureList.contains(processItem.id)) {
+                viewModel.tryDownloadAgain(processItem)
+                return@onClick
+            }
+
+            if (viewModel.isInDownloadQueue(processItem.id)) {
+                viewModel.cancelDownload(processItem.id)
+                return@onClick
+            }
+
+            viewModel.addFileToDownloadQueue(processItem)
         },
         onProcessItemMenuClick = { processItem ->
             selectedItem = processItem

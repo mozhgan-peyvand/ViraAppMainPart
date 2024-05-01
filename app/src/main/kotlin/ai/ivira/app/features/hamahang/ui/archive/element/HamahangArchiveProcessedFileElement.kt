@@ -79,14 +79,14 @@ fun HamahangArchiveProcessedFileElement(
             HamahangIconItemState(
                 hamahangitemStatus = if (isDownloaded) {
                     Play
-                } else if (isInDownloadQueue) {
-                    Cancel
                 } else if (isDownloadFailure) {
                     Retry
+                } else if (isInDownloadQueue) {
+                    Cancel
                 } else {
                     Download
                 },
-                isInDownloadQueue = isInDownloadQueue,
+                isInDownloadQueue = !isDownloadFailure && isInDownloadQueue,
                 progress = archiveViewProcessed.downloadingPercent
             )
 
@@ -105,7 +105,7 @@ fun HamahangArchiveProcessedFileElement(
                     }
                 )
 
-                if (!isNetworkAvailable && isDownloadFailure) {
+                if (!isNetworkAvailable || isDownloadFailure) {
                     Spacer(modifier = Modifier.size(8.dp))
 
                     Text(

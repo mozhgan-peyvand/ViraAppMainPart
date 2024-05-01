@@ -177,7 +177,7 @@ class HamahangArchiveListViewModel @Inject constructor(
 
                 if (downloadState == IdleDownload) {
                     if (downloadQueueList.isNotEmpty()) {
-                        val item = downloadQueueList.firstOrNull { it.id !in failureList || !File(it.filePath).exists() }
+                        val item = downloadQueueList.firstOrNull { it.id !in failureList && !File(it.filePath).exists() }
                         if (item != null) {
                             _downloadStatus.update { Downloading }
                             downloadFile(item)
@@ -327,6 +327,24 @@ class HamahangArchiveListViewModel @Inject constructor(
         }
     }
 
+    fun tryDownloadAgain(item: HamahangProcessedFileView) {
+        downloadQueue.update { currentQueue ->
+            if (currentQueue.contains(item)) {
+                currentQueue
+            } else {
+                currentQueue.plus(item)
+            }
+        }
+
+        _downloadFailureList.update { list ->
+            list.filter { it != item.id }
+        }
+
+        if (_downloadStatus.value == FailureDownload) {
+            _downloadStatus.value = IdleDownload
+        }
+    }
+
     private suspend fun resetEverything() {
         job?.cancel()
         job = null
@@ -413,7 +431,7 @@ class HamahangArchiveListViewModel @Inject constructor(
                 _downloadStatus.emit(IdleDownload)
 
                 _downloadFailureList.update { list ->
-                    list.filter { it == processedFile.id }
+                    list.filter { it != processedFile.id }
                 }
             } else {
                 _downloadFailureList.update { failureList ->
