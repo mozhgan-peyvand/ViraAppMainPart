@@ -4,6 +4,7 @@ import ai.ivira.app.BuildConfig
 import ai.ivira.app.features.ava_negar.data.DataStoreRepository
 import ai.ivira.app.features.ava_negar.data.PreferencesKey.onBoardingKey
 import ai.ivira.app.features.avasho.ui.onboarding.AVASHO_ONBOARDING_COMPLETED
+import ai.ivira.app.features.config.data.ConfigRepository
 import ai.ivira.app.features.config.ui.TileItem
 import ai.ivira.app.features.home.data.CURRENT_CHANGELOG_VERSION_KEY
 import ai.ivira.app.features.home.data.VersionRepository
@@ -49,6 +50,7 @@ private const val SHOWING_PERMISSION_REQUEST_INTERVAL = 7 * DateUtils.DAY_IN_MIL
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val versionRepository: VersionRepository,
+    private val configRepository: ConfigRepository,
     private val sharedPref: SharedPreferences,
     private val uiException: UiException,
     aiEventPublisher: ViraPublisher,
@@ -240,21 +242,15 @@ class HomeViewModel @Inject constructor(
 
     fun getUpdateList() {
         viewModelScope.launch(IO) {
-            _uiViewState.update {
-                UiLoading
-            }
+            _uiViewState.update { UiLoading }
 
-            when (val result = versionRepository.getChangeLogFromRemote()) {
+            when (val result = configRepository.fetchVersions()) {
                 is Success -> {
-                    _uiViewState.update {
-                        UiSuccess
-                    }
+                    _uiViewState.update { UiSuccess }
                 }
 
                 is Error -> {
-                    _uiViewState.update {
-                        UiError(uiException.getErrorMessage(result.error))
-                    }
+                    _uiViewState.update { UiError(uiException.getErrorMessage(result.error)) }
                 }
             }
         }

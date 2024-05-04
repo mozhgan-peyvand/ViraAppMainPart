@@ -9,10 +9,10 @@ import ai.ivira.app.features.avasho.data.entity.AvashoProcessedFileEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoTrackingFileEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoUploadingFileEntity
 import ai.ivira.app.features.config.data.ConfigDao
-import ai.ivira.app.features.config.data.TileConfigEntity
+import ai.ivira.app.features.config.data.model.ConfigTileEntity
+import ai.ivira.app.features.config.data.model.ConfigVersionEntity
+import ai.ivira.app.features.config.data.model.ConfigVersionReleaseNoteEntity
 import ai.ivira.app.features.home.data.VersionDao
-import ai.ivira.app.features.home.data.entity.ReleaseNoteEntity
-import ai.ivira.app.features.home.data.entity.VersionEntity
 import ai.ivira.app.features.imazh.data.ImazhDao
 import ai.ivira.app.features.imazh.data.ImazhListConvertor
 import ai.ivira.app.features.imazh.data.entity.ImazhHistoryEntity
@@ -25,18 +25,26 @@ import androidx.room.TypeConverters
 @TypeConverters(ImazhListConvertor::class)
 @Database(
     entities = [
+        // region: Avanegar
         AvanegarProcessedFileEntity::class,
         AvanegarTrackingFileEntity::class,
         AvanegarUploadingFileEntity::class,
-        VersionEntity::class,
-        ReleaseNoteEntity::class,
+        // endregion: Avanegar
+        // region: Config
+        ConfigVersionEntity::class,
+        ConfigVersionReleaseNoteEntity::class,
+        ConfigTileEntity::class,
+        // endregion: Config
+        // region: Avasho
         AvashoProcessedFileEntity::class,
         AvashoTrackingFileEntity::class,
         AvashoUploadingFileEntity::class,
-        TileConfigEntity::class,
+        // endregion: Avasho
+        // region: Imazh
         ImazhHistoryEntity::class,
         ImazhProcessedFileEntity::class,
         ImazhTrackingFileEntity::class
+        // endregion: Imazh
     ],
     version = 7,
     exportSchema = false

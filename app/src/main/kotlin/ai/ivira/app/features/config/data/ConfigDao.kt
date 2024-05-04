@@ -1,5 +1,8 @@
 package ai.ivira.app.features.config.data
 
+import ai.ivira.app.features.config.data.model.ConfigTileEntity
+import ai.ivira.app.features.config.data.model.ConfigVersionEntity
+import ai.ivira.app.features.config.data.model.ConfigVersionReleaseNoteEntity
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -8,9 +11,28 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ConfigDao {
-    @Query("SELECT * FROM TileConfigEntity")
-    fun getTileConfigs(): Flow<List<TileConfigEntity>>
+    // region tiles
+    @Query("SELECT * FROM ConfigTileEntity")
+    fun getTiles(): Flow<List<ConfigTileEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTileConfigs(configs: List<TileConfigEntity>)
+    suspend fun insertTiles(configs: List<ConfigTileEntity>)
+
+    @Query("DELETE FROM ConfigTileEntity")
+    suspend fun deleteTiles()
+    // endregion tiles
+
+    // region versions
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertVersions(list: List<ConfigVersionEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertReleaseNotes(list: List<ConfigVersionReleaseNoteEntity>)
+
+    @Query("DELETE FROM ConfigVersionEntity")
+    suspend fun deleteVersions()
+
+    @Query("DELETE FROM ConfigVersionReleaseNoteEntity")
+    suspend fun deleteReleaseNotes()
+    // endregion versions
 }

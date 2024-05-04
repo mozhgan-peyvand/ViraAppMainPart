@@ -116,6 +116,13 @@ object Migration {
 
                 db.execSQL("ALTER TABLE ImazhProcessedFileEntity ADD COLUMN `negativePrompt` Text DEFAULT '' NOT NULL")
                 db.execSQL("ALTER TABLE ImazhProcessedFileEntity ADD COLUMN `englishNegativePrompt` Text DEFAULT '' NOT NULL")
+
+                db.execSQL("DROP TABLE IF EXISTS `TileConfigEntity`")
+                db.execSQL("DROP TABLE IF EXISTS `VersionEntity`")
+                db.execSQL("DROP TABLE IF EXISTS `ReleaseNoteEntity`")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `ConfigTileEntity` (`name` TEXT NOT NULL, `message` TEXT NOT NULL, `status` INTEGER NOT NULL, PRIMARY KEY(`name`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `ConfigVersionEntity` (`versionNumber` INTEGER NOT NULL, `isForce` INTEGER NOT NULL, `versionName` TEXT NOT NULL, PRIMARY KEY(`versionNumber`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `ConfigVersionReleaseNoteEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `versionNumber` INTEGER NOT NULL, `type` INTEGER NOT NULL, `title` TEXT NOT NULL)")
             }
         }
     }

@@ -141,7 +141,6 @@ private fun UpdateBottomSheetPreview() {
         )
 
         val item = VersionView(
-            name = "",
             isForce = false,
             releaseNote = listOf(release, release, release, release),
             versionName = "",

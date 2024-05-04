@@ -1,8 +1,8 @@
 package ai.ivira.app.features.config.ui
 
-import ai.ivira.app.features.config.data.TileConfigEntity
+import ai.ivira.app.features.config.data.model.ConfigTileEntity
 
-fun TileConfigEntity.toTileItem() = when (stringToKey(name)) {
+fun ConfigTileEntity.toTileItem() = when (stringToKey(name)) {
     Keys.Avanegar -> TileItem.Avanegar(
         key = name,
         available = status,

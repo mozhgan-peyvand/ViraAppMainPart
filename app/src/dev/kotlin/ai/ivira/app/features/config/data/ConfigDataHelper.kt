@@ -7,9 +7,12 @@ class ConfigDataHelper @Inject constructor() {
         System.loadLibrary("vira")
     }
 
-    private fun tileConfigSuffix() = "/service/barjavand@3/data/vira/1.0.0?subSchema=tiles"
+    val barjavandBaseUrl: String get() = "${cad()}/service/barjavand@3/data/vira/2.0.0"
+    val tilesUrl get() = "${barjavandBaseUrl}?subSchema=tiles"
+    val lastUpdateUrl get() = "${barjavandBaseUrl}?subSchema=lastUpdate"
+    val versionsUrl get() = "${barjavandBaseUrl}?subSchema=versions"
+
     fun ud() = cud()
-    fun ad() = cad() + tileConfigSuffix()
     fun pd() = cpd()
 
     private external fun cud(): String
