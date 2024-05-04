@@ -54,7 +54,7 @@ import androidx.room.TypeConverters
         HamahangUploadingFileEntity::class,
         HamahangTrackingFileEntity::class,
         HamahangProcessedFileEntity::class,
-            HamahangCheckingFileEntity::class
+        HamahangCheckingFileEntity::class
         // endregion: Hamahang
     ],
     version = 7,

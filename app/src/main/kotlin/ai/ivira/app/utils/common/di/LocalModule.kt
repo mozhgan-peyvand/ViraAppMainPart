@@ -1,8 +1,6 @@
 package ai.ivira.app.utils.common.di
 
 import ai.ivira.app.features.ava_negar.data.DataStoreRepository
-import ai.ivira.app.features.hamahang.data.HamahangDao
-import ai.ivira.app.features.hamahang.data.HamahangFakeData
 import ai.ivira.app.utils.common.di.qualifier.ConfigSharedPref
 import ai.ivira.app.utils.common.di.qualifier.EncryptedSharedPref
 import ai.ivira.app.utils.data.db.Migration
