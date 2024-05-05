@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -45,6 +46,7 @@ class LoginOtpViewModel @Inject constructor(
 
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState = _uiViewState.asSharedFlow()
+    private val uiViewStateAsStateFlow = uiViewState.stateIn(UiIdle)
 
     private val _resendOtpViewState = MutableSharedFlow<UiStatus>()
     val resendOtpViewState = _resendOtpViewState.asSharedFlow()
@@ -59,7 +61,7 @@ class LoginOtpViewModel @Inject constructor(
 
     var isRequestAllowed = combine(
         snapshotFlow { otpTextValue },
-        uiViewState.stateIn(UiIdle)
+        uiViewStateAsStateFlow
     ) { code, uiState ->
         !(uiState == UiLoading || code.length < OTP_SIZE)
     }.stateIn(false)
@@ -82,14 +84,13 @@ class LoginOtpViewModel @Inject constructor(
 
         // this is used to automatically send the verifyOtpRequest on user filling the box
         viewModelScope.launch {
-            combine(
-                snapshotFlow { otpTextValue }.distinctUntilChanged(),
-                uiViewState.stateIn(UiIdle)
-            ) { it, uiViewState ->
-                if (uiViewState == UiLoading) return@combine
-                if (it.length < OTP_SIZE) return@combine
-                verifyOtpRequest()
-            }.launchIn(this)
+            snapshotFlow { otpTextValue }
+                .distinctUntilChanged()
+                .map {
+                    if (uiViewStateAsStateFlow.value == UiLoading) return@map
+                    if (it.length < OTP_SIZE) return@map
+                    verifyOtpRequest()
+                }.launchIn(this)
         }
     }
 
