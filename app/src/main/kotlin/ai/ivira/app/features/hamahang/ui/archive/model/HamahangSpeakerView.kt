@@ -3,6 +3,8 @@ package ai.ivira.app.features.hamahang.ui.archive.model
 import ai.ivira.app.R
 import androidx.annotation.DrawableRes
 
+// NOTE: serverName is also used in ConfigHamahangSpeakerEntity as primary key. so if
+//  a serverName is changed(or added) it must also be applied in config as well (using barjavand)
 enum class HamahangSpeakerView(
     val viewName: String,
     val serverName: String, // TODO: needs to be in data layer

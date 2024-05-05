@@ -1,6 +1,7 @@
 package ai.ivira.app.features.config.data
 
 import ai.ivira.app.features.config.data.model.ConfigEntity
+import ai.ivira.app.features.config.data.model.ConfigHamahangEntity
 import ai.ivira.app.features.config.data.model.ConfigTileEntity
 import ai.ivira.app.features.config.data.model.ConfigVersionEntity
 import ai.ivira.app.features.config.data.model.ConfigVersionReleaseNoteEntity
@@ -22,6 +23,7 @@ class ConfigLocalDataSource @Inject constructor(
         insertTiles(config.tiles)
         insertVersions(config.versions, config.releaseNotes)
         insertLastUpdate(config.lastUpdate)
+        insertHamahangEntity(config.hamahang)
     }
 
     // region tiles
@@ -49,6 +51,17 @@ class ConfigLocalDataSource @Inject constructor(
         }
     }
     // endregion versions
+
+    // region hamahang
+    fun getHamahangSpeakers() = dao.getHamahangSpeakers()
+
+    suspend fun insertHamahangEntity(hamahang: ConfigHamahangEntity) {
+        db.withTransaction {
+            dao.deleteHamahangSpeakers()
+            dao.insertHamahangSpeakers(hamahang.speakers)
+        }
+    }
+    // endregion hamahang
 
     // region LastUpdate
     fun getLastUpdateFetchTime(): Long? {

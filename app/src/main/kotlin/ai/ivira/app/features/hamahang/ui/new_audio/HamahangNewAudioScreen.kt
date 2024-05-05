@@ -158,6 +158,7 @@ private fun HamahangNewAudioScreen(
 
     val mode by viewModel.mode.collectAsStateWithLifecycle()
     val isOkToGenerate by viewModel.isOkToGenerate.collectAsStateWithLifecycle(false)
+    val speakers by viewModel.speakers.collectAsStateWithLifecycle()
     val selectedSpeaker by viewModel.selectedSpeaker.collectAsStateWithLifecycle()
     val playerState by viewModel::playerState
 
@@ -288,7 +289,7 @@ private fun HamahangNewAudioScreen(
         context = context,
         mode = mode,
         selectedSpeaker = selectedSpeaker,
-        speakers = viewModel.speakers,
+        speakers = speakers,
         scaffoldState = scaffoldState,
         scrollState = scrollState,
         isOkToGenerate = isOkToGenerate,

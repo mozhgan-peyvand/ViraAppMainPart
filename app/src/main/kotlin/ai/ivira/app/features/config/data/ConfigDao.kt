@@ -1,5 +1,6 @@
 package ai.ivira.app.features.config.data
 
+import ai.ivira.app.features.config.data.model.ConfigHamahangSpeakerEntity
 import ai.ivira.app.features.config.data.model.ConfigTileEntity
 import ai.ivira.app.features.config.data.model.ConfigVersionEntity
 import ai.ivira.app.features.config.data.model.ConfigVersionReleaseNoteEntity
@@ -35,4 +36,15 @@ interface ConfigDao {
     @Query("DELETE FROM ConfigVersionReleaseNoteEntity")
     suspend fun deleteReleaseNotes()
     // endregion versions
+
+    // region hamahang
+    @Query("SELECT * FROM ConfigHamahangSpeakerEntity")
+    fun getHamahangSpeakers(): Flow<List<ConfigHamahangSpeakerEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHamahangSpeakers(speakers: List<ConfigHamahangSpeakerEntity>)
+
+    @Query("DELETE FROM ConfigHamahangSpeakerEntity")
+    suspend fun deleteHamahangSpeakers()
+    // endregion hamahang
 }

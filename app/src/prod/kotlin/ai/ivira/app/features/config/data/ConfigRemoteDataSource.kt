@@ -1,5 +1,6 @@
 package ai.ivira.app.features.config.data
 
+import ai.ivira.app.features.config.data.model.ConfigHamahangNetwork
 import ai.ivira.app.features.config.data.model.ConfigNetwork
 import ai.ivira.app.features.config.data.model.ConfigObjectNetwork
 import ai.ivira.app.features.config.data.model.ConfigTileNetwork
@@ -49,6 +50,17 @@ class ConfigRemoteDataSource @Inject constructor(
     suspend fun fetchVersions(): ApiResult<List<ConfigObjectNetwork<ConfigVersionNetwork>>> {
         val result = configService.fetchVersions(
             url = configDataHelper.versionsUrl,
+            gatewaySystem = configDataHelper.gp()
+        )
+        return when (result) {
+            is ApiResult.Success -> ApiResult.Success(result.data.data)
+            is ApiResult.Error -> ApiResult.Error(result.error)
+        }
+    }
+
+    suspend fun fetchHamahang(): ApiResult<ConfigHamahangNetwork> {
+        val result = configService.fetchHamahang(
+            url = configDataHelper.hamahangUrl,
             gatewaySystem = configDataHelper.gp()
         )
         return when (result) {

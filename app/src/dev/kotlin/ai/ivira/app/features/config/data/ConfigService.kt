@@ -1,5 +1,6 @@
 package ai.ivira.app.features.config.data
 
+import ai.ivira.app.features.config.data.model.ConfigHamahangNetwork
 import ai.ivira.app.features.config.data.model.ConfigNetwork
 import ai.ivira.app.features.config.data.model.ConfigObjectNetwork
 import ai.ivira.app.features.config.data.model.ConfigTileNetwork
@@ -38,4 +39,11 @@ interface ConfigService {
         @Header("user") user: String,
         @Header("pass") pass: String
     ): ApiResult<ViraNetwork<List<ConfigObjectNetwork<ConfigVersionNetwork>>>>
+
+    @GET
+    suspend fun fetchHamahang(
+        @Url url: String,
+        @Header("user") user: String,
+        @Header("pass") pass: String
+    ): ApiResult<ViraNetwork<ConfigHamahangNetwork>>
 }

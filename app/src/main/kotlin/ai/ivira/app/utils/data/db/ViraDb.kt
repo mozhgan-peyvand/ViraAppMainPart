@@ -9,6 +9,7 @@ import ai.ivira.app.features.avasho.data.entity.AvashoProcessedFileEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoTrackingFileEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoUploadingFileEntity
 import ai.ivira.app.features.config.data.ConfigDao
+import ai.ivira.app.features.config.data.model.ConfigHamahangSpeakerEntity
 import ai.ivira.app.features.config.data.model.ConfigTileEntity
 import ai.ivira.app.features.config.data.model.ConfigVersionEntity
 import ai.ivira.app.features.config.data.model.ConfigVersionReleaseNoteEntity
@@ -39,6 +40,7 @@ import androidx.room.TypeConverters
         ConfigVersionEntity::class,
         ConfigVersionReleaseNoteEntity::class,
         ConfigTileEntity::class,
+        ConfigHamahangSpeakerEntity::class,
         // endregion: Config
         // region: Avasho
         AvashoProcessedFileEntity::class,

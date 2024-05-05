@@ -6,7 +6,8 @@ import com.squareup.moshi.JsonClass
 data class ConfigNetwork(
     val versions: List<ConfigObjectNetwork<ConfigVersionNetwork>>,
     val lastUpdate: List<ConfigObjectNetwork<Long>>,
-    val tiles: List<ConfigObjectNetwork<ConfigTileNetwork>>
+    val tiles: List<ConfigObjectNetwork<ConfigTileNetwork>>,
+    val hamahang: ConfigHamahangNetwork
 ) {
     fun toConfigEntity(): ConfigEntity {
         val newVersions = mutableListOf<ConfigVersionEntity>()
@@ -25,7 +26,8 @@ data class ConfigNetwork(
             lastUpdate = lastUpdate.associate { it.name to it.value },
             versions = newVersions,
             releaseNotes = newReleaseNotes,
-            tiles = tiles.map { it.toConfigTileEntity() }
+            tiles = tiles.map { it.toConfigTileEntity() },
+            hamahang = hamahang.toConfigHamahangEntity()
         )
     }
 }

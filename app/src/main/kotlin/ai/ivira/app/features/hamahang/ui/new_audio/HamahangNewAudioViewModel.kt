@@ -3,6 +3,7 @@ package ai.ivira.app.features.hamahang.ui.new_audio
 import ai.ivira.app.BuildConfig
 import ai.ivira.app.R
 import ai.ivira.app.features.ava_negar.ui.record.VoicePlayerState
+import ai.ivira.app.features.config.data.ConfigRepository
 import ai.ivira.app.features.hamahang.ui.archive.model.HamahangSpeakerView
 import ai.ivira.app.features.hamahang.ui.new_audio.components.HamahangAudioBoxMode
 import ai.ivira.app.utils.common.file.FileCache
@@ -33,6 +34,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -41,9 +45,10 @@ import javax.inject.Inject
 class HamahangNewAudioViewModel @Inject constructor(
     private val sharedPref: SharedPreferences,
     private val fileCache: FileCache,
-    savedStateHandle: SavedStateHandle,
     private val uiException: UiException,
-    application: Application
+    savedStateHandle: SavedStateHandle,
+    application: Application,
+    configRepository: ConfigRepository
 ) : AndroidViewModel(application) {
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewState
@@ -51,7 +56,17 @@ class HamahangNewAudioViewModel @Inject constructor(
     private val _mode = MutableStateFlow<HamahangAudioBoxMode>(HamahangAudioBoxMode.Idle)
     val mode = _mode.asStateFlow()
 
-    val speakers: List<HamahangSpeakerView> = HamahangSpeakerView.defaultSpeakers()
+    val speakers = configRepository.getHamahangSpeakers()
+        .map { speakers ->
+            HamahangSpeakerView.defaultSpeakers().filter { speaker ->
+                // either it should be null, which could mean it is not in speakers or
+                // config is not fetched yet. or it should be true which means this speaker is active
+                speakers.find { speaker.serverName == it.name }?.status != false
+            }
+        }
+        .stateIn(HamahangSpeakerView.defaultSpeakers()) // by default all speakers are active
+
+    // this value is also changed in init block based on current speakers
     private val _selectedSpeaker = MutableStateFlow<HamahangSpeakerView?>(null)
     val selectedSpeaker = _selectedSpeaker.asStateFlow()
 
@@ -78,6 +93,21 @@ class HamahangNewAudioViewModel @Inject constructor(
         }
         savedStateHandle.get<String?>("filePath")?.let {
             setPreviewMode(it)
+        }
+
+        // in case a speaker is selected but at that time it is removed from config,
+        // then also unselect it.
+        viewModelScope.launch {
+            combine(
+                speakers,
+                selectedSpeaker
+            ) { speakers, selectedSpeaker ->
+                if (selectedSpeaker != null) {
+                    if (selectedSpeaker !in speakers) {
+                        _selectedSpeaker.update { null }
+                    }
+                }
+            }.launchIn(this)
         }
     }
 
