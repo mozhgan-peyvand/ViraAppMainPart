@@ -1,9 +1,9 @@
 package ai.ivira.app.designsystem.components.textfield
 
 import ai.ivira.app.designsystem.components.R
-import ai.ivira.app.utils.ui.theme.Color_Neutral_Outline
 import ai.ivira.app.utils.ui.theme.Color_On_Surface
 import ai.ivira.app.utils.ui.theme.Color_On_Surface_Variant
+import ai.ivira.app.utils.ui.theme.Color_Outline
 import ai.ivira.app.utils.ui.theme.Color_Primary_200
 import ai.ivira.app.utils.ui.theme.Color_Red
 import ai.ivira.app.utils.ui.theme.Color_Text_3
@@ -167,30 +167,30 @@ fun TextFieldDefaults.viraTextFieldColor(
 
     // text color
     textColor: Color = Color_On_Surface,
-    disabledTextColor: Color = Color_Neutral_Outline,
+    disabledTextColor: Color = Color_On_Surface_Variant,
 
     // label
     unfocusedLabelColor: Color = Color_Text_3,
     focusedLabelColor: Color = Color_Primary_200,
-    disabledLabelColor: Color = Color_Neutral_Outline,
+    disabledLabelColor: Color = Color_On_Surface_Variant,
     errorLabelColor: Color = Color_Red,
 
     // leading icon
     focusedLeadingIconColor: Color = Color_Primary_200,
-    unfocusedLeadingIconColor: Color = Color_Neutral_Outline,
-    disabledLeadingIconColor: Color = Color_Neutral_Outline,
+    unfocusedLeadingIconColor: Color = Color_On_Surface_Variant,
+    disabledLeadingIconColor: Color = Color_On_Surface_Variant,
     errorLeadingIconColor: Color = Color_Red,
 
     // trailingIcon
     focusedTrailingIconColor: Color = Color_Primary_200,
-    unFocusedTrailingIconColor: Color = Color_Neutral_Outline,
-    disabledTrailingIconColor: Color = Color_Neutral_Outline,
+    unFocusedTrailingIconColor: Color = Color_On_Surface_Variant,
+    disabledTrailingIconColor: Color = Color_On_Surface_Variant,
     errorTrailingIconColor: Color = Color_Red,
 
     // border
     focusedBorderColor: Color = Color_Primary_200,
-    unfocusedBorderColor: Color = Color_On_Surface,
-    disabledBorderColor: Color = Color_Neutral_Outline,
+    unfocusedBorderColor: Color = Color_Outline,
+    disabledBorderColor: Color = Color_On_Surface_Variant,
     errorBorderColor: Color = Color_Red,
 
     // cursor
@@ -199,7 +199,7 @@ fun TextFieldDefaults.viraTextFieldColor(
 
     // placeHolder
     placeholderColor: Color = Color_On_Surface,
-    disabledPlaceholderColor: Color = Color_Neutral_Outline,
+    disabledPlaceholderColor: Color = Color_On_Surface_Variant,
 
     backgroundColor: Color = Color.Transparent
 ) = outlinedTextFieldColors(

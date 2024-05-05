@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -159,11 +158,10 @@ fun ViraOutlinedTextField(
 
         if (helperIcon != null || helperText != null || characterCount is CharacterCount.Count) {
             Row(
-                verticalAlignment = Alignment.Top,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(4.dp)
-                    .heightIn(max = 16.dp)
             ) {
                 val textAndIconColor = remember(isError, enabled) {
                     if (isError) {
