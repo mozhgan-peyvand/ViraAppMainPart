@@ -286,4 +286,46 @@
     <string name="msg_regenerate_image">با انتخاب این گزینه، تصویر جدیدی طبق توصیف شما تولید خواهد شد.</string>
     <string name="lbl_cancel_2">لغو</string>
     <string name="lbl_nsfw_generated_image">تصویر به دلیل داشتن محتوای نامناسب تار شده است.</string>
+    <string name="lbl_otp_status">کد فعالسازی برای شما ارسال شده است</string>
+    <string name="lbl_otp_send_again"> ارسال مجدد پیامک </string>
+    <string name="lbl_reminding_time">زمان باقی مانده:</string>
+    <string name="lbl_modification">ویرایش</string>
+    <string name="lbl_login_signup_title">ورود /ثبت نام</string>
+    <string name="msg_terms_and_conditions">با ورود به اپلیکیشن ویرا شرایط و قوانین را می پذیرم</string>
+    <string name="lbl_terms_of_service">شرایط و قوانین</string>
+    <string name="lbl_logout">خروج از حساب کاربری</string>
+    <string name="msg_logout">آیا میخواهید از حساب کاربریتان خارج شوید؟</string>
+    <string name="lbl_exit">خارج شدن</string>
+    <string name="msg_phone_number_hint">مثلا: ۰۹۱۲۳۴۵۶۷۸۹</string>
+    <string name="msg_error_phone_number_validation">شماره تلفن همراه با ۰۹ شروع می شود</string>
+    <string name="lbl_phone_number">شماره موبایل</string>
+    <string name="lbl_phone_number_placeholder">مثلا ۰۹۱۲۳۴۵۶۷۸۹</string>
+    <string name="msg_otp_rate_limit">لطفا 1 دقیقه دیگر تلاش کنید</string>
+    <string name="msg_otp_not_valid">رمز یک‌بار مصرف معتبر نیست!</string>
+    <string name="msg_otp_not_enter">کد تایید اجباری است</string>
+    <string name="msg_otp_not_is_enter_wrong">کد تایید وارد شده اشتباه است</string>
+    <string name="lbl_otp_enter_code">کد تایید</string>
+    <string name="msg_otp_code_error">کد وارد شده اشتباه است.</string>
+    <string name="lbl_create_new_account">ایجاد حساب کاربری</string>
+    <string name="msg_create_new_account">به منظور استفاده از سرویس‌های جدید برنامه، لازم است تا در ابتدا حساب کاربری تشکیل دهید.</string>
+    <string name="lbl_change_account">تغییر حساب کاربری</string>
+    <string name="msg_change_account">با تغییر شماره‌ی حساب کاربری‌تان، فایل‌های موجود روی دستگاه شما پاک خواهد شد.</string>
+
+    <string name="lbl_terms_rules">قوانین و مقررات</string>
+    <string name="lbl_terms_rules_part1">کاربر گرامی از اینکه اپلیکیشن ویرا را برگزیده‌اید، سپاسگزاریم. پیش از استفاده از این برنامه، خواهشمندیم شرایط و ضوابط قانونی مرتبط با استفاده از اپلیکیشن را با دقت مطالعه نموده و در صورت پذیرش، تأیید نمایید.</string>
+    <string name="lbl_terms_terminology">تعاریف و اصطلاحات:</string>
+    <string name="lbl_terms_terminology_vira">ویرا: نرم افزاری است که توسط شرکت پارت به منظور ارائه ی سرویس های کاربردی مبتنی بر هوش مصنوعی به کاربران فارسی زبان توسعه داده شده است.</string>
+    <string name="lbl_terms_terminology_user">کاربر: شخصی حقیقی یا حقوقی است که به هر طریقی به اپلیکیشن ویرا متصل و از خدمات آن بهره مند می‌شود.</string>
+    <string name="lbl_terms_terminology_user_account">حساب کاربری: حسابی است که کاربر برای استفاده از خدمات ویرا در اپلیکیشن ایجاد کرده‌ است.</string>
+    <string name="lbl_terms_terminology_confidential_information">اطلاعات محرمانه: اطلاعاتی که توسط کاربران در ویرا یا حساب کاربری قرار داده می‌شود، اعم از اطلاعاتی که به صورت مستقیم از سوی کاربران وارد می‌شود و همچنین اطلاعاتی که به صورت خودکار و در نتیجه بهره‌برداری از خدمات ویرا توسط شرکت یا طرف‌های تجاری تولید یا در اختیار شرکت قرار داده می‌شود.</string>
+    <string name="lbl_terms_conditions">شرایط و قوانین استفاده از ویرا</string>
+    <string name="lbl_terms_conditions_part1">با استفاده از خدمات ویرا، شما به عنوان کاربر، ضمن آگاهی از مقررات، با شرایط و ضوابط آن موافقت می‌کنید. استفاده شما از اپلیکیشن ویرا نشان‌دهنده‌ی پذیرش  قوانین و دستورالعمل‌های استفاده از خدمات این محصول می‌باشد. توجه داشته باشید که شرایط و قوانین موجود، تمامی توافق‌های پیشین را جایگزین می‌کند.</string>
+    <string name="lbl_terms_respecting_privacy">سیاست‌‌های رعایت حریم خصوصی</string>
+    <string name="lbl_terms_respecting_privacy_part1">ویرا به حفظ حریم خصوصی کاربران خود متعهد است و به طور مداوم در جهت تقویت امنیت داده‌های شخصی آن‌ها تلاش می‌کند. این محصول همواره در پی بهبود فناوری‌های خود است تا اطمینان حاصل کند که استفاده شما از اپلیکیشن به امن‌ترین شکل ممکن صورت گیرد.</string>
+    <string name="lbl_terms_respecting_privacy_part2">متون ارسالی شما به سرویس های آواشو و ایماژ، جهت پردازش هوش مصنوعی به منظور تبدیل به گفتار و تولید تصویر می باشد و ویرا متعهد می‌شود هیچگونه سوء استفاده از آنها نخواهد داشت. ویرا جهت دریافت صدای کاربران به منظور ارائه سرویس های آوانگار و همآهنگ، نیازمند دسترسی به میکروفون است و متعهد می‌شود تنها در زمانی که کاربر صدای خود را ارسال می‌کند، در جهت پردازش صوت به آن دسترسی دارد.</string>
+    <string name="lbl_terms_user_responsibility">مسئولیت کاربران</string>
+    <string name="lbl_terms_user_responsibility_part1">تمام اصول و رویه‌های ویرا با قوانین جمهوری اسلامی ایران، قانون تجارت الکترونیکی و قانون حمایت از حقوق مصرف‌کننده و سایر قوانین مرتبط مطابقت دارد. به همین ترتیب، کاربر نیز موظف به رعایت قوانین مرتبط با خود است. در صورتی که در آینده تغییراتی در قوانین مصوب، رویه‌ها و خدمات ویرا ایجاد شود، از طریق درگاه‌های ارتباطی ویرا به شما اطلاع داده خواهد شد. استفاده مستمر شما از اپلیکیشن به معنی پذیرش هرگونه تغییر است. همچنین، برای دسترسی به جدیدترین خدمات و تغییرات ویرا، از بروز بودن نسخه اپلیکیشن خود اطمینان حاصل کنید.</string>
+    <string name="lbl_terms_user_responsibility_part2">هرگونه استفاده از سرویس های این اپلیکیشن تحت مسئولیت کاربر است و در صورت بروز هرگونه خسارت یا مشکل قانونی ناشی از استفاده از این خدمات، ویرا مسئولیتی نخواهد پذیرفت.</string>
+    <string name="lbl_terms_user_responsibility_part3">همچنین کاربر متعهد می‌شود حقوق معنوی ویرا و شرکای تجاری او را حفظ نماید و از این اپلیکیشن برای اهداف غیرمندرج استفاده نکند.</string>
+
 </resources>

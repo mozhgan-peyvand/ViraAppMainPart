@@ -161,6 +161,6 @@ class AvashoFileCreationViewModel @Inject constructor(
     }
 
     companion object {
-        private const val KEY_DEFAULT_VOICE_NAME_COUNTER = "defaultVoiceNameCounter"
+        const val KEY_DEFAULT_VOICE_NAME_COUNTER = "defaultVoiceNameCounter"
     }
 }

@@ -3,6 +3,7 @@ package ai.ivira.app.features.home.ui
 import ai.ivira.app.features.home.ui.about_us.AboutUsScreenRoute
 import ai.ivira.app.features.home.ui.home.HomeScreenRoute
 import ai.ivira.app.features.home.ui.onboarding.HomeOnboardingScreenRoute
+import ai.ivira.app.features.home.ui.terms.TermsOfServicesScreenRoute
 import ai.ivira.app.utils.ui.navigation.ANIMATION_NAVIGATION_DURATION_FADE
 import ai.ivira.app.utils.ui.navigation.ANIMATION_NAVIGATION_DURATION_SLIDE
 import ai.ivira.app.utils.ui.navigation.navigateWithSlideAnimation
@@ -35,6 +36,10 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
     }
     navigateWithSlideAnimation(route = HomeScreenRoutes.AboutUs.route) {
         AboutUsScreenRoute(navController = navController)
+    }
+
+    navigateWithSlideAnimation(route = HomeScreenRoutes.TermsOfServiceScreen.route) {
+        TermsOfServicesScreenRoute(navController = navController)
     }
 }
 

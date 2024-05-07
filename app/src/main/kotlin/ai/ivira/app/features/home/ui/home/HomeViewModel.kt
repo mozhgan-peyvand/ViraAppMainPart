@@ -12,6 +12,7 @@ import ai.ivira.app.features.home.ui.home.version.model.ChangelogView
 import ai.ivira.app.features.home.ui.home.version.model.toChangelogView
 import ai.ivira.app.features.home.ui.home.version.model.toVersionView
 import ai.ivira.app.features.imazh.ui.onboarding.IMAZH_ONBOARDING_COMPLETED
+import ai.ivira.app.features.login.data.LoginRepository
 import ai.ivira.app.utils.common.event.ViraEvent
 import ai.ivira.app.utils.common.event.ViraPublisher
 import ai.ivira.app.utils.data.NetworkStatus
@@ -27,6 +28,7 @@ import ai.ivira.app.utils.ui.stateIn
 import android.content.SharedPreferences
 import android.text.format.DateUtils
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
 import androidx.lifecycle.SavedStateHandle
@@ -53,6 +55,7 @@ class HomeViewModel @Inject constructor(
     private val configRepository: ConfigRepository,
     private val sharedPref: SharedPreferences,
     private val uiException: UiException,
+    loginRepository: LoginRepository,
     aiEventPublisher: ViraPublisher,
     repository: DataStoreRepository,
     networkStatusTracker: NetworkStatusTracker,
@@ -138,6 +141,9 @@ class HomeViewModel @Inject constructor(
         private set
 
     val unavailableTileToShowBottomSheet: MutableState<TileItem?> = mutableStateOf(null)
+
+    private val _userMobile = mutableStateOf(loginRepository.getMobile())
+    val userMobile: State<String?> = _userMobile
 
     init {
 

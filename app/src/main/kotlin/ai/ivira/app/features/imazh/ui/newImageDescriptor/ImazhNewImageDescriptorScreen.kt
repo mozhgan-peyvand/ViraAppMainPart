@@ -541,6 +541,7 @@ private fun NewImageDescriptorTopBar(
     }
 }
 
+// Duplicate 1
 @Composable
 private fun ConfirmButton(
     onClick: () -> Unit,
@@ -585,6 +586,7 @@ private fun ConfirmButton(
     }
 }
 
+// Duplicate 1
 @Composable
 private fun LoadingLottie(
     modifier: Modifier = Modifier
@@ -1192,6 +1194,7 @@ private enum class ExpandState {
     }
 }
 
+// Duplicate 1
 @Composable
 private fun SectionActionButton(
     @StringRes stringRes: Int,

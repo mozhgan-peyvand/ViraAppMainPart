@@ -5,6 +5,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
 
+const val AVANEGAR_FOLDER_PATH = "avanegar"
 const val AVASHO_FOLDER_PATH = "avasho"
 const val IMAZH_FOLDER_PATH = "imazh"
 const val VIRA_FOLDER_PATH = "vira"

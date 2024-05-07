@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -15,17 +16,43 @@ class FileCache @Inject constructor(
     // content resolver
     private val contentResolver = context.contentResolver
 
-    private val cacheLocation = File(context.filesDir, "avanegar")
+    private val cacheLocation = File(context.filesDir, AVANEGAR_FOLDER_PATH)
 
     suspend fun cacheUri(uri: Uri): File? {
         return copyFromSource(uri)
     }
 
-    suspend fun removeAll() = suspendCoroutine<Unit> {
+    suspend fun removeAllFiles() = suspendCoroutine<Unit> {
         context.cacheDir.walkBottomUp().forEach {
             if (it.exists()) {
                 it.delete()
             }
+        }
+    }
+
+    suspend fun removeAllViraFiles() = suspendCancellableCoroutine<Unit> { continuation ->
+        val filesDir = context.filesDir
+        var canceled = false
+        if (filesDir.exists()) {
+            listOf(
+                File(filesDir, AVANEGAR_FOLDER_PATH),
+                File(filesDir, AVASHO_FOLDER_PATH),
+                File(filesDir, IMAZH_FOLDER_PATH),
+                File(filesDir, "hamahang") // TODO: replace with const after  merging with Hamahang
+            ).forEach parentForEach@{ dir ->
+                if (canceled) return@parentForEach
+                if (!dir.exists()) return@parentForEach
+
+                dir.walkBottomUp().forEach { file ->
+                    if (canceled) return@parentForEach
+                    runCatching { if (file.exists()) file.delete() }
+                }
+            }
+            continuation.resumeWith(Result.success(Unit))
+        }
+
+        continuation.invokeOnCancellation {
+            canceled = true
         }
     }
 

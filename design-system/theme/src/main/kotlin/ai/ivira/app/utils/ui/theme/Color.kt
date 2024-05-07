@@ -72,6 +72,8 @@ val Color_Info_Opacity_15 = Color(0xFF7E2A26).copy(alpha = 0.15f)
 val Pink_100 = Color(0xFFF3D1E4)
 val Deep_Purple_500 = Color(0xFF353238)
 
+val Color_Outline = Color(0xFF292E33)
+
 val Color_Home_Avasho_Subtitle = Color(0XFFCACAFF)
 val Color_Surface_Tooltip = Deep_Purple_50
 val Color_Text_Tooltip = Color(0xFF1B1B1F)

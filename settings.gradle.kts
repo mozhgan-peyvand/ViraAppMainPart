@@ -26,4 +26,5 @@ rootProject.name = "ViraApp"
 include(":app")
 include(":design-system:pager")
 include(":design-system:bottomsheet")
+include(":design-system:components")
 include(":design-system:theme")

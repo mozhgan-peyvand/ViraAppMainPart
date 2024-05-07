@@ -2,7 +2,7 @@ package ai.ivira.app.features.home.ui.onboarding
 
 import ai.ivira.app.R
 import ai.ivira.app.features.home.ui.HomeAnalytics
-import ai.ivira.app.features.home.ui.HomeScreenRoutes
+import ai.ivira.app.features.login.ui.LoginScreenRoutes
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
@@ -71,7 +71,9 @@ private fun HomeOnboardingScreen(
             eventHandler.onboardingEvent(HomeAnalytics.onboardingEnd)
             viewModel.onBoardingShown()
             navController.popBackStack()
-            navController.navigate(HomeScreenRoutes.Home.createRoute(true))
+            navController.navigate(
+                route = LoginScreenRoutes.LoginMobileScreen.createRoute(fromSplash = false)
+            )
         }
     }
 

@@ -9,4 +9,6 @@ sealed class HomeScreenRoutes(val route: String) {
     }
 
     data object AboutUs : HomeScreenRoutes("about_us")
+
+    data object TermsOfServiceScreen : HomeScreenRoutes("terms_of_service_screen")
 }

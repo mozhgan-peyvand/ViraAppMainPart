@@ -283,3 +283,46 @@ Java_ai_ivira_app_features_config_data_ConfigDataHelper_cap(JNIEnv *env, jobject
 
     return env->NewStringUTF(dec.c_str());
 }
+
+// region login
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_login_data_LoginRemoteDataSource_lbu(JNIEnv *env, jobject thiz) {
+    std::string AK = "\020\030\005\b\037KWC\026\031\030\024\017\r\bU\032BV\032\030\n\r_\031\034\030\b\r\003\fB\030\nC\002\035\036\a\021\017\024W\031\002\035\036<\031\002\020\037\t\003\070]^";
+    std::string key = "xlq";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+
+    return env->NewStringUTF(dec.c_str());
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_login_data_LoginRemoteDataSource_lgs(JNIEnv *env, jobject thiz) {
+    std::string AK = "\025\071\a\002";
+    std::string key = "cPu";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+    return env->NewStringUTF(dec.c_str());
+}
+
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_login_data_LoginRemoteDataSource_ls(JNIEnv *env, jobject thiz) {
+    std::string AK = "\025\071\a\002";
+    std::string key = "cPu";
+
+    std::string dec = AK;
+
+    for (int i = 0; i < AK.size(); i++)
+        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
+    return env->NewStringUTF(dec.c_str());
+}
+// endregion login

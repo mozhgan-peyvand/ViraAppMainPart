@@ -100,7 +100,7 @@ class VoiceRecordingViewModel @Inject constructor(
     }
 
     companion object {
-        private const val KEY_DEFAULT_NAME_COUNTER = "defaultNameCounter"
+        const val KEY_DEFAULT_NAME_COUNTER = "defaultNameCounter"
         private const val TIMER_DELAY_MS = 50L
 
         // note: 1h is shown in ui, if changed, change that as well

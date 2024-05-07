@@ -228,6 +228,7 @@ dependencies {
     implementation(projects.designSystem.theme)
     implementation(projects.designSystem.bottomsheet)
     implementation(projects.designSystem.pager)
+    implementation(projects.designSystem.components)
 
     implementation(libs.coreKtx)
     implementation(libs.coreSplashScreen)
@@ -309,6 +310,10 @@ dependencies {
 
     // Balloon
     implementation(libs.ballonCompose)
+
+    // google play service
+    implementation(libs.googlePlayServiceAuth)
+    implementation(libs.googlePlayServiceAuthApiPhone)
 
     implementation(libs.coilCompose)
 }

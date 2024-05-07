@@ -2,6 +2,7 @@ package ai.ivira.app.features.splash
 
 import ai.ivira.app.R
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
+import ai.ivira.app.features.login.ui.LoginScreenRoutes
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
 import ai.ivira.app.utils.ui.preview.ViraDarkPreview
 import ai.ivira.app.utils.ui.preview.ViraPreview
@@ -57,14 +58,22 @@ private fun SplashScreen(
 
     LaunchedEffect(
         viewModel.shouldNavigate.value,
-        viewModel.hasOnboardingShown.value
+        viewModel.hasOnboardingShown.value,
+        viewModel.hasToken.value
     ) {
         if (viewModel.shouldNavigate.value) {
             if (viewModel.hasOnboardingShown.value) {
-                navController.popBackStack()
-                navController.navigate(
-                    route = HomeScreenRoutes.Home.createRoute()
-                )
+                if (viewModel.hasToken.value) {
+                    navController.popBackStack()
+                    navController.navigate(
+                        route = HomeScreenRoutes.Home.createRoute()
+                    )
+                } else {
+                    navController.popBackStack()
+                    navController.navigate(
+                        route = LoginScreenRoutes.LoginMobileScreen.createRoute(fromSplash = true)
+                    )
+                }
             } else {
                 navController.popBackStack()
                 navController.navigate(
