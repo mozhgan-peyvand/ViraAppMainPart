@@ -22,7 +22,6 @@ import ai.ivira.app.features.home.ui.HomeScreenRoutes.TermsOfServiceScreen
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Changelog
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ForceUpdate
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Hamahang
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.LogoutConfirmation
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NotificationPermission
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UnavailableTile
