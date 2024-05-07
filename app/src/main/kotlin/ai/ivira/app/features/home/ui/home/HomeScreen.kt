@@ -31,6 +31,7 @@ import ai.ivira.app.features.imazh.ui.ImazhScreenRoutes
 import ai.ivira.app.utils.common.CommonConstants.LANDING_URL
 import ai.ivira.app.utils.data.NetworkStatus
 import ai.ivira.app.utils.ui.UiError
+import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiSuccess
 import ai.ivira.app.utils.ui.analytics.LocalEventHandler
@@ -158,7 +159,7 @@ private fun HomeScreen(
     val context = LocalContext.current
 
     val changeLogList by homeViewModel.changeLogList.collectAsStateWithLifecycle()
-    val uiState by homeViewModel.uiViewState.collectAsStateWithLifecycle()
+    val uiState by homeViewModel.uiViewState.collectAsStateWithLifecycle(UiIdle)
     val networkStatus by homeViewModel.networkStatus.collectAsStateWithLifecycle()
 
     val hasVpnConnection by remember(networkStatus) {
@@ -263,19 +264,6 @@ private fun HomeScreen(
     BackHandler(!sheetState.showBottomSheet || scaffoldState.drawerState.isOpen) {
         coroutineScope.launch {
             scaffoldState.drawerState.close()
-        }
-    }
-
-    LaunchedEffect(uiState) {
-        if (uiState is UiError) {
-            showMessage(
-                snackbarHostState,
-                coroutineScope,
-                context.getString(R.string.msg_updating_failed_please_try_again_later)
-            )
-
-            // fixme should remove it, replace stateFlow with sharedFlow in viewModel
-            homeViewModel.clearUiState()
         }
     }
 
@@ -546,8 +534,13 @@ private fun HomeScreen(
                             }
                         } else if (uiState is UiLoading) {
                             UpdateLoadingBottomSheet()
-                        } else if (uiState is UiLoading) {
+                        } else if (uiState is UiError) {
                             sheetState.hide()
+                            showMessage(
+                                snackbarHostState,
+                                coroutineScope,
+                                context.getString(R.string.msg_updating_failed_please_try_again_later)
+                            )
                         }
 
                         homeViewModel.doNotShowUpdateBottomSheetUntilNextLaunch()

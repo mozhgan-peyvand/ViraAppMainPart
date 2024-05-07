@@ -20,7 +20,6 @@ import ai.ivira.app.utils.data.api_result.AppResult.Error
 import ai.ivira.app.utils.data.api_result.AppResult.Success
 import ai.ivira.app.utils.ui.UiError
 import ai.ivira.app.utils.ui.UiException
-import ai.ivira.app.utils.ui.UiIdle
 import ai.ivira.app.utils.ui.UiLoading
 import ai.ivira.app.utils.ui.UiStatus
 import ai.ivira.app.utils.ui.UiSuccess
@@ -35,12 +34,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -60,8 +60,8 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
     private val isFirstRun = savedStateHandle.get<Boolean>("isFirstRun") ?: false
 
-    private val _uiViewState = MutableStateFlow<UiStatus>(UiIdle)
-    val uiViewState = _uiViewState.asStateFlow()
+    private val _uiViewState = MutableSharedFlow<UiStatus>()
+    val uiViewState = _uiViewState.asSharedFlow()
 
     private val aiEvent = aiEventPublisher.events.stateIn(initial = false)
 
@@ -242,15 +242,15 @@ class HomeViewModel @Inject constructor(
 
     fun getUpdateList() {
         viewModelScope.launch(IO) {
-            _uiViewState.update { UiLoading }
+            _uiViewState.emit(UiLoading)
 
             when (val result = configRepository.fetchVersions()) {
                 is Success -> {
-                    _uiViewState.update { UiSuccess }
+                    _uiViewState.emit(UiSuccess)
                 }
 
                 is Error -> {
-                    _uiViewState.update { UiError(uiException.getErrorMessage(result.error)) }
+                    _uiViewState.emit(UiError(uiException.getErrorMessage(result.error)))
                 }
             }
         }
@@ -271,10 +271,6 @@ class HomeViewModel @Inject constructor(
 
     private fun getCurrentChangelogVersionFromSharedPref() =
         sharedPref.getInt(CURRENT_CHANGELOG_VERSION_KEY, 0)
-
-    fun clearUiState() {
-        _uiViewState.value = UiIdle
-    }
 
     override fun onCleared() {
         super.onCleared()
