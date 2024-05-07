@@ -41,7 +41,7 @@ Java_ai_ivira_app_features_avasho_data_AvashoRepository_bu(JNIEnv *env, jobject 
 }
 
 jstring ak(JNIEnv *env) {
-    std::string AK = "8)0?~oj.o?+c:xc`)b8{3:}e:{f=(f`xfh}f?|oiubl.4l|0nz3<+o=|ek+nn,0<+4?(ekyn;\177\062<tg;,7o/7<(5`/f;y7l~g:ybj}4`,5`~b;.5it3:}nl{f?,ojydny";
+    std::string AK = "a{5axb?x5i(7h|n:}4ax48t2;~5nx`jt`m\177c<t0;\177e:.eh(gi}f?.0;,ei{go)3:|0oub<t0kuda,cnuco,4n|5k}fk|fm|7:+gj}gkuni~do(dm\177oo(go{d;~d</anx";
     std::string key = "YMV";
 
     std::string dec = AK;
@@ -203,15 +203,7 @@ Java_ai_ivira_app_features_ava_1negar_data_AvanegarRemoteDataSource_nak(JNIEnv *
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_ai_ivira_app_features_imazh_data_ImazhRemoteDataSource_iak(JNIEnv *env, jobject thiz) {
-    std::string AK = "jz0i/en)3<+nh/f<u4:~4=.0`xbkx2;,bj|28|0?{oata<y3jybn+e<ua?\177\060<t4nu4`,o?~4m,e;)nl+0jz4l\177\062=y3l,4;zf?{fmzem.0i~gk/fotbm)g?y5?)cl(ea,";
-    std::string key = "YMV";
-
-    std::string dec = AK;
-
-    for (int i = 0; i < AK.size(); i++)
-        dec[i] = dec[i] ^ key[i % (key.size() / sizeof(char))];
-
-    return env->NewStringUTF(dec.c_str());
+    return ak(env);
 }
 
 extern "C"
