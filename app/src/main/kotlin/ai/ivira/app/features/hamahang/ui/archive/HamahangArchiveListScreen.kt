@@ -335,7 +335,7 @@ private fun HamahangArchiveListScreen(
                 }
 
                 is HamahangUploadingFileView -> {
-                    viewModel.removeUploadingFile(selectedItem as HamahangUploadingFileView)
+                    viewModel.deleteUploadingFile(selectedItem as HamahangUploadingFileView)
                 }
 
                 is HamahangTrackingFileView -> {
@@ -459,7 +459,8 @@ private fun HamahangArchiveListUI(
             }
             SnackBar(
                 snackbarHostState = snackBarState,
-                paddingBottom = 32.dp
+                paddingBottom = 32.dp,
+                maxLine = 2
             )
         },
         topBar = {

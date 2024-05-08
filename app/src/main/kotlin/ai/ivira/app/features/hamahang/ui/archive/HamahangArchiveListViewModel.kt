@@ -86,8 +86,7 @@ class HamahangArchiveListViewModel @Inject constructor(
     private val _downloadStatus = MutableStateFlow<DownloadingFileStatus>(IdleDownload)
     val downloadStatus = _downloadStatus.asStateFlow()
 
-    private var _isUploadingAllowed = MutableStateFlow(true)
-    val isUploadingAllowed = _isUploadingAllowed.asStateFlow()
+    private var isUploadingAllowed = MutableStateFlow(true)
 
     private var indexOfItemThatShouldBeUploaded = 0
 
@@ -97,18 +96,12 @@ class HamahangArchiveListViewModel @Inject constructor(
 
     val networkStatus = networkStatusTracker.networkStatus.stateIn(initial = NetworkStatus.Unavailable)
 
-    var processArchiveFileList = mutableStateOf<List<HamahangProcessedFileView>>(emptyList())
-        private set
+    private var processArchiveFileList = mutableStateOf<List<HamahangProcessedFileView>>(emptyList())
 
     private var _hasPermissionDeniedPermanently = mutableStateOf(false)
     val hasPermissionDeniedPermanently: State<Boolean> = _hasPermissionDeniedPermanently
 
-    val isDownloadQueueEmpty = combine(downloadQueue, downloadFailureList) { queue, failure ->
-        queue.isEmpty() && failure.isEmpty()
-    }.stateIn(initial = true)
-
-    private var _failureListId = MutableStateFlow(listOf<String>())
-    val failureList = _failureListId.asStateFlow()
+    private var failureListId = MutableStateFlow(listOf<String>())
 
     var selectedHamahangItem = mutableStateOf<HamahangArchiveView?>(null)
 
@@ -192,8 +185,8 @@ class HamahangArchiveListViewModel @Inject constructor(
         val processedList = hamahangArchiveFilesEntity.processed
         val trackingList = hamahangArchiveFilesEntity.tracking
 
-        _isUploadingAllowed.update {
-            trackingList.isEmpty() && uploadingList.isEmpty() && _failureListId.value.isEmpty()
+        isUploadingAllowed.update {
+            trackingList.isEmpty() && uploadingList.isEmpty() && failureListId.value.isEmpty()
         }
 
         if (trackingList.isEmpty() && uploadingList.isEmpty()) {
@@ -218,7 +211,7 @@ class HamahangArchiveListViewModel @Inject constructor(
                     )
                 }.also { uploadList ->
                     val uploadItem = uploadList.filter { uploadingItem ->
-                        !_failureListId.value.contains(uploadingItem.id)
+                        !failureListId.value.contains(uploadingItem.id)
                     }
 
                     this@HamahangArchiveListViewModel.uploadingList = uploadItem
@@ -249,7 +242,7 @@ class HamahangArchiveListViewModel @Inject constructor(
         // endregion
     }.distinctUntilChanged()
 
-    val isThereTrackingOrUploading = combine(allArchiveFiles, _failureListId) { files, failures ->
+    val isThereTrackingOrUploading = combine(allArchiveFiles, failureListId) { files, failures ->
         val nonProcessedFiles = files.any {
             it is HamahangUploadingFileView ||
                 it is HamahangTrackingFileView ||
@@ -276,6 +269,44 @@ class HamahangArchiveListViewModel @Inject constructor(
         }
     }
 
+    fun markFileAsSeen(id: Int) = viewModelScope.launch(IO) {
+        repository.markFileAsSeen(id = id, isSeen = true)
+    }
+
+    fun addFileToChecking(inputPath: String, speaker: HamahangSpeakerView, title: String) {
+        viewModelScope.launch(IO) {
+            repository.insertCheckingFile(
+                HamahangCheckingFileEntity(
+                    id = "${System.currentTimeMillis()}_$speaker",
+                    title = title,
+                    inputFilePath = inputPath,
+                    speaker = speaker.serverName,
+                    isProper = true,
+                    createdAt = PersianDate().time
+                )
+            )
+        }
+    }
+
+    fun saveToDownloadFolder(filePath: String, fileName: String): Boolean {
+        return saveToDownloadsHelper.saveToDownloadFolder(
+            filePath = filePath,
+            fileName = fileName
+        ).onFailure {
+            viewModelScope.launch {
+                _uiViewState.emit(
+                    UiError(it.getErrorMessage(application), true)
+                )
+            }
+        }.isSuccess
+    }
+
+    fun updateTitle(title: String, id: Int) =
+        viewModelScope.launch(IO) {
+            repository.updateTitle(title, id)
+        }
+
+    // region download stuff
     fun isInDownloadQueue(id: Int): Boolean {
         return downloadQueue.value.any { it.id == id }
     }
@@ -293,7 +324,7 @@ class HamahangArchiveListViewModel @Inject constructor(
 
     fun startUploading(uploadingFile: HamahangUploadingFileView) {
         // to make sure that it does not return -1
-        _failureListId.update { uploadingList ->
+        failureListId.update { uploadingList ->
             uploadingList.filter { failureItemId -> failureItemId != uploadingFile.id }
         }
         with(uploadingList) {
@@ -307,10 +338,6 @@ class HamahangArchiveListViewModel @Inject constructor(
         }
 
         _uploadStatus.value = UploadingFileStatus.IsNotUploading
-    }
-
-    fun markFileAsSeen(id: Int) = viewModelScope.launch(IO) {
-        repository.markFileAsSeen(id = id, isSeen = true)
     }
 
     fun addFileToDownloadQueue(item: HamahangProcessedFileView) {
@@ -364,44 +391,6 @@ class HamahangArchiveListViewModel @Inject constructor(
             }
         }
         downloadQueue.value = listOf()
-    }
-
-    private fun checkAudioContent(
-        id: String,
-        speaker: String,
-        filePath: String
-    ) {
-        checkAudioJob?.cancel()
-        checkAudioJob = viewModelScope.launch(IO) {
-            val file = File(filePath)
-            val result = repository.checkAudioValidity(
-                id = id,
-                file = file,
-                speaker = speaker
-            )
-
-            handleResultState(id = id, result = result)
-        }
-    }
-
-    private fun voiceConversion(
-        id: String,
-        speaker: String,
-        title: String,
-        file: File
-    ) {
-        job?.cancel()
-        job = viewModelScope.launch(IO) {
-            val result = repository.voiceConversion(
-                id = id,
-                title = title,
-                file = file,
-                listener = createProgressListener(),
-                speaker = speaker
-            )
-
-            handleResultState(result = result, id = id)
-        }
     }
 
     private fun downloadFile(processedFile: HamahangProcessedFileView) {
@@ -459,6 +448,46 @@ class HamahangArchiveListViewModel @Inject constructor(
             }
         }
     }
+    // endregion download stuff
+
+    // region requests
+    private fun checkAudioContent(
+        id: String,
+        speaker: String,
+        filePath: String
+    ) {
+        checkAudioJob?.cancel()
+        checkAudioJob = viewModelScope.launch(IO) {
+            val file = File(filePath)
+            val result = repository.checkAudioValidity(
+                id = id,
+                file = file,
+                speaker = speaker
+            )
+
+            handleResultState(id = id, result = result)
+        }
+    }
+
+    private fun voiceConversion(
+        id: String,
+        speaker: String,
+        title: String,
+        file: File
+    ) {
+        job?.cancel()
+        job = viewModelScope.launch(IO) {
+            val result = repository.voiceConversion(
+                id = id,
+                title = title,
+                file = file,
+                listener = createProgressListener(),
+                speaker = speaker
+            )
+
+            handleResultState(result = result, id = id)
+        }
+    }
 
     // handleResultState Duplicate 4
     private suspend fun <T> handleResultState(
@@ -480,7 +509,7 @@ class HamahangArchiveListViewModel @Inject constructor(
             }
 
             is AppResult.Error -> {
-                _failureListId.update { failureList ->
+                failureListId.update { failureList ->
                     if (failureList.contains(id)) {
                         failureList
                     } else {
@@ -493,6 +522,57 @@ class HamahangArchiveListViewModel @Inject constructor(
             }
         }
     }
+    // endregion requests
+
+    // region permission
+    fun hasDeniedPermissionPermanently(permission: String): Boolean {
+        val hasDenied = sharedPref.getBoolean(permissionDeniedPrefKey(permission), false)
+        _hasPermissionDeniedPermanently.value = hasDenied
+        return hasDenied
+    }
+
+    fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) =
+        viewModelScope.launch {
+            sharedPref.edit {
+                this.putBoolean(permissionDeniedPrefKey(permission), deniedPermanently)
+            }
+        }
+
+    private fun permissionDeniedPrefKey(permission: String): String {
+        return "deniedPermission_$permission"
+    }
+    // endregion permission
+
+    // region delete files
+    fun deleteTrackingFile(token: String) = viewModelScope.launch(IO) {
+        repository.deleteTrackingFile(token)
+    }
+
+    fun deleteUploadingFile(item: HamahangUploadingFileView?) = viewModelScope.launch {
+        if (item == null) return@launch
+        failureListId.update { list ->
+            list.filter { uploadingFailure -> uploadingFailure != item.id }
+        }
+
+        viewModelScope.launch {
+            job?.cancel()
+            // emit failure to start uploading from the first of list
+            _uploadStatus.value = UploadingFileStatus.FailureUpload
+            repository.deleteUploadingFile(item.id)
+        }
+    }
+
+    fun deleteCheckingFile(id: String, filePath: String) = viewModelScope.launch(IO) {
+        failureListId.update { list ->
+            list.filter { failure -> failure != id }
+        }
+        repository.deleteCheckingFile(id = id, filePath = filePath)
+    }
+
+    fun deleteProcessedFile(id: Int, filePath: String) = viewModelScope.launch(IO) {
+        repository.deleteProcessedFile(id = id, filePath = filePath)
+    }
+    // endregion delete files
 
     // createProgressListener duplicate 2
     private fun createProgressListener() = object : UploadProgressCallback {
@@ -510,84 +590,4 @@ class HamahangArchiveListViewModel @Inject constructor(
             }
         }
     }
-
-    fun addFileToChecking(inputPath: String, speaker: HamahangSpeakerView, title: String) {
-        viewModelScope.launch(IO) {
-            repository.insertCheckingFile(
-                HamahangCheckingFileEntity(
-                    id = "${System.currentTimeMillis()}_$speaker",
-                    title = title,
-                    inputFilePath = inputPath,
-                    speaker = speaker.serverName,
-                    isProper = true,
-                    createdAt = PersianDate().time
-                )
-            )
-        }
-    }
-
-    fun deleteTrackingFile(token: String) =
-        viewModelScope.launch(IO) {
-            repository.deleteTrackingFile(token)
-        }
-
-    fun removeUploadingFile(item: HamahangUploadingFileView?) = viewModelScope.launch {
-        item?.let {
-            _failureListId.update { list ->
-                list.filter { uploadingFailure -> uploadingFailure != item.id }
-            }
-
-            viewModelScope.launch {
-                job?.cancel()
-                // emit failure to start uploading from the first of list
-                _uploadStatus.value = UploadingFileStatus.FailureUpload
-                repository.deleteUploadingFile(it.id)
-            }
-        }
-    }
-
-    fun deleteCheckingFile(id: String, filePath: String) =
-        viewModelScope.launch(IO) {
-            repository.deleteCheckingFile(id = id, filePath = filePath)
-        }
-
-    fun deleteProcessedFile(id: Int, filePath: String) =
-        viewModelScope.launch(IO) {
-            repository.deleteProcessedFile(id = id, filePath = filePath)
-        }
-
-    fun saveToDownloadFolder(filePath: String, fileName: String): Boolean {
-        return saveToDownloadsHelper.saveToDownloadFolder(
-            filePath = filePath,
-            fileName = fileName
-        ).onFailure {
-            viewModelScope.launch {
-                _uiViewState.emit(
-                    UiError(it.getErrorMessage(application), true)
-                )
-            }
-        }.isSuccess
-    }
-
-    fun hasDeniedPermissionPermanently(permission: String): Boolean {
-        val hasDenied = sharedPref.getBoolean(permissionDeniedPrefKey(permission), false)
-        _hasPermissionDeniedPermanently.value = hasDenied
-        return hasDenied
-    }
-
-    fun putDeniedPermissionToSharedPref(permission: String, deniedPermanently: Boolean) =
-        viewModelScope.launch {
-            sharedPref.edit {
-                this.putBoolean(permissionDeniedPrefKey(permission), deniedPermanently)
-            }
-        }
-
-    private fun permissionDeniedPrefKey(permission: String): String {
-        return "deniedPermission_$permission"
-    }
-
-    fun updateTitle(title: String, id: Int) =
-        viewModelScope.launch(IO) {
-            repository.updateTitle(title, id)
-        }
 }
