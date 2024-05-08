@@ -13,7 +13,7 @@ class HamahangTracker @Inject constructor(
     companion object {
         private const val TAG = "HamahangTracker"
         private const val NO_ESTIMATE_DELAY_MS = 30 * DateUtils.SECOND_IN_MILLIS
-        private const val TRACK_DELAY_AFTER_FAILURE_MS = 15 * DateUtils.SECOND_IN_MILLIS
+        private const val TRACK_DELAY_AFTER_FAILURE_MS = 10 * DateUtils.SECOND_IN_MILLIS
     }
 
     override val items = hamahangRepository.getTrackingFiles()
