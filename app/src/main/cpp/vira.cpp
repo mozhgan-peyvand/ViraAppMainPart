@@ -324,3 +324,11 @@ Java_ai_ivira_app_features_login_data_LoginRemoteDataSource_ls(JNIEnv *env, jobj
     return env->NewStringUTF(dec.c_str());
 }
 // endregion login
+
+// region hamahang
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_hamahang_data_HamahangRemoteDataSource_ak(JNIEnv *env, jobject thiz) {
+    return ak(env);
+}
+// endregion hamahang
