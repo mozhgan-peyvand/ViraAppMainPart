@@ -46,6 +46,15 @@ class HamahangDetailViewModel @Inject constructor(
             }
         }.stateIn(initial = null)
 
+    // this logic is used in archive viewModel as well, upon change apply there as well
+    val isRegenerationAllowed = repository.getArchiveFiles()
+        .map { files ->
+            files.checking.isEmpty() &&
+                files.tracking.isEmpty() &&
+                files.uploading.isEmpty()
+        }
+        .stateIn(true)
+
     private val _uiViewState = MutableSharedFlow<UiStatus>()
     val uiViewState: SharedFlow<UiStatus> = _uiViewState
 

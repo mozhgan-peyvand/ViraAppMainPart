@@ -242,6 +242,7 @@ class HamahangArchiveListViewModel @Inject constructor(
         // endregion
     }.distinctUntilChanged()
 
+    // this logic is used in detail viewModel as well, upon change apply there as well
     val isThereTrackingOrUploading = combine(allArchiveFiles, failureListId) { files, failures ->
         val nonProcessedFiles = files.any {
             it is HamahangUploadingFileView ||

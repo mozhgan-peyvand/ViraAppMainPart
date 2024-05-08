@@ -148,6 +148,7 @@ private fun HamahangDetailScreen(
     }
     val playerState by viewModel::playerState
     val fileInfo by viewModel.processedFile.collectAsStateWithLifecycle()
+    val isRegenerationAllowed by viewModel.isRegenerationAllowed.collectAsStateWithLifecycle()
     val writeStoragePermission = Manifest.permission.WRITE_EXTERNAL_STORAGE
     val writeStoragePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -204,6 +205,8 @@ private fun HamahangDetailScreen(
         selectedSheet = selectedSheet,
         context = context,
         scope = coroutineScope,
+        isRegenerationAllowed = isRegenerationAllowed,
+        coroutineScope = coroutineScope,
         onBackClick = { navigateUp() },
         onDeleteClick = {
             selectedSheet = HamahangDetailBottomSheetType.DeleteConfirmation
@@ -266,6 +269,8 @@ private fun HamahangDetailUI(
     sheetState: ViraBottomSheetState,
     playerState: VoicePlayerState,
     selectedSheet: HamahangDetailBottomSheetType,
+    coroutineScope: CoroutineScope,
+    isRegenerationAllowed: Boolean,
     onBackClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onDeleteConfirmationClick: () -> Unit,
@@ -332,7 +337,16 @@ private fun HamahangDetailUI(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(0.25f),
-                    regenerateOnClick = {
+                    regenerateOnClick = regenerate@{
+                        if (!isRegenerationAllowed) {
+                            showMessage(
+                                scaffoldState.snackbarHostState,
+                                coroutineScope,
+                                context.getString(R.string.msg_wait_process_finish_or_cancel_it)
+                            )
+                            return@regenerate
+                        }
+
                         if (!File(fileInfo.inputFilePath).exists()) {
                             showMessage(
                                 scaffoldState.snackbarHostState,
@@ -752,6 +766,8 @@ private fun HamahangDetailUIPreview() {
             context = LocalContext.current,
             playerState = VoicePlayerState(mediaPlayer, application),
             selectedSheet = HamahangDetailBottomSheetType.DeleteConfirmation,
+            coroutineScope = rememberCoroutineScope(),
+            isRegenerationAllowed = true,
             onBackClick = {},
             onDeleteClick = {},
             onDeleteConfirmationClick = {},
