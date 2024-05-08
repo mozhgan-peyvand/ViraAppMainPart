@@ -16,7 +16,8 @@ class HamahangRecorder constructor(
     private val maxFileDurationInMillis: Long
 ) {
     companion object {
-        private const val SAMPLE_RATE = 48000
+        private const val SAMPLE_RATE = 48_000
+        private const val BIT_RATE = 320_000
         const val TAG = "RecorderTAG"
         const val RECORDING_OFFSET_MS = 1000
     }
@@ -51,22 +52,28 @@ class HamahangRecorder constructor(
 
     fun start(name: String): Boolean {
         mediaRecorder = createMediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.VOICE_RECOGNITION)
-            setAudioSamplingRate(SAMPLE_RATE)
+            // The order in which these are specified is important, DO NOT CHANGE!!!!
+            setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            setAudioEncodingBitRate(BIT_RATE)
+            setAudioSamplingRate(SAMPLE_RATE)
+            setAudioChannels(1)
+
             setMaxDuration((maxFileDurationInMillis - RECORDING_OFFSET_MS).toInt())
+
             setOnInfoListener { _, what, _ ->
                 if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
                     stop()
                     onMaxDurationReachedListeners.forEach(OnMaxDurationReached::maxFileReached)
                 }
             }
+
             setOutputFile(
                 FileOutputStream(
                     getFile(name).also { _currentFile.set(it) }
                 ).fd
             )
-            setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC)
         }
 
         return kotlin.runCatching {
