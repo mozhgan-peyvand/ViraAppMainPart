@@ -38,6 +38,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.text.format.DateUtils
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +65,7 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
+// changeStateDelay duplicate 1
 private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
 private const val IS_GRID_AVANEGAR_ARCHIVE_LIST_KEY = "isGridPrefKey_AvanegarArchiveList"
 private const val SIXTY_SECOND = 60000
@@ -262,7 +264,7 @@ class ArchiveListViewModel @Inject constructor(
                 eventHandler.specialEvent(AvanegarAnalytics.fileDurationExceed)
                 _uiViewState.emit(
                     UiError(
-                        uiException.getErrorMessageMaxLengthExceeded(),
+                        uiException.getErrorMessageMaxLengthExceeded((MAX_FILE_DURATION_MS / DateUtils.MINUTE_IN_MILLIS).toInt()),
                         isSnack = true
                     )
                 )
@@ -397,7 +399,7 @@ class ArchiveListViewModel @Inject constructor(
             eventHandler.specialEvent(AvanegarAnalytics.fileDurationExceed)
             _uiViewState.emit(
                 UiError(
-                    uiException.getErrorMessageMaxLengthExceeded(),
+                    uiException.getErrorMessageMaxLengthExceeded((MAX_FILE_DURATION_MS / DateUtils.MINUTE_IN_MILLIS).toInt()),
                     isSnack = true
                 )
             )
@@ -468,6 +470,7 @@ class ArchiveListViewModel @Inject constructor(
         _isUploading.value = IsNotUploading
     }
 
+    // createProgressListener duplicate 1
     private fun createProgressListener() = object : UploadProgressCallback {
         override fun onProgress(
             id: String,

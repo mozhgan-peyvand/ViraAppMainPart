@@ -98,4 +98,22 @@ class ConfigRepository @Inject constructor(
         configLocalDataSource.insertVersions(newVersions, newReleaseNotes)
     }
     // endregion versions
+
+    // region hamahang
+    fun getHamahangSpeakers() = configLocalDataSource.getHamahangSpeakers()
+
+    suspend fun fetchHamahang(): AppResult<Unit> {
+        if (!networkHandler.hasNetworkConnection()) {
+            return AppResult.Error(AppException.NetworkConnectionException())
+        }
+
+        return when (val result = configRemoteDataSource.fetchHamahang()) {
+            is ApiResult.Error -> AppResult.Error(AppException.NetworkConnectionException())
+            is ApiResult.Success -> {
+                configLocalDataSource.insertHamahangEntity(result.data.toConfigHamahangEntity())
+                AppResult.Success(Unit)
+            }
+        }
+    }
+    // endregion hamahang
 }

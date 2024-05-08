@@ -13,6 +13,8 @@ import ai.ivira.app.features.ava_negar.ui.SnackBar
 import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoArchiveScreen
 import ai.ivira.app.features.avasho.ui.AvashoScreenRoutes.AvaShoOnboardingScreen
 import ai.ivira.app.features.config.ui.ConfigViewModel
+import ai.ivira.app.features.hamahang.ui.HamahangAnalytics
+import ai.ivira.app.features.hamahang.ui.HamahangScreenRoutes
 import ai.ivira.app.features.home.ui.HomeAnalytics
 import ai.ivira.app.features.home.ui.HomeScreenRoutes
 import ai.ivira.app.features.home.ui.HomeScreenRoutes.AboutUs
@@ -20,7 +22,6 @@ import ai.ivira.app.features.home.ui.HomeScreenRoutes.TermsOfServiceScreen
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheet
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Changelog
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.ForceUpdate
-import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.Hamahang
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.LogoutConfirmation
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.NotificationPermission
 import ai.ivira.app.features.home.ui.home.sheets.HomeItemBottomSheetType.UnavailableTile
@@ -73,6 +74,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.animateColorAsState
@@ -183,6 +185,7 @@ private fun HomeScreen(
     val avanegarTile by configViewModel.avanegarTileConfig.collectAsStateWithLifecycle(initialValue = null)
     val avashoTile by configViewModel.avashoTileConfig.collectAsStateWithLifecycle(initialValue = null)
     val imazhTile by configViewModel.imazhTileConfig.collectAsStateWithLifecycle(initialValue = null)
+    val hamahangTile by configViewModel.hamahangTileConfig.collectAsStateWithLifecycle(initialValue = null)
 
     val shouldShowForceUpdateBottomSheet by homeViewModel.shouldShowForceUpdateBottomSheet.collectAsStateWithLifecycle()
     val shouldShowChangeLogBottomSheet by homeViewModel.shouldShowChangeLogBottomSheet.collectAsStateWithLifecycle()
@@ -223,9 +226,13 @@ private fun HomeScreen(
                     }
                 }
                 HomeItemType.Hamahang -> {
-                    coroutineScope.launch {
-                        sheetSelected = Hamahang
+                    if (hamahangTile?.available == false) {
+                        homeViewModel.unavailableTileToShowBottomSheet.value = hamahangTile
+                        sheetSelected = UnavailableTile
                         sheetState.show()
+                    } else {
+                        eventHandler.specialEvent(HomeAnalytics.openHamahang)
+                        homeViewModel.navigateToHamahang()
                     }
                 }
             }
@@ -286,6 +293,19 @@ private fun HomeScreen(
         }
     }
 
+    LaunchedEffect(
+        configViewModel.shouldShowHamahangUnavailableBottomSheet.value
+    ) {
+        if (configViewModel.shouldShowHamahangUnavailableBottomSheet.value) {
+            coroutineScope.launch {
+                homeViewModel.unavailableTileToShowBottomSheet.value = hamahangTile
+                sheetSelected = UnavailableTile
+                sheetState.show()
+            }
+            configViewModel.resetHamahangUnavailableFeature()
+        }
+    }
+
     BackHandler(scaffoldState.drawerState.isOpen) {
         coroutineScope.launch {
             scaffoldState.drawerState.close()
@@ -335,6 +355,21 @@ private fun HomeScreen(
                 navController.navigate(ImazhScreenRoutes.ImazhArchiveListScreen.route)
             }
             homeViewModel.shouldNavigateToImazh.value = false
+        }
+    }
+
+    LaunchedEffect(
+        homeViewModel.hamahangOnboardingHasBeenShown.value,
+        homeViewModel.shouldNavigateToHamahang.value
+    ) {
+        if (homeViewModel.shouldNavigateToHamahang.value) {
+            if (!homeViewModel.hamahangOnboardingHasBeenShown.value) {
+                eventHandler.onboardingEvent(HamahangAnalytics.onboardingStart)
+                navController.navigate(HamahangScreenRoutes.HamahangOnboardingScreen.route)
+            } else {
+                navController.navigate(HamahangScreenRoutes.HamahangArchiveListScreen.route)
+            }
+            homeViewModel.shouldNavigateToHamahang.value = false
         }
     }
 
@@ -543,8 +578,7 @@ private fun HomeScreen(
                     UpdateApp,
                     NotificationPermission,
                     UnavailableTile,
-                    Changelog,
-                    Hamahang -> sheetState.hide()
+                    Changelog -> sheetState.hide()
                     ForceUpdate -> (context as Activity).finish()
                     LogoutConfirmation -> {
                         sheetState.hide()
@@ -658,14 +692,6 @@ private fun HomeScreen(
                             onUnderstoodClick = { sheetState.hide() }
                         )
                     }
-                    Hamahang -> {
-                        HomeItemBottomSheet(
-                            iconRes = HomeItemScreen.hamahang.icon,
-                            title = stringResource(HomeItemScreen.hamahang.title),
-                            textBody = stringResource(R.string.lbl_hamahang_item_bottomsheet_explain),
-                            action = { sheetState.hide() }
-                        )
-                    }
                     LogoutConfirmation -> {
                         LogoutConfirmationBottomSheet(
                             viewModel = logoutViewModel,
@@ -745,7 +771,10 @@ private fun HomeItem(
             Spacer(modifier = Modifier.size(4.dp))
 
             if (item.isComingSoon) {
-                MarqueeText(modifier = Modifier.fillMaxWidth(0.45f))
+                MarqueeText(
+                    text = item.description,
+                    modifier = Modifier.fillMaxWidth(0.45f)
+                )
             } else {
                 Text(
                     text = stringResource(id = item.description),
@@ -766,7 +795,10 @@ private fun HomeItem(
 }
 
 @Composable
-private fun MarqueeText(modifier: Modifier = Modifier) {
+private fun MarqueeText(
+    @StringRes text: Int,
+    modifier: Modifier = Modifier
+) {
     var index by rememberSaveable { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
@@ -805,7 +837,7 @@ private fun MarqueeText(modifier: Modifier = Modifier) {
                 )
             }
         ) { itemIndex ->
-            val itemRes = if (itemIndex == 0) R.string.coming_soon else R.string.lbl_sound_imitation
+            val itemRes = if (itemIndex == 0) R.string.coming_soon else text
             TextAutoSize(
                 text = stringResource(id = itemRes),
                 textScale = TextAutoSizeRange(

@@ -46,4 +46,16 @@ sealed class TileItem(
         titleRes = R.string.lbl_imazh,
         unavailableStateMessage = unavailableStateMessage
     )
+
+    class Hamahang(
+        key: String,
+        available: Boolean,
+        unavailableStateMessage: String
+    ) : TileItem(
+        key = key,
+        available = available,
+        iconRes = R.drawable.img_hamahang,
+        titleRes = R.string.lbl_hamahang,
+        unavailableStateMessage = unavailableStateMessage
+    )
 }

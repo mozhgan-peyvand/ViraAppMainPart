@@ -1,5 +1,6 @@
 package ai.ivira.app.features.config.data
 
+import ai.ivira.app.features.config.data.ViraConfigs.Hamahang
 import ai.ivira.app.features.config.data.ViraConfigs.Tiles
 import ai.ivira.app.features.config.data.ViraConfigs.Versions
 import ai.ivira.app.utils.common.orZero
@@ -141,6 +142,10 @@ class ConfigManager @Inject constructor(
                     log("SERVICE: Fetching versions...")
                     return fetchVersions(newLastUpdate)
                 }
+                Hamahang.value -> {
+                    log("SERVICE: Fetching hamahang...")
+                    return fetchHamahang(newLastUpdate)
+                }
             }
             // fetch that specific response
         }
@@ -157,13 +162,13 @@ class ConfigManager @Inject constructor(
         previousLastUpdate: Map<String, Long>
     ): Set<String> {
         return buildSet {
-            newLastUpdate.forEach { (config, timestamp) ->
-                if (config == Versions.value && timestamp > previousLastUpdate[config].orZero()) {
-                    add(config)
-                } else if (config == Tiles.value && timestamp > previousLastUpdate[config].orZero()) {
-                    add(config)
+            val supportedConfigs = ViraConfigs.entries.map { it.value }
+            newLastUpdate.filterKeys { config -> config in supportedConfigs }
+                .forEach { (config, timestamp) ->
+                    if (timestamp > previousLastUpdate[config].orZero()) {
+                        add(config)
+                    }
                 }
-            }
         }
     }
 
@@ -198,6 +203,25 @@ class ConfigManager @Inject constructor(
             }
             is AppResult.Success -> {
                 log("REQUEST: Fetching versions succeeded")
+                configRepository.updateLastUpdateFetchTime()
+                configRepository.insertLastUpdate(newLastUpdate)
+                ConfigResult.Success
+            }
+        }
+    }
+
+    private suspend fun fetchHamahang(newLastUpdate: Map<String, Long>): ConfigResult {
+        return when (val result = configRepository.fetchHamahang()) {
+            is AppResult.Error -> {
+                log("REQUEST: Fetching hamahang failed(${result.error}")
+                if (result.error is AppException.NetworkConnectionException) {
+                    ConfigResult.FailNoNetwork
+                } else {
+                    ConfigResult.Fail
+                }
+            }
+            is AppResult.Success -> {
+                log("REQUEST: Fetching hamahang succeeded")
                 configRepository.updateLastUpdateFetchTime()
                 configRepository.insertLastUpdate(newLastUpdate)
                 ConfigResult.Success

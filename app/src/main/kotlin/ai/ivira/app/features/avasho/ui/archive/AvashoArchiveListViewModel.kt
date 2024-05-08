@@ -60,7 +60,7 @@ import saman.zamani.persiandate.PersianDate
 import java.io.File
 import javax.inject.Inject
 
-// fixme these two are duplicated, in ArchiveListViewModel
+// changeStateDelay duplicate 2
 private const val CHANGE_STATE_TO_IDLE_DELAY_TIME = 2000L
 private const val TEXT_LENGTH_LIMIT = 1000
 

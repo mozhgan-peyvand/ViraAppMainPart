@@ -2,6 +2,7 @@ package ai.ivira.app.utils.ui.navigation
 
 import ai.ivira.app.features.ava_negar.avanegarNavGraph
 import ai.ivira.app.features.avasho.ui.avashoNavGraph
+import ai.ivira.app.features.hamahang.ui.hamahangNavGraph
 import ai.ivira.app.features.home.ui.homeNavGraph
 import ai.ivira.app.features.imazh.ui.imazhNavGraph
 import ai.ivira.app.features.login.ui.loginNavGraph
@@ -32,6 +33,7 @@ fun AppNavigation(navController: NavHostController) {
         avashoNavGraph(navController)
         imazhNavGraph(navController)
         loginNavGraph(navController)
+        hamahangNavGraph(navController)
     }
 }
 

@@ -33,8 +33,9 @@
     <string name="msg_try_again">اتصال شما به اینترنت قطع است. \n لطفا دوباره تلاش کنید</string>
     <string name="lbl_uploading_file">در حال آپلود فایل…</string>
     <string name="lbl_uploading">در حال آپلود فایل</string>
+    <string name="lbl_converting_audio">در حال تبدیل صدا…</string>
+    <string name="lbl_processing_input_audio">در حال پردازش صدای ورودی</string>
     <string name="lbl_waiting_for_upload">در انتظار آپلود فایل</string>
-    <string name="lbl_hamahang_item_bottomsheet_explain">سرویس همآهنگ با قابلیت تقلید صدای افراد مختلف، در نسخه‌ی بعد فعال خواهد شد.</string>
 
     <string name="lbl_make_your_first_file">اولین فایل خود را ایجاد کنید.</string>
     <string name="lbl_make_your_first_image">اولین تصویر خود را ایجاد کنید.</string>
@@ -91,9 +92,10 @@
     <string name="msg_connection_error">اتصال به اینترنت برقرار نمی باشد</string>
     <string name="msg_server_error">ارتباط با سرور موقتا برقرار نمی باشد</string>
     <string name="msg_invalid_file">فایل نامعتبر می باشد</string>
-    <string name="msg_file_duration_exceeds_max">فایل صوتی نمی‌تواند بیش از 60 دقیقه باشد</string>
+    <string name="msg_file_duration_exceeds_max">فایل صوتی نمی‌تواند بیش از %1$d دقیقه باشد</string>
     <string name="msg_request_failed_try_again_later">متاسفانه درخواست شما با خطا مواجه شد، لطفا مدتی منتظر بمانید و سپس دوباره امتحان کنید</string>
     <string name="msg_your_text_contains_inappropriate_words">امکان تولید تصویر از محتوای مدنظر شما وجود ندارد، لطفا آن را اصلاح نموده و مجددا امتحان کنید.</string>
+    <string name="msg_audio_contains_inappropriate_contents">صدای ورودی دارای محتوای نامناسب تشخیص داده شد، لطفا فایل دیگری ایجاد کنید.</string>
     <!--endregion -->
 
     <string name="msg_convert_error">خطایی رخ داده است</string>
@@ -194,7 +196,6 @@
     <string name="msg_general_recorder_pause_error">مشکلی در توقف ضبط رخ داد.</string>
     <string name="msg_general_recorder_start_error">مشکلی در شروع ضبط رخ داد.</string>
     <string name="msg_general_recorder_stop_error">مشکلی در پایان ضبط رخ داد.</string>
-    <string name="avasho_item_bottomsheet_explain">سرویس آواشو با قابلیت تبدیل متن به گفتار با لحن طبیعی انسان، در نسخه های بعد فعال خواهد شد.</string>
     <string name="lbl_introduce_text">ابزارهای جذاب هوش مصنوعی همچون سرویس تبدیل گفتار به متن در اپلیکیشن ویرا</string>
     <string name="lbl_download">دانلود:</string>
     <string name="lbl_show_minute">دقیقه</string>
@@ -263,6 +264,7 @@
     <string name="lbl_continue">ادامه</string>
     <string name="msg_random_description">با انتخاب این گزینه، توضیحات قبلی حذف شده و توصیف تصادفی جایگزین خواهد شد.</string>
     <string name="lbl_image_explanations">توضیحات عکس</string>
+    <string name="lbl_play_audio">پخش صدا</string>
     <string name="lbl_size">حجم :</string>
     <string name="msg_exit_while_editing">با بازگشت به صفحه اصلی، اطلاعات این صفحه حذف خواهد شد.  برای جلوگیری از حذف، ابتدا اطلاعات را به تصویر تبدیل کنید.</string>
     <string name="msg_exit_while_uploading">با بازگشت به صفحه اصلی، اطلاعات این صفحه حذف خواهد شد.  برای جلوگیری از حذف، تا اتمام فرآیند تبدیل صبرکنید.</string>
@@ -327,5 +329,25 @@
     <string name="lbl_terms_user_responsibility_part1">تمام اصول و رویه‌های ویرا با قوانین جمهوری اسلامی ایران، قانون تجارت الکترونیکی و قانون حمایت از حقوق مصرف‌کننده و سایر قوانین مرتبط مطابقت دارد. به همین ترتیب، کاربر نیز موظف به رعایت قوانین مرتبط با خود است. در صورتی که در آینده تغییراتی در قوانین مصوب، رویه‌ها و خدمات ویرا ایجاد شود، از طریق درگاه‌های ارتباطی ویرا به شما اطلاع داده خواهد شد. استفاده مستمر شما از اپلیکیشن به معنی پذیرش هرگونه تغییر است. همچنین، برای دسترسی به جدیدترین خدمات و تغییرات ویرا، از بروز بودن نسخه اپلیکیشن خود اطمینان حاصل کنید.</string>
     <string name="lbl_terms_user_responsibility_part2">هرگونه استفاده از سرویس های این اپلیکیشن تحت مسئولیت کاربر است و در صورت بروز هرگونه خسارت یا مشکل قانونی ناشی از استفاده از این خدمات، ویرا مسئولیتی نخواهد پذیرفت.</string>
     <string name="lbl_terms_user_responsibility_part3">همچنین کاربر متعهد می‌شود حقوق معنوی ویرا و شرکای تجاری او را حفظ نماید و از این اپلیکیشن برای اهداف غیرمندرج استفاده نکند.</string>
+
+    <string name="lbl_input_audio">صدای ورودی</string>
+    <string name="lbl_select_speaker">انتخاب گوینده</string>
+    <string name="lbl_upload">بارگذاری</string>
+    <string name="msg_input_audio_desc">دیالوگ یا متن صحبت از این صدا استخراج میشود. برای ضبط صدا دکمه میکروفون را بزنید، و یا فایل صدا را بارگذاری کنید.</string>
+    <string name="msg_select_speaker_desc">گوینده موردنظر را از میان صداها انتخاب کنید. فایل نهایی با این صدا پخش میشود.</string>
+    <string name="lbl_convert_audio">تبدیل صدا</string>
+    <string name="lbl_hamahang_choose_file">بارگذاری فایل جدید</string>
+    <string name="msg_hamahang_file_duration_exceeds_max">فایل صوتی باید کمتر از 1 دقیقه باشد.</string>
+    <string name="msg_hamahang_choose_file_desc">شما تنها می توانید یک فایل برای پردازش ارسال کنید.\n
+فرمت های مجاز :mp3 \nحداکثر زمان فایل: کمتر از 1 دقیقه</string>
+    <string name="lbl_dose_not_exist_any_file_yet">فایل صوتی درآرشیو وجود ندارد.</string>
+    <string name="lbl_make_your_first_audio_file">اولین فایل صوتی را ایجاد کنید.</string>
+    <string name="lbl_hamahang_on_boarding_describe">صدای خود را به کمک هوش مصنوعی، به صدای افراد مشهور تبدیل کنید.</string>
+    <string name="lbl_change_speaker">[icon] تغییر گوینده</string>
+    <string name="lbl_convert_speaker_voice_again_title">تبدیل مجدد صدای ورودی</string>
+    <string name="lbl_convert_speaker_voice_again_detail">می‌خواهید صدای ورودی را به صدای گوینده‌ای  دیگر تبدیل کنید؟</string>
+    <string name="lbl_not_possible_to_regenerate_voice">امکان تولید مجدد این صدا وجود ندارد.</string>
+    <string name="lbl_createAt_with_icon">ایا از حذف فایل %s مطمئن هستید؟</string>
+    <string name="lbl_createAt_with_icon1">[icon] %s</string>
 
 </resources>

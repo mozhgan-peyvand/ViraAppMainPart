@@ -15,6 +15,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
+// RecorderUtil: Duplicate 1
 class Recorder @Inject constructor(
     @ApplicationContext private val context: Context
 ) {

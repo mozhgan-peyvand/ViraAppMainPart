@@ -630,6 +630,7 @@ private fun VoiceRecordingControlsSection(
 
         RecordingAnimation(
             isRecording = isRecording,
+            iconResWhileRecording = R.drawable.ic_pause_2,
             onRecordClick = {
                 if (isRecording) pauseRecord() else startRecord()
             },

@@ -11,6 +11,7 @@ class ConfigDataHelper @Inject constructor() {
     val tilesUrl get() = "${barjavandBaseUrl}?subSchema=tiles"
     val lastUpdateUrl get() = "${barjavandBaseUrl}?subSchema=lastUpdate"
     val versionsUrl get() = "${barjavandBaseUrl}?subSchema=versions"
+    val hamahangUrl get() = "${barjavandBaseUrl}?subSchema=hamahang"
 
     fun ud() = cud()
     fun pd() = cpd()

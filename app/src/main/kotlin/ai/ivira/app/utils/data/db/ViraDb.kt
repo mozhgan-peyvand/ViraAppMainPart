@@ -9,9 +9,15 @@ import ai.ivira.app.features.avasho.data.entity.AvashoProcessedFileEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoTrackingFileEntity
 import ai.ivira.app.features.avasho.data.entity.AvashoUploadingFileEntity
 import ai.ivira.app.features.config.data.ConfigDao
+import ai.ivira.app.features.config.data.model.ConfigHamahangSpeakerEntity
 import ai.ivira.app.features.config.data.model.ConfigTileEntity
 import ai.ivira.app.features.config.data.model.ConfigVersionEntity
 import ai.ivira.app.features.config.data.model.ConfigVersionReleaseNoteEntity
+import ai.ivira.app.features.hamahang.data.HamahangDao
+import ai.ivira.app.features.hamahang.data.entity.HamahangCheckingFileEntity
+import ai.ivira.app.features.hamahang.data.entity.HamahangProcessedFileEntity
+import ai.ivira.app.features.hamahang.data.entity.HamahangTrackingFileEntity
+import ai.ivira.app.features.hamahang.data.entity.HamahangUploadingFileEntity
 import ai.ivira.app.features.home.data.VersionDao
 import ai.ivira.app.features.imazh.data.ImazhDao
 import ai.ivira.app.features.imazh.data.ImazhListConvertor
@@ -34,6 +40,7 @@ import androidx.room.TypeConverters
         ConfigVersionEntity::class,
         ConfigVersionReleaseNoteEntity::class,
         ConfigTileEntity::class,
+        ConfigHamahangSpeakerEntity::class,
         // endregion: Config
         // region: Avasho
         AvashoProcessedFileEntity::class,
@@ -43,8 +50,14 @@ import androidx.room.TypeConverters
         // region: Imazh
         ImazhHistoryEntity::class,
         ImazhProcessedFileEntity::class,
-        ImazhTrackingFileEntity::class
+        ImazhTrackingFileEntity::class,
         // endregion: Imazh
+        // region: Hamahang
+        HamahangUploadingFileEntity::class,
+        HamahangTrackingFileEntity::class,
+        HamahangProcessedFileEntity::class,
+        HamahangCheckingFileEntity::class
+        // endregion: Hamahang
     ],
     version = 7,
     exportSchema = false
@@ -55,4 +68,5 @@ abstract class ViraDb : RoomDatabase() {
     abstract fun avashoDao(): AvashoDao
     abstract fun tileConfigDao(): ConfigDao
     abstract fun imazhDao(): ImazhDao
+    abstract fun hamahangDao(): HamahangDao
 }

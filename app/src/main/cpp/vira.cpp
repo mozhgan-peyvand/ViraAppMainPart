@@ -28,6 +28,12 @@ Java_ai_ivira_app_features_imazh_data_ImazhRemoteDataSource_bu(JNIEnv *env, jobj
 
 extern "C"
 JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_hamahang_data_HamahangRemoteDataSource_bu(JNIEnv *env, jobject thiz) {
+    return bu(env);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
 Java_ai_ivira_app_features_avasho_data_AvashoRepository_bu(JNIEnv *env, jobject thiz) {
     std::string BU = "9.8!)v~u-8t%\";$08b8(c\";$08c6;84--(";
     std::string key = "QZL";
@@ -318,3 +324,11 @@ Java_ai_ivira_app_features_login_data_LoginRemoteDataSource_ls(JNIEnv *env, jobj
     return env->NewStringUTF(dec.c_str());
 }
 // endregion login
+
+// region hamahang
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ai_ivira_app_features_hamahang_data_HamahangRemoteDataSource_ak(JNIEnv *env, jobject thiz) {
+    return ak(env);
+}
+// endregion hamahang
