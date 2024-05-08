@@ -105,7 +105,7 @@ fun HamahangArchiveProcessedFileElement(
                     }
                 )
 
-                if (!isNetworkAvailable || isDownloadFailure) {
+                if (!isNetworkAvailable && isDownloadFailure) {
                     Spacer(modifier = Modifier.size(8.dp))
 
                     Text(
