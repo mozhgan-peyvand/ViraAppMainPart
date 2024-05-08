@@ -66,6 +66,7 @@ class LoginRemoteDataSource @Inject constructor(
             val result = loginService.logout(
                 url = lbu() + "logout",
                 gatewayToken = gatewayToken,
+                gatewaySystem = lgs(),
                 system = ls()
             )
         ) {

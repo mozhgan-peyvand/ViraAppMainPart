@@ -30,6 +30,7 @@ interface LoginService {
     suspend fun logout(
         @Url url: String,
         @Header("gateway-token") gatewayToken: String,
+        @Header("gateway-system") gatewaySystem: String,
         @Header("system") system: String
     ): ApiResult<ViraNetwork<EmptyResponse>>
 }
