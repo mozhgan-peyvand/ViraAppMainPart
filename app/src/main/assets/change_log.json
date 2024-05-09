@@ -1,5 +1,15 @@
 [
   {
+    "versionCode": 30103000,
+    "versionName": "1.3.0",
+    "releaseNotes": [
+      {
+        "type": 2,
+        "title": "افزوده شدن سرویس تقلید صدا (همآهنگ)"
+      }
+    ]
+  },
+  {
     "versionCode": 30102020,
     "versionName": "1.2.2",
     "releaseNotes": [
