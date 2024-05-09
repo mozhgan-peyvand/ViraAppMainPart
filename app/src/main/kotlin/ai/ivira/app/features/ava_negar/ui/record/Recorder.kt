@@ -20,7 +20,8 @@ class Recorder @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
-        private const val SAMPLE_RATE = 44100
+        private const val SAMPLE_RATE = 48_000
+        private const val BIT_RATE = 320_000
         const val TAG = "RecorderTAG"
     }
 
@@ -54,9 +55,14 @@ class Recorder @Inject constructor(
 
     fun start(name: String): Boolean {
         mediaRecorder = createMediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.CAMCORDER)
-            setAudioSamplingRate(SAMPLE_RATE)
+            // The order in which these are specified is important, DO NOT CHANGE!!!!
+            setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            setAudioEncodingBitRate(BIT_RATE)
+            setAudioSamplingRate(SAMPLE_RATE)
+            setAudioChannels(1)
+
             setMaxDuration((MAX_FILE_DURATION_MS - RECORDING_OFFSET_MS).toInt())
             setOnInfoListener { _, what, _ ->
                 if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
@@ -69,7 +75,6 @@ class Recorder @Inject constructor(
                     getFile(name).also { _currentFile.set(it) }
                 ).fd
             )
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB)
         }
 
         return kotlin.runCatching {
