@@ -49,7 +49,7 @@ class HamahangDetailViewModel @Inject constructor(
     // this logic is used in archive viewModel as well, upon change apply there as well
     val isRegenerationAllowed = repository.getArchiveFiles()
         .map { files ->
-            files.checking.isEmpty() &&
+            files.checking.any { it.isProper } &&
                 files.tracking.isEmpty() &&
                 files.uploading.isEmpty()
         }

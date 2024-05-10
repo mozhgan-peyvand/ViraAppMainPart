@@ -247,7 +247,7 @@ class HamahangArchiveListViewModel @Inject constructor(
         val nonProcessedFiles = files.any {
             it is HamahangUploadingFileView ||
                 it is HamahangTrackingFileView ||
-                it is HamahangCheckingFileView
+                (it is HamahangCheckingFileView && it.isProper)
         }
         return@combine nonProcessedFiles || failures.isNotEmpty()
     }.stateIn(initial = false)
